@@ -16,4 +16,35 @@ class ModeloAtributoRepository extends ServiceEntityRepository // <-- CAMBIAR ES
     {
         parent::__construct($registry, ModeloAtributo::class); // <-- CAMBIAR ESTO
     }
+
+    /**
+     * Encuentra todos los atributos únicos, agrupados por su nombre,
+     * asociados a una lista de IDs de modelos.
+     */
+    public function findFromModelos(array $modeloIds): array
+    {
+        if (empty($modeloIds)) {
+            return [];
+        }
+
+        $results = $this->createQueryBuilder('ma')
+            ->select('ma')
+            // 'm.atributos' es la relación ManyToMany en la entidad Modelo
+            ->join('ma.modelos', 'm')
+            ->where('m.id IN (:modeloIds)')
+            ->setParameter('modeloIds', $modeloIds)
+            ->orderBy('ma.nombre', 'ASC')
+            ->addOrderBy('ma.valor', 'ASC')
+            ->distinct(true)
+            ->getQuery()
+            ->getResult();
+
+        // Agrupamos los resultados por el nombre del atributo (ej: 'Genero', 'Detalles')
+        $groupedResults = [];
+        foreach ($results as $atributo) {
+            $groupedResults[$atributo->getNombre()][] = $atributo;
+        }
+
+        return $groupedResults;
+    }
 }

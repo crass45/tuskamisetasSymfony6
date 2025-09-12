@@ -289,7 +289,7 @@
                                     {% endif %}
                                 </div>
                             </div>
-{#boton del menu#}
+                            {# boton del menu #}
                             <div class="col-xs-2 hidden-md hidden-lg">
                                 <nav class="navbar navbar-defaul navbar-tkm"
                                      style="z-index: 1008; padding: 0; margin: 0">
@@ -335,7 +335,6 @@
                                     </form>
                                 </div>
                             </div>
-
 
 
                             <div class="col-xs-12" style="padding: 0">
@@ -424,7 +423,7 @@
 
 
                                                         <li>
-{#                                                            <a href="{{ path('ss_tienda_ofertas') }}"> {% trans %}Ofertas{% endtrans %}</a>#}
+                                                            {#                                                            <a href="{{ path('ss_tienda_ofertas') }}"> {% trans %}Ofertas{% endtrans %}</a> #}
                                                             <a href="#"> {% trans %}Ofertas{% endtrans %}</a>
                                                         </li>
                                                     </ul>
@@ -434,7 +433,7 @@
                                             <ul class="nav navbar-nav navbar-right">
                                                 <li class="dropdown">
                                                     <a id="navItemMarcas" class="dropdown-toggle nav-link"
-{#                                                       href="{{ path('ss_tienda_marcas') }}"#}
+                                                            {#                                                       href="{{ path('ss_tienda_marcas') }}" #}
                                                        href="#"
                                                        data-hover="dropdown"
                                                        data-animations="zoomIn zoomIn zoomIn zoomIn">Marcas<span
@@ -472,8 +471,8 @@
                                                             {% endif %}
                                                         {% endfor %}
                                                         <li>
-{#                                                            <a href="{{ path('ss_tienda_marcas') }}">#}
-                                                                <a href="#">
+                                                            {#                                                            <a href="{{ path('ss_tienda_marcas') }}"> #}
+                                                            <a href="#">
                                                                 {# <div style="height: 100%; width: 30px;display: inline-block;vertical-align: middle"> #}
                                                                 {# </div> #}
                                                                 <span>{% trans %}VER TODAS LAS MARCAS{% endtrans %}</span></a>
@@ -529,7 +528,8 @@
                                                         <li><a href="{{ path('app_service_fullprint') }}">Full
                                                                 Print</a></li>
                                                         <li role="separator" class="divider"></li>
-                                                        <li><a href="{{ path('app_service_tampografia') }}">Tampografía</a>
+                                                        <li>
+                                                            <a href="{{ path('app_service_tampografia') }}">Tampografía</a>
                                                         </li>
                                                         <li role="separator" class="divider"></li>
                                                         <li><a href="{{ path('app_service_etiquetas') }}">Personalizar
@@ -546,7 +546,7 @@
                                                 </li>
                                                 <li class="nav-link">
                                                     <a id="navItemContacta" class="nav-link"
-{#                                                       href="{{ path('ss_tienda_contacto') }}"#}
+                                                            {#                                                       href="{{ path('ss_tienda_contacto') }}" #}
                                                        href="#"
                                                        rel="nofollow">
                                                         {% trans %}Contacta{% endtrans %}
@@ -692,9 +692,9 @@
                 </div>
                 <div class="modal-body">
                     {% if app.user %}
-{#                         MIGRACIÓN: La forma de renderizar controladores ha cambiado#}
-{#                        {{ render(controller('App\\Controller\\ProfileController::editProfileAction')) }}#}
-                        {% else %}
+                        {#                         MIGRACIÓN: La forma de renderizar controladores ha cambiado #}
+                        {#                        {{ render(controller('App\\Controller\\ProfileController::editProfileAction')) }} #}
+                    {% else %}
                         {{ render(controller('App\\Controller\\SecurityController::modalLoginAction')) }}
                     {% endif %}
                 </div>

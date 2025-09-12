@@ -16,4 +16,26 @@ class ColorRepository extends ServiceEntityRepository // <-- CAMBIAR ESTO
     {
         parent::__construct($registry, Color::class); // <-- CAMBIAR ESTO
     }
+
+    /**
+     * Encuentra todos los colores únicos asociados a una lista de IDs de modelos.
+     */
+    public function findFromModelos(array $modeloIds): array
+    {
+        if (empty($modeloIds)) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('c')
+            ->select('c')
+            // 'p.color' y 'm.modeloHasProductos' son las relaciones en las entidades
+            ->join('App\Entity\Producto', 'p', 'WITH', 'p.color = c.id')
+            ->join('p.modelo', 'm')
+            ->where('m.id IN (:modeloIds)')
+            ->setParameter('modeloIds', $modeloIds)
+            ->groupBy('c.rgbUnificado') // Agrupamos por el color unificado para no repetir
+            ->orderBy('c.nombre', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

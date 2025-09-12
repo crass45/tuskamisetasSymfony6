@@ -6,35 +6,41 @@ namespace App\Model;
 use App\Entity\Fabricante;
 use App\Entity\Familia;
 use App\Entity\Sonata\ClassificationCategory;
-use Symfony\Component\HttpFoundation\Request; // <-- Se añade el 'use' para la Request
+use Symfony\Component\HttpFoundation\Request;
+use Doctrine\ORM\EntityManagerInterface;
 
-/**
- * Objeto para gestionar el estado de los filtros de búsqueda.
- * No es una entidad de Doctrine.
- */
 class Filtros
 {
     private array $atributos = [];
     private array $colores = [];
-    private ?Familia $familia = null;
     private ?Fabricante $fabricante = null;
+    private ?Familia $familia = null;
     private ?ClassificationCategory $category = null;
     private string $orden = "";
     private ?string $busqueda = null;
 
     /**
-     * MÉTODO AÑADIDO: Crea un objeto Filtros a partir de los parámetros de la URL.
-     * Esto encapsula la lógica y mantiene el controlador limpio.
+     * Crea un objeto Filtros a partir de los parámetros de la URL.
+     * Ahora recibe el EntityManager para poder buscar entidades.
      */
-    public static function createFromRequest(Request $request): self
+    public static function createFromRequest(Request $request, EntityManagerInterface $em): self
     {
         $filtros = new self();
 
-        // Leemos los parámetros de la query string (ej. ?colores[]=rojo&orden=precio)
         $filtros->setAtributos($request->query->all('atributos'));
         $filtros->setColores($request->query->all('colores'));
         $filtros->setOrden($request->query->get('orden', ''));
-        $filtros->setBusqueda($request->query->get('q')); // 'q' es un estándar para búsqueda
+        $filtros->setBusqueda($request->query->get('q'));
+
+        // Leemos el ID del fabricante de la URL
+        $fabricanteId = $request->query->get('fabricante');
+        if ($fabricanteId) {
+            // Usamos el EntityManager para encontrar el objeto Fabricante completo
+            $fabricanteObject = $em->getRepository(Fabricante::class)->find($fabricanteId);
+            if ($fabricanteObject) {
+                $filtros->setFabricante($fabricanteObject);
+            }
+        }
 
         return $filtros;
     }

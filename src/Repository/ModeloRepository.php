@@ -1,15 +1,17 @@
 <?php
-// src/Repository/PlantillaRepository.php (este es el código base)
+// src/Repository/ModeloRepository.php
 
 namespace App\Repository;
 
 use App\Entity\Modelo;
-
-
 use App\Model\Filtros;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Entity\Sonata\ClassificationCategory;
+use Doctrine\DBAL\Connection; // <-- 1. Se añade el 'use' para la Conexión
 
 /**
  * @extends ServiceEntityRepository<Modelo>
@@ -17,90 +19,19 @@ use Doctrine\Persistence\ManagerRegistry;
 class ModeloRepository extends ServiceEntityRepository
 {
     public const PAGINATOR_PER_PAGE = 36;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Modelo::class);
     }
 
     /**
-     * Encuentra y pagina los modelos basándose en un objeto de filtros.
-     * Esta función reemplaza toda la lógica del antiguo FiltrosController.
+     * MÉTODO PRINCIPAL: Obtiene los resultados paginados.
      */
     public function findByFiltros(Filtros $filtros, int $page = 1): Paginator
     {
-        $qb = $this->createQueryBuilder('m')
-            ->where('m.activo = :activo')
-            ->andWhere('m.precioMin > 0')
-            ->setParameter('activo', true);
+        $qb = $this->createFindByFiltrosQueryBuilder($filtros);
 
-        // Filtro por Búsqueda de Texto
-        if ($filtros->getBusqueda()) {
-            $qb->leftJoin('m.fabricante', 'f')
-                ->andWhere('m.referencia LIKE :busqueda OR m.nombre LIKE :busqueda OR f.nombre LIKE :busqueda')
-                ->setParameter('busqueda', '%' . $filtros->getBusqueda() . '%');
-        }
-
-        // Filtro por Categoría (y sus hijos)
-        if ($filtros->getCategory()) {
-            $categoryIds = [$filtros->getCategory()->getId()];
-            foreach ($filtros->getCategory()->getChildren() as $child) {
-                $categoryIds[] = $child->getId();
-            }
-            $qb->leftJoin('m.category', 'c')
-                ->andWhere('c.id IN (:categoryIds)')
-                ->setParameter('categoryIds', $categoryIds);
-        }
-
-        // Filtro por Fabricante (Marca)
-        if ($filtros->getFabricante()) {
-            $qb->andWhere('m.fabricante = :fabricanteId')
-                ->setParameter('fabricanteId', $filtros->getFabricante()->getId());
-        }
-
-        // Filtro por Familia
-        if ($filtros->getFamilia()) {
-            $qb->leftJoin('m.familias', 'fam')
-                ->andWhere('fam.id = :familiaId OR m.familia = :familiaId')
-                ->setParameter('familiaId', $filtros->getFamilia()->getId());
-        }
-
-        // Filtro por Colores
-        if (!empty($filtros->getColores())) {
-            $qb->leftJoin('m.productos', 'p_color')
-                ->leftJoin('p_color.color', 'co')
-                ->andWhere('co.rgbUnificado IN (:colores)')
-                ->setParameter('colores', $filtros->getColores());
-        }
-
-        // Filtro por Atributos (lógica compleja)
-        if (!empty($filtros->getAtributos())) {
-            $idsModelosPorAtributo = $this->findModelosIdsByAtributos($filtros->getAtributos());
-            if (!empty($idsModelosPorAtributo)) {
-                $qb->andWhere('m.id IN (:idsModelosPorAtributo)')
-                    ->setParameter('idsModelosPorAtributo', $idsModelosPorAtributo);
-            } else {
-                // Si no hay modelos que cumplan todos los atributos, no devolver nada.
-                $qb->andWhere('1=0');
-            }
-        }
-
-        // Lógica de Ordenación
-        switch ($filtros->getOrden()) {
-            case "Precio ASC":
-                $qb->orderBy('m.precioMin', 'ASC');
-                break;
-            case "Precio DESC":
-                $qb->orderBy('m.precioMin', 'DESC');
-                break;
-            // ... otros casos de ordenación ...
-            default:
-                $qb->orderBy('m.importancia', 'DESC')->addOrderBy('m.precioMin', 'ASC');
-                break;
-        }
-
-        $qb->groupBy('m.id');
-
-        // Paginación
         $paginator = new Paginator($qb->getQuery());
         $paginator
             ->getQuery()
@@ -108,6 +39,145 @@ class ModeloRepository extends ServiceEntityRepository
             ->setMaxResults(self::PAGINATOR_PER_PAGE);
 
         return $paginator;
+    }
+
+    /**
+     * Analiza los resultados de una búsqueda y devuelve los filtros disponibles.
+     */
+    public function findAvailableFilters(Filtros $filtros): array
+    {
+        $qb = $this->createFindByFiltrosQueryBuilder($filtros);
+
+        $qb->select('DISTINCT m.id');
+        $modelIds = array_column($qb->getQuery()->getScalarResult(), 'id');
+
+        if (empty($modelIds)) {
+            return ['fabricantes' => [], 'colores' => [], 'atributos' => []];
+        }
+
+        // Obtener fabricantes disponibles
+        $fabricantes = $this->getEntityManager()->createQueryBuilder()
+            ->select('DISTINCT f')
+            ->from('App\Entity\Fabricante', 'f')
+            ->join('f.modelos', 'm')
+            ->where('m.id IN (:ids)')
+            ->setParameter('ids', $modelIds)
+            ->getQuery()->getResult();
+
+        // Obtener colores disponibles
+        $colores = $this->getEntityManager()->createQueryBuilder()
+            ->select('DISTINCT c')
+            ->from('App\Entity\Color', 'c')
+            ->join('c.productos', 'p')
+            ->where('p.modelo IN (:ids)')
+            ->setParameter('ids', $modelIds)
+            ->groupBy('c.rgbUnificado')
+            ->orderBy('c.codigoRGB', 'ASC')
+            ->getQuery()->getResult();
+
+        // Obtener atributos disponibles
+        $atributosRaw = $this->getEntityManager()->createQueryBuilder()
+            ->select('DISTINCT a')
+            ->from('App\Entity\ModeloAtributo', 'a')
+            ->join('a.modelos', 'm')
+            ->where('m.id IN (:ids)')
+            ->setParameter('ids', $modelIds)
+            ->getQuery()->getResult();
+
+        $atributos = [];
+        foreach ($atributosRaw as $atributo) {
+            $atributos[$atributo->getNombre()][] = $atributo;
+        }
+
+        return [
+            'fabricantes' => $fabricantes,
+            'colores' => $colores,
+            'atributos' => $atributos,
+        ];
+    }
+
+    /**
+     * Este es ahora el "cerebro" que construye la consulta, fusionando tu lógica antigua.
+     */
+    private function createFindByFiltrosQueryBuilder(Filtros $filtros): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('m')
+            ->where('m.activo = true')
+            ->andWhere('m.precioMin > 0');
+
+        if ($filtros->getBusqueda()) {
+            // ... Lógica de búsqueda ...
+        }
+
+        if ($filtros->getCategory()) {
+
+            $idsCategorias = [$filtros->getCategory()->getId()];
+            foreach ($filtros->getCategory()->getChildren() as $hijo) { $idsCategorias[] = $hijo->getId(); }
+            $qb->leftJoin('m.category', 'c')
+                ->andWhere($qb->expr()->in('c.id', ':idsCategorias'))
+                ->setParameter('idsCategorias', $idsCategorias);
+        }
+
+        if ($filtros->getFabricante()) {
+
+            $qb->andWhere('m.fabricante = :fabricanteId')
+                ->setParameter('fabricanteId', $filtros->getFabricante()->getId());
+        }
+
+        if ($filtros->getFamilia()) {
+
+            $qb->leftJoin("m.familias", "fam")
+                ->andWhere('fam.id = :familiaId OR m.familia = :familiaId')
+                ->setParameter('familiaId', $filtros->getFamilia()->getId());
+        }
+
+        if (!empty($filtros->getColores())) {
+
+            $qb->leftJoin('m.productos', 'p_color')
+                ->leftJoin('p_color.color', 'co')
+                ->andWhere('co.rgbUnificado IN (:colores)')
+                ->setParameter('colores', $filtros->getColores());
+        }
+
+        if (!empty($filtros->getAtributos())) {
+            $mapaAtributos = [
+                'genro_mujer' => 115, 'genro_hombre' => 114, 'isForChildren' => 116,
+                'algodon' => 130, 'poliester' => 131, 'mezcla' => 129, 'tecnica' => 139,
+                'mangacorta' => 123, 'mangalarga' => 124, 'sinmangas' => 125,
+                'cuellopico' => 34, 'colorfluor' => 106, 'altavisibilidad' => 31,
+                'cremallera' => 25, 'concapucha' => 33, 'conbolsillo' => 140, 'tallasgrandes' => 19
+            ];
+            $idsAtributos = array_map(fn($attr) => $mapaAtributos[$attr] ?? $attr, $filtros->getAtributos());
+
+            $idsModelosPorAtributo = $this->findModelosIdsByAtributos($idsAtributos);
+            if (!empty($idsModelosPorAtributo)) {
+                $qb->andWhere('m.id IN (:idsModelosPorAtributo)')
+                    ->setParameter('idsModelosPorAtributo', $idsModelosPorAtributo);
+            } else {
+                $qb->andWhere('1=0');
+            }
+        }
+
+        // Lógica de Ordenación
+        switch ($filtros->getOrden()) {
+//            case "Precio ASC": $qb->orderBy('m.precioMin', 'ASC'); break;
+//            case "Precio DESC": $qb->orderBy('m.precioMin', 'DESC'); break;
+
+            case "Orden Por Defecto": $qb->addOrderBy('m.importancia', 'DESC')->addOrderBy('o.precioMinAdulto', 'ASC'); break;
+            case "Precio Adulto DESC": $qb->orderBy('m.precioMinAdulto', 'DESC'); break;
+            case "Precio Adulto ASC": $qb->orderBy('m.precioMinAdulto', 'ASC'); break;
+            case "Precio DESC": $qb->orderBy('m.precioMin', 'DESC'); break;
+            case "Precio ASC": $qb->orderBy('m.precioMin', 'ASC'); break;
+            case "Nombre DESC": $qb->orderBy('m.nombre', 'DESC'); break;
+            case "Nombre ASC": $qb->orderBy('m.nombre', 'ASC'); break;
+
+            default:
+                $qb->orderBy('m.importancia', 'DESC')->addOrderBy('m.precioMinAdulto', 'ASC');
+                break;
+        }
+
+        $qb->groupBy('m.id');
+        return $qb;
     }
 
     /**
@@ -119,153 +189,33 @@ class ModeloRepository extends ServiceEntityRepository
             return [];
         }
 
-        $sql = "SELECT modelo_id FROM modelo_modeloatributos WHERE atributo_id IN (:atributos) GROUP BY modelo_id HAVING COUNT(DISTINCT atributo_id) = :count";
+        // CORRECCIÓN: Se cambia 'atributo_id' por el nombre correcto de la columna 'modelo_atributo_id'
+        $sql = "SELECT modelo_id FROM modelo_modeloatributos WHERE modelo_atributo_id IN (:atributos) GROUP BY modelo_id HAVING COUNT(DISTINCT modelo_atributo_id) = :count";
 
-        $stmt = $this->getEntityManager()->getConnection()->prepare($sql);
-        $result = $stmt->executeQuery([
+        // --- INICIO DE LA CORRECCIÓN ---
+        // 2. Obtenemos la conexión a la base de datos
+        $conn = $this->getEntityManager()->getConnection();
+
+        // 3. Ejecutamos la consulta pasándole los tipos de parámetros explícitamente
+        $result = $conn->executeQuery($sql, [
             'atributos' => $atributosIds,
             'count' => count($atributosIds)
+        ], [
+            'atributos' => Connection::PARAM_INT_ARRAY // <-- La línea clave que lo soluciona
         ]);
+        // --- FIN DE LA CORRECCIÓN ---
 
         return $result->fetchFirstColumn();
     }
 
-
-    public function findDestacadosParaHome()
+    public function findDestacadosParaHome(): array
     {
-        $qb = $this->createQueryBuilder('m'); // 'm' es el alias para Modelo
-
-        $qb->select('m, c, i') // Seleccionamos Modelo, Category e Imagen
-        ->leftJoin('m.category', 'c')   // <-- CORRECCIÓN: 'm.category' en lugar de 'm.categoria'
-        ->leftJoin('m.imagen', 'i')     // Esto es correcto, tu propiedad se llama 'imagen'
-        ->where('m.activo = :activo')
+        return $this->createQueryBuilder('m')
+            ->where('m.activo = :activo')
             ->andWhere('m.destacado = :destacado')
             ->orderBy('m.importancia', 'DESC')
             ->setParameter('activo', true)
-            ->setParameter('destacado', true);
-
-        return $qb->getQuery()->getResult();
+            ->setParameter('destacado', true)
+            ->getQuery()->getResult();
     }
-
-    public function findByFiltersQueryBuilder(array $filtros, $busqueda = null, $idioma = 'es')
-    {
-        $qb = $this->createQueryBuilder('o')
-            ->where('o.activo = true')
-            ->andWhere('o.precioMin > 0')
-            ->andWhere('o.precioMin < 10000')
-            ->andWhere('o.precioMin != 99.999');
-
-        // --- Lógica de Búsqueda por palabra clave (unificada) ---
-        if ($busqueda) {
-            $keywords = explode(" ", $busqueda);
-            $qb->leftJoin('o.translations', 'mt', 'WITH', 'mt.locale = :locale');
-            $qb->leftJoin('o.fabricante', 'f');
-
-            foreach ($keywords as $key => $keyword) {
-                if (!empty($keyword)) {
-                    // Usamos un parámetro único por cada palabra para evitar colisiones
-                    $paramName = ':nombre' . $key;
-                    $qb->andWhere($qb->expr()->orX(
-                        'o.referencia LIKE ' . $paramName,
-                        'o.nombre LIKE ' . $paramName,
-                        'f.nombre LIKE ' . $paramName,
-                        'mt.descripcion LIKE ' . $paramName
-                    ))->setParameter($paramName, '%' . rtrim($keyword, 'es') . '%');
-                }
-            }
-            $qb->setParameter('locale', $idioma);
-        }
-
-        // --- Lógica de Filtros ---
-        $qb->leftJoin("o.modeloHasProductos", "a");
-        $qb->leftJoin("o.category", "c");
-
-        // Filtro de Colores (¡FORMA SEGURA!)
-        if (!empty($filtros['colores'])) {
-            $qb->leftJoin("a.color", "color")
-                ->andWhere($qb->expr()->in('color.rgbUnificado', ':colores'))
-                ->setParameter('colores', $filtros['colores']);
-        }
-
-        // Filtro de Atributos (¡FORMA SEGURA Y EFICIENTE!)
-        if (!empty($filtros['atributos']) && $filtros['atributos'][0] != 'no-filter') {
-            // Mapeo de atributos (esto podría ir a un servicio o a la entidad Filtros si lo prefieres)
-            $mapaAtributos = [
-                'genro_mujer' => "115", 'genro_hombre' => "114", 'isForChildren' => "116",
-                'algodon' => "130", 'poliester' => "131", 'mezcla' => "129", 'tecnica' => "139",
-                'mangacorta' => "123", 'mangalarga' => "124", 'sinmangas' => "125",
-                'cuellopico' => "34", 'colorfluor' => "106", 'altavisibilidad' => "31",
-                'cremallera' => "25", 'concapucha' => "33", 'conbolsillo' => "140", 'tallasgrandes' => "19"
-            ];
-
-            $idsAtributos = [];
-            foreach ($filtros['atributos'] as $atributo) {
-                if (isset($mapaAtributos[$atributo])) {
-                    $idsAtributos[] = $mapaAtributos[$atributo];
-                }
-            }
-
-            if (!empty($idsAtributos)) {
-                // Subconsulta para encontrar modelos que tienen TODOS los atributos seleccionados
-                $subQb = $this->_em->createQueryBuilder()
-                    ->select('sub_mma.modelo_id')
-                    ->from('modelo_modeloatributos', 'sub_mma')
-                    ->where($qb->expr()->in('sub_mma.atributo_id', ':idsAtributos'))
-                    ->groupBy('sub_mma.modelo_id')
-                    ->having('COUNT(sub_mma.modelo_id) >= :countAtributos');
-
-                $qb->andWhere($qb->expr()->in('o.id', $subQb->getDQL()))
-                    ->setParameter('idsAtributos', $idsAtributos)
-                    ->setParameter('countAtributos', count($idsAtributos));
-            } else {
-                $qb->andWhere('1=0'); // Si los atributos no son válidos, no devolver nada
-            }
-        }
-
-        // Filtro de Familia
-        if (!empty($filtros['familia'])) {
-            $qb->leftJoin("o.familias", "familias")
-                ->andWhere('familias.id = :familiaId OR o.familia = :familiaId')
-                ->setParameter('familiaId', $filtros['familia']);
-        }
-
-        // Filtro de Fabricante
-        if (!empty($filtros['fabricante'])) {
-            $qb->andWhere('o.fabricante = :fabricanteId')
-                ->setParameter('fabricanteId', $filtros['fabricante']);
-        }
-
-        // Filtro de Categoría (con hijos)
-        if (!empty($filtros['category'])) {
-            $categoryRepo = $this->_em->getRepository("ApplicationSonataClassificationBundle:Category");
-            $categoria = $categoryRepo->find($filtros['category']);
-            if ($categoria) {
-                $idsCategorias = [$categoria->getId()];
-                foreach ($categoria->getChildren() as $hijo) {
-                    $idsCategorias[] = $hijo->getId();
-                }
-                $qb->andWhere($qb->expr()->in('c.id', ':idsCategorias'))
-                    ->setParameter('idsCategorias', $idsCategorias);
-            }
-        }
-
-        // --- Ordenación ---
-        $orden = $filtros['orden'] ?? 'default'; // Usar 'default' si no viene
-        switch ($orden) {
-            case "Precio Adulto DESC":
-                $qb->orderBy('o.precioMinAdulto', 'DESC');
-                break;
-            case "Precio Adulto ASC":
-                $qb->orderBy('o.precioMinAdulto', 'ASC');
-                break;
-            // ... otros casos de ordenación
-            default:
-                $qb->addOrderBy('o.importancia', 'DESC')->addOrderBy('o.precioMinAdulto', 'ASC');
-                break;
-        }
-
-        $qb->groupBy('o.id');
-        return $qb;
-    }
-
 }

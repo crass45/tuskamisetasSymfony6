@@ -1,21 +1,21 @@
 {% extends "web/indexTemplate.html.twig" %}
 
 
-{% block title %}
-    {% if tituloSEO is defined %}
-        {% if (categoria is defined) %}
-            {% if categoria != "fabricante" %}
-                {# {{ cantidadArticulos }} #}
-            {% endif %}{% endif %}{{ tituloSEO | capitalize }}
-    {% else %}
-        {% if (categoria is defined) %}
-            {% if categoria != "fabricante" %}
-                {# {{ cantidadArticulos }} #}
-            {% endif %}{% endif %} {{ titulo | capitalize }}
-    {% endif %}
-{% endblock %}
+{#{% block title %}#}
+{#    {% if tituloSEO is defined %}#}
+{#        {% if (categoria is defined) %}#}
+{#            {% if categoria != "fabricante" %}#}
+{#                #}{# {{ cantidadArticulos }} #}
+{#            {% endif %}{% endif %}{{ tituloSEO | capitalize }}#}
+{#    {% else %}#}
+{#        {% if (categoria is defined) %}#}
+{#            {% if categoria != "fabricante" %}#}
+{#                #}{# {{ cantidadArticulos }} #}
+{#            {% endif %}{% endif %} {{ titulo | capitalize }}#}
+{#    {% endif %}#}
+{#{% endblock %}#}
 
-{% block metaDescription %}{{ descripcion }}{% endblock %}
+{#{% block metaDescription %}{{ descripcion }}{% endblock %}#}
 
 {% block migas %}
     {# MIGRACIÓN: El bloque de migas de pan ahora es mucho más simple y se construye a partir del objeto 'context' #}
