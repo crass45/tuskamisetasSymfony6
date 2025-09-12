@@ -6,6 +6,7 @@ namespace App\Controller;
 use App\Entity\Fabricante;
 use App\Entity\Familia;
 use App\Entity\Modelo;
+use App\Entity\Oferta;
 use App\Entity\Sonata\ClassificationCategory;
 use App\Model\Filtros;
 use App\Repository\ModeloRepository;
