@@ -68,18 +68,22 @@ class CatalogController extends AbstractController
     #[Route('/{slug?}', name: 'app_catalog_resolver', requirements: ['_locale' => 'es|en|fr'], defaults: ['slug' => null])]
     public function listingAction(Request $request, ModeloRepository $modeloRepository, ?string $slug = null): Response
     {
+        // 1. Creamos un objeto Filtros a partir de la URL (ej. ?colores[]=rojo&orden=Precio+ASC)
         $filtros = Filtros::createFromRequest($request);
 
         $contextObject = null;
-        $template = 'web/catalog/listing.html.twig';
+        $template = 'web/catalog/listing.html.twig'; // Plantilla por defecto
         $titulo ="Pagina sin Titulo";
-        $descripcion ="Pagina sin Titulo";
+        $descripcion ="Pagina sin Titulo";;
 
+        // 2. Resolvemos el slug para saber en qué página estamos y enriquecer el objeto de filtros
         if ($slug) {
             $category = $this->em->getRepository(ClassificationCategory::class)->findOneBy(['slug' => $slug]);
             if ($category) {
                 $filtros->setCategory($category);
                 $contextObject = $category;
+                var_dump("Es Categoria");
+                $template = 'web/catalog/category_show.html.twig';
                 $titulo = $category->getTituloSEOTrans();
                 $descripcion = $category->getDescripcion();
             }
@@ -88,6 +92,8 @@ class CatalogController extends AbstractController
             if ($brand) {
                 $filtros->setFabricante($brand);
                 $contextObject = $brand;
+                var_dump("Es Marca");
+                $template = 'web/catalog/brand_show.html.twig';
                 $titulo = $brand->getTituloSEO();
                 $descripcion = $brand->getDescripcion();
             }
@@ -96,22 +102,24 @@ class CatalogController extends AbstractController
             if ($family) {
                 $filtros->setFamilia($family);
                 $contextObject = $family;
+                var_dump("Es Familia");
+                $template = 'web/catalog/family_show.html.twig';
                 $titulo= $family->getTituloSEO();
                 $descripcion = $family->getDescripcion();
             }
         }
 
+        // Si hay una búsqueda en la URL, la añadimos al objeto de filtros
         if ($request->query->has('q')) {
             $filtros->setBusqueda($request->query->get('q'));
         }
 
+        // 3. Le pedimos al Repositorio que nos dé los productos paginados
         $page = $request->query->getInt('page', 1);
-        $paginator = $modeloRepository->findByFiltros($filtros, $page);
+        $paginator = $modeloRepository->findByFiltros($filtros, $request->query->getInt('page', 1));
 
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Obtenemos los filtros disponibles para la vista a partir de los resultados de la búsqueda
-        $filtrosDisponibles = $modeloRepository->findAvailableFilters($paginator->getQuery());
-        // --- FIN DE LA CORRECCIÓN ---
+        // 4. Obtenemos los filtros disponibles para la vista (colores, atributos, etc.)
+        // $filtrosDisponibles = $modeloRepository->findAvailableFiltersForPaginator($paginator);
 
         return $this->render($template, [
             'descripcion' => $descripcion,
@@ -119,9 +127,9 @@ class CatalogController extends AbstractController
             'modelos' => $paginator,
             'filtros' => $filtros,
             'context' => $contextObject,
-            'filtrosDisponibles' => $filtrosDisponibles, // <-- Pasamos los filtros a la plantilla
-            'paginaActual' => $page,
+            'cantidadArticulos' => $paginator->count(),
             'npaginas' => ceil($paginator->count() / ModeloRepository::PAGINATOR_PER_PAGE),
+            'paginaActual' => $page,
         ]);
     }
 }
