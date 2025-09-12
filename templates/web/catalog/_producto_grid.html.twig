@@ -1,0 +1,96 @@
+<div id="tkmCuerpo">
+    <div id="productoGrid">
+        <div class="row">
+            <div class="col-lg-9 col-md-9 col-sm-9 col-xs-12">
+
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-12" style="padding-right: 15px; text-align: right">
+                {#<label for="orden">Ordenar</label>#}
+                <select name="orden" id="orden"
+                        style="width: 100%; font-family: FontAwesome, Helvetica, sans-serif; margin-bottom: 15px"
+                        {% if "/busca/" in path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) %}
+                            data-tkm-filtro-busca="{{ app.request.attributes.get('_route_params')['cadena'] }}"
+                        {% else %}
+                            data-tkm-filtro
+                        {% endif %}
+                >
+                    <option value="Orden Por Defecto"
+                            {% if app.session.get('filtros') is not null and "Orden Por Defecto" == app.session.get('filtros').orden %}
+                                selected
+                            {% endif %}
+                    >Orden Por Defecto
+                    </option>
+                    <option value="Precio Adulto ASC"
+                            {% if app.session.get('filtros') is not null and "Precio Adulto ASC" == app.session.get('filtros').orden %}
+                                selected
+                            {% endif %}
+                    >Precio Adulto de menor a mayor
+                    </option>
+                    <option value="Precio Adulto DESC"
+                            {% if app.session.get('filtros') is not null and "Precio Adulto DESC" == app.session.get('filtros').orden %}
+                                selected
+                            {% endif %}
+                    >Precio Adulto de mayor a menor
+                    </option>
+                    <option value="Precio ASC"
+                            {% if app.session.get('filtros') is not null and "Precio ASC" == app.session.get('filtros').orden %}
+                                selected
+                            {% endif %}
+                    >Precio de menor a mayor
+                    </option>
+                    <option value="Precio DESC"
+                            {% if app.session.get('filtros') is not null and "Precio DESC" == app.session.get('filtros').orden %}
+                                selected
+                            {% endif %}
+                    >Precio de mayor a menor
+                    </option>
+                    <option value="Nombre ASC"
+                            {% if app.session.get('filtros') is not null and "Nombre ASC" == app.session.get('filtros').orden %}
+                                selected
+                            {% endif %}
+                    >Nombre A-Z
+                    </option>
+                    <option value="Nombre DESC"
+                            {% if app.session.get('filtros') is not null and "Nombre DESC" == app.session.get('filtros').orden %}
+                                selected
+                            {% endif %}
+                    >Nombre Z-A
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        {% for producto in modelos %}
+            {% include 'web/catalog/_productoElementoGrid.html.twig' %}
+        {% endfor %}
+
+        <div class="col-xs-12">
+            {% if npaginas is defined %}
+                {% include 'web/partials/_pagination.html.twig' %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+{% if busqueda is defined %}
+    {% if not is_granted('ROLE_ADMIN') %}
+        <script>
+            fbq('track', 'Search', {search_string: "{{ busqueda }}"});
+            ga('send', 'pageview', '/search_results.php?q={{ busqueda }}');
+        </script>
+    {% endif %}
+{% endif %}
+
+<script>
+    //funcion para modificar la imagen del grid de productos en funcion al color que se le haga hover
+    $('.cuadro-color-grid').hover(function () {
+        var imagen = $(this).data('imagen');
+        var id = $(this).data('modelo');
+        $('#' + id).attr("src", imagen);
+    }, function () {
+        var id = $(this).data('modelo');
+        var imagen = $('#' + id).data('imagen');
+        $('#' + id).attr("src", imagen);
+    });
+</script>

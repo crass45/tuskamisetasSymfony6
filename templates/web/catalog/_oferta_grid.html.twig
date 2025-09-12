@@ -1,0 +1,32 @@
+{# Este fichero muestra la parrilla de ofertas, se puede reutilizar en otras páginas #}
+<div class="features_items">
+    <div id="tkmCuerpo">
+        <div id="productoGrid">
+            {% for oferta in ofertas %}
+                {% if oferta.nombre is defined and oferta.modelos|length > 0 %}
+                    {# MIGRACIÓN: Se usa el nuevo nombre de la ruta y el parámetro 'slug' #}
+                    <a href="{{ path('app_producto_detalle', {'slug': oferta.modelos[0].nombreUrl}) }}">
+                        <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3" style="padding: 0">
+                            <div class="product-image-wrapper" style="position: relative;">
+                                <div class="single-products">
+                                    <div class="productinfo text-center">
+                                        {# MIGRACIÓN: Se usa la función path() moderna para las imágenes de Sonata #}
+                                        <img src="{{ asset('images/dummy200.png') }}"
+                                             class="lazy" id="{{ oferta.id }}"
+                                             data-src="{{ path(oferta.imagen, 'grid') }}"
+                                             alt="{{ oferta.nombre }}"/>
+                                    </div>
+                                </div>
+                                <div class="productoGridDescripcion">
+                                    <p style="height: 42px; margin-top: 15px; margin-right: 10px; overflow: hidden">{{ oferta.nombre | upper }}</p>
+                                    <p>Desde: {{ oferta.precio | number_format(2, ',', '.') }}€</p>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+

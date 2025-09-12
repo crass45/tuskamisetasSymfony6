@@ -1,0 +1,44 @@
+{% extends "base.html.twig" %}
+
+{% block fueraBloques %}
+    {% block slider %}{% endblock %}
+{% endblock %}
+
+{% block baseBody %}
+    <section>
+        <div class="row">
+            {% block contenedor %}
+                <div class="wrapper">
+                    <div id="content">
+                        <div id="tkmContainer">
+
+                            {% block cuerpo %}
+                            {% endblock %}
+
+                            {% block productosVistos %}
+                                {% if vistos is defined and vistos|length > 0 %}
+                                    <div class="row">
+                                        <div class="recommended_items carousel"><!--recommended_items-->
+                                            <h2 class="title text-center">{% trans %}ÚLTIMOS PRODUCTOS VISTOS{% endtrans %}</h2>
+                                            <div>
+                                                <div>
+                                                    {% for producto in vistos %}
+                                                        {# MIGRACIÓN: Se actualiza la ruta de la plantilla incluida #}
+                                                        {% include 'web/partials/_ultimos_vistos_grid.html.twig' with {'producto': producto} %}
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div><!--/recommended_items-->
+                                    </div>
+                                {% endif %}
+                            {% endblock %}
+
+                            {% block postProductosVistos %}
+                            {% endblock %}
+                        </div>
+                    </div>
+                </div>
+            {% endblock contenedor %}
+        </div>
+    </section>
+{% endblock baseBody %}

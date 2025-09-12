@@ -1,0 +1,518 @@
+{% extends "web/estaticoPlantilla.html.twig" %}
+
+{% block title %}Serigrafía textil | Estampación económica de alta calidad{% endblock %}
+{% block metaDescription %}La serigrafía textil es una de las formas de estampación más usuales, te explicamos en qué consiste, cómo se hace y cuáles son sus ventajas. ¡Visítanos!{% endblock %}
+
+{% block datosEstructurado %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Serigrafía de camisetas",
+            "description": "Servicio de serigrafía para personalizar camisetas, sudaderas y todo tipo de merchandising con diseños únicos y de alta calidad.",
+            "provider": {
+                "@type": "Organization",
+                "name": "TusKamisetas",
+                "url": "https://www.tuskamisetas.com/es/servicios/serigrafia"
+            },
+            "areaServed": {
+                "@type": "Place",
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": "ES"
+                }
+            },
+            "serviceType": "Serigrafía textil"
+        }
+    </script>
+{% endblock %}
+
+{% block migas %}
+    <!-- Creates the bootstrap modal where the image will appear -->
+    <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span
+                                aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                </div>
+                <div class="modal-body">
+                    <img src="" id="imagepreview" style="width: 100%">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}" class="miActive">
+                    <span itemprop="name">{% trans %}Serigrafía{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+    <div class="row">
+        <div class="col-lg-6">
+            <h1>{% trans %}Servicio de serigrafía textil {% endtrans %}</h1>
+            <p>¿Estás buscando personalizar tus prendas de forma única y duradera? En TusKamisetas, te ofrecemos un <b>servicio
+                    de serigrafía textil</b> de alta calidad, adaptado a tus necesidades.
+                Si quieres darle un toque especial a tu ropa, ya sea para un evento, empresa o merchandising, con
+                nuestra <b>serigrafía personalizada</b> puedes imprimir tus diseños sobre camisetas, sudaderas, polos, y
+                mucho más. ¡Tu idea, tu estilo, tu camiseta!</p>
+        </div>
+        <div class="col-lg-6 login-form">
+            <form enctype="multipart/form-data"
+{#                  action="{{ path("ss_tienda_lead_presupuesto_confirmar") }}"#}
+                  method="post">
+                <div class="row">
+                    <div class="col-md-12">
+                        <input type="text" id="empresa"
+                               name="_empresa"
+                               placeholder="Empresa" style="color: black"/>
+                    </div>
+                    <div class="col-md-12">
+                        <input type="text" id="nombre"
+                               name="_nombre"
+                               placeholder="Nombre" style="color: black"/>
+                    </div>
+
+                    <div class="col-md-12">
+                        <input type="email" id="email"
+                               name="_email"
+                               required placeholder="e-mail" style="color: black"/>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="telefono" id="telefono"
+                               name="_telefono" required placeholder="Telefono" style="color: black"/>
+                    </div>
+
+                    <div class="col-md-6">
+                        <input type="text" id="ciudad"
+                               name="_ciudad"
+                               placeholder="Ciudad" style="color: black"/>
+                    </div>
+
+                    <div class="col-lg-12">
+                    <textarea name="_observaciones" id="observaciones"
+                              placeholder="Cuentanos tu idea"
+                              style="height: 120px;"></textarea>
+                    </div>
+                </div>
+
+                <br>
+
+                <button type="submit"
+                        class="btn btn-default"
+                        style="position: relative; margin-top: 15px; margin-bottom: 0px; background-color: #ff9000"
+                        ; margin-left: auto;
+                        margin-right: 0;>
+                    <b>Enviar</b>
+                </button>
+
+
+            </form>
+        </div>
+
+        <div class="col-lg-12">
+            <h2>Crea productos únicos con TusKasemitas</h2>
+            <div class="row">
+                <div class="col cuadro_home">
+                    <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
+                                                     style="max-width: 60px;"
+                                                     alt="{% trans %}fabrica propia{% endtrans %}"/>
+                        <p>
+                            <b>{% trans %}Calidad de impresión inigualable{% endtrans %}</b>
+                        </p>
+                    </header>
+                </div>
+
+                <div class="col cuadro_home">
+                    <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
+                                                     style="max-width: 60px;"
+                                                     alt="{% trans %}fabrica propia{% endtrans %}"/>
+                        <p>
+                            {% trans %}Amplia gama de materiales y formatos{% endtrans %}
+                        </p>
+                    </header>
+                </div>
+
+                <div class="col cuadro_home">
+                    <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
+                                                     style="max-width: 60px;"
+                                                     alt="{% trans %}fabrica propia{% endtrans %}"/>
+                        <p>
+                            {% trans %}Tiempos de entrega rápidos y flexibles{% endtrans %}
+                        </p>
+                    </header>
+                </div>
+
+                <div class="col cuadro_home">
+                    <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
+                                                     style="max-width: 60px;"
+                                                     alt="{% trans %}fabrica propia{% endtrans %}"/>
+                        <p>
+                            {% trans %}Personalización a medida{% endtrans %}
+                        </p>
+                    </header>
+                </div>
+
+                <div class="col cuadro_home">
+                    <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
+                                                     style="max-width: 60px;"
+                                                     alt="{% trans %}fabrica propia{% endtrans %}"/>
+                        <p>
+                            {% trans %}Asesoramiento experto{% endtrans %}
+                        </p>
+                    </header>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <h2>¿Por qué contratar nuestro servicio de serigrafía?</h2>
+            <p>En TusKamisetas, no solo imprimimos, creamos recuerdos visuales. Aquí tienes 5 razones por las que
+                deberías elegirnos:</p>
+            <div class="col-sm-2 cuadro_home">
+                <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
+                                                 style="max-width: 60px;"
+                                                 alt="{% trans %}fabrica propia{% endtrans %}"/>
+                    <p>
+                        {% trans %}Impresión de alta calidad: Nos aseguramos de que cada diseño quede perfecto, con colores vibrantes y duraderos.{% endtrans %}
+                    </p>
+                </header>
+            </div>
+            <div class="col-sm-2 cuadro_home">
+                <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
+                                                 style="max-width: 60px;"
+                                                 alt="{% trans %}fabrica propia{% endtrans %}"/>
+                    <p>
+                        {% trans %}Entrega rápida y garantizada: ¡Recibe tus productos personalizados en solo 9-10 días o en 7 con nuestro servicio exprés!{% endtrans %}
+                    </p>
+                </header>
+            </div>
+            <div class="col-sm-2 cuadro_home">
+                <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
+                                                 style="max-width: 60px;"
+                                                 alt="{% trans %}fabrica propia{% endtrans %}"/>
+                    <p>
+                        {% trans %}Asesoramiento experto: Te guiamos para elegir la mejor técnica de estampación para tu proyecto.{% endtrans %}
+                    </p>
+                </header>
+            </div>
+            <div class="col-sm-2 cuadro_home">
+                <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
+                                                 style="max-width: 60px;"
+                                                 alt="{% trans %}fabrica propia{% endtrans %}"/>
+                    <p>
+                        {% trans %}Durabilidad: Las serigrafías son resistentes y mantienen su calidad incluso después de varios lavados.{% endtrans %}
+                    </p>
+                </header>
+            </div>
+            <div class="col-sm-2 cuadro_home">
+                <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
+                                                 style="max-width: 60px;"
+                                                 alt="{% trans %}fabrica propia{% endtrans %}"/>
+                    <p>
+                        {% trans %}Amplia variedad de productos: Desde camisetas hasta ropa laboral o deportiva, tenemos todo lo que necesitas para personalizar.{% endtrans %}
+                    </p>
+                </header>
+            </div>
+
+        </div>
+
+        <div class="col-lg-12">
+            <h1>{% trans %}Serigrafía{% endtrans %}</h1>
+            <img src="{{ asset('images/serigrafia.jpg') }}" style="width: 100%" alt="serigrafía"/>
+            <p>
+                La serigrafía textil es una de las técnicas de personalización textil más demandadas por nuestros
+                clientes y una de nuestras preferidas, ya que el resultado siempre es de alta calidad y los precios de
+                esta producción son muy bajos. Es un método perfecto para estampar todo tipo de diseños, ya sean
+                imágenes, logos o textos.
+            </p>
+            <p>
+                Se trata de una técnica muy versátil que puede aplicarse sobre múltiples tejidos, como son el algodón,
+                el poliéster o el nylon, entre otros. Su versatilidad, sumada a lo asequible que resulta aun en grandes
+                tiradas, hace de ella una opción perfecta para clubes deportivos, camisetas promocionales, merchandising
+                o vestuario laboral.
+            </p>
+        </div>
+        <div class="col-lg-12">
+            <h2>Qué es serigrafía</h2>
+        </div>
+        <div class="col-lg-6">
+            <p>
+                La serigrafía sobre tela es uno de los métodos de estampación textil más antiguos del mundo. Tiene un
+                fuerte componente artesanal, ya que parte del proceso sigue siendo bastante manual, aunque a día de hoy
+                la mayoría de procedimientos están más automatizados.
+            </p>
+            <p>
+                La serigrafía tradicional es una técnica de impresión que consiste en la grabación de imágenes sobre
+                tejido o cualquier otro material a través de una malla denominada <b>pantalla</b>.
+            </p>
+            <p>
+                Este método permite utilizar un máximo de 6 tintas en la impresión, y por cada color se ha de emplear
+                una pantalla distinta. Aun así, resulta muy fácil realizar degradados mediante la técnica de <b>serigrafía
+                    con tramas</b>, en la que se crean puntos de tamaños variados para crear la ilusión óptica del
+                degradado.
+            </p>
+            <p>
+                Se trata de una técnica muy popular en la actualidad, ya que presenta un <b>bajo coste</b> y, pese a ser
+                un
+                proceso con procesos artesanales, es un método muy sencillo.
+
+            </p>
+        </div>
+        <div class="col-lg-6">
+            <img src="{{ asset('images/que-es-serigrafia.jpg') }}" style="width: 100%" alt="que es serigrafía"/>
+        </div>
+        <div class="col-lg-12">
+            <p>
+                Tal vez te preguntas cuál es la diferencia entre serigrafía y sublimación, ya que la sublimación es otra
+                de
+                las formas más populares para crear camisetas personalizadas. Ambas técnicas tienen sus propias
+                ventajas,
+                pero siempre depende de qué es lo que estemos buscando. La sublimación es un proceso más caro pensado
+                para
+                textiles más gruesos o complejos, ya que consiste en la aplicación de la imagen sobre la tela mediante
+                calor, lo que evita problemas con costuras y una probabilidad de decoloración menor. No obstante, el
+                proceso
+                de impresión serigráfica es mucho más adecuado para estampar en camisetas de algodón, es más económico,
+                más
+                rápido y más cómodo si tenemos en mente hacer un encargo de grandes cantidades.
+            </p>
+        </div>
+
+        <div class="col-lg-12">
+            <h2>Cómo se realiza la serigrafía textil</h2>
+            <p>
+                El proceso de impresión serigráfica es bastante artesanal e intervienen muchos elementos, por lo que,
+                aunque es una técnica muy económica, el procedimiento es más elaborado.
+            </p>
+            <ul class="ularticulo">
+                <li>
+                    Si el diseño original cuenta con más de un color, lo primero que hemos de realizar es la <b>separación
+                        de
+                        colores</b>, puesto que cada uno necesitará un fotolito.
+                </li>
+                <li>
+                    Los <b>fotolitos</b> son imágenes opacas impresas sobre soportes traslúcidos. En el caso de la
+                    serigrafía, el
+                    fotolito se imprime sobre papel transparente y tiene como fin la <b>creación de las pantallas</b>,
+                    mediante las
+                    cuales se transfiere el diseño a la prenda textil.
+
+                </li>
+                <li>
+                    La pantalla se crea colocando el fotolito sobre la malla de serigrafía y <b>emulsionándola</b>,
+                    para
+                    así
+                    bloquear, durante la impresión, el paso de la tinta en las zonas en las que no haya imagen. Este
+                    procedimiento se llama <b>insolación</b>.
+                </li>
+                <li>
+                    Debemos colocar la prenda textil sobre la que vayamos a serigrafiar en lo que llamamos <b>pulpo de
+                        serigrafía</b>, una máquina tipo carrusel que sujeta la prenda y nos permite fijar una única
+                    parte
+                    para
+                    imprimir el diseño.
+                </li>
+                <li>
+                    La pantalla se coloca sobre la prenda y, sirviéndonos de una racleta, vamos transfiriendo la tinta
+                    a
+                    través de varias pasadas para que ésta pase de la malla al tejido.
+                </li>
+                <li>
+                    Por último, afianzamos la tinta a la tela introduciendo la prenda en el <b>túnel de secado</b>.
+                </li>
+            </ul>
+            <p>
+                Es un proceso que cuenta con múltiples pasos y en el que hemos de intervenir manualmente, pero los
+                resultados de este tipo de estampación siempre son óptimos.
+            </p>
+        </div>
+
+
+        <div class="col-lg-12">
+            <h2>Ventajas de la serigrafía de camisetas</h2>
+            <p>
+                Existen muchas técnicas de estampación e impresión textil, pero la serigrafía destaca por las múltiples
+                ventajas que aporta.
+            </p>
+            <p>
+                Uno de los factores determinantes de que este método sea uno de los preferidos por todo el mundo es su
+                <b>bajo precio</b>. Este está sujeto a los colores que se usan durante la impresión y no al tamaño del
+                diseño,
+                por lo que, aunque el precio puede ser variable, siempre resulta asequible. La impresión en serigrafía,
+                por precios, es la mejor opción.
+            </p>
+            <p>
+                La calidad de la impresión serigráfica es alta y <b>muy resistente al paso del tiempo</b> y a los
+                lavados, de
+                ahí que sea la estampación predilecta para clubes deportivos, merchandising o cualquier otro tipo de
+                evento que requiera prendas personalizadas. Además, gracias al procedimiento de la serigrafía, el diseño
+                puede imprimirse en cualquier parte de la prenda, no solo en el centro.
+            <p>
+                Debido a la sencillez de la técnica, se pueden realizar <b>grandes tiradas</b> sin que la pantalla
+                pierda
+                calidad, por lo que el diseño permanecerá intacto e impoluto durante todo el proceso.
+            </p>
+        </div>
+
+
+        <div class="col-lg-12">
+            <h2>Servicios de serigrafía textil</h2>
+            <img src="{{ asset('images/servicios-de-serigrafia-textil.jpg') }}" style="width: 100%"
+                 alt="servicios de serigrafía textil"/>
+            <p>
+                La serigrafía puede aplicarse a todo tipo de materiales, pero nosotros nos hemos especializado en la
+                serigrafía de camisetas. No obstante, en nuestro catálogo podrás encontrar muchos más productos textiles
+                sobre los que realizar una impresión serigráfica. Llevamos más de 20 años en este negocio, los que nos
+                ha
+                ayudado a adquirir mucha experiencia en serigrafía, hasta el punto de convertirnos en una de las
+                empresas de
+                serigrafía de referencia. Podemos ofrecerte todo tipo de estampaciones, tanto serigrafía textil como
+                bordados, impresión digital y sublimación, pero nuestra especialidad se ha centrado en la
+                personalización de
+                camisetas para eventos, por lo que somos tu mejor opción si buscas un producto de estas características.
+            </p>
+            <p>
+                Dentro de los servicios que ofrecemos en serigrafía textil se incluye el <b>asesoramiento</b>, en el que
+                aconsejamos a nuestros clientes cuál es la mejor técnica de estampación para el proyecto que tiene en
+                manos, y cuál es la diferencia entre serigrafía y sublimación, por ejemplo, puesto que el catálogo de
+                servicios que ofrecemos es muy amplio.
+            </p>
+            <p>
+                Nuestros plazos de entrega se atienen a los estándares, y siempre los cumplimos. Las prendas
+                personalizadas
+                se entregan en un plazo de 9 o 10 días, pero también podemos ofrecerte un tipo de <b>servicio exprés</b>
+                que
+                te permite disfrutar de tus artículos personalizados en 7 días laborables. También contamos con prendas
+                lisas sin personalizar, que puedes solicitar y recibir en un plazo de no más de 4 o 5 días, siempre
+                dependiendo de lo que tú necesites.
+            </p>
+            <p>
+                Ahora bien, es muy posible que tu principal duda radique en el precio. Si te preguntas cuánto vale el
+                estampado de una camiseta porque tienes en mente encontrar camisetas serigrafiadas baratas, nuestros
+                precios
+                son los más competentes del mercado. Nuestro servicio de serigrafía camisetas está pensado para
+                ofrecerte
+                todo lo que necesitas para conseguir tu camiseta serigrafiada personalizada a un <b>precio asequible</b>
+                y
+                con la garantía de que recibirás un resultado de máxima calidad.
+            <p>
+                Dinos cuál es tu idea y nosotros nos encargaremos de todo lo demás.
+            </p>
+        </div>
+
+
+        <div class="col-lg-12">
+            <h2 style="text-align: center">Preguntas frecuentes sobre la serigrafía</h2>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Que objetos se pueden serigrafiar?</h3>
+            <p>Cualquier objeto sobre el que puedas imaginar tu diseño puede ser serigrafíado. <br>Debido a la
+                versatilidad de la serigrafía, podemos imprimir con esta técnica prácticamente <b>sobre cualquier
+                    soporte</b>. Desde camisetas, hasta madera, pasando por pvc o plásticos.</p>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Como es el tacto de la serigrafía?</h3>
+            <p>Al tocar una prenda serigrafíada notaremos la <b>textura de la pintura</b> depositada sobre ella. Esto no
+                impide que la prenda siga transpirando pero si que aporta una textura particular al soporte sobre el que
+                se imprime.</p>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Se puede serigrafíar cualquier diseño?</h3>
+            <p>Si, podemos serigrafíar <b>cualquier diseño</b>, aunque quizás no es el metodo mas adecuado para imprimir
+                fotografías, se pueden conseguir excelentes resultados trabajando el diseño de forma adecuada y con un
+                poco de imaginación se pueden conseguir <b>resultados
+                    increíbles</b>. {# Además es el método de impresión más indicado para grandes tiradas #}</p>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Cual es la durabilidad de la serigrafía?</h3>
+            <p>Las impresiones serigraficas son sin duda de las <b>más resistentes y duraderas</b> que podemos ofrecer a
+                nuestros clientes. Si se mantienen unos cuidados mínimos sobre la prenda a la hora de lavarla y
+                plancharla la impresión <b>permanecerá siempre como el primer día</b>.</p>
+        </div>
+
+        <div class="col-lg-12">
+            <h3>EJEMPLOS DE NUESTRA SERIGRAFIA</h3>
+        </div>
+        <a href="#" class="pop">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3"
+                 style="padding-left: 2px; padding-right: 2px">
+                <div class="single-products" style="height: 210px; overflow: hidden">
+                    <div class="product-image-wrapper zoomHoverTKM" style="position: relative;">
+                        <div class="productinfo text-center">
+                            <img class="imageresource" src="{{ asset('images/serigrafia/serigrafia-indexado.jpeg') }}"
+                                 alt="serigrafía separación indexado"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+
+        <a href="#" class="pop">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3"
+                 style="padding-left: 2px; padding-right: 2px">
+                <div class="single-products" style="height: 210px; overflow: hidden">
+                    <div class="product-image-wrapper zoomHoverTKM" style="position: relative;">
+                        <div class="productinfo text-center">
+                            <img class="imageresource"
+                                 src="{{ asset('images/serigrafia/impresion-serigrafia-cuatricromia.jpeg') }}"
+                                 alt="serigrafía cuatricomia"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        <a href="#" class="pop">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3"
+                 style="padding-left: 2px; padding-right: 2px">
+                <div class="single-products" style="height: 210px; overflow: hidden">
+                    <div class="product-image-wrapper zoomHoverTKM" style="position: relative;">
+                        <div class="productinfo text-center">
+                            <img class="imageresource"
+                                 src="{{ asset('images/serigrafia/serigrafia-camisetas-separacion-colores.jpeg') }}"
+                                 alt="serigrafía separación simulado"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        <a href="#" class="pop">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3"
+                 style="padding-left: 2px; padding-right: 2px">
+                <div class="single-products" style="height: 210px;overflow: hidden">
+                    <div class="product-image-wrapper zoomHoverTKM" style="position: relative;">
+                        <div class="productinfo text-center">
+                            <img class="imageresource"
+                                 src="{{ asset('images/serigrafia/serigrafia-colores-planos.jpeg') }}"
+                                 alt="serigrafía colores planos"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    $(".pop").on("click", function () {
+    $('#imagepreview').attr('src', $(this).find('.imageresource').attr('src')); // here asign the image to the modal when the user click the enlarge link
+    $('#imagemodal').modal('show'); // imagemodal is the id attribute assigned to the bootstrap modal, then i use the show function
+});
+</script>
+{% endblock %}

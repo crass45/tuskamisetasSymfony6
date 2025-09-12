@@ -1,0 +1,138 @@
+{% set open_filters = ['Genero', 'Detalles'] %}
+
+{# ================================================================= #}
+{# ========= LÍNEA A AÑADIR: VALOR POR DEFECTO PARA BUSQUEDA ========= #}
+{# ================================================================= #}
+{% set busqueda = busqueda|default(null) %}
+{# ================================================================= #}
+
+{% import _self as macros %}
+
+{% macro filterCheckboxGroup(title, key, items, session_filters, extra_class = '', is_open = false, busqueda = null) %}
+    <div class="filter-group">
+        <h3 class="filter-group__title">
+            <button class="filter-group__toggle {% if not is_open %}collapsed{% endif %}" type="button" data-toggle="collapse" data-target="#filter-{{ key|sonata_slugify }}">
+                {{ title|upper }}
+                <i class="fa fa-plus pull-right"></i>
+            </button>
+        </h3>
+        <div id="filter-{{ key|sonata_slugify }}" class="panel-collapse collapse {% if is_open %}in{% endif %}">
+            <fieldset class="filter-group__body">
+                <legend class="sr-only">{{ title }}</legend>
+                {% for item in items %}
+                    {% set itemId = item.id %}
+                    {% set itemName = item.valor is defined ? item.valor : item.nombre %}
+                    <div class="filter-group__option">
+                        <input type="checkbox"
+                               class="checkboxtkm {{ extra_class }}"
+                               name="{{ itemId }}"
+                               id="filter-item-{{ itemId }}"
+
+                                {# El data-tkm-clean-url se ha eliminado #}
+
+                                {% if busqueda is defined and busqueda is not empty %}
+                                    data-tkm-context="search"
+                                    data-tkm-cadena="{{ busqueda }}"
+                                {% else %}
+                                    data-tkm-context="browse"
+                                {% endif %}
+                               data-tkm-filtro
+                                {% if session_filters and itemId in session_filters %}checked{% endif %}>
+                        <label for="filter-item-{{ itemId }}">{{ itemName | capitalize }}</label>
+                    </div>
+                {% endfor %}
+            </fieldset>
+        </div>
+    </div>
+{% endmacro %}
+
+
+<aside class="left-sidebar no-print">
+    <p class="tituloMenu">{% trans %}Filtros{% endtrans %}</p>
+
+    {# ================================================================= #}
+    {# 1. MARCAS (con comprobación de familias vacías)                   #}
+    {# ================================================================= #}
+    {% if fabDisp is defined and fabDisp is not empty %}
+
+        {# Caso especial: Solo hay UNA marca #}
+        {% if fabDisp|length == 1 %}
+
+            {#
+            CAMBIO AQUÍ: Primero, comprobamos si la marca tiene familias.
+            Solo si tiene más de 0 familias, mostraremos el acordeón de "CATEGORÍAS".
+            #}
+            {% set familias_de_la_marca = fabDisp[0].getFamilias() %}
+            {% if familias_de_la_marca|length > 0 %}
+                <div class="filter-group">
+                    <h3 class="filter-group__title">
+                        <button class="filter-group__toggle collapsed" type="button" data-toggle="collapse" data-target="#filter-categorias-marcas">
+                            {{ 'Categorías'|upper }}
+                            <i class="fa fa-plus pull-right"></i>
+                        </button>
+                    </h3>
+                    <div id="filter-categorias-marcas" class="panel-collapse collapse">
+                        <div class="filter-group__body">
+                            <div class="category-link-list">
+                                {# Usamos la variable que hemos creado para no llamar a la función dos veces #}
+                                {% for familia in familias_de_la_marca %}
+                                    <a href="{{ path('ss_marca'~ familia.nombreUrl) }}"
+                                       class="category-link {% if nombrePanel == familia.getNombreOld() %}is-active{% endif %}">
+                                        {% if nombrePanel == familia.getNombreOld() %}<i class="fa fa-angle-right"></i> {% endif %}
+                                        {{ familia.getNombreOld() | capitalize }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {# Caso general: Hay varias marcas, usamos la macro del acordeón #}
+        {% else %}
+            {{ macros.filterCheckboxGroup('MARCAS'|trans, 'marcas', fabDisp, app.session.get('filtros').fabricante, 'checkFabricante', ('marcas' in open_filters), busqueda) }}
+        {% endif %}
+
+    {% endif %}
+
+    {# 2. GÉNERO #}
+    {% if atributos is defined and atributos['Genero'] is defined %}
+        {{ macros.filterCheckboxGroup('GENERO'|trans, 'genero', atributos['Genero'], app.session.get('filtros').atributos, '', ('Genero' in open_filters), busqueda) }}
+    {% endif %}
+
+    {# 3. FILTRO DE COLOR #}
+    {% if coloresFiltros is defined and coloresFiltros is not empty %}
+        <div class="filter-group">
+            <h3 class="filter-group__title">
+                <button class="filter-group__toggle" type="button" data-toggle="collapse" data-target="#filter-color-accordion">
+                    {# CAMBIO AQUÍ: Añadido el filtro |upper para el título #}
+                    {{ 'Color'|trans|upper }}
+                    <i class="fa fa-plus pull-right"></i>
+                </button>
+            </h3>
+            <div id="filter-color-accordion" class="panel-collapse collapse in">
+                <div class="filter-group__body filter-group__body--colors">
+                    {% for color in coloresFiltros %}
+                        <div class="cuadro-color {% if app.session.get('filtros') and color.rgbUnificado in app.session.get('filtros').colores %}checked{% endif %}"
+                             style="background-color: {{ color.rgbUnificado }};"
+                             title="{{ color.nombre|upper }}"
+                             aria-label="{% trans %}Filtrar por color{% endtrans %} {{ color.nombre }}"
+                             data-filtro="{{ color.rgbUnificado }}"
+                             data-tkm-filtro
+                        ></div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {# 4. RESTO DE ATRIBUTOS #}
+    {% if atributos is defined %}
+        {% for key, values in atributos %}
+            {% if key not in ['Genero', 'Color', 'Categoría de peso', 'Productos Sostenibles'] %}
+                {{ macros.filterCheckboxGroup(key, key, values, app.session.get('filtros').atributos, '', (key in open_filters), busqueda) }}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+</aside>

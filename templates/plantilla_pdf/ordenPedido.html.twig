@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Presupuesto PR{{ pedido.id }}</title>
+
+    <style>
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        a {
+            color: #5D6975;
+            text-decoration: underline;
+        }
+
+        body {
+            position: relative;
+            width: 21cm;
+            height: 29.7cm;
+            margin: 0 auto;
+            color: #001028;
+            background: #FFFFFF;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-family: Arial;
+        }
+
+        header {
+            padding: 10px 0;
+            margin-bottom: 0px;
+        }
+
+        #logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #logo img {
+            width: 90px;
+        }
+
+        h1 {
+            border-top: 1px solid #5D6975;
+            border-bottom: 1px solid #5D6975;
+            color: #5D6975;
+            font-size: 2.4em;
+            line-height: 1.4em;
+            font-weight: normal;
+            text-align: center;
+            margin: 0 0 20px 0;
+        }
+
+        #project span {
+            color: #5D6975;
+            text-align: right;
+            width: 52px;
+            margin-right: 10px;
+            display: inline-block;
+            font-size: 0.8em;
+        }
+
+        #company {
+            float: right;
+            text-align: right;
+        }
+
+        #project div,
+        #company div {
+            white-space: nowrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-bottom: 20px;
+        }
+
+        table tr:nth-child(2n-1) td {
+            background: #F5F5F5;
+        }
+
+        table th,
+        table td {
+            text-align: center;
+            border-bottom: 1px solid black;
+        }
+
+        table th {
+            padding: 5px 20px;
+            color: #5D6975;
+            border-bottom: 1px solid #C1CED9;
+            white-space: nowrap;
+            font-weight: normal;
+        }
+
+        table .service,
+        table .desc {
+            text-align: left;
+        }
+
+        table td {
+            /*padding: 20px;*/
+            text-align: right;
+        }
+
+        table td.service,
+        table td.desc {
+            vertical-align: top;
+        }
+
+        table td.unit,
+        table td.qty,
+        table td.total {
+            font-size: 1.2em;
+        }
+
+        table td.grand {
+            border-top: 1px solid #5D6975;;
+        }
+
+        #notices .notice {
+            color: #5D6975;
+            font-size: 1.2em;
+        }
+
+        footer {
+            color: #5D6975;
+            width: 100%;
+            height: 30px;
+            position: absolute;
+            bottom: 0;
+            border-top: 1px solid #C1CED9;
+            padding: 8px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<header class="clearfix">
+    <div id="logo" style="text-align: left">
+        <div style="float: left;text-align: center;border: 1px solid black;padding: 10px">
+            <h2>PRESUPUESTO {{ pedido }}</h2>
+            {% if pedido.pedidoExpres == true %}
+                <H3 style="margin-bottom: 0px">PEDIDO EXPRES</H3>
+            {% endif %}
+            <img src="https://www.tuskamisetas.com/qr{{ pedido }}.png" title="Link to Google.com"/>
+{#           <p>https://www.tuskamisetas.com/qr{{ pedido }}.png</p>#}
+            {% if pedido.fechaEntrega is not null %}<h4 style="margin-top: 0px">Fecha
+                entrega: {{ pedido.fechaEntrega | date('d-m-Y') }}</h4>{% endif %}
+        </div>
+    </div>
+
+    {% if pedido.idDireccion is defined  and pedido.idDireccion != null %}
+        <div id="project"
+             style="text-align: right;float: right; border: 1px solid white; padding: 15px; padding-left: 0;">
+            <div style="border-bottom: 1px solid grey;">DATOS DE ENVÍO</div>
+            <br>
+            {% if pedido.recogerEnTienda %}
+                <h3>RECOGE EN TIENDA</h3>
+                <p>{{ pedido.idUsuario.nombre }}</p>
+                <p>{{ pedido.idUsuario.appellidos }}</p>
+            {% else %}
+                {#<div><span>PROJECT</span> Website development</div>#}
+                {% if (pedido.idDireccion.nombre != "") %}
+                    <div>{{ pedido.idDireccion.nombre }}</div>
+                {% else %}
+                    {% if pedido.idUsuario is defined and pedido.idUsuario != null %}
+                        <div>{{ pedido.idUsuario.nombre }}</div>
+                        <div>{{ pedido.idUsuario.apellidos }}</div>
+                    {% endif %}
+                {% endif %}
+                <div>{% if pedido.idDireccion is not null %}{{ pedido.idDireccion.dir }}
+                        <br> {{ pedido.idDireccion.cp }}
+                        <br> {{ pedido.idDireccion.poblacion }}<br> {{ pedido.idDireccion.provincia }}
+                        <br> {{ pedido.idDireccion.pais }}<br>{% endif %}
+                </div>
+                {#<div><span>DUE DATE</span> September 17, 2015</div>#}
+
+                {% if pedido.idDireccion.telefonoMovil is defined and pedido.idDireccion.telefonoMovil != "" %}
+                    <div>Telf: {{ pedido.idDireccion.telefonoMovil }}</div>
+                {% else %}
+                    {% if pedido.idUsuario.telefonoMovil is defined and pedido.idUsuario.telefonoMovil != "" %}
+                        <div>Telf: {{ pedido.idUsuario.telefonoMovil }}</div>{% endif %}
+                    {% if pedido.idUsuario.telefonoOtro is defined and pedido.idUsuario.telefonoOtro != "" %}
+                        <div>Movil: {{ pedido.idUsuario.telefonoOtro }}</div>{% endif %}
+                    <div><a href="mailto:{{ pedido.idUsuario.usuario.email }}">{{ pedido.idUsuario.usuario.email }}</a>
+                    </div>
+                {% endif %}
+                {#<div><span>DUE DATE</span> September 17, 2015</div>#}
+            {% endif %}
+        </div>
+    {% else %}
+        {% if pedido.idUsuario is defined and pedido.idUsuario != null %}
+            <div id="project"
+                 style="text-align: right;float: right; border: 1px solid white; padding: 15px; padding-left: 0;">
+                <div style="border-bottom: 1px solid grey;">DATOS DE ENVÍO</div>
+                <br>
+                {#<div><span>PROJECT</span> Website development</div>#}
+                <div>{{ pedido.idUsuario.nombre }}</div>
+                <div>{{ pedido.idUsuario.apellidos }}</div>
+                <div>{{ pedido.idUsuario.cif }}</div>
+                <div>{% if pedido.idUsuario.direccion is not null %}{{ pedido.idUsuario.direccion.dir }}
+                        <br> {{ pedido.idUsuario.direccion.cp }}<br> {{ pedido.idUsuario.direccion.poblacion }}
+                        <br> {{ pedido.idUsuario.direccion.provincia }}
+                        <br> {{ pedido.idUsuario.direccion.pais }}{% endif %}
+                </div>
+                {#{% if pedido.idDireccion.telefonoMovil is defined and pedido.idDireccion.telefonoMovil != "" %}#}
+                    {#<div>Telf: {{ pedido.idDireccion.telefonoMovil }}</div>#}
+                {#{% else %}#}
+                    {% if pedido.idUsuario.telefonoMovil is defined and pedido.idUsuario.telefonoMovil != "" %}
+                        <div>Telf: {{ pedido.idUsuario.telefonoMovil }}</div>{% endif %}
+                    {% if pedido.idUsuario.telefonoOtro is defined and pedido.idUsuario.telefonoOtro != "" %}
+                        <div>Movil: {{ pedido.idUsuario.telefonoOtro }}</div>{% endif %}
+                {#{% endif %}#}
+                <div><a href="mailto:{{ pedido.idUsuario.usuario.email }}">{{ pedido.idUsuario.usuario.email }}</a>
+                </div>
+                {#<div><span>DUE DATE</span> September 17, 2015</div>#}
+            </div>
+        {% endif %}
+    {% endif %}
+
+    <br>
+</header>
+<main>
+    {#<div style="width: 100%; text-align: right;font-size: 12px; padding-right: 15px ">#}
+    {#Fecha de validez:  {{ "now" | date_modify("+10 day") | date('d-m-Y') }} y bajo disponibilidad de stock#}
+    {#</div>#}
+
+    <div style="width: 100%; text-align: left;font-size: 12px; padding-right: 15px ">
+        Fecha de expedición: {{ pedido.fecha | date('d-m-Y') }}
+    </div>
+    <div>
+        {{ pedido.referenciaInterna }}
+    </div>
+    <table width="100%">
+        <tbody>
+        <tr style="background-color: #C1CED9">
+            <th class="service">REFERENCIA</th>
+            <th class="desc">DESCRIPCION</th>
+            <th>CANTIDAD</th>
+        </tr>
+        {% for lineaPedido in pedido.pedidoHasLineas %}
+            <tr>
+                <td class="service">{{ lineaPedido.idProducto.modelo.referencia }}<br>
+                    ({{ lineaPedido.idProducto.referencia }})
+                </td>
+                <td class="desc">{{ lineaPedido.idProducto.modelo.nombre }}
+                    T/{{ lineaPedido.idProducto.talla }} {{ lineaPedido.idProducto.color }}
+                    {% for pers in lineaPedido.personalizaciones %}
+                        <p style="font-size: 11px; font-weight: bold">{{ pers.getCadenaTrabajo }} {% if pers.pedidoTrabajo.nombre != "" %}({{ pers.pedidoTrabajo.nombre }}){% endif %} {{ pers.getObservaciones }}</p>
+
+
+                    {% endfor %}
+                </td>
+                <td class="qty">{{ lineaPedido.cantidad }}</td>
+            </tr>
+        {% endfor %}
+
+        {% for lineaPedido in pedido.pedidoHasLineasLibre %}
+            <tr>
+                <td class="service">
+                    LLB{{ lineaPedido.id }}
+                </td>
+                <td class="desc">{{ lineaPedido.descripcion }}
+                </td>
+                <td class="qty">{{ lineaPedido.cantidad }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% if pedido.observaciones != "" %}
+        <div id="notices" style="border: 1px solid black; padding: 15px">
+            <div>OBSERVACIONES CLIENTE:</div>
+            <div class="notice">{{ pedido.observaciones | raw }}</div>
+        </div>
+        <br>
+    {% endif %}
+
+    {% if pedido.observacionesInternas != "" %}
+        <div id="notices" style="border: 1px solid black; padding: 15px">
+            <div>OBSERVACIONES INTERNAS:</div>
+            <div class="notice">{{ pedido.observacionesInternas | raw }}</div>
+        </div>
+        <br>
+    {% endif %}
+
+    <div>
+        {% for trabajo in pedido.getTrabajos %}
+            <img style="width: 100%; height: auto" src="{% path trabajo.getMontaje(), 'reference' %}"/>
+        {% endfor %}
+
+    </div>
+</main>
+</body>
+</html>

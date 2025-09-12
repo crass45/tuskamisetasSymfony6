@@ -1,0 +1,187 @@
+{% extends "web/estaticoPlantilla.html.twig" %}
+
+{% block title %}Bordado textil | Personalización en relieve de calidad y duradera{% endblock %}
+{% block metaDescription %}El bordado es una de las técnicas de estampación de mayor calidad. Si quieres saber cómo se realiza y cuáles son sus ventajas, ¡visítanos y te lo explicamos!{% endblock %}
+
+{% block datosEstructurado %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Bordados en gorras, ropa laboral y parches",
+            "description": "Servicio de bordado para personalización de ropa laboral, gorras y parches",
+            "provider": {
+                "@type": "Organization",
+                "name": "TusKamisetas",
+                "url": "https://www.tuskamisetas.com/es/servicios/bordados"
+            },
+            "areaServed": {
+                "@type": "Place",
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": "ES"
+                }
+            },
+            "serviceType": "Bordado"
+        }
+    </script>
+{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}" class="miActive">
+                    <span itemprop="name">{% trans %}Bordados y Parches{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+    <div class="row">
+
+        <div class="col-lg-12 fondoblanco">
+            <h1>{% trans %}Bordados personalizados{% endtrans %}</h1>
+        </div>
+        <div class="col-lg-12">
+            <div class="parallax-window" data-parallax="scroll"
+                 data-image-src="{{ asset('images/2-bordados-personalizados.jpg') }}" data-bleed="-10"></div>
+            {#<img src="{{ asset('images/1-vinilo-de-corte.jpg') }}" style="width: 100%"#}
+            {#alt="Vinilo de corte"/>#}
+        </div>
+        <div class="col-lg-12 fondoblanco">
+            <p>
+                El bordado es un método de estampación textil que ha ido adquiriendo bastante popularidad en los últimos
+                años. De un tiempo a esta parte, la demanda de este tipo de estampación se ha visto incrementada,
+                principalmente debido a que el resultado final es mucho más distinguido y tiene un toque más elegante,
+                motivo por el cual son muchas las empresas que recurren a esta técnica para personalizar el vestuario
+                laboral o el uniforme de un club deportivo.
+            </p>
+            <p>
+                El bordado personalizado es muy resistente y duradero, y al tratarse de un método tan cuidado aporta una
+                imagen mucho más estilizada al diseño. Existen diferentes tipos de bordados, si bien el más popular y
+                solicitado es el bordado clásico. Además, se trata de una técnica especialmente cómoda porque permite
+                obtener un resultado óptimo aun en tejidos en los que otros métodos de estampación no funcionan bien.
+            </p>
+        </div>
+
+        <div class="col-lg-12">
+            <h2>{% trans %}¿Qué es el bordado textil?{% endtrans %}</h2>
+            {#<img src="{{ asset('images/3-parches-para-ropa.jpg') }}" style="width: 100%" alt="parches para ropa"/>#}
+            <p>
+                El bordado consiste en una técnica de decoración de prendas textiles en las que se cosen hilos de
+                diferentes colores sobre un tejido para crear un <b>diseño en relieve</b>.
+            </p>
+            <p>
+                El bordado textil siempre se ha caracterizado por ser un método manual y muy artesanal, hasta el punto
+                de que son muchos los que tienen esta práctica como afición. No obstante, en el mundo de la estampación
+                textil el proceso se ha automatizado, consiguiendo un procedimiento mucho más rápido y pragmático.
+            </p>
+            <p>
+                Se ha convertido en una de las técnicas preferidas para la personalización de diferentes prendas
+                textiles, si bien las más comunes son tanto las camisetas bordadas como las camisas bordadas, ya que su
+                uso se ha popularizado especialmente para uniformes personalizados de todo tipo.
+            </p>
+        </div>
+
+        <div class="col-lg-12">
+            <h2>{% trans %}Cómo funciona el bordado{% endtrans %}</h2>
+            {#<img src="{{ asset('images/3-parches-para-ropa.jpg') }}" style="width: 100%" alt="parches para ropa"/>#}
+            <p>
+                El procedimiento del bordado textil se ha modernizado en gran medida, gracias a lo cual se ha podido
+                automatizar y agilizar su producción.
+            </p>
+            <ul class="ularticulo">
+                <li>
+                    El primer paso del bordado textil es la <b>digitalización del diseño</b>. El diseño ha de crearse en
+                    un
+                    software específico que lo convierte en un <b>archivo digital de bordado</b>, en tanto la máquina no
+                    acepta
+                    ningún otro formato. Este proceso obtiene el nombre de picaje, e indicará la información referente
+                    al número de puntadas, a los puntos de perforación y al color y cantidad de hilo que se necesitará,
+                    permitiendo así calcular los costes.
+
+                </li>
+                <li>
+                    Se colocan los rollos de hilo en sus cabezales correspondientes acorde a su color.
+                </li>
+                <li>
+                    Se programa la máquina con parámetros tales como la velocidad del bordado o el patrón de color que
+                    ha de seguir. A continuación, se colocan las prendas de manera individual en un bastidor situándolas
+                    para que el bordado se realice en la zona escogida.
+                </li>
+                <li>
+                    Una vez ha finalizado el bordado, <b>se eliminan los puntos de sutura extraños</b> que hayan podido
+                    producirse durante el procedimiento.
+                </li>
+            </ul>
+        </div>
+
+
+        <div class="col-lg-12 fondoblanco">
+            <h2>{% trans %}Ventajas del bordado{% endtrans %}</h2>
+        </div>
+        <div class="col-lg-12">
+            <div class="parallax-window" data-parallax="scroll"
+                 data-image-src="{{ asset('images/1-parches-bordados.jpg') }}" data-bleed="-10"></div>
+            {#<img src="{{ asset('images/1-parches-bordados.jpg') }}" style="width: 100%" alt="parches bordados"/>#}
+        </div>
+        <div class="col-lg-12 fondoblanco">
+            <p>
+                El bordado textil destaca entre los diferentes métodos de estampación porque los resultados que se
+                obtienen son tan diferentes como elegantes. Se trata de una <b>técnica de alta calidad</b>, de ahí que
+                el
+                acabado de las prendas bordadas sea duradero y resistente.
+            </p>
+            <p>
+                Si bien es cierto que no es un procedimiento tan asequible como lo puede ser la serigrafía o la
+                impresión digital, no se trata de una estampación cara, aunque se ha de tener en cuenta que el precio
+                varía en función de la complejidad del diseño.
+            </p>
+            <p>
+                Otra de las principales ventajas que ofrece la técnica del bordado es que <b>permite emplear todo tipo
+                    de
+                    tejidos</b>, incluyendo materiales sobre los que otros métodos de estampación no acaban de
+                funcionar, como
+                puede ser el softshell, el punto o el acrílico. No obstante, bordar camisetas y obtener camisetas
+                bordadas personalizadas incrementa en gran medida el valor de la prenda, de ahí que este uso sea el más
+                recurrente.
+            </p>
+            <p>
+                Incorporar un logo bordado a una prenda textil aportar mucha imagen a una empresa, puesto que los
+                resultados siempre son de alta calidad y la marca se cuida al milímetro.
+            </p>
+        </div>
+        <div class="col-lg-12">
+            <h2>{% trans %}Límites del bordado{% endtrans %}</h2>
+            {#<img src="{{ asset('images/3-parches-para-ropa.jpg') }}" style="width: 100%" alt="parches para ropa"/>#}
+            <p>
+                Aun con todo, es preciso tener presente que el bordado cuenta con <b>algunas limitaciones</b>.
+            </p>
+            <p>
+                Aun tratándose de una técnica versátil y con un abanico de posibilidades muy amplio, no es la técnica
+                más indicada para la estampación de detalles o letras pequeñas, puesto que el acabado no sería el
+                esperado. Asimismo, tampoco pueden reproducirse mediante el bordado <b>fotografías realistas</b> con
+                mucho
+                color o degradados.
+            </p>
+            <p>
+                En TusKamisetas siempre ofrecemos un asesoramiento previo para que nuestros clientes sepan las ventajas
+                de cada técnica de estampación textil y puedan escoger la que mejor se adapte a su diseño. La técnica
+                del bordado se recomienda especialmente para la personalización de ropa laboral, de equipaciones
+                deportivas o de merchandising, ya que es perfecta para <b>tiradas medias y grandes</b>.
+            </p>
+        </div>
+    </div>
+{% endblock %}

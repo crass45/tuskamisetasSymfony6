@@ -1,0 +1,53 @@
+{# templates/web/partials/_breadcrumbs.html.twig #}
+
+{# 1. Definimos una "macro" recursiva para construir la ruta de padres #}
+{% macro breadcrumb_links(category, position) %}
+    {# Importamos el contexto de la macro para poder usarla recursivamente #}
+    {% import _self as macros %}
+
+    {# Paso recursivo: Si hay un padre, primero llamamos a la macro con el padre #}
+    {% if category.parent and category.parent.parent %}
+        {{ macros.breadcrumb_links(category.parent, position - 1) }}
+    {% endif %}
+
+    {# CORRECCIÓN: Se añade una condición para no mostrar la categoría si se llama 'Home' #}
+    {% if category.name != 'Home' %}
+        {# Paso base: Renderizamos el 'li' para la categoría actual #}
+        <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            <a itemprop="item" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': category.slug}) }}">
+                <span itemprop="name">{{ category.name }}</span>
+            </a>
+            <meta itemprop="position" content="{{ position }}"/>
+        </li>
+    {% endif %}
+{% endmacro %}
+
+{# Importamos la macro que acabamos de crear para poder usarla #}
+{% import _self as macros %}
+
+<div class="breadcrumbs">
+    <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+        {# El enlace a la página Principal (siempre presente) #}
+        <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            <a itemprop="item" href="{{ path('app_home', {'_locale': app.request.locale}) }}">
+                <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+            </a>
+            <meta itemprop="position" content="1"/>
+        </li>
+
+        {# Si tenemos un contexto (una categoría, marca, etc.), construimos sus migas de pan #}
+        {% if context is defined and context %}
+            {# Llamamos a nuestra macro recursiva para dibujar la ruta de padres #}
+            {% if context.parent %}
+                {{ macros.breadcrumb_links(context.parent, 2) }}
+            {% endif %}
+
+            {# Finalmente, mostramos la página actual como texto (no como enlace) #}
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem" class="active">
+                <span itemprop="name">{{ context.name }}</span>
+                <meta itemprop="position" content="99"/> {# Un número alto para que siempre sea el último #}
+            </li>
+        {% endif %}
+    </ol>
+</div>
+

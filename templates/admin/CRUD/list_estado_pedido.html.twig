@@ -1,0 +1,26 @@
+{% extends '@SonataAdmin/CRUD/base_list_field.html.twig' %}
+
+{% block field %}
+
+    <div>
+
+        <span class="label
+                                        {% if object.estado.id == 1 %} label-danger
+                                        {% elseif object.estado.id == 2 or object.estado.id == 6 %} label-warning
+                                        {% elseif object.estado.id == 3 %} label-info
+                                        {% elseif object.estado.id == 11 %} label-success
+                                        {% else %} label-primary
+                                        {% endif %} ">{{ object.estado }}</span>
+
+        {% if object.cantidadPagada > 0 and (object.totalAPagar - object.cantidadPagada) < 1 %}
+            <span class="label label-success">PAGADO 100%</span>
+        {% elseif object.cantidadPagada > 0 %}
+            <span class="label label-success">PAGADO {{ object.cantidadPagada | round(2, 'ceil') }} €</span>
+        {% endif %}
+        {% if (object.factura != null) %}
+            <span class="label label-success">FACTURADO</span>
+        {% endif %}
+
+        {#{{ object.providername}} : {{ object.width }}x{{ object.height }} <br/>#}
+    </div>
+{% endblock %}

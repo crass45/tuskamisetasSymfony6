@@ -1,0 +1,287 @@
+{% extends "base.html.twig" %}
+{% block meta %}
+    <script type="text/javascript"
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyANTJhuJD0Dcq-T0SFMs6LBtjbInQV-Y4A"></script>
+{% endblock %}
+{% block title %}Contacta con nosotros | Tuskamisetas.com{% endblock %}
+{% block metaDescription %}En TusKamisetas tenemos los mejores precios en camisetas y textil para publicidad. Solicita tu presupuesto de camisetas personalizadas o consultanos cualquier duda.{% endblock %}
+{% block datosEstructurado %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            "name": "TusKamisetas",
+            "image": "https://www.tuskamisetas.com/logo.png",
+            "url": "https://www.tuskamisetas.com",
+            "telephone": "+34 968 654 970",
+            "address": {
+                "@type": "PostalAddress",
+                "streetAddress": "C. Calasparra, 24",
+                "addressLocality": "Murcia",
+                "addressRegion": "Murcia",
+                "postalCode": "30180",
+                "addressCountry": "ES"
+            },
+            "openingHours": [
+                "Mo-Fr 09:00-14:00",
+                "Mo-Fr 15:00-18:30"
+            ],
+            "sameAs": [
+                "https://www.facebook.com/tuskamisetas",
+                "https://www.instagram.com/tuskamisetas"
+            ]
+        }
+    </script>
+{% endblock %}
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('ss_tienda_home') }}">
+                    <span itemprop="title">{% trans %}Principal{% endtrans %}</span></a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li class="active" itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('ss_tienda_contacto') }}" class="miActive">
+                    <span itemprop="title">{% trans %}Contacto{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div>
+{% endblock %}
+
+{% block baseBody %}
+    <div itemscope itemtype="https://schema.org/LocalBusiness" class="section">
+        <h1>{% trans %}Contacto{% endtrans %}</h1>
+        <div id="map" style="height: 420px"></div>
+
+        <div class="container" style="margin-top: 60px; margin-bottom: 60px;">
+            <div class="row">
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                    <h2 class="titulo amarillo"
+                        style="margin-top: 0; font-size: 22px;">{{ empresa.descripcionContacto }}</h2>
+                    <h4>Si quieres unirte a nuestro equipo de profesionales <a
+                                href="{{ path('ss_tienda_trabaja_con_nosotros') }}">rellena nuestro formulario de
+                            empleo</a> y nos pondremos en contacto contigo</h4>
+
+                </div>
+
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12" style="text-align: left">
+                    <img class="img-responsive" style="width: 60px; text-align: center" itemprop="image"
+                         src="{% path empresa.logo, 'big' %}" alt="{{ empresa.nombre }}"/>
+                    <p itemprop="name" style="font-size: 16px;font-weight: bold">
+                        {{ empresa.nombre }}
+                    </p>
+                    <span itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+                    <p itemprop="streetAddress">
+                        {{ empresa.direccionEnvio.dir }}
+                    </p>
+                    <p>
+                        <span itemprop="postalCode">{{ empresa.direccionEnvio.cp }} </span>
+                        <span itemprop="addressLocality">{{ empresa.direccionEnvio.poblacion }}</span>
+                        (<span itemprop="addressRegion">{{ empresa.direccionEnvio.provincia }}</span>).
+                        <span itemprop="addressCountry">{{ empresa.direccion.pais }}</span>
+                    </p>
+                    </span>
+                    <p>
+                        <a href="tel:{{ empresa.telefonoMovil }}" class="tkm-phone"><span
+                                    itemprop="telephone">{{ empresa.telefonoMovil }}</span></a>
+                    </p>
+                    {# <p> #}
+                    {# <a href="tel:{{ empresa.telefonoOtro }}">{{ empresa.telefonoOtro }}</a> #}
+                    {# </p> #}
+                    <p>
+                        <a href="mailto:{{ empresa.email }}"><span itemprop="email">{{ empresa.email }}</span></a>
+                    </p>
+                </div>
+
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12" style="text-align: left">
+                    <img class="img-responsive" style="text-align: center; width: 50%" itemprop="image"
+                         src="{{ asset('images/cartelcovid.jpg') }}" alt="subvencion covid"/>
+                    <br>
+                    <p>
+                        Esta empresa ha recibido una subvención de la Comunidad Autónoma de la Región de Murcia mediante
+                        la financiación del Gobierno de España, para el apoyo a la solvencia empresarial en respuesta a
+                        la pandemia de la covid-19".
+                    </p>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // $(function () {
+        //     $('.navItem').removeClass('active');
+        //     $('#navItemContacta').addClass('active');
+        // });
+
+        function initialize() {
+            var myLatLng = {lat: {{ empresa.latitud }}, lng: {{ empresa.longitud }}};
+
+
+            var roadAtlasStyles = [
+                {
+                    "featureType": "road.highway",
+                    "elementType": "geometry",
+                    "stylers": [
+                        {"saturation": -100},
+                        {"lightness": -8},
+                        {"gamma": 1.18}
+                    ]
+                }, {
+                    "featureType": "road.arterial",
+                    "elementType": "geometry",
+                    "stylers": [
+                        {"saturation": -100},
+                        {"gamma": 1},
+                        {"lightness": -24}
+                    ]
+                }, {
+                    "featureType": "poi",
+                    "elementType": "geometry",
+                    "stylers": [
+                        {"saturation": -100}
+                    ]
+                }, {
+                    "featureType": "administrative",
+                    "stylers": [
+                        {"saturation": -100}
+                    ]
+                }, {
+                    "featureType": "transit",
+                    "stylers": [
+                        {"saturation": -100}
+                    ]
+                }, {
+                    "featureType": "water",
+                    "elementType": "geometry.fill",
+                    "stylers": [
+                        {"saturation": -100}
+                    ]
+                }, {
+                    "featureType": "road",
+                    "stylers": [
+                        {"saturation": -100}
+                    ]
+                }, {
+                    "featureType": "administrative",
+                    "stylers": [
+                        {"saturation": -100}
+                    ]
+                }, {
+                    "featureType": "landscape",
+                    "stylers": [
+                        {"saturation": -100}
+                    ]
+                }, {
+                    "featureType": "poi",
+                    "stylers": [
+                        {"saturation": -100}
+                    ]
+                }, {}
+            ];
+            var styledMapOptions = {};
+            var usRoadMapType = new google.maps.StyledMapType(
+                roadAtlasStyles, styledMapOptions);
+
+            {#var mapCanvas = document.getElementById('map');#}
+            {#var mapOptions = {#}
+            {#    center: new google.maps.LatLng({{ empresa.latitud }}, {{ empresa.longitud }}),#}
+            {#    zoom: 18,#}
+            {#    mapTypeId: google.maps.MapTypeId.ROADMAP,#}
+            {#    draggable: false,#}
+            {#    scrollwheel: false#}
+
+            {#}#}
+            {#var map = new google.maps.Map(mapCanvas, mapOptions)#}
+
+            {#//Aqui va la marca#}
+            var pinColor = "fDB45E";
+            var pinImage = new google.maps.MarkerImage("https://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColor,
+                new google.maps.Size(21, 34),
+                new google.maps.Point(0, 0),
+                new google.maps.Point(10, 34));
+            var pinShadow = new google.maps.MarkerImage("https://chart.apis.google.com/chart?chst=d_map_pin_shadow",
+                new google.maps.Size(40, 37),
+                new google.maps.Point(0, 0),
+                new google.maps.Point(12, 35));
+
+            // var marker = new google.maps.Marker({
+            //     position: myLatLng,
+            //     map: map,
+            //     icon: pinImage,
+            //     shadow: pinShadow,
+            //     title: 'Estamos Aqui!'
+            // });
+
+            let map;
+
+            async function initMap_AdvancedMarkerElement() {
+                const myLatLng = { lat: {{ empresa.latitud }}, lng: {{ empresa.longitud }} };
+                const { Map } = await google.maps.importLibrary("maps");
+                const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+
+                // The map, centered at Uluru
+                map = new Map(document.getElementById("map"), {
+                    zoom: 19,
+                    center: myLatLng,
+                    // disableDefaultUI: true, // a way to quickly hide all controls
+                    mapId: "DEMO_MAP_ID",
+                    mapTypeId: google.maps.MapTypeId.ROADMAP,
+                    // draggable: false,
+                    scrollwheel: false
+                });
+
+                // The marker, positioned at Uluru
+                const marker = new AdvancedMarkerElement({
+                    map: map,
+                    position: myLatLng,
+                    title: "{{ empresa.nombre }}",
+                });
+            }
+
+            // const faMarker = new AdvancedMarkerElement({
+            //     map,
+            //     position: { lat: 37.412, lng: -122.095829650878 },
+            //     content: faPin.element,
+            //     title: "A marker using a FontAwesome icon for the glyph.",
+            // });
+
+
+            initMap_AdvancedMarkerElement();
+
+
+            var contentString = '<div id="map-content">' +
+                '<div id="siteNotice">' +
+                '</div>' +
+                '<h2 class="titulo2 amarillo" style="text-align:center">{{ empresa.nombre }}</h2>' +
+                '<div id="bodyContent">' +
+                '<p>{{ empresa.nombre }}</p>' +
+                    {# '<p>{{ empresa.direccion.dir }}</p>' + #}
+                    {# '<p>{{ empresa.direccion.cp }} {{ empresa.direccion.poblacion }} ({{ empresa.direccion.provincia }}) {{ empresa.direccion.pais }}</p>' + #}
+                ' <a href="http://maps.apple.com/?daddr={{ empresa.latitud }},{{ empresa.longitud }}" target="blank">Cómo llegar</a>' +
+                '</div>' +
+                '</div>';
+
+            var infowindow = new google.maps.InfoWindow({
+                content: contentString
+            });
+
+            marker.addListener('click', function () {
+                infowindow.open(map, marker);
+            });
+
+            map.mapTypes.set('usroadatlas', usRoadMapType);
+            map.setMapTypeId('usroadatlas');
+
+
+
+        }
+
+        google.maps.event.addDomListener(window, 'load', initialize);
+    </script>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends '@SonataAdmin/CRUD/base_list_field.html.twig' %}
+
+{% block field %}
+
+
+    {% if object.fechaEntrega is not null %}
+        <div>
+
+            {# endDate and startDate are strings or DateTime objects #}
+            {% set leftDays = 10 %}
+
+            {% set difference = date("now").diff(object.fechaEntrega) %}
+            {% set leftDays = difference.days %}
+
+
+            <span class="label
+        {% if leftDays <= 3 and object.estado.id != 11 %}
+        label-danger
+        {% elseif leftDays <= 5 and object.estado.id != 11 %}
+            label-warning
+        {% else %}
+        label-info
+        {% endif %}">
+                {{ object.fechaEntrega |date("d-m-Y") }} FALTAN {{ leftDays }} días
+            </span>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>FACTURA {{ pedido.factura }}</title>
+
+    <style>
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        a {
+            color: #5D6975;
+            text-decoration: underline;
+        }
+
+        body {
+            position: relative;
+            width: 21cm;
+            height: 29.7cm;
+            margin: 0 auto;
+            color: #001028;
+            background: #FFFFFF;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-family: Arial;
+        }
+
+        header {
+            padding: 10px 0;
+            margin-bottom: 30px;
+        }
+
+        #logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #logo img {
+            width: 90px;
+        }
+
+        h1 {
+            border-top: 1px solid #5D6975;
+            border-bottom: 1px solid #5D6975;
+            color: #5D6975;
+            font-size: 2.4em;
+            line-height: 1.4em;
+            font-weight: normal;
+            text-align: center;
+            margin: 0 0 20px 0;
+        }
+
+        #project span {
+            color: #5D6975;
+            text-align: right;
+            width: 52px;
+            margin-right: 10px;
+            display: inline-block;
+            font-size: 0.8em;
+        }
+
+        #company {
+            float: right;
+            text-align: right;
+        }
+
+        #project div,
+        #company div {
+            white-space: nowrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-bottom: 20px;
+        }
+
+        table tr:nth-child(2n-1) td {
+            background: #F5F5F5;
+        }
+
+        table th,
+        table td {
+            text-align: center;
+        }
+
+        table th {
+            padding: 5px 20px;
+            color: #5D6975;
+            border-bottom: 1px solid #C1CED9;
+            white-space: nowrap;
+            font-weight: normal;
+        }
+
+        table .service,
+        table .desc {
+            text-align: left;
+        }
+
+        table td {
+            /*padding: 20px;*/
+            text-align: right;
+        }
+
+        table td.service,
+        table td.desc {
+            vertical-align: top;
+        }
+
+        table td.unit,
+        table td.qty,
+        table td.total {
+            font-size: 1.2em;
+        }
+
+        table td.grand {
+            border-top: 1px solid #5D6975;;
+        }
+
+        #notices .notice {
+            color: #5D6975;
+            font-size: 1.2em;
+        }
+
+        footer {
+            color: #5D6975;
+            width: 100%;
+            height: 30px;
+            position: absolute;
+            bottom: 0;
+            border-top: 1px solid #C1CED9;
+            padding: 8px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<header class="clearfix">
+    <div id="logo" style="text-align: left">
+        <img src="http://www.tuskamisetas.com/uploads/media/default/0001/01/pollo_admin.jpeg"
+             alt="{{ empresa.nombre }}">
+        <div style="display: inline-block; margin-left: 15px">
+            <div><h2 style="margin-bottom: 0;">{{ empresa.nombre }}</h2></div>
+            <div>{{ empresa.direccion.dir }}
+                <br>{{ empresa.direccion.cp }} {{ empresa.direccion.poblacion }} {{ empresa.direccion.provincia }}
+            </div>
+            <div>{{ empresa.telefonoOtro }}</div>
+            <div><a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a></div>
+            <div>{% if pedido.idUsuario.intracomunitario %}ES{% endif %}{{ empresa.cif }}</div>
+        </div>
+
+        <div style="float: right;text-align: right;/*border: 1px solid black;*/padding: 10px">
+            <h2>FACTURA {{ pedido.factura }}</h2>
+        </div>
+    </div>
+    <div id="company" class="clearfix">
+    </div>
+    <div style="float: left">
+        <div>Expedición: {{ pedido.factura.fecha |date("d/m/Y") }}</div>
+        {#<div>Vencimiento: {{ pedido.factura.fecha |date("d/m/Y") }}</div>#}
+    </div>
+    {% if pedido.factura.razonSocial is defined and pedido.factura.razonSocial != "" %}
+        <div id="project" style="text-align: right; float: right">
+            <div>{{ "CL%06d"|format(pedido.idUsuario.id) }}</div>
+            {#<div><span>PROJECT</span> Website development</div>#}
+            <div>{{ pedido.factura.razonSocial }}</div>
+            <div>{{ pedido.factura.direccion }}
+                    <br> {{ pedido.factura.cp }} {{ pedido.factura.poblacion |capitalize }}
+                    - {{ pedido.factura.provincia |capitalize }}
+                    <br> {{ pedido.factura.pais |capitalize }}
+            </div>
+            <div>{{ pedido.factura.cif }}</div>
+
+            <br>
+        </div>
+    {% elseif  pedido.idUsuario is defined and pedido.idUsuario != null %}
+        <div id="project" style="text-align: right; float: right">
+            <div>{{ "CL%06d"|format(pedido.idUsuario.id) }}</div>
+            {#<div><span>PROJECT</span> Website development</div>#}
+            <div>{{ pedido.idUsuario.nombre }} {{ pedido.idUsuario.apellidos }}</div>
+            <div>{% if pedido.idUsuario.direccion is not null %}{{ pedido.idUsuario.direccion.dir }}
+                    <br> {{ pedido.idUsuario.direccion.cp }} {{ pedido.idUsuario.direccion.poblacion |capitalize }}
+                    - {{ pedido.idUsuario.direccion.provincia |capitalize }}
+                    <br> {{ pedido.idUsuario.direccion.pais |capitalize }}{% endif %}
+            </div>
+            <div>{{ pedido.idUsuario.cif }}</div>
+
+            <br>
+        </div>
+    {% endif %}
+    <br>
+</header>
+<main>
+    <div style="width: 100%; text-align: left;font-size: 12px; padding-right: 15px ">
+        Presupuesto: {{ pedido }}
+    </div>
+    <table width="100%">
+
+        <tbody>
+        <tr style="background-color: #C1CED9">
+            <th class="service">CÓDIGO ARTICULO</th>
+            <th class="desc">DESCRIPCION</th>
+            <th>CANTIDAD</th>
+            <th>PRECIO</th>
+            <th><b>TOTAL</b></th>
+        </tr>
+        {% for lineaPedido in pedido.pedidoHasLineas %}
+            <tr>
+                <td class="service">{{ lineaPedido.idProducto.referencia }}</td>
+                <td class="desc">{{ lineaPedido.idProducto.modelo.nombre }}
+                    T/{{ lineaPedido.idProducto.talla }} {{ lineaPedido.idProducto.color }}
+                    <br> <span style="font-size: 9px">{{ lineaPedido.personalizacion }}</span></td>
+                <td class="qty">{{ lineaPedido.cantidad }}</td>
+                <td class="unit">{{ lineaPedido.precio | number_format(3, ',', '.') }}€</td>
+
+                <td class="total">{{ (lineaPedido.precio * lineaPedido.cantidad) | number_format(3, ',', '.') }}€</td>
+            </tr>
+        {% endfor %}
+        {% for lineaPedido in pedido.pedidoHasLineasLibre %}
+            <tr>
+                <td class="service">
+                    LLB{{ lineaPedido.id }}
+                </td>
+                <td class="desc">{{ lineaPedido.descripcion }}
+                </td>
+                <td class="qty">{{ lineaPedido.cantidad }}</td>
+                <td class="unit">{{ lineaPedido.precio | number_format(3, ',', '.') }}€</td>
+                <td class="total">{{ (lineaPedido.precio * lineaPedido.cantidad) | number_format(3, ',', '.') }}€</td>
+            </tr>
+        {% endfor %}
+        {% if pedido.envio != 0 %}
+            <tr>
+                <td class="service">PORTP</td>
+                <td class="desc">GASTOS DE ENVÍO</td>
+                <td class="qty">1</td>
+                <td class="unit">{{ pedido.envio | number_format(2, ',', '.') }}€</td>
+                <td class="total">{{ pedido.envio | number_format(2, ',', '.') }}€</td>
+            </tr>
+        {% endif %}
+        {% if pedido.pedidoExpres == true %}
+            {% set precioGastos = empresa.precioServicioExpres %}
+            <tr>
+                <td class="service">SSEXPR</td>
+                <td class="desc">SERVICIO EXPRES</td>
+                <td class="qty">1</td>
+                <td class="unit">{{ empresa.precioServicioExpres | number_format(2, ',', '.') }}€</td>
+                <td class="total">{{ empresa.precioServicioExpres | number_format(2, ',', '.') }}€</td>
+            </tr>
+        {% else %}
+            {% set precioGastos = 0 %}
+        {% endif %}
+
+
+        <tr>
+            <td class="service"> &nbsp</td>
+            <td class="desc"></td>
+            <td class="qty"></td>
+            <td class="unit"></td>
+            <td class="total"></td>
+        </tr>
+
+
+        <tr>
+            <td class="grand" colspan="4" align="right">SUBTOTAL</td>
+            <td class="grand total">{{ (pedido.subTotal + pedido.envio + precioGastos) | number_format(2, ',', '.') }}
+                €
+            </td>
+        </tr>
+        {% if pedido.descuento is defined and pedido.descuento > 0 %}
+            <tr>
+                <td colspan="4" align="right">DESCUENTO</td>
+                <td class="total">-{{ (pedido.subTotal * pedido.descuento /100) | number_format(2, ',', '.') }}€</td>
+            </tr>
+            <tr>
+                <td colspan="4" align="right">TOTAL NETO</td>
+                <td class="total">{{ (pedido.subTotal - (pedido.subTotal * pedido.descuento /100)) | number_format(2, ',', '.') }}
+                    €
+                </td>
+            </tr>
+        {% endif %}
+
+        <tr>
+            <td colspan="4">IVA 21%</td>
+            {% if pedido.iva > 0 %}
+                <td class="total">{{ ((pedido.subTotal + pedido.envio + precioGastos - (pedido.subTotal * pedido.descuento /100))*empresa.ivaGeneral/100) | number_format(2, ',', '.') }}
+                    €
+                </td>
+            {% else %}
+                <td class="total">{{ pedido.iva | number_format(2, ',', '.') }}€</td>
+            {% endif %}
+        </tr>
+        {% if pedido.idUsuario.recargoEquivalencia is defined and pedido.idUsuario.recargoEquivalencia %}
+            <tr>
+                <td colspan="4">RE 5,20%</td>
+                <td class="total">{{ pedido.recargoEquivalencia | number_format(2, ',', '.') }}€</td>
+            </tr>
+        {% endif %}
+        <tr>
+            <td colspan="4" class="grand total">TOTAL</td>
+            {% if pedido.iva != 0 %}
+                {% if pedido.idUsuario.recargoEquivalencia is defined and pedido.idUsuario.recargoEquivalencia %}
+                    <td class="grand total">
+                        <b>{{ ((pedido.subTotal + pedido.envio + precioGastos - (pedido.subTotal * pedido.descuento /100))*(1+empresa.ivaGeneral/100)+pedido.recargoEquivalencia) | number_format(2, ',', '.') }}
+                            €</b></td>
+                {% else %}
+                    <td class="grand total">
+                        <b>{{ ((pedido.subTotal + pedido.envio + precioGastos - (pedido.subTotal * pedido.descuento /100))*(1+empresa.ivaGeneral/100)) | number_format(2, ',', '.') }}
+                            €</b></td>
+                {% endif %}
+            {% else %}
+                {% if pedido.idUsuario.recargoEquivalencia is defined and pedido.idUsuario.recargoEquivalencia %}
+                    <td class="grand total">
+                        <b>{{ (pedido.subTotal + pedido.envio + precioGastos - (pedido.subTotal * pedido.descuento /100)+pedido.recargoEquivalencia) | number_format(2, ',', '.') }}
+                            €</b></td>
+                {% else %}
+                    <td class="grand total">
+                        <b>{{ (pedido.subTotal + pedido.envio + precioGastos - (pedido.subTotal * pedido.descuento /100)) | number_format(2, ',', '.') }}
+                            €</b></td>
+                {% endif %}
+            {% endif %}
+        </tr>
+        </tbody>
+    </table>
+    {% if pedido.factura.comentarios != "" %}
+        <div id="notices">
+            <div class="notice">{{ pedido.factura.comentarios | raw }}</div>
+        </div>
+        <br>
+    {% endif %}
+    {#<div id="notices">#}
+    {#<div>FORMA DE PAGO:</div>#}
+    {#<div class="notice">{{ empresa.cuentaBancaria | raw }}</div>#}
+    {#</div>#}
+    {#<footer>#}
+    {#Este documento ha sido creado desde el sitio web <a href="http://www.tuskamisetas.com">www.tuskamisetas.com</a> y es válido sin la firma y sin el sello#}
+    {#</footer>#}
+</main>
+
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Presupuesto</title>
+
+    <style>
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        a {
+            color: #5D6975;
+            text-decoration: underline;
+        }
+
+        body {
+            position: relative;
+            width: 21cm;
+            height: 29.7cm;
+            margin: 0 auto;
+            color: #001028;
+            background: #FFFFFF;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            font-family: Arial;
+        }
+
+        header {
+            padding: 10px 0;
+            margin-bottom: 30px;
+        }
+
+        #logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #logo img {
+            width: 90px;
+        }
+
+        h1 {
+            border-top: 1px solid #5D6975;
+            border-bottom: 1px solid #5D6975;
+            color: #5D6975;
+            font-size: 2.4em;
+            line-height: 1.4em;
+            font-weight: normal;
+            text-align: center;
+            margin: 0 0 20px 0;
+            background: url(dimension.png);
+        }
+
+        #project span {
+            color: #5D6975;
+            text-align: right;
+            width: 52px;
+            margin-right: 10px;
+            display: inline-block;
+            font-size: 0.8em;
+        }
+
+        #company {
+            float: right;
+            text-align: right;
+        }
+
+        #project div,
+        #company div {
+            white-space: nowrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-bottom: 20px;
+        }
+
+        table tr:nth-child(2n-1) td {
+            background: #F5F5F5;
+        }
+
+        table th,
+        table td {
+            text-align: center;
+        }
+
+        table th {
+            padding: 5px 20px;
+            color: #5D6975;
+            border-bottom: 1px solid #C1CED9;
+            white-space: nowrap;
+            font-weight: normal;
+        }
+
+        table .service,
+        table .desc {
+            text-align: left;
+        }
+
+        table td {
+            /*padding: 20px;*/
+            text-align: right;
+        }
+
+        table td.service,
+        table td.desc {
+            vertical-align: top;
+        }
+
+        table td.unit,
+        table td.qty,
+        table td.total {
+            font-size: 1.2em;
+        }
+
+        table td.grand {
+            border-top: 1px solid #5D6975;;
+        }
+
+        #notices .notice {
+            color: #5D6975;
+            font-size: 1.2em;
+        }
+
+        footer {
+            color: #5D6975;
+            width: 100%;
+            height: 30px;
+            position: absolute;
+            bottom: 0;
+            border-top: 1px solid #C1CED9;
+            padding: 8px 0;
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+<header class="clearfix">
+    <div id="logo" style="text-align: left">
+        <img src="http://www.tuskamisetas.com/uploads/media/default/0001/01/pollo_admin.jpeg"
+             alt="{{ empresa.nombre }}">
+        <div style="display: inline-block; margin-left: 15px">
+            <div><h2 style="margin-bottom: 0;">{{ empresa.nombre }}</h2></div>
+            <div>{{ empresa.direccion.dir }}
+                <br>{{ empresa.direccion.cp }} {{ empresa.direccion.poblacion }} {{ empresa.direccion.provincia }}
+            </div>
+            <div>{{ empresa.telefonoOtro }}</div>
+            <div><a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a></div>
+            <div>{{ empresa.cif }}</div>
+        </div>
+
+        <div style="float: right;text-align: right;border: 1px solid black;padding: 10px">
+            <h2>PRESUPUESTO</h2>
+        </div>
+    </div>
+    <div id="company" class="clearfix">
+    </div>
+    {#<div id="project" style="text-align: left;float: left; border: 1px solid grey; padding: 15px">#}
+    {#<div style="border-bottom: 1px solid grey;">DATOS DE ENVÍO</div>#}
+    {#<div><span>PROJECT</span> Website development</div>#}
+    {#<div>{{ pedido.idUsuario.nombre }}</div>#}
+    {#<div>{{ pedido.idUsuario.apellidos }}</div>#}
+    {#<div>{{ pedido.idUsuario.telefonoOtro }}</div>#}
+    {#<div>{% if pedido.idUsuario.direccion is not null %}{{ pedido.idUsuario.direccion.dir }} <br> {{ pedido.idUsuario.direccion.cp }}, {{ pedido.idUsuario.direccion.poblacion }}, {{ pedido.idUsuario.direccion.provincia }}, {{ pedido.idUsuario.direccion.pais }}{% endif %}#}
+    {#</div>#}
+    {#<div><span>DUE DATE</span> September 17, 2015</div>#}
+    {#</div>#}
+    {#<div id="project" style="text-align: right; float: right">#}
+    {#<div>{{ "CL%06d"|format(pedido.idUsuario.id) }}</div>#}
+    {#<div><span>PROJECT</span> Website development</div>#}
+    {#<div>{{ pedido.idUsuario.nombre }}</div>#}
+    {#<div>{{ pedido.idUsuario.apellidos }}</div>#}
+    {#<div>{{ pedido.idUsuario.cif }}</div>#}
+    {#<div>{% if pedido.idUsuario.direccion is not null %}{{ pedido.idUsuario.direccion.dir }} <br> {{ pedido.idUsuario.direccion.cp }}, {{ pedido.idUsuario.direccion.poblacion }}, {{ pedido.idUsuario.direccion.provincia }}, {{ pedido.idUsuario.direccion.pais }}{% endif %}#}
+    {#</div>#}
+    {#<div> <a href="mailto:{{ pedido.idUsuario.usuario.email }}">{{ pedido.idUsuario.usuario.email }}</a></div>#}
+    {#<div><span>DUE DATE</span> September 17, 2015</div>#}
+    {#</div>#}
+    <br>
+</header>
+<main>
+    <div style="width: 100%; text-align: right;font-size: 12px; padding-right: 15px ">Presupuesto válido
+        hasta {{ "now" | date_modify("+10 day") | date('d-m-Y') }} y bajo disponibilidad de stock
+    </div>
+    <table width="100%">
+
+        <tbody>
+        <tr style="background-color: #C1CED9">
+            <th class="service">CÓDIGO ARTICULO</th>
+            <th class="desc">DESCRIPCION</th>
+            <th>PRECIO</th>
+            <th>CANTIDAD</th>
+            <th><b>TOTAL</b></th>
+        </tr>
+        {% for presupuesto in carrito.getItems() %}
+            {% set itemIndex = loop.index0 %}
+            {% for producto in presupuesto.getProductos() %}
+                {% if producto.cantidad > 0 %}
+                    <tr>
+                        <td class="service">{{ producto.producto.modelo.referencia }}
+                            ({{ producto.producto.referencia }})</td>
+                        <td class="desc">{{ producto.producto.modelo.nombre }}
+                            T/{{ producto.producto.talla }} {{ producto.producto.color }}
+                            <br> <span style="font-size: 9px">
+                                {% for trabajo in presupuesto.getTrabajos() %}
+                                    <p>{{ trabajo }}</p>
+                                {% endfor %}
+                                </span></td>
+                        <td class="unit">{{ carrito.getPrecioProducto(producto.producto.getId(),itemIndex, app.user) | number_format(2, ',', '.') }}
+                            €
+                        </td>
+                        <td class="qty">{{ producto.cantidad }}</td>
+                        <td class="total">{{ (carrito.getPrecioProducto(producto.producto.getId(),itemIndex, app.user) * producto.cantidad) | number_format(2, ',', '.') }}
+                            €
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+        <tr>
+            <td colspan="4">SUBTOTAL</td>
+            <td class="total">{{ carrito.getSubtotal(app.user) | number_format(2, ',', '.') }}€</td>
+        </tr>
+        <tr>
+            <td colspan="4" class="grand total">GASTOS DE ENVIO</td>
+            <td class="grand total">{{ carrito.getGastosEnvio(app.user) | number_format(2, ',', '.') }}€</td>
+        </tr>
+        {% if carrito.servicioExpres == true %}
+            {% set ivaAAPlicar = (carrito.getSubtotal(app.user)+empresa.precioServicioExpres+carrito.getGastosEnvio(app.user))*empresa.ivaGeneral/100 %}
+            {% set total = carrito.getSubtotal(app.user)+empresa.precioServicioExpres+carrito.getGastosEnvio(app.user) %}
+            <td colspan="4">SERVICIO EXPRES</td>
+            <td class="total">{{ empresa.precioServicioExpres | number_format(2, ',', '.') }}€</td>
+        {% else %}
+            {% set ivaAAPlicar = (carrito.getSubtotal(app.user)+carrito.getGastosEnvio(app.user))*empresa.ivaGeneral/100 %}
+            {% set total = carrito.getSubtotal(app.user)+carrito.getGastosEnvio(app.user) %}
+        {% endif %}
+        <tr>
+            <td colspan="4">IVA {{ empresa.ivaGeneral }}%</td>
+            <td class="total">{{ ivaAAPlicar | number_format(2, ',', '.') }}€</td>
+        </tr>
+        <tr>
+            <td colspan="4" class="grand total">TOTAL</td>
+            <td class="grand total"><b>{{ (total+ivaAAPlicar) | number_format(2, ',', '.') }}€</b></td>
+        </tr>
+        </tbody>
+    </table>
+    {% if observaciones is defined and observaciones != "" %}
+        <div id="notices" style="border: 1px solid black; padding: 15px">
+            <div>OBSERVACIONES:</div>
+            <div class="notice">{{ observaciones }}</div>
+        </div>
+        <br>
+    {% endif %}
+    {#<div id="notices">#}
+    {#<div>FORMA DE PAGO:</div>#}
+    {#<div class="notice">{{ empresa.cuentaBancaria |raw }}</div>#}
+    {#</div>#}
+    {#<footer>#}
+    {#Este documento ha sido creado desde el sitio web <a href="http://www.tuskamisetas.com">www.tuskamisetas.com</a> y es válido sin la firma y sin el sello#}
+    {#</footer>#}
+</main>
+</body>
+</html>

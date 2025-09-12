@@ -1,0 +1,137 @@
+{% extends "base.html.twig" %}
+{% block title %}Trabaja en TusKamisetas{% endblock %}
+
+{% block metaDescription %}Si deseas mejorar en tu carrera profesional con los mejores diseñadores de camisetas y serigrafos es tu oportunidad trabjando en TusKamisetas S.L.L{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                {# MIGRACIÓN: Se actualiza el nombre de la ruta a la nueva 'app_home' #}
+                <a itemprop="item" href="{{ path('app_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem" class="active">
+                {# MIGRACIÓN: Se actualiza el nombre de la ruta a la nueva 'app_work_with_us' #}
+                <a itemprop="item" href="{{ path('app_work_with_us') }}" class="miActive">
+                    <span itemprop="name">{% trans %}Trabaja con Nosotros{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block baseBody %}
+    <h1>TRABAJA CON NOSOTROS</h1>
+    <div class="row">
+        <div class="col-lg-12">
+            <div style="padding: 10px">
+                <p>{% trans %}TEXTO_TRABAJA_CON_NOSOTROS{% endtrans %}</p>
+            </div>
+
+            <div style="padding: 10px">
+                <input class="radio_gender" type="radio" name="gender" value="trabajo" id="gender_trabajo"
+                       {% if empresaCheck == 0 %}checked{% endif %}>
+                <label for="gender_trabajo" style="padding-left: 5px; font-size: 16px;">
+                    {% trans %}Deseo trabajar con vosotros{% endtrans %}
+                </label> <br>
+                <input class="radio_gender" type="radio" name="gender" value="empresa" id="gender_empresa"
+                       {% if empresaCheck == 1 %}checked{% endif %}>
+                <label for="gender_empresa" style="padding-left: 5px; font-size: 16px;">
+                    {% trans %}Dispongo de una empresa de impresión y quiero ofrecer mis servicios{% endtrans %}
+                </label><br>
+            </div>
+        </div>
+
+        {# --- Formulario para Operarios/Particulares --- #}
+        <div id="DivOperario">
+            {# MIGRACIÓN: Se usan las funciones 'form_start' y 'form_end' de Twig.
+               Esto renderiza automáticamente la acción, el método y el token CSRF. #}
+            {{ form_start(form, {'attr': {'id': 'trabajaForm'}}) }}
+            <div class="col-lg-12">
+                <div style="padding: 10px">
+                    {{ form_row(form.operario) }}
+                    {{ form_row(form.comercial) }}
+                    {{ form_row(form.design) }}
+                </div>
+            </div>
+            <br><br>
+            <div class="col-md-6">
+                {{ form_row(form.nombre) }}
+                {{ form_row(form.edad) }}
+                {{ form_row(form.email) }}
+                {{ form_row(form.telefono) }}
+                {{ form_row(form.provincia) }}
+                {{ form_row(form.pais) }}
+            </div>
+            <div class="col-md-6">
+                {{ form_row(form.experiencia) }}
+                {{ form_row(form.empresas) }}
+                {{ form_row(form.cv) }}
+                {{ form_row(form.observaciones) }}
+            </div>
+            <div class="col-md-12">
+                {# MIGRACIÓN: El botón de envío ahora es parte del formulario #}
+                {{ form_row(form.enviar) }}
+            </div>
+            {{ form_end(form) }}
+        </div>
+
+        {# --- Formulario para Empresas --- #}
+        <div id="DivEmpresa">
+            {{ form_start(formEmp, {'attr': {'id': 'trabajaFormEmpresa'}}) }}
+            <div class="col-md-6">
+                {{ form_row(formEmp.nombre) }}
+                {{ form_row(formEmp.experiencia) }}
+                {{ form_row(formEmp.email) }}
+                {{ form_row(formEmp.telefono) }}
+                {{ form_row(formEmp.provincia) }}
+                {{ form_row(formEmp.pais) }}
+            </div>
+            <div class="col-md-6">
+                <div style="padding: 10px"><p>Indica los servicios que puedes ofrecernos.</p></div>
+                <div style="padding: 10px">
+                    {{ form_row(formEmp.serigrafia) }}
+                    {{ form_row(formEmp.tampografia) }}
+                    {{ form_row(formEmp.bordado) }}
+                    {{ form_row(formEmp.dgt) }}
+                    {{ form_row(formEmp.laser) }}
+                    {{ form_row(formEmp.otro) }}
+                </div>
+                {{ form_row(formEmp.observaciones) }}
+            </div>
+            <div class="col-md-12">
+                {# MIGRACIÓN: El botón de envío ahora es parte del formulario #}
+                {{ form_row(formEmp.enviar) }}
+            </div>
+            {{ form_end(formEmp) }}
+        </div>
+    </div>
+
+    <br><br>
+
+    {# MIGRACIÓN: El JavaScript se simplifica, ya no se necesitan las funciones 'guardaEnvio' #}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            function toggleForms() {
+                var gender = $('input[name="gender"]:checked').val();
+
+                if (gender === 'empresa') {
+                    $('#DivOperario').hide();
+                    $('#DivEmpresa').show();
+                } else {
+                    $('#DivEmpresa').hide();
+                    $('#DivOperario').show();
+                }
+            }
+
+            $('.radio_gender').on('click', toggleForms);
+
+            toggleForms(); // Llamada inicial para mostrar el formulario correcto
+        });
+    </script>
+{% endblock %}
+

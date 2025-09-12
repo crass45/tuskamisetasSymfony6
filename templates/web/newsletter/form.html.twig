@@ -1,0 +1,76 @@
+{% extends "../../base.html.twig" %}
+
+{% block title %}Suscripción a newsletter{% endblock %}
+
+{% block metaDescription %}
+    Mantente informado de todas las novedades suscribiendote a nuestra newsletter.
+{% endblock %}
+{% block aditionalHead %}
+    <style type="text/css">
+        #newsletter_email {
+            border: 2px solid #ff9000;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+    </style>
+{% endblock %}
+
+{% block baseBody %}
+    <div class=" col-lg-12 tkmPading">
+        <div style="padding: 0 0; text-align: center; ">
+            <img src="{{ asset('pollo.jpeg') }}" style="height: 120px; width: auto"
+                 alt="logotipo TusKamisetas Original S.L.L">
+            <hr>
+            <h1>QUEREMOS SEGUIR EN CONTACTO</h1>
+            <hr>
+
+            <p>Desde TusKamisetas nos gustaría mantenerte informado de nuestras ofertas y novedades. Para ello nos
+                gustaría que te suscribieras a nuestro boletin de noticias y ofertas. Solo tienes que introducir tu
+                email en el siguiente campo, aceptarlos terminos y confirmar la suscripción.</p>
+
+            {# CAMBIO: Se reemplaza la etiqueta <form> por la función form_start() #}
+            {{ form_start(form, {
+                'action': path('ss_tienda_newsletter'),
+                'method': 'POST',
+                'attr': {'class': 'form-group', 'id': 'newsletterForm'}
+            }) }}
+
+            {{ form_row(form.email) }}
+
+            {# CAMBIO: Se reemplaza la etiqueta </form> por la función form_end() #}
+            {{ form_end(form) }}
+
+
+            <div>
+                <input id="privacityTKM" type="checkbox" required>
+                <label for="privacityTKM">Acepto los </label>
+                <a href="{{ path('ss_tienda_terminos_de_uso') }}" target="_blank"> Terminos de uso </a>
+                <label for="privacityTKM"> y la </label>
+                <a href="{{ path('ss_tienda_privacidad') }}" target="_blank"> Política de privacidad</a>
+            </div>
+
+            <a id="continuar" onclick="guardaEnvio();" class="btn btn-default check_out"
+               style="background-color: #044266">
+                {% trans %}Confirmar Suscripción{% endtrans %}</a>
+        </div>
+    </div>
+
+    <script>
+        function validateEmail(email) {
+            const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(String(email).toLowerCase());
+        }
+
+        function guardaEnvio() {
+            if (!$('#privacityTKM').is(":checked") === true) {
+                alert("Usted debe aceptar los terminos y condiciones");
+                return false;
+            }
+            if ($('#newsletter_email').val() === "" || !validateEmail($('#newsletter_email').val())) {
+                alert("Debe introducir un email valido");
+                return false;
+            }
+            $("#newsletterForm").submit();
+        }
+    </script>
+{% endblock %}

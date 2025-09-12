@@ -1,0 +1,9 @@
+{# templates/admin/list_color_swatch.html.twig #}
+{% extends '@SonataAdmin/CRUD/base_list_field.html.twig' %}
+
+{% block field %}
+    <div style="display: flex; align-items: center;">
+        <div style="width: 20px; height: 20px; background-color: {{ value }}; border: 1px solid #ccc; margin-right: 10px;"></div>
+        <span>{{ value }}</span>
+    </div>
+{% endblock %}

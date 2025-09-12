@@ -1,0 +1,82 @@
+{# MIGRACIÓN: Se actualiza la ruta de la plantilla base de la que hereda #}
+{% extends "web/indexTemplateNoFiltros.html.twig" %}
+
+{% block aditionalHead %}
+    <script src="{{ asset('js/jquery/parallax/parallax.min.js') }}"></script>
+    <style>
+        .fondoblanco {
+            background-color: white;
+        }
+
+        h1 {
+            color: #044266;
+            font-family: 'Roboto', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        h2 {
+            color: #044266;
+            font-family: 'Roboto', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        h3 {
+            color: #044266;
+            font-family: 'Roboto', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            position: relative;
+            text-align: center;
+        }
+
+        .parallax-window {
+            min-height: 400px;
+            background: transparent;
+        }
+
+        .ularticulo > li {
+            list-style: square;
+        }
+
+        .table-striped > tbody > tr:nth-of-type(odd) {
+            background-color: #0d4c70;
+        }
+        .embed-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0; overflow: hidden;
+            max-width: 100%;
+        }
+
+        .embed-container iframe,
+        .embed-container object,
+        .embed-container embed {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        {% block aditionalStyle %}
+        {% endblock %}
+    </style>
+{% endblock %}
+
+{% block title %}TITULO VACIO{% endblock %}
+{% block metaDescription %}METADESCRIPCION VACÍA{% endblock %}
+
+{% block migas %}
+{% endblock %}
+
+{% block cuerpo %}
+{% endblock %}
+
+{% block productosVistos %}
+{% endblock %}

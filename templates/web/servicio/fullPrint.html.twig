@@ -1,0 +1,181 @@
+{% extends "web/estaticoPlantilla.html.twig" %}
+{% block title %}Full Print | Estampación de camisetas de forma personalizada{% endblock %}
+{% block metaDescription %}¿Te preguntas qué es el full print? ¿Te gustaría personalizar una prenda all over? Aquí te decimos todo lo que necesitas saber sobre esta técnica. ¡Visitanos!.{% endblock %}
+
+{% block datosEstructurado %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Camisetas Full Print",
+            "description": "Servicio de impresión Full Print para prendas completamente personalizadas",
+            "provider": {
+                "@type": "Organization",
+                "name": "TusKamisetas",
+                "url": "https://www.tuskamisetas.com/es/servicios/full-print"
+            },
+            "areaServed": {
+                "@type": "Place",
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": "ES"
+                }
+            },
+            "serviceType": "Sublimación textil"
+        }
+    </script>
+{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}" class="miActive">
+                    <span itemprop="name">{% trans %}Full Print{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+    <div class="col-lg-12 fondoblanco">
+        <h1>{% trans %}Full Print{% endtrans %}</h1>
+    </div>
+    <div class="col-lg-12">
+        {#<div class="parallax-window" data-parallax="scroll"#}
+             {#data-image-src="{{ asset('images/1-full-print.jpg') }}" data-bleed="-10"></div>#}
+        <img src="{{ asset('images/1-full-print.jpg') }}" style="width: 100%" alt="full print"/>
+    {#</div>#}
+    <div class="col-lg-12 fondoblanco">
+        <p>
+            La técnica de estampación full print hace referencia a un tipo de estampación textil que, en lugar de
+            localizar el diseño en una única parte de la camiseta o de la prenda, lo sitúa a lo largo de toda la
+            superficie textil.
+        </p>
+        <p>
+            Si alguna vez te has preguntado qué significa all over, es un término que hace referencia a que la
+            estampación se realiza en <b>toda la prenda</b> y no únicamente en una parte de esta. Por norma general, el
+            proceso
+            de la personalización textil localiza una parte delimitada del tejido y realiza la estampación ahí, en tanto
+            que la técnica full print te permite no limitar el área.
+        </p>
+    </div>
+
+    <div class="col-lg-12 fondoblanco">
+        <h2>{% trans %}Qué es la impresión full print{% endtrans %}</h2>
+    </div>
+    <div class="col-lg-12">
+        <div class="parallax-window" data-parallax="scroll"
+             data-image-src="{{ asset('images/2-que-es-la-impresion-full-print.jpg') }}" data-bleed="-10"></div>
+        {#<img src="{{ asset('images/2-que-es-la-impresion-full-print.jpg') }}" style="width: 100%"#}
+        {#alt="que es la impresion full print"/>#}
+    </div>
+    <div class="col-lg-12 fondoblanco">
+        <p>
+            La impresión full print es un tipo de impresión que te permite aprovechar la pieza textil en su totalidad.
+            La técnica que se emplea es la <b>sublimación textil</b>, técnica que consiste en traspasar la tinta al
+            tejido
+            mediante el calor.
+        </p>
+        <p>
+            El término viene del campo de la física, y es que la tinta, en estado sólido, pasa directamente al estado
+            gaseoso (modo en el que se injerta en la pieza textil) sin un estado intermedio. Este tipo de técnica se
+            realiza gracias a una <b>máquina de sublimación</b>, un aparato diseñado para ese fin.
+        </p>
+        <p>
+            Cuando hablamos de sublimación, sin embargo, no siempre hacemos referencia a la impresión full print,
+            también conocida como <b>estampación all over</b>. La sublimación suele realizarse en una zona específica de
+            la
+            camiseta o de la pieza textil, en tanto que la impresión full print no tiene limitaciones en cuanto al área
+            ocupada y puede estamparse el diseño completo en todo el tejido.
+        </p>
+    </div>
+
+
+    <div class="col-lg-12">
+        <h2>{% trans %}Cómo funciona la impresión full print{% endtrans %}</h2>
+        {#<img src="{{ asset('images/3-parches-para-ropa.jpg') }}" style="width: 100%" alt="parches para ropa"/>#}
+        <p>
+            La técnica all over requiere el mismo procedimiento que la sublimación textil, aunque en lugar de delimitar
+            la zona en la máquina se señala que ha de realizarse en toda la prenda.
+        </p>
+        <ul class="ularticulo">
+            <li>
+                Imprimimos el diseño que queremos estampar mediante un <b>plotter</b> cargado con tintas especiales.
+                Esta
+                impresión se realiza en un tipo de papel que no absorbe las tintas, ya que a posteriori estas deben
+                traspasarse al tejido.
+            </li>
+            <li>
+                Antes de proceder a la impresión, hemos de tener presente que la prenda textil ha de tener un <b>mínimo
+                    de 50% poliéster</b>, puesto que otros tejidos como el algodón no ofrecen un resultado tan bueno. No
+                obstante, por norma general la sublimación full print se realiza en camisetas enteramente de poliéster,
+                aportadas por nosotros.
+            </li>
+            <li>
+                Se coloca la primera lámina de la impresión en la <b>máquina de sublimar</b>. Sobre esta, se coloca la
+                camiseta de poliéster, y sobre esta la segunda lámina. De este modo se realiza la estampación tanto por
+                la parte delantera como por la trasera.
+            </li>
+            <li>
+                La máquina se encarga de emitir calor, a modo de plancha. Este calor hace que la tinta del papel se
+                gasifique y se traspase al tejido, adhiriéndose a él.
+            </li>
+            <li>
+                Una vez ha finalizado el proceso, se comprueba que todas las zonas del tejido han sido estampadas,
+                exceptuando las <b>zonas sensibles no imprimibles</b>, zonas a las que no puede llegar la tinta por motivos de
+                pliegue.
+            </li>
+        </ul>
+    </div>
+
+
+    <div class="col-lg-12 fondoblanco">
+        <h2>{% trans %}Camisetas full print España{% endtrans %}</h2>
+    </div>
+    <div class="col-lg-12">
+        <div class="parallax-window" data-parallax="scroll"
+             data-image-src="{{ asset('images/3-camisetas-full-print-espana.jpg') }}" data-bleed="-10"></div>
+        {#<img src="{{ asset('images/3-camisetas-full-print-españa.jpg') }}" style="width: 100%"#}
+        {#alt="que es la impresion full print"/>#}
+    </div>
+    <div class="col-lg-12 fondoblanco">
+        <p>
+            El estampado all over presenta múltiples ventajas.
+        </p>
+        <p>
+            En primer lugar, se trata de una técnica con menos límites que otros procesos. Al utilizar toda la prenda
+            textil, permite disponer de diseños más llamativos, grandes e impactantes, y debido al proceso de
+            sublimación full print la cantidad de colores que se puede emplear es ilimitada.
+        </p>
+        <p>
+            En esta misma línea, uno de los principales motivos por los que se recurre a la técnica full print es porque
+            permite resultados de
+        <b>calidad fotográfica</b>, pues el traspaso de la tinta a la tela respeta por completo el
+        diseño original.
+        </p>
+        <p>
+            La técnica all over no cubre los poros de la prenda textil, por lo que las camisetas se mantienen <b>totalmente
+                transpirables</b>. Asimismo, al fundirse químicamente la tinta al tejido, el diseño no corre el riesgo
+            de
+            desaparecer o deteriorarse con los lavados.
+        </p>
+        <p>
+            La estampación all over se ha convertido en una de las preferidas para la <b>impresión de camisetas
+                deportivas</b>,
+            ya que es transpirable y se pueden incluir los logos de los patrocinadores en toda la prenda. Aun con todo,
+            el principal motivo de su popularidad es que el diseño resulta mucho más impactante, lo que lo hace
+            diferente y refrescante en comparación con otros resultados.
+        </p>
+    </div>
+{% endblock %}

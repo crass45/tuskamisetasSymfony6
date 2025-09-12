@@ -1,0 +1,63 @@
+{% extends "base.html.twig" %}
+
+{% block baseBody %}
+    <div class="row" style="background-color: white; padding: 20px;">
+        <div class="col-xs-12">
+            <h2>Mis Pedidos</h2>
+            <hr>
+            <table class="table table-striped">
+                <thead>
+                <tr style="border-bottom: 1px dashed #a5a5a5; border-top: 1px dashed #a5a5a5;">
+                    <th>{% trans %}FECHA{% endtrans %}</th>
+                    <th>{% trans %}Nº DE PEDIDO{% endtrans %}</th>
+                    <th>{% trans %}ESTADO{% endtrans %}</th>
+                    <th>{% trans %}IMPORTE{% endtrans %}</th>
+                    <th>{% trans %}DETALLE{% endtrans %}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% if pedidos is not empty %}
+                    {% for pedido in pedidos %}
+                        <tr>
+                            <td>{{ pedido.fecha|date("d/m/Y") }}</td>
+                            <td>{{ pedido.nombre }}</td>
+                            {# MIGRACIÓN: Se accede a la propiedad directamente en Twig #}
+                            <td>{{ pedido.estado.nombreParaCliente }}</td>
+                            <td>{{ pedido.total | number_format(2, ',', '.') }} €</td>
+                            <td>
+                                {% if pedido.factura %}
+                                    {# MIGRACIÓN: Se usa la nueva ruta para ver la factura en PDF #}
+                                    <a href="{{ path('app_profile_invoice_pdf', {'_locale': app.request.locale, 'id': pedido.id}) }}"
+                                       target="_blank"
+                                       class='btn btn-sm btn-info'>{% trans %}Ver Factura{% endtrans %}</a>
+                                {% elseif pedido.estado.id > 1 and pedido.estado.id != 6 %}
+                                    {# MIGRACIÓN: Se usa la nueva ruta para ver el presupuesto/pedido en PDF #}
+                                    <a href="{{ path('app_profile_order_pdf', {'_locale': app.request.locale, 'id': pedido.id}) }}"
+                                       target="_blank"
+                                       class='btn btn-sm btn-primary'>{% trans %}Ver Presupuesto{% endtrans %}</a>
+                                {% else %}
+                                    Revisando pedido...
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5">{% trans %}No tienes ningún pedido todavía.{% endtrans %}</td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }} {# Importante para no sobrescribir los scripts de la plantilla base #}
+    <script type="text/javascript">
+        $(window).ready(function () {
+            // Esta lógica puede necesitar ser adaptada si tu nuevo layout no tiene un #paso2
+            // $('#paso2').addClass('blanco');
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,62 @@
+{# templates/security/modal_login.html.twig #}
+
+{% if error %}
+    {# MIGRACIÓN: Este script es una forma de asegurarse de que el modal se abre si hay un error de login.
+       Se puede mejorar, pero por ahora se mantiene la funcionalidad. #}
+    <script>
+        $(document).ready(function() {
+            // Asume que el modal tiene el id #login y que jQuery y Bootstrap están cargados
+            $('#login').modal("show");
+        });
+    </script>
+{% endif %}
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="login-form"><!--login form-->
+            <h2>{% trans %}YA SOY USUARIO{% endtrans %}</h2>
+
+            {# MIGRACIÓN: Se actualiza la ruta de la acción del formulario al nuevo 'check_path' del login. #}
+            <form action="{{ path("app_login") }}" method="post">
+                {% if error %}
+                    <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                {% endif %}
+
+                {# MIGRACIÓN: El token CSRF se genera con la función de Twig. #}
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <input type="text" class="form-control" id="username" name="_username" value="{{ last_username }}" required="required" placeholder="Usuario o Email"/>
+                <input type="password" class="form-control" id="password" name="_password" required="required" placeholder="Contraseña"/>
+
+                <span>
+                     <input type="checkbox" id="remember_me" name="_remember_me" value="on"/>
+                     <label for="remember_me">{% trans %}Recordarme{% endtrans %}</label>
+                </span>
+                <br>
+                <span>
+                    {# MIGRACIÓN: Se actualiza la ruta a la nueva página de reseteo de contraseña.
+                       Se ha eliminado el filtro personalizado 'base64UrlEncode'. Si lo necesitas, deberás volver a crearlo como una extensión de Twig. #}
+                    <a href="{{ path('app_forgot_password_request') }}" rel="nofollow">
+                        {% trans %}He olvidado mi contraseña{% endtrans %}
+                    </a>
+                </span>
+
+                <button type="submit" class="btn btn-default">{% trans %}Entrar{% endtrans %}</button>
+            </form>
+        </div><!--/login form-->
+    </div>
+
+    <div class="col-sm-6">
+        <div class="login-form">
+            <h2>{% trans %}DESEO HACERME CLIENTE{% endtrans %}<BR>{% trans %}Y REGISTRARME{% endtrans %}</h2>
+            <p>{% trans %}TEXTO_REGISTRO{% endtrans %}</p>
+            <br><br><br>
+            <span>
+                {# MIGRACIÓN: Se actualiza la ruta a la nueva página de registro. #}
+                <a href="{{ path('app_register') }}" rel="nofollow">
+                    <div class="btn btn-default">{% trans %}Registro{% endtrans %}</div>
+                </a>
+            </span>
+        </div>
+    </div>
+</div>

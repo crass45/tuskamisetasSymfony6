@@ -1,0 +1,186 @@
+{% extends "SSTiendaBundle:Web:indexTemplateNoFiltros.html.twig" %}
+
+        {% block title %}Personaliza camisetas al por mayor | la mejor calidad y precio{% endblock %}
+        {% block metaDescription %}Disponemos de los mejores precios de impresión para grandes campañas publicitarias. ¡Visítanos!{% endblock %}
+
+
+
+{% block fueraBloques %}
+
+    <div class="container">
+        <div class="row">
+            <!-- Creates the bootstrap modal where the image will appear -->
+            <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal"><span
+                                        aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                        </div>
+                        <div class="modal-body">
+                            <img src="" id="imagepreview" style="width: 100%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="breadcrumbs">
+                <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+                    <li itemprop="itemListElement" itemscope
+                        itemtype="http://schema.org/ListItem">
+                        <a itemprop="item" href="{{ path('ss_tienda_home') }}">
+                            <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                        </a>
+                        <meta itemprop="position" content="1"/>
+                    </li>
+                    <li itemprop="itemListElement" itemscope
+                        itemtype="http://schema.org/ListItem" class="active">
+                        <a itemprop="item" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}"
+                           class="miActive">
+                            <span itemprop="name">{% trans %}Solicita Presupuesto{% endtrans %}</span>
+                        </a>
+                        <meta itemprop="position" content="2"/>
+                    </li>
+                </ol>
+            </div><!--/breadcrums-->
+
+        </div>
+    </div>
+
+    <div style="width:100%;background-image: url({{ asset('images/press2.jpg') }}); background-size: cover;">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <br>
+                            <br>
+                            <br>
+                            <div class="login-form"
+                                 style="border: 1px solid lightgrey; padding: 20px; position: relative; background-color: rgba(100,100,100, .9)">
+                                <h1 style="font-size: 42px; text-align: center; vertical-align: center;  color: white; text-shadow: 2px 0 0 #000000, -2px 0 0 #000000, 0 2px 0 #000000, 0 -2px 0 #000000, 1px 1px #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;">{% trans %}Presupuesto personalizado{% endtrans %}</h1>
+                                <h2 class="subtitle"
+                                    style="font-size:24px; text-align: center; vertical-align: center;  color: white; text-shadow: 2px 0 0 #000000, -2px 0 0 #000000, 0 2px 0 #000000, 0 -2px 0 #000000, 1px 1px #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;">
+                                    Te enviaremos un presupuesto a la medida de tu negocio</h2>
+                                <br>
+
+                                <form enctype="multipart/form-data"
+                                      action="{{ path("ss_tienda_lead_presupuesto_confirmar") }}"
+                                      method="post">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <input type="text" id="empresa"
+                                                   name="_empresa"
+                                                   placeholder="Empresa" style="color: black"/>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <input type="text" id="nombre"
+                                                   name="_nombre"
+                                                   placeholder="Nombre" style="color: black"/>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <input type="email" id="email"
+                                                   name="_email"
+                                                   required placeholder="e-mail" style="color: black"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input type="telefono" id="telefono"
+                                                   name="_telefono" required placeholder="Telefono" style="color: black"/>
+                                        </div>
+
+                                        <div class="col-md-6">
+                                            <input type="text" id="ciudad"
+                                                   name="_ciudad"
+                                                   placeholder="Ciudad" style="color: black"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="_fecha" style="color: white">¿En que fecha necesitas el pedido?</label>
+                                            <input type="date" id="fecha"
+                                                   name="_fecha"
+                                                   style="color: black"/>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="_cantidad" style="color: white"></label>
+                                            <input type="number" id="cantidad"
+                                                   name="_cantidad"
+                                                   placeholder="¿Cuantas prendas necesitas?" style="color: black"/>
+                                        </div>
+
+                                        <div class="col-lg-12">
+                    <textarea name="_observaciones" id="observaciones"
+                              placeholder="Cuentanos tu idea"
+                              style="height: 120px;"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <br>
+
+                                    <button type="submit"
+                                            class="btn btn-default"
+                                            style="position: relative; margin-top: 15px; margin-bottom: 0px; background-color: #ff9000">
+                                        <b>Enviar</b>
+                                    </button>
+
+
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+        <br>
+        <br>
+        <br>
+        <div style="background-color: rgba(0,0,0,.8)">
+            <br>
+            <br>
+            <br>
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <h3 style="color: rgb(255, 144, 0)">Producción rápida y entrega garantizada</h3>
+                        <p style="color: white">En <b>TusKamisetas</b>, sabemos que el tiempo es clave. Por eso, contamos con procesos optimizados que nos permiten ofrecer una <b>producción rápida sin comprometer la calidad</b>. Desde pequeños pedidos hasta grandes volúmenes, trabajamos con eficiencia para cumplir con los plazos más exigentes.
+                            Además, garantizamos la entrega puntual para que recibas tu pedido justo cuando lo necesitas. <b>Compromiso, calidad y rapidez</b> son nuestros pilares. ¡Confía en nosotros para llevar tu marca al siguiente nivel sin demoras!</p>
+                    </div>
+                    <div class="col-lg-3">
+                        <h3 style="color: rgb(255, 144, 0)">Calidad premium en telas y estampados</h3>
+                        <p style="color: white">En TusKamisetas, nos especializamos en ofrecer <b>serigrafía de alta calidad</b> con materiales premium. Trabajamos con marcas de renombre que ofrecen productos resistentes y de excelente acabado.
+
+                            Nuestros estampados destacan por su <b>definición, colores vibrantes y resistencia al desgaste</b>, asegurando que cada diseño luzca impecable incluso después de múltiples lavados.
+
+                            Si buscas productos con la mejor calidad en textiles y serigrafía, <b>somos tu mejor opción</b>. ¡Convierte tus ideas en prendas únicas y duraderas con nosotros!</p>
+                    </div>
+                    <div class="col-lg-3">
+                        <h3 style="color: rgb(255, 144, 0)">Precios especiales para compras mayoristas</h3>
+                        <p style="color: white">En TusKamisetas, premiamos la confianza de nuestros clientes profesionales con <b>precios especiales y descuentos exclusivos</b> en pedidos al por mayor. Si necesitas grandes volúmenes de productos con la mejor calidad en serigrafía, te ofrecemos <b>tarifas competitivas y condiciones flexibles</b> para maximizar tu inversión.
+
+                            Ya sea para empresas, eventos, marcas de ropa o distribuidores, contamos con <b>producción eficiente, materiales premium y entregas garantizadas</b>. ¡Consúltanos y descubre las ventajas de comprar al por mayor con nosotros!</b>. {# Además es el método de impresión más indicado para grandes tiradas #}
+                        </p>
+                    </div>
+                    <div class="col-lg-3">
+                        <h3 style="color: rgb(255, 144, 0)">Diseños personalizados para tu empresa o evento</h3>
+                        <p style="color: white">En TusKamisetas, hacemos realidad tus ideas. Si tienes un diseño para tu <b>empresa, evento o equipo</b>, nosotros lo plasmamos con <b>calidad profesional y máxima precisión</b>. Trabajamos con materiales premium y sistemas de impresión avanzados e innovadores para garantizar un acabado duradero y colores vibrantes.
+
+                            Ya sea para <b>uniformes, promociones, celebraciones o merchandising</b>, nos encargamos de que tu imagen destaque. <b>Cuéntanos tu idea y la convertiremos en una prenda única.</b></p>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <br>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        $(".pop").on("click", function () {
+            $('#imagepreview').attr('src', $(this).find('.imageresource').attr('src')); // here asign the image to the modal when the user click the enlarge link
+            $('#imagemodal').modal('show'); // imagemodal is the id attribute assigned to the bootstrap modal, then i use the show function
+        });
+    </script>
+{% endblock %}
+{% block baseBody %}
+{% endblock %}
+{% block productosVistos %}
+{% endblock %}
+
+{% block javascript %}
+
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html.twig" %}
+
+{#{% block canonicalAMP %}#}
+    {#{% if(req.attributes.get('_route_params')['pagina'] is defined) %}#}
+        {#<link rel="amphtml"#}
+              {#href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({'pagina': req.attributes.get('_route_params')['pagina']})) }}.amp"/>#}
+
+    {#{% else %}#}
+        {#{% if (app.request.attributes.get('_route_params') != null) %}#}
+            {#<link rel="amphtml"#}
+                  {#href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) }}.amp"/>#}
+        {#{% endif %}#}
+    {#{% endif %}#}
+{#{% endblock %}#}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block metaDescription %}
+    {% if (descripcionSEO is defined) %}
+        {{ descripcionSEO }}
+    {% endif %}
+{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span></a>
+                <meta itemprop="position" content="0"/>
+            </li>
+            <li class="active" itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) }}" class="miActive">
+                    <span itemprop="name">{{ titulo | capitalize}}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block baseBody %}
+    <div class=" col-lg-12 tkmPading">
+
+        {#<h1>{{ titulo }}</h1>#}
+
+        <div>
+            {{ texto | raw }}
+        </div>
+    </div>
+{% endblock %}

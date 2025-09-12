@@ -1,0 +1,81 @@
+{% extends "web/estaticoPlantilla.html.twig" %}
+
+{% block aditionalStyle %}
+    .blog-content img{
+    max-width: 100%;
+    height: auto;
+    }
+{% endblock %}
+
+{% block title %}{{ publicacion.titulo }}{% endblock %}
+{% block metaDescription %}{{ publicacion.metadescripcion }}{% endblock %}
+
+{% block datosEstructurado %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "BlogPosting",
+            "headline": "{{ publicacion.titulo|e('js') }}",
+        "image": "{{ publicacion.urlImagenPortada }}",
+        "author": {
+            "@type": "Person",
+            "name": "Jose Luis López"
+        },
+        {# MIGRACIÓN: Se usa el filtro 'date' estándar de Twig con el formato ISO 8601 #}
+        "datePublished": "{{ publicacion.fecha|date('c') }}",
+        "dateModified": "{{ publicacion.fecha|date('c') }}",
+        "publisher": {
+            "@type": "Organization",
+            "name": "TusKamisetas",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://www.tuskamisetas.com/logo.png"
+            }
+        }
+    }
+    </script>
+{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                {# MIGRACIÓN: Se usan los nuevos nombres de ruta #}
+                <a itemprop="item" href="{{ path('app_home', {'_locale': app.request.locale}) }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_blog_list', {'_locale': app.request.locale}) }}">
+                    <span itemprop="name">{% trans %}Publicaciones{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ path('app_blog_detail', {'_locale': app.request.locale, 'slug': publicacion.nombreUrl}) }}" class="miActive">
+                    <span itemprop="name">{{ publicacion.titulo }}</span>
+                </a>
+                <meta itemprop="position" content="3"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+    <div class="col-lg-12 blog-content">
+        <h1>{{ publicacion.titulo }}</h1>
+        <hr>
+        {{ publicacion.contenido | raw }}
+    </div>
+{% endblock %}
+
+{% block javascript %}
+{# ... Tu modal de imagen y otros scripts se conservan. Asegúrate de que el HTML del modal esté en tu plantilla base. #}
+<script>
+    $(".pop").on("click", function () {
+    $('#imagepreview').attr('src', $(this).find('.imageresource').attr('src')); // here asign the image to the modal when the user click the enlarge link
+    $('#imagemodal').modal('show'); // imagemodal is the id attribute assigned to the bootstrap modal, then i use the show function
+});
+</script>
+{% endblock %}

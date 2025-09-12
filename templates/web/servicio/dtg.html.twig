@@ -1,0 +1,245 @@
+{% extends "web/estaticoPlantilla.html.twig" %}
+
+{% block title %}Impresión digital textil o DTG | Estampación de alta calidad{% endblock %}
+
+{% block metaDescription %}¿Quieres saber qué es la impresión digital textil, cómo se hace y cuáles son sus ventajas? Entra y visítanos, te contamos todo lo que tienes que saber y más.{% endblock %}
+
+{% block datosEstructurado %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Impresión Digital Textil (DTG)",
+            "description": "Servicio de impresión digital en camisetas y sudaderas.",
+            "provider": {
+                "@type": "Organization",
+                "name": "TusKamisetas",
+                "url": "https://www.tuskamisetas.com/es/servicios/impresion-digital"
+            },
+            "areaServed": {
+                "@type": "Place",
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": "ES"
+                }
+            },
+            "serviceType": "Impresion Digital Directa (DTG)"
+        }
+    </script>
+{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}" class="miActive">
+                    <span itemprop="name">{% trans %}Impresión Digital{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="parallax-window" data-parallax="scroll"
+                 data-image-src="{{ asset('images/dtg-Brother_GTX.png') }}">
+                <div style="height: 100%"></div>
+                <h1 style="font-size: 36px; text-align: center; vertical-align: center; position: relative;top: 90px; color: white; text-shadow: 2px 0 0 #000000, -2px 0 0 #000000, 0 2px 0 #000000, 0 -2px 0 #000000, 1px 1px #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;">{% trans %}Impresión digital textil{% endtrans %}</h1>
+                <p class="subtitle"
+                   style="font-size:18px; text-align: center; vertical-align: center; position: relative;top: 90px; color: white; text-shadow: 2px 0 0 #000000, -2px 0 0 #000000, 0 2px 0 #000000, 0 -2px 0 #000000, 1px 1px #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;">
+                    impresión a todo color sin mínimos</p>
+            </div>
+        </div>
+
+        <div class="col-lg-12 fondoblanco">
+            <p>
+                La impresión digital textil es una de las técnicas de estampación más novedosas, ya que es un derivado
+                de la impresora de papel. Es una opción muy recomendable para tiradas pequeñas o incluso una única
+                unidad. Asimismo, el nivel de detalle que puede aportar es muy alto, debido a que se trata de una
+                impresión directa.
+            </p>
+            <p>
+                La impresora que se emplea para la impresión digital textil funciona exactamente igual que una impresora
+                corriente, pero está preparada para imprimir sobre prendas textiles en lugar de sobre papel. Este tipo
+                de estampación también se conoce como DTG (Direct To Garment o Directo a la Prenda, como sería su
+                traducción), y permite, precisamente, imprimir una imagen, diseño o logo de manera directa sobre el
+                tejido.
+            </p>
+        </div>
+        <div class="col-lg-12 ">
+            <h2>{% trans %}Qué es la impresión digital textil{% endtrans %}</h2>
+        </div>
+        <div class="col-lg-8">
+
+            <p>
+                La estampación digital textil consiste en digitalizar el diseño que se quiera plasmar en la prenda y
+                mandarlo a imprimir mediante una máquina específica con este fin. El objetivo de la impresora textil es
+                <b>inyectar la tinta en el tejido</b>, por lo que ésta pasa a formar parte de la prenda.
+            </p>
+
+            <p>
+                La técnica es muy similar a la serigrafía, pero el proceso es menos elaborado. No es preciso crear
+                pantallas ni realizar el traspaso de la tinta de manera manual, puesto que todo el procedimiento lo
+                realiza la máquina. Al igual que en las impresoras de papel, basta con seleccionar el diseño en el
+                ordenador, colocar la prenda en la máquina y mandar imprimir.
+            </p>
+            <p>
+                Al inyectarse la tinta a la tela, el método de la impresión digital puede realizarse sobre prendas de
+                diferentes tejidos, como pueden ser camisetas, polos, sudaderas o incluso pantalones, si bien todos
+                ellos deben tener al menos un 50% de algodón para que la adherencia funcione bien.
+            </p>
+        </div>
+        <div class="col-lg-4">
+            {#<div class="parallax-window" data-parallax="scroll"#}
+            {#data-image-src="{{ asset('images/2-que-es-la-impresion-digital.jpg') }}"></div>#}
+            <img src="{{ asset('images/1-impresion-digital-textil-brother.jpg') }}" style="width: 100%"
+                 alt="serigrafía"/>
+        </div>
+
+
+        <div class="col-lg-12 fondoblanco">
+            <h2>{% trans %}Cómo se realiza la impresión directa a camisetas{% endtrans %}</h2>
+            <p>
+                El procedimiento de la impresión digital es bastante sencillo, aunque se han de seguir unos pasos
+                previos para que el resultado sea óptimo.
+            </p>
+            <ul class="ularticulo">
+                <li>
+                    Lo primero que ha de hacerse es <b>preparar la prenda</b>. Este paso requiere rociar la prenda con
+                    un
+                    líquido específico que facilita la adherencia de la tinta. En muchas ocasiones esto se realiza
+                    manualmente, esparciendo este líquido con un spray, pero hoy en día muchas impresoras digitales
+                    incluyen este paso en el proceso.
+                </li>
+                <li>
+                    Antes de proceder a la impresión es muy importante asegurarse de que la prenda está <b>totalmente
+                        seca</b>. Se puede secar con calor, sirviéndose de una plancha, o dejar que se seque al aire
+                    libre,
+                    aunque esto último tiende a tomar más tiempo.
+                </li>
+                <li>
+                    Mientras la prenda se seca se prepara el diseño para su impresión. Esta preparación se realiza
+                    mediante un <b>software especial</b> que crea un archivo específico para la impresora digital
+                    textil. Si el
+                    diseño es oscuro, puede programarse en la máquina una capa extra de pintura blanca para que el
+                    resultado final no sea tan opaco.
+                </li>
+                <li>
+                    Cuando la pieza esté totalmente seca, se coloca en la máquina para la impresión. Ha de estar
+                    perfectamente lisa porque las arrugas pueden provocar defectos en el diseño. Una vez cargada la
+                    máquina, se activa la impresión.
+                </li>
+            </ul>
+            <p>
+                Las impresoras digitales transfieren el diseño al tejido mediante unos <b>cabezales de alta
+                    definición</b>, que
+                son los que consiguen que la calidad fotográfica del resultado final.
+            </p>
+        </div>
+
+
+        <div class="col-lg-12 fondoblanco">
+            <h2>{% trans %}Ventajas y desventajas de la estampación digital
+                {% endtrans %}</h2>
+        </div>
+        <div class="col-lg-12 fondoblanco">
+            <p>
+                La impresión digital de camisetas ofrece muchas ventajas.
+            </p>
+            <p>
+                La calidad de la impresión es siempre óptima, puesto que respeta la nitidez y la precisión de la imagen
+                que se ha impreso. Al imprimir directamente sobre la tela los errores son mínimos, de ahí que sea una
+                alternativa tan recomendable para imprimir camisetas de alta calidad. Además, la impresión queda
+                integrada en el tejido, por lo que el resultado es suave y cómodo de llevar.
+            </p>
+            <p>
+                No existe un límite de colores en este tipo de impresiones, por lo que el diseño no tiene por qué estar
+                limitado a determinados colores planos. No obstante, al tratarse de una impresión digital, no se pueden
+                emplear colores metalizados o brillantes.
+            </p>
+            <p>
+                Su principal desventaja es que es un procedimiento algo más caro que otros procesos como la serigrafía o
+                la sublimación, ya que las impresoras digitales son bastantes costosas, así como la tinta que se emplea
+                en ellas. Además, no puede imprimirse sobre piezas enteramente de nylon, poliéster o tejidos que no
+                contengan cierto porcentaje de algodón o tejido natural.
+            </p>
+        </div>
+
+
+        <div class="col-lg-12 fondoblanco">
+            <h2>{% trans %}Tienda online de impresión digital{% endtrans %}</h2>
+        </div>
+        <div class="col-lg-12">
+            <div class="parallax-window" data-parallax="scroll"
+                 data-image-src="{{ asset('images/3-tienda-online-de-impresion-digital.jpg') }}" data-bleed="-10"></div>
+            {#<img src="{{ asset('images/3-tienda-online-de-impresion-digital.jpg') }}" style="width: 100%"#}
+            {#alt="serigrafía"/>#}
+        </div>
+        <div class="col-lg-12 fondoblanco">
+            <p>
+                En TusKamisetas nos hemos especializado en todo tipo de estampación e impresión textil, de ahí que
+                contemos
+                con el equipamiento necesario para realizar cualquier impresión digital de alta calidad, en caso de que
+                esa
+                sea la técnica que buscas para tus prendas. En nuestro catálogo encontrarás camisetas para impresión
+                digital, ya que el tejido que se necesita para este proceso requiere de unas características concretas.
+                También podemos ofrecerte asesoramiento para que escojas entre los diferentes tipos de impresión
+                digital,
+                así como con respecto a las otras técnicas de estampación que podemos elaborar en TusKamisetas.
+            </p>
+            <p>
+                Como bien sabes, el proceso de impresión digital es más rápido que otros métodos, ya sea impresión
+                digital
+                para camisetas o impresión digital gran formato. Basta con que nos envíes el diseño que tenías pensado
+                para
+                la estampación y nos expliques qué es lo que estabas buscando, ya que las camisetas y las prendas
+                textiles
+                entre las que puedes elegir pueden encontrarse en diferentes colores. Además, dependiendo del volumen de
+                camisetas o prendas que nos solicites, podremos plantearte un presupuesto sin compromiso, en el que
+                podrás
+                comprobar por ti mismo que los precios que ofrecemos en nuestra tienda online de estampación e impresión
+                digital son <b>los más competitivos</b> de este sector.
+            </p>
+        </div>
+
+        <div class="col-lg-12">
+            <h2 style="text-align: center;">Preguntas frecuentes sobre la impresión digital</h2>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Que objetos se pueden imprimir por DTG?</h3>
+            <p>Cualquier prenda de <b>algodón 100%</b> o genero natural que no contenga mas de un 30% de poliester puede
+                ser impreso mediante impresión digital. Y al no tener costes fijos, <b>no necesitaras una cantidad
+                    minima</b> para obtener un precio asequible.</p>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Como es el tacto de la impresión digital?</h3>
+            <p>Las prendas impresas mediante DTG tiene un <b>tacto suave</b>, en prendas blancas <b>la tinta queda
+                    completamente integrada en el tejido</b>, en prendas de color hay una pequeña difrencia de grosor
+                debido al pretratamiento y la base blanca que necesitan, pero sigue teniendo un acabado muy suave al
+                tacto.</p>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Se puede imprimir cualquier diseño mediante DTG?</h3>
+            <p>Con la impresión digital podemos imprimir <b>con todo lujo de detalles</b>, es por esto que si estás
+                pensando en crear productos con tus diseños degradados o fotografías, la impresión digital es la técnica
+                más adecuada y además <b>sin cantidades mínimas</b>.</p>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Cual es la durabilidad de la impresión digital?</h3>
+            <p>Las impresiones mediante DTG tienen una <b>alta calidad y larga duración</b>, quizás no tan duradera como
+                la serigrafía pero sin duda con unos <b>cuidados mínimos</b> en el lavado y el planchado, es muy
+                provable te aburras de tu camiseta antes de que se desgaste.</p>
+        </div>
+    </div>
+{% endblock %}

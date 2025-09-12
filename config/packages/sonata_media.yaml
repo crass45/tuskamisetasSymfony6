@@ -1,0 +1,22 @@
+# config/packages/sonata_media.yaml
+sonata_media:
+  class:
+    media: App\Entity\Sonata\Media
+    gallery: App\Entity\Sonata\Gallery
+    gallery_item: App\Entity\Sonata\GalleryItem
+    category: App\Entity\Sonata\ClassificationCategory # <-- ESTA ES LA LÍNEA AÑADIDA
+  db_driver: doctrine_orm
+  default_context: default
+  contexts:
+    default:
+      providers:
+        - sonata.media.provider.image
+        - sonata.media.provider.file
+        - sonata.media.provider.youtube
+  cdn:
+    server:
+      path: /uploads/media
+  filesystem:
+    local:
+      directory: "%kernel.project_dir%/public/uploads/media"
+      create: true

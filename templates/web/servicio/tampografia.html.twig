@@ -1,0 +1,223 @@
+{% extends "web/estaticoPlantilla.html.twig" %}
+
+{% block title %}Tampografia | La técnica perfecta para personalizar objetos{% endblock %}
+{% block metaDescription %}¿Buscas una forma de personalizar artículos y no sabes qué técnica escoger? Te decimos qué es tampografía y por qué puede ser tu mejor opción. ¡Visítanos!{% endblock %}
+
+{% block datosEstructurado %}
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Tampografia",
+        "description": "Servicio de tampografiapara personalizar boligrafos, encendoresy merchandising variado en grandes volumenes a bajo costo.",
+        "provider": {
+            "@type": "Organization",
+            "name": "TusKamisetas",
+            "url": "https://www.tuskamisetas.com/es/servicios/tampografia"
+        },
+        "areaServed": {
+            "@type": "Place",
+            "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "ES"
+            }
+        },
+        "serviceType": "Tampografia"
+    }
+</script>
+{% endblock %}
+
+{% block migas %}
+    <!-- Creates the bootstrap modal where the image will appear -->
+    <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span
+                                aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                </div>
+                <div class="modal-body">
+                    <img src="" id="imagepreview" style="width: 100%">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}" class="miActive">
+                    <span itemprop="name">{% trans %}Tampografía{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+    <div class="row">
+        <div class="col-lg-12 fondoblanco">
+        <h1>{% trans %}Tampografía{% endtrans %}</h1>
+        </div>
+        <div class="col-lg-12">
+            <div class="parallax-window" data-parallax="scroll"
+                 data-image-src="{{ asset('images/tampografia-tuskamisetas.jpg') }}">
+            </div>
+        </div>
+        <div class="col-lg-12 fondoblanco">
+            {#<img src="{{ asset('images/tampografia-bolis.jpg') }}" style="width: 100%" alt="tampografia"/>#}
+            <p>
+                La tampografía es el método más adecuado para personalizar artículos como bolígrafos, gafas de sol,
+                botellas, o cualquier otra superficie que no sea exclusivamente plana, aunque en estas superficies
+                también se practica. Es una técnica relativamente innovadora que cada vez se utiliza más dentro de la
+                estampación textil y de artículos de regalo.
+            </p>
+            <p>
+                Se utiliza especialmente para la estampación en objetos pequeños, ya que el nivel de detalle es muy
+                bueno y el proceso bastante rápido, aunque también puede aplicarse a ítems más grandes. Se trata de una
+                técnica muy asequible que permite personalizar productos más pequeños o con una superficie más
+                desnivelada.
+            </p>
+        </div>
+        <div class="col-lg-12">
+            <h2>¿Qué es la tampografía?</h2>
+        </div>
+        <div class="col-lg-8">
+            <p>
+                La técnica de la tampografía consiste en estampar, mediante un tampón de silicona o de caucho, un logo,
+                diseño o imagen sobre objetos pequeños y/o con una superficie heterogénea, es decir, con curvas o
+                rugosidades.
+            </p>
+            <p>
+                Se trata de una técnica bastante nueva que se lleva a cabo con una máquina tampográfica, que dispone de
+                tampones de diferentes tamaños y con distintos colores. Se ha popularizado en gran medida porque es el
+                método más cómodo para crear artículos promocionales baratos, puesto que su procedimiento es rápido y
+                muy económico.
+            </p>
+            <p>
+                Gracias a la adaptabilidad del tampón de silicona, la tinta puede adherirse con precisión a toda la
+                superficie, aunque tenga concavidades, huecos o curvas. Este método se utiliza especialmente para
+                personalizar artículos de regalo clásicos como llaveros, gafas de sol, bolígrafos, mecheros o tazas, por
+                lo que se trata de una técnica muy versátil.
+            </p>
+        </div>
+        <div class="col-lg-4">
+        <img src="{{ asset('images/tampografia-1.jpg') }}" style="width: 100%" alt="que-es-la-tampografia"/>
+        </div>
+        </div>
+
+        <div class="col-lg-12">
+            <h2>Cómo se realiza la impresión tampografía
+            </h2>
+            <p>
+                La impresión por tampografía se realiza mediante unas máquinas específicas, y el proceso está bastante
+                automatizado, aunque es necesario un componente manual. Así es cómo se realiza la tampografía paso a
+                paso:
+            </p>
+            <ul class="ularticulo">
+                <li>
+                    El primer paso consiste en preparar la placa con la tinta. Esta placa suele ser de metal o de PVC
+                    y se reviste con una emulsión fotosensible en la que se graba el diseño que se va a estampar en el
+                    artículo. Este grabado deja un hueco, llamado <b>clisé</b>, y al colocar la tinta esta se barre
+                    sirviéndose
+                    de una racleta para que la tinta solo se localice en el hueco.
+                </li>
+                <li>
+                    Dependiendo del objeto que vayamos a estampar se recurrirá a un soporte u otro. Los hay preparados
+                    para objetos pequeños como los bolígrafos o las patillas de las gafas de sol, en tanto que hay otros
+                    aptos para artículos más grandes como frisbees. La parte manual consiste en la colocación del objeto
+                    a estampar en el soporte.
+                </li>
+                <li>
+                    Una vez se encuentra el artículo encajado en el soporte, entran en juego los <b>tampones de silicona
+                        para tampografía</b>. Estos tampones descienden sobre la placa y cogen la tinta del clisé,
+                    manteniendo
+                    la forma del diseño, y a continuación se desplazan hasta el objeto y lo estampan en él.
+                </li>
+                <li>
+                    Una vez se ha colocado la tinta sobre el objeto, este se retira del soporte y se coloca el
+                    siguiente. Se trata de un trabajo muy mecanizado, por lo que la producción de este tipo de artículos
+                    personalizados es rápida y eficiente.
+                </li>
+            </ul>
+            <p>
+                Por norma general, la tampografía se lleva a cabo con un solo color, aunque también existen máquinas
+                pensadas para estampar logotipos con más de uno. Estas máquinas se caracterizan por disponer de más
+                tampones de silicona y por estar programas con un patrón diferente, pues primero se estampa un color del
+                logotipo y después el otro.
+            </p>
+        </div>
+
+
+        <div class="col-lg-12">
+            <h2>Ventajas y desventajas de la tampografía</h2>
+            <p>
+                La tampografía es una práctica que ofrece muchas ventajas de cara a la estampación de artículos
+                complicados de personalizar.
+            </p>
+            <p>
+                Es capaz de ofrecer un diseño muy nítido y detallado, por lo que se puede optar por logotipos con líneas
+                finas o con detalles pequeños, ya que se estamparán con precisión. Además, se trata de una adhesión de
+                muy buena calidad, motivo por el cual el resultado es muy duradero.
+            </p>
+            <p>
+                Asimismo, es un método de estampación rápido y económico que permite obtener una tirada grande de
+                artículos en poco tiempo y a un precio muy reducido.
+            <p>
+                La única desventaja que ofrece este procedimiento es que no es el proceso más indicado para artículos de
+                regalo metálicos. Es una técnica más indicada para otros materiales, ya que en metal la adherencia no
+                resulta tan buena, aunque esto no ocurre en todas las ocasiones.
+            </p>
+        </div>
+
+
+
+        {#<div class="col-lg-12">#}
+            {#<h2 style="text-align: center">Preguntas frecuentes sobre la serigrafía</h2>#}
+        {#</div>#}
+        {#<div class="col-lg-3">#}
+            {#<h3>¿Que objetos se pueden serigrafiar?</h3>#}
+            {#<p>Cualquier objeto sobre el que puedas imaginar tu diseño puede ser serigrafíado. <br>Debido a la#}
+                {#versatilidad de la serigrafía, podemos imprimir con esta técnica prácticamente <b>sobre cualquier#}
+                    {#soporte</b>. Desde camisetas, hasta madera, pasando por pvc o plásticos.</p>#}
+        {#</div>#}
+        {#<div class="col-lg-3">#}
+            {#<h3>¿Como es el tacto de la serigrafía?</h3>#}
+            {#<p>Al tocar una prenda serigrafíada notaremos la <b>textura de la pintura</b> depositada sobre ella. Esto no#}
+                {#impide que la prenda siga transpirando pero si que aporta una textura particular al soporte sobre el que#}
+                {#se imprime.</p>#}
+        {#</div>#}
+        {#<div class="col-lg-3">#}
+            {#<h3>¿Se puede serigrafíar cualquier diseño?</h3>#}
+            {#<p>Si, podemos serigrafíar <b>cualquier diseño</b>, aunque quizás no es el metodo mas adecuado para imprimir#}
+                {#fotografías, se pueden conseguir excelentes resultados trabajando el diseño de forma adecuada y con un#}
+                {#poco de imaginación se pueden conseguir <b>resultados#}
+                    {#increíbles</b>. #}{#Además es el método de impresión más indicado para grandes tiradas #}{#</p>#}
+        {#</div>#}
+        {#<div class="col-lg-3">#}
+            {#<h3>¿Cual es la durabilidad de la serigrafía?</h3>#}
+            {#<p>Las impresiones serigraficas son sin duda de las <b>más resistentes y duraderas</b> que podemos ofrecer a#}
+                {#nuestros clientes. Si se mantienen unos cuidados mínimos sobre la prenda a la hora de lavarla y#}
+                {#plancharla la impresión <b>permanecerá siempre como el primer día</b>.</p>#}
+        {#</div>#}
+
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(".pop").on("click", function () {
+            $('#imagepreview').attr('src', $(this).find('.imageresource').attr('src')); // here asign the image to the modal when the user click the enlarge link
+            $('#imagemodal').modal('show'); // imagemodal is the id attribute assigned to the bootstrap modal, then i use the show function
+        });
+    </script>
+{% endblock %}

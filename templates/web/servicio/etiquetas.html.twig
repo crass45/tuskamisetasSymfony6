@@ -1,0 +1,178 @@
+{% extends "web/estaticoPlantilla.html.twig" %}
+
+{% block title %}Personalizar etiquetas | Etiquetado de prendas textiles{% endblock %}
+{% block metaDescription %}¿Quieres llevar la personalización de tus prendas a un nuevo nivel? Aquí te explicamos cómo personalizamos etiquetas y por qué es una buena idea.{% endblock %}
+
+{% block datosEstructurado %}
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "name": "Etiquetas Peronalizadas",
+        "description": "Servicio de personalización de etiquetas en prendas textiles, ideal para dar identidad de marca",
+        "provider": {
+            "@type": "Organization",
+            "name": "TusKamisetas",
+            "url": "https://www.tuskamisetas.com/es/servicios/personalizar-etiquetas"
+        },
+        "areaServed": {
+            "@type": "Place",
+            "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "ES"
+            }
+        },
+        "serviceType": "Impresión Etiquetas"
+    }
+</script>
+{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}" class="miActive">
+                    <span itemprop="name">{% trans %}Personalizar etiquetas{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+    <div class="row">
+        <div class="col-lg-12 fondoblanco">
+            <h1>{% trans %}Personalizar etiquetas{% endtrans %}</h1>
+            <img src="{{ asset('images/etiqueta-cosida.jpg') }}" style="width: 100%" alt="personalizar etiquetas"/>
+        </div>
+
+
+        <div class="col-lg-12 fondoblanco">
+            <p>
+                La personalización total de las prendas textiles es un reclamo muy llamativo para las empresas, ya que
+                les permite disponer de una camiseta, sudadera, polo o cualquier otra pieza no solo con el diseño que
+                han escogido sino también con la <b>etiqueta textil personalizada</b>.
+            </p>
+            <p>
+                La demanda de camisetas con etiqueta personalizada se ha visto incrementada en los últimos años, ya que
+                se trata de una técnica que permite a las diferentes marcas disponer de un catálogo mucho más
+                profesional dentro de sus artículos promocionales. Además, se trata de un proceso muy sencillo que
+                aporta mayor renombre a la compañía y un resultado final más atractivo.
+            </p>
+        </div>
+
+        <div class="col-lg-12">
+            <h2>{% trans %}¿En qué consisten las etiquetas personalizadas?{% endtrans %}</h2>
+            {#<img src="{{ asset('images/2-etiquetas-textiles-personalizadas.jpg') }}" style="width: 100%"#}
+                 {#alt="etiquetas textiles personalizadas"/>#}
+            <p>
+                Las etiquetas textiles son aquellas en las que se refleja la marca de la camiseta, así como otros
+                detalles como la composición de esta. Las etiquetas por defecto incluyen el nombre de la marca encargada
+                de fabricar las prendas textiles que se personalizan, si bien normalmente las piezas que se emplean en
+                las empresas de estampación textil no las incluyen.
+            </p>
+            <p>
+                Existen diversas maneras de personalizar una etiqueta, en tanto que estas pueden realizarse en
+                diferentes materiales. Las más comunes son las <b>etiquetas cosidas</b> o las <b>etiquetas
+                    serigrafiadas</b>. Estos
+                dos tipos de etiquetas se sitúan en la parte trasera del cuello de la prenda, donde suelen encontrarse
+                estos detalles, aunque hay otras maneras de implementarlas.
+            </p>
+            <p>
+                Aun con todo, hay que tener en cuenta que la implementación de etiquetas textiles supone un proceso
+                mucho
+                más elaborado y lento, puesto que, aunque las etiquetas se pueden crear con relativa rapidez, añadirlas
+                a
+                las prendas textiles es un procedimiento más lento porque debe hacerse de manera individual.
+            </p>
+            <p>
+                Algunas de las maneras menos habituales de crear etiquetas consisten en personalizar <b>etiquetas de
+                    cartón</b>, que tienden a utilizarse únicamente para mostrar la marca, pero no se llegan a añadir al
+                tejido,
+                o la de <b>tejer la etiqueta</b>, normalmente en la parte inferior de la camiseta, sudadera o polo. En
+                esta
+                misma línea, también existe la posibilidad de crear una línea de <b>edición limitada</b>, cuyo número de
+                fabricación sería incluido en la etiqueta, aunque esto no es muy común.
+            </p>
+        </div>
+
+
+        <div class="col-lg-12">
+            <h2>{% trans %}Cómo se personaliza una etiqueta{% endtrans %}</h2>
+            {#<img src="{{ asset('images/3-parches-para-ropa.jpg') }}" style="width: 100%" alt="parches para ropa"/>#}
+            <p>
+                En TusKamisetas realizamos la personalización de etiquetas textiles de dos maneras: cosiendo la etiqueta
+                a la prenda o serigrafiándola sobre el tejido. En ambas técnicas, no obstante, se usa el método de la
+                serigrafía, si bien en las etiquetas personalizadas solo suele utilizarse un color.
+            </p>
+            <ul class="ularticulo">
+                <li>
+                    Al igual que en el proceso de serigrafía de camisetas, al serigrafiar etiquetas se imprime un
+                    <b>fotolito</b> sobre papel transparente con el diseño o logo a plasmar en la etiqueta. Esta
+                    impresión será
+                    naturalmente más pequeña.
+                </li>
+                <li>
+                    Una vez se ha colocado el fotolito sobre la malla de serigrafía, esta ha de <b>emulsionarse</b> para
+                    crear la pantalla. La emulsión es un compuesto que se aplica en la pantalla con una racleta para
+                    bloquear el paso de la tinta en las zonas sin imagen. Es importante que este procedimiento se
+                    realice en una sala oscura, puesto que la emulsión es <b>fotosensible</b> y si le da la luz puede
+                    estropear
+                    el resultado.
+                </li>
+                <li>
+                    Habiendo ya insolado la pantalla, se coloca la etiqueta textil en el pulpo de serigrafía y se
+                    procede a transferir la tinta de la pantalla a la pieza, utilizando de nuevo una racleta y
+                    realizando varias pasadas.
+                </li>
+                <li>
+                    Cuando la etiqueta ya ha sido serigrafiada, se cose a la camiseta en la zona del cuello.
+                </li>
+            </ul>
+            <p>
+                Este procedimiento es el que se sigue cuando el diseño se serigrafía en una etiqueta textil que se
+                implementa a posteriori en la camiseta. En caso de que la etiqueta vaya a ser estampada de manera
+                directa sobre la prenda, el procedimiento es idéntico, solo que en lugar de colocar la etiqueta en el
+                pulpo se fija la camiseta localizando con exactitud la zona en la que ha de situarse el logo, para así
+                realizar la serigrafía sobre ella.
+            </p>
+        </div>
+
+
+        <div class="col-lg-12">
+            <h2>{% trans %}Ventajas de personalizar etiquetas para camisetas{% endtrans %}</h2>
+        </div>
+        <div class="col-lg-6"><img src="{{ asset('images/etiquetas-impresas.jpeg') }}" style="width: 100%"
+                                   alt="diseño de etiquetas"/></div>
+        <div class="col-lg-6">
+            <p>
+                Personalizar una etiqueta textil aporta más clase y profesionalidad a las prendas solicitadas por una
+                empresa. Normalmente, las marcas requieren de camisetas o polos personalizados no solo para sus
+                artículos promocionales sino también para el uniforme de sus empleados, aunque los particulares también
+                pueden recurrir a esta técnica para sumar un mayor cuidado a sus prendas, ya sean estas de equipaciones
+                deportivas o de clubes de ocio.
+            </p>
+            <p>
+                Se trata de un cuidado extra que puede marcar la diferencia de cara a los clientes, y lo cierto es que
+                <b>tiene un coste bastante bajo</b>, por lo que se trata de una alternativa muy cómoda y atractiva de
+                cara a
+                aquellos que quieren prendas enteramente personalizadas.
+            </p>
+            <p>
+                Son cada vez más las organizaciones, empresas y clubes que contemplan la implementación de etiquetas al
+                diseñar camisetas o al diseñar sudaderas, puesto que es un detalle adicional muy valorado en diversos
+                ámbitos, que permite obtener un <b>resultado final más óptimo y elegante</b> a cambio de un precio muy
+                asequible.
+            </p>
+        </div>
+    </div>
+{% endblock %}

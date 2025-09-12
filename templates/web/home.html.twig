@@ -1,0 +1,887 @@
+{% extends "web/indexTemplateNoFiltros.html.twig" %}
+
+{% block title %}Serigrafía textil - Impresión de camisetas al por mayor | TusKamisetas{% endblock %}
+{% block metaDescription %}{% trans %}Descubre nuestra empresa de serigrafía textil y personaliza tus camisetas al por mayor con calidad y a precios competitivos. ¡Soluciones para tus proyectos de estampación textil!{% endtrans %}{% endblock %}
+
+{% block datosEstructurado %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "TusKamisetas",
+            "url": "https://www.tuskamisetas.com",
+            "logo": "https://www.tuskamisetas.com/logo.png",
+            "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+34 968 654 970",
+                "contactType": "customer service",
+                "email": "tuskamisetas@tuskamisetas.com"
+            },
+            "sameAs": [
+                "https://www.facebook.com/tuskamisetas",
+                "https://www.instagram.com/tuskamisetas",
+                "https://www.linkedin.com/company/tuskamisetas"
+            ]
+        }
+    </script>
+{% endblock %}
+
+
+    {% block slider %}
+
+        {# <div class="titulo1" style="text-align: center; "> #}
+        <h1 style="color: #044266;
+font-family: 'Roboto', sans-serif;
+font-size: 24px;
+font-weight: 700;
+text-align: center;
+text-transform: uppercase;
+position: relative;
+z-index: 3" class="titulo">
+            SERIGRAFÍA TEXTIL - IMPRESIÓN DE CAMISETAS AL POR MAYOR</h1>
+        <p class="text-center">
+            ¡En TusKamisetas, te ofrecemos las mejores soluciones para <b>serigrafiar tus camisetas</b> al por mayor con
+            calidad y a precios inigualables!
+        </p>
+        {# </div> #}
+        {# <div id="slider" style="padding-bottom: 45px; margin-bottom: 15px"><!--slider--> #}
+        <div id="slider"><!--slider-->
+            {# <div class="container"> #}
+            <div>
+                <div>
+                    <div id="slider-carousel" class="carousel slide" data-ride="carousel" data-interval="10000">
+                        {% if banners|length > 1 %}
+                            <ol class="carousel-indicators">
+                                {% for i in 0..(banners|length - 1) %}
+                                    {% if loop.first %}
+                                        <li data-target="#slider-carousel" data-slide-to="{{ i }}"
+                                            class="active"></li>
+                                    {% else %}
+                                        <li data-target="#slider-carousel" data-slide-to="{{ i }}"></li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ol>
+                        {% endif %}
+
+                        <div class="carousel-inner">
+                            {% for banner in banners %}
+                                <div class="item {% if loop.first %}active{% endif %}" style="padding: 0">
+                                    <a href="{% if banner.url!="" %}{{ banner.url }}{% endif %}"
+                                       style="width: 100%;height: 100%;">
+                                        {# https://static.gorfactory.es/images/home/ROLY_Intro_2024_Sport.mp4?v=2 #}
+                                        <div class="divBanner banerLazy"
+                                             style="background: url('{{ sonata_path(banner.imagen, 'big') }}') no-repeat center top;
+                                                     -webkit-background-size: cover;
+                                                     -moz-background-size: cover;
+                                                     -o-background-size: cover;
+                                                     background-size: cover;">
+                                            <div class="container">
+                                                <div class="row">
+
+                                                    <article class="col-lg-12"
+                                                             style="padding: 30px; /*background-color:rgba(255,255,255,0.3)*/">
+                                                        <header>
+                                                            <h2 style="text-shadow: 1px 0 1px white, -1px 0 1px white, 0 1px 1px white, 0 -1px 1px white, 1px 1px white, -1px -1px 1px white, 1px -1px 1px white, -1px 1px 1px white; ">{{ banner.titulo |raw }}</h2>
+                                                            <h3 style="text-shadow: 1px 0 4px white, -1px 0 4px white, 0 1px 4px white, 0 -1px 4px white, 1px 1px white, -1px -1px 4px white, 1px -1px 4px white, -1px 1px 4px white;">{{ banner.subtitulo |raw }}</h3>
+                                                        </header>
+                                                        <p class="hidden-xs"
+                                                           style="text-shadow: 1px 0 1px white, -1px 0 1px white, 0 1px 1px white, 0 -1px 1px white, 1px 1px white, -1px -1px 1px white, 1px -1px 1px white, -1px 1px 1px white;">{{ banner.texto |raw }}</p>
+                                                        {# <h1 style="">{{ banner.titulo |raw}}</h1> #}
+                                                        {# <h2 style="">{{ banner.subtitulo |raw}}</h2> #}
+                                                        {# <p style="">{{ banner.texto |raw}}</p> #}
+                                                        {# {% if banner.url!="" %} #}
+                                                        {# <a href="{{ banner.url }}"> #}
+                                                        {# <button type="button" class="btn btn-default get">Ver más #}
+                                                        {# </button> #}
+                                                        {# </a> #}
+                                                        {# {% endif %} #}
+                                                    </article>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {# <div class="col-sm-6"> #}
+                                        {# <img src="{% path banner.imagen, 'big' %}" class="girl img-responsive" alt=""/> #}
+                                        {# <img src="images/home/pricing.png" class="pricing" alt=""/> #}
+                                        {# </div> #}
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if banners|length > 1 %}
+                            <a href="#slider-carousel" class="left control-carousel hidden-xs" data-slide="prev">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+                            <a href="#slider-carousel" class="right control-carousel hidden-xs" data-slide="next">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {# </div> #}
+            </div>
+        </div><!--/slider-->
+        {# <div class="titulo1" style="text-align: center; "> #}
+        {# <div style="padding: 10px; margin-bottom: 0; color: white;font-family: 'Roboto', sans-serif; background-color: #f90; font-size: 12px; line-height: 12px; height: 20px"> #}
+        {# &nbsp; #}
+        {# </div> #}
+        {# </div> #}
+        <div class="container">
+            <div class="row text-center">
+                <h2 style="color: #044266;
+font-family: 'Roboto', sans-serif;
+font-size: 24px;
+font-weight: 700;
+text-align: center;
+text-transform: uppercase;
+position: relative;
+z-index: 3" class="titulo">TU TIENDA ONLINE PARA PERSONALIZAR CAMISETAS, ROPA Y REGALOS PUBLICITARIOS</h2>
+                <p>
+                    En TusKamisetas, nos <b>especializamos en la serigrafía textil</b> y en ofrecer una amplia variedad
+                    de opciones para personalizar camisetas, ropa de trabajo, merchandising y productos promocionales.
+                    Si buscas una empresa con experiencia y compromiso para tu proyecto, has llegado al lugar adecuado.
+                </p>
+                <p>Con más de 25 años de trayectoria, nos hemos consolidado como una de las <b>empresas de serigrafía
+                        textil</b> más destacadas en el mercado. Nuestro enfoque es ofrecer productos de alta calidad a
+                    precios competitivos, y nuestra amplia gama de opciones te permitirá encontrar lo que buscas.
+                </p>
+                <article class="col-sm-3 col-xs-6 cuadro_home">
+                    <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
+                                                     style="max-width: 60px;"
+                                                     alt="{% trans %}fabrica propia{% endtrans %}"/>
+                        <h3>
+                            {% trans %}FABRICA PROPIA{% endtrans %}
+                        </h3>
+                    </header>
+                    <p>
+                        {% trans %}Personalizamos nosotros. Sin intermediarios. Nuestro taller dispone de los mejores avances en cuanto técnicas de estampado, somos muy profesionales en lo que hacemos{% endtrans %}
+                    </p>
+                </article>
+                <article class="col-sm-3 col-xs-6 cuadro_home">
+                    <header class="text-center"><img src="{{ asset('images/icons/proveedor.png') }}"
+                                                     style="max-width: 60px;"
+                                                     alt="{% trans %}Varideda de proveedores{% endtrans %}"/>
+                        <h3>
+                            {% trans %}VARIEDAD DE PROVEEDORES{% endtrans %}
+                        </h3>
+                    </header>
+                    <p>
+                        {% trans %}Trabajamos con los principales proveedores textiles a nivel internacional.{% endtrans %}
+                    </p>
+                </article>
+                <article class="col-sm-3 col-xs-6 cuadro_home">
+                    <header class="text-center"><img src="{{ asset('images/icons/reparto.png') }}"
+                                                     style="max-width: 60px;"
+                                                     alt="{% trans %}Entregas rápdias{% endtrans %}"/>
+                        <h3>
+                            {% trans %}ENTREGAS RÁPIDAS{% endtrans %}
+                        </h3>
+                    </header>
+                    <p>
+                        {% trans %}Realizamos envíos rápidos desde nuestro taller y gratuitos a partir de 300€. Sin intermediarios ni contratiempos{% endtrans %}
+                    </p>
+                </article>
+                <article class="col-sm-3 col-xs-6 cuadro_home">
+                    <header class="text-center"><img src="{{ asset('images/icons/pedidos.png') }}"
+                                                     style="max-width: 60px;"
+                                                     alt="{% trans %}descuento por cantidades{% endtrans %}"/>
+                        <h3>
+                            {% trans %}DESCUENTOS POR CANTIDADES{% endtrans %}
+                        </h3>
+                    </header>
+                    <p>
+                        {% trans %}Disponemos de máquinas de última técnologia para impresión y bordado, ajustadas con precisión para realizar un trabajo perfecto.{% endtrans %}
+                    </p>
+                </article>
+            </div>
+        </div>
+        <div class="container-fluid" style="padding: 20px">
+            <div class="row">
+                <div class="col-sm-6" style="padding: 5px">
+                    <div class="trabajoitem"
+                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What%20We%20Do/What%20We%20Do/Screen-Printing2.jpg);">
+                        <a href="{{ path('app_service_serigrafia') }}">
+                            <div class="mp2-griditem-mask">
+                                <div class="row">
+                                    <h3 class="col-lg-12">SERIGRAFIA</h3>
+                                    <p class="col-lg-12"><b>Da vida a tus diseños con nuestra serigrafía de alta
+                                            calidad</b>.
+                                        Personaliza tus camisetas,
+                                        sudaderas y más con un acabado duradero y profesional. ¡Solicita tu presupuesto
+                                        ahora y
+                                        empieza a crear!</p>
+                                    <div class="col-lg-12">
+                                        <button class="button">Solicita tu presupuesto de serigrafía aquí</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-sm-6" style="padding: 5px">
+                    <div class="trabajoitem"
+                         style="background-image: url({{ asset('images/1-sublimacion-textil.jpg') }});">
+                        <a href="{{ path('app_service_sublimacion') }}">
+                            <div class="mp2-griditem-mask">
+                                <div class="row">
+                                    <h3 class="col-lg12">SUBLIMACIÓN</h3>
+                                    <p class="col-lg-12">
+                                        <b>Colores vibrantes y detalles impecables con nuestra sublimación</b>. Ideal
+                                        para
+                                        productos con diseños complejos y colores brillantes. ¡Haz que tu idea se vea
+                                        increíble!
+                                    </p>
+                                    <div class="col-lg-12">
+                                        <button class="button">Empieza tu personalización don sublimación ahora</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-sm-6" style="padding: 5px">
+                    <div class="trabajoitem"
+                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What_We_Do/DTF%20Process.jpg);">
+                        <a href="{{ path('app_service_dtf') }}">
+                            <div class="mp2-griditem-mask">
+                                <div class="row">
+                                    <h3 class="col-lg12">IMPRESIÓN DTF</h3>
+                                    <p class="col-lg-12">
+                                        <b>Impresión DTF para diseños de alta definición en una amplia variedad de
+                                            tejidos</b>.
+                                        Obtén resultados excepcionales, incluso en materiales oscuros o difíciles. ¡Haz
+                                        tu
+                                        pedido hoy mismo!
+                                    </p>
+                                    <div class="col-lg-12">
+                                        <button class="button">Descubre la impresión DTF y personaliza ahora</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-sm-6" style="padding: 5px">
+                    <div class="trabajoitem"
+                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What%20We%20Do/What%20We%20Do/DTG%20Full%20Resized%402x.png);">
+                        <a href="{{ path('app_service_dtg') }}">
+                            <div class="mp2-griditem-mask">
+                                <div class="row">
+                                    <h3 class="col-lg-12">DIGITAL DTG</h3>
+                                    <p class="col-lg-12">
+                                        <b>La impresión digital te permite personalizar con precisión y rapidez</b>.
+                                        Ideal
+                                        para
+                                        tiradas pequeñas o diseños intrincados. ¡Haz realidad tu proyecto con nosotros!
+                                    </p>
+                                    <div class="col-lg-12">
+                                        <button class="button">Solicita tu personalización digital aquí</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-sm-6" style="padding: 5px">
+                    <div class="trabajoitem"
+                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What%20We%20Do/What%20We%20Do/embroidery2.jpg);">
+                        <a href="{{ path('app_service_bordados') }}">
+                            <div class="mp2-griditem-mask">
+                                <div class="row">
+                                    <h3 class="col-lg-12">BORDADOS Y PARCHES</h3>
+                                    <p class="col-lg-12">
+                                        <b>Agrega un toque de elegancia y distinción con nuestros bordados y parches</b>.
+                                        Perfectos
+                                        para ropa de trabajo, colecciones exclusivas o merchandising de alta gama. ¡Haz
+                                        tu
+                                        pedido ahora!
+                                    </p>
+                                    <div class="col-lg-12">
+                                        <button class="button">Personaliza con bordados y parches aquí</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-sm-6" style="padding: 5px">
+                    <div class="trabajoitem"
+                         style="background-image: url({{ asset('images/2-que-es-la-impresion-full-print.jpg') }});">
+                        <a href="{{ path('app_service_fullprint') }}">
+                            <div class="mp2-griditem-mask">
+                                <div class="row">
+                                    <h3 class="col-lg12">FULL PRINT</h3>
+                                    <p class="col-lg-12">
+                                        <b>Transforma tus productos con la personalización Full Print</b>. Diseños que
+                                        cubren
+                                        toda la prenda para un impacto visual total. ¡Crea algo único para tu marca o
+                                        evento!
+                                    </p>
+                                    <div class="col-lg-12">
+                                        <button class="button">Personaliza con Full Print ahora</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    {% endblock %}
+{% block cuerpo %}
+    <section class="features_items"><!--features_items-->
+        <h2>CATÁLOGO ONLINE</h2>
+        <p>Explora el catálogo online de nuestra <b>empresa de serigrafía textil</b> y descubre una amplia variedad de
+            camisetas y productos personalizables para llevar a cabo todos tus proyectos.</p>
+
+        {% set nombrePanel = "Principal" %}
+        <div id="tkmCuerpo">
+            <div id="productoGrid">
+
+
+                {# LO COMENTAMOS MOMENTANEAMENTE VA A IR A PIÑON #}
+                {# {% for categoria in categoriasHome %} #}
+                {# {% include 'SSTiendaBundle:Web:categoriaCuadroGrid.html.twig' %} #}
+                {# {% endfor %} #}
+                <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections1">
+                    <div style=" text-align: center;">
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'camisetas'}) }}">
+                            <h3>CAMISETAS</h3>
+                        </a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'camisetas'}) }}">
+                            <img class="img-responsive black-white-image"
+                                 style="margin: auto;"
+                                 src="{{ asset('images/imgcat/camisetas-personalizadas.jpg') }}"
+                                 alt="camisetas personalizadas"/></a>
+                        <br>
+                        <div style="width: 80px; height: 5px; background: #B80000; border-radius: 3px; margin: 0 auto; margin-bottom: 15px"></div>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'camisetas-tecnicas'}) }}"><p>Camisetas running</p></a>
+                        <a href="camisetas?filtros=125"><p>Camisetas de tirantes</p></a>
+
+{#                        <a href="{{ path('app_catalog_resolver', {#}
+{#    'slug': 'sudaderas',#}
+{#    'atributos': [33, 140],  #}{# con capucha Y con bolsillo #}
+{#    'colores': ['rojo', 'azul']#}
+{#}) }}">#}
+{#                            Sudaderas Rojas y Azules con Capucha y Bolsillo#}
+{#                        </a>#}
+
+                        <a href="camisetas?filtros=124"><p>Camisetas de manga larga</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'camisetas-infantiles'}) }}"><p>Camisetas para niños</p></a>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections2">
+                    <div style=" text-align: center;">
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'sudaderas'}) }}">
+                            <h3>SUDADERAS</h3>
+                        </a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'sudaderas'}) }}">
+                            <img class="img-responsive black-white-image"
+                                 style="margin: auto;"
+                                 src="{{ asset('images/imgcat/sudaderas.jpg') }}"
+                                 alt="sudaderas personalizadas"/></a>
+                        <br>
+                        <div style="width: 80px; height: 5px; background: #ff9000; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
+                        <a href="sudaderas?filtros=33"><p>Sudaderas con capucha</p></a>
+                        <a href="sudaderas?filtros=25"><p>Sudaderas con cremallera</p></a>
+                        <a href="sudaderas?filtros=140"><p>Sudaderas con bolsillo</p></a>
+                        <a href="sudaderas?filtros=116"><p>Sudaderas para niños</p></a>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections3">
+                    <div style=" text-align: center;">
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'polos'}) }}">
+                            <h3>POLOS</h3>
+                        </a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'polos'}) }}">
+                            <img class="img-responsive black-white-image"
+                                 style="margin: auto;"
+                                 src="{{ asset('images/imgcat/polos-2.jpg') }}" alt="polos bordados"/></a>
+                        <br>
+                        <div style="width: 80px; height: 5px; background: #FFD800; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
+                        <a href="polos?filtros=115"><p>Polos de mujer</p></a>
+                        <a href="polos?filtros=114"><p>Polos de hombre</p></a>
+                        <a href="polos?filtros=140"><p>Polos con bolsillo</p></a>
+                        <a href="polos?filtros=124"><p>Polos de manga larga</p></a>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections4">
+                    <div style=" text-align: center;">
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'ropa-deportiva'}) }}">
+                            <h3>DEPORTE</h3>
+                        </a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'ropa-deportiva'}) }}">
+                            <img class="img-responsive black-white-image"
+                                 style="margin: auto;"
+                                 src="{{ asset('images/imgcat/ropa-deportiva.jpg') }}"
+                                 alt="ropa deportiva personalizadas"/></a>
+                        <br>
+                        <div style="width: 80px; height: 5px; background: #5CA688; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'equipaciones-deportivas'}) }}"><p>Equipaciones
+                                deportivas</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'chandales'}) }}"><p>Chandales</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'leggings-y-pantalones'}) }}"><p>Leggings y mallas</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'accesorios-deportivos'}) }}"><p>Accesorios deportivos</p></a>
+                    </div>
+                </div>
+                <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections5">
+                    <div style=" text-align: center;">
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'mochilas-y-bolsas'}) }}">
+                            <h3>MOCHILAS Y BOLSAS</h3>
+                        </a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'mochilas-y-bolsas'}) }}">
+                            <img class="img-responsive black-white-image"
+                                 style="margin: auto;"
+                                 src="{{ asset('images/imgcat/mochila-cordones.jpg') }}"
+                                 alt="bolsas de tela personalizadas"/></a>
+                        <br>
+                        <div style="width: 80px; height: 5px; background: #A3B957; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'mochilas-de-cuerdas'}) }}"><p>Mochilas de
+                                cuerdas</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'bolsas-de-tela'}) }}"><p>Bolsas de tela</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'mochilas-deportivas'}) }}"><p>Mochilas deportivas</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'trolley-y-maletines'}) }}"><p>Trolley</p></a>
+                    </div>
+                </div>
+
+                <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections6">
+                    <div style=" text-align: center;">
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'ropa-laboral'}) }}">
+                            <h3>ROPA DE TRABAJO</h3>
+                        </a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'ropa-laboral'}) }}">
+                            <img class="img-responsive black-white-image"
+                                 style="margin: auto;"
+                                 src="{{ asset('images/imgcat/ropa-laboral.jpg') }}"
+                                 alt="ropa laboral personalizadas"/></a>
+                        <br>
+                        <div style="width: 80px; height: 5px; background: #F1C700; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'buzos-de-trabajo-monos'}) }}"><p>Buzo completo
+                                (monos)</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'chalecos-de-seguridad'}) }}"><p>Chalecos de seguridad</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'pantalones-de-trabajo'}) }}"><p>Pantalones de trabajo</p></a>
+                        <a href="ropa-laboral?filtros=31"><p>Ropa de alta visibilidad</p></a>
+                    </div>
+                </div>
+
+                <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections7">
+                    <div style=" text-align: center;">
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'gorras-y-accesorios'}) }}">
+                            <h3>ACCESORIOS</h3>
+                        </a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'gorras-y-accesorios'}) }}">
+                            <img class="img-responsive black-white-image"
+                                 style="margin: auto;"
+                                 src="{{ asset('images/imgcat/accesorios.jpg') }}"
+                                 alt="gorras y accesorios personalizadas"/></a>
+                        <br>
+                        <div style="width: 80px; height: 5px; background: #C8487F; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'panuelos-y-panoletas'}) }}"><p>Pañuelos,
+                                pañoletas y pañoletinas</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'gorras'}) }}"><p>Gorras</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'bragas-de-cuello'}) }}"><p>Bragas de cuello</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'gorros-y-sombreros'}) }}"><p>Gorros</p></a>
+                    </div>
+                </div>
+
+                <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections8">
+                    <div style=" text-align: center;">
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'regalos-personalizados'}) }}">
+                            <h3>MERCHANDISING</h3>
+                        </a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'regalos-personalizados'}) }}">
+                            <img class="img-responsive black-white-image"
+                                 style="margin: auto;"
+                                 src="{{ asset('images/imgcat/merchandising.jpg') }}"
+                                 alt="merchandising personalizado"/></a>
+                        <br>
+                        <div style="width: 80px; height: 5px; background: #9000FF; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
+
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'eventos-y-fiesta-makito'}) }}"><p>Merchandising
+                                para eventos y fiestas</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'lluvia-y-frio-makito'}) }}"><p>Merchandising para lluvia y
+                                frío</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'navidad-makito'}) }}"><p>Merchandising para navidad</p></a>
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'infantil-makito'}) }}"><p>Regalos Infantíles</p></a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <section>
+        <div class="row">
+            <article class="col-lg-12 text-center cuadro_home">
+                <h2>{% trans %}CAMISETAS BARATAS{% endtrans %}</h2>
+                <p>En TusKamisetas, podrás <b>personalizar camisetas baratas</b> sin sacrificar la calidad. Ya sea para
+                    un evento corporativo, un regalo promocional o simplemente para tu marca, ofrecemos camisetas
+                    serigrafiadas de alta calidad a precios muy asequibles. </p>
+                <p>Aquí encontrarás una selección de productos destacados y novedades que se ajustan a tu presupuesto y
+                    necesidades. ¡Visítanos y descubre todas las opciones que tenemos para ti!</p>
+                {% for producto in destacados %}
+                    {% if producto.nombreUrl is defined %}
+{#                        <a href="{{ path('ss_tienda_producto_detalle',{'productoNombre':producto.nombreUrl}) }}"#}
+                        <a href="#"
+                           style="color: white;">
+                            <div class="col-xs-6 col-sm-4 col-md-3 col-lg-2"
+                                 style="padding-right: 2px;padding-left: 2px;">
+
+                                <div class="product-image-wrapper" style="position: relative;">
+                                    <div class="single-products" style="height: 280px">
+                                        <div class="productinfo text-center">
+                                            {% if producto.imagen != null %}
+                                                <img src="{{ asset('images/dummy200.png') }}" class="lazy"
+                                                     id="{{ producto.id }}"
+                                                     data-src="{{ sonata_path(producto.imagen, 'grid') }}"
+                                                        {# data-retina="{% path producto.imagen, 'wide' %}" #}
+                                                     alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
+                                                        {# title="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}" #}
+                                                     data-imagen="{{ sonata_path(producto.imagen, 'grid') }}"/>
+                                            {% else %}
+                                                <img src="{{ asset('images/dummy200.png') }}" class="lazy"
+                                                     id="{{ producto.id }}"
+                                                     data-src="{{ producto.urlImage }}"
+                                                        {# data-retina="{{ producto.urlImage | retina}}" #}
+                                                     alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
+                                                        {# title="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}" #}
+                                                     data-imagen="{{ producto.urlImage }}"/>
+                                            {% endif %}
+
+                                            {% if producto.isNovelty %}
+                                                <img src="{{ asset('template/images/new.png') }}" alt="novedad"
+                                                     style="width: 40px;height: auto; position:absolute; right: 0;top: 0;border: none"/>
+                                            {% endif %}
+                                            {# <h2>{{ producto.precio }}</h2> #}
+
+                                            {# <a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add #}
+                                            {# to cart</a> #}
+                                        </div>
+                                    </div>
+
+                                    <div class="productoGridDescripcion" style="color: white">
+                                        {% if producto is defined and producto is not null %}
+                                            <p style="height: 42px; margin-top: 15px; margin-right: 10px; overflow: hidden">{{ producto.nombre | upper }}</p>
+                                            <p>Desde
+                                                <b>{{ producto.getPrecioUnidad( app.user ) | number_format(2, ',', '.') }}
+                                                    €</b></p>
+                                            <p>&nbsp;</p>
+
+                                            <div class="grid-producto-colores" style="text-align: center">
+                                                {% for color in producto.getColoresProductos() %}
+                                                    <div {% if (color.color is not null) %}style="background-color: {{ color.color.codigoRGB }};"{% endif %}
+                                                         class="cuadro-color cuadro-color-grid"
+                                                            {% if color.imagen != null %}
+                                                                data-imagen="{{ sonata_path(color.imagen, 'grid') }}"
+                                                            {% else %}
+                                                                data-imagen="{{ color.urlImage }}"
+                                                            {% endif %}
+                                                         data-modelo="{{ producto.id }}"></div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    {# <div class="choose"> #}
+                                    {# <ul class="nav nav-pills nav-justified"> #}
+                                    {# <li><a href="#"><i class="fa fa-plus-square"></i>Add to wishlist</a></li> #}
+                                    {# <li><a href="#"><i class="fa fa-plus-square"></i>Add to compare</a></li> #}
+                                    {# </ul> #}
+                                    {# </div> #}
+                                </div>
+
+                            </div>
+                        </a>
+
+                    {% endif %}
+                {% endfor %}
+            </article>
+
+            <div class="clearfix"></div>
+            <article class="col-sm-4 cuadro_home">
+                <header class="text-center"><img src="{{ asset('images/trabajo-en-equipo.svg') }}"
+                                                 style="max-width: 60px;" alt="{% trans %}Quienes Somos{% endtrans %}"/>
+                    <h2>
+                        {% trans %}QUIENES SOMOS{% endtrans %}
+                    </h2>
+                </header>
+                {% trans %}TEXTO_QUIENES_SOMOS{% endtrans %}
+                <h3>LO QUE NOS DISTINGUE</h3>
+                <ul style="list-style: square;">
+                    <li style="list-style: square;"><b>Catálogo extenso</b>: Contamos con una de las colecciones más
+                        amplias del mercado, que incluye camisetas serigrafiadas y otros productos personalizables.
+                    </li>
+                    <li style="list-style: square;"><b>Experiencia</b>: Más de 25 años de trayectoria nos avalan como
+                        expertos en la personalización de camisetas para eventos y promociones.
+                    </li>
+                </ul>
+            </article>
+
+            <article class="col-sm-4 cuadro_home">
+                <header class="text-center"><img src="{{ asset('images/pantone.svg') }}"
+                                                 style="max-width: 60px;" alt="{% trans %}Estampación{% endtrans %}"/>
+                    <h2>
+                        {% trans %}ESTAMPACIÓN{% endtrans %}
+                    </h2>
+                </header>
+                <p>
+                    En <b>TusKamisetas</b>, ofrecemos una gran variedad de técnicas de estampación, entre las que
+                    destacan:
+                </p>
+                <ul style="list-style: square;">
+                    <li style="list-style: square;"><b>Serigrafía textil</b>: Ideal para camisetas serigrafiadas de alta
+                        calidad y a un precio muy competitivo.
+                    </li>
+                    <li style="list-style: square;"><b>Bordados</b>: Perfectos para personalizar ropa de trabajo o
+                        prendas de alta gama.
+                    </li>
+                    <li style="list-style: square;"><b>Impresión digital</b>: Para detalles más complejos y tiradas
+                        pequeñas.
+                    </li>
+                    <li style="list-style: square;"><b>Sublimación</b>: Ideal para productos con colores vibrantes y
+                        detalles complejos.
+                    </li>
+                </ul>
+                <p>Con nuestra <b>serigrafía de camisetas</b>, podrás personalizar cualquier prenda con tu logo, diseño
+                    o mensaje. ¡Si necesitas asesoramiento sobre qué técnica es la mejor para tu proyecto, nuestro
+                    equipo de expertos está aquí para ayudarte! </p>
+            </article>
+
+            <article class="col-sm-4 cuadro_home">
+                <header class="text-center"><img src="{{ asset('images/caja.svg') }}"
+                                                 style="max-width: 60px;"
+                                                 alt="{% trans %}Plazos de entrega{% endtrans %}"/>
+
+                    <h2>
+                        {% trans %}PLAZOS DE ENTREGA{% endtrans %}
+                    </h2>
+                </header>
+                <p>
+                    En <b>TusKamisetas</b>, siempre cumplimos nuestros plazos de entrega. Sabemos que el tiempo es
+                    importante, y por eso ofrecemos dos servicios de entrega para adaptarnos a tus necesidades:
+                </p>
+                <ul style="list-style: square;">
+                    <li style="list-style: square;"><b>Prendas lisas sin personalizar</b>: El servicio normal es de 4-5
+                        días laborables.
+                    </li>
+                    <li style="list-style: square;"><b>Prendas personalizadas</b>: La entrega estándar es de 9-10 días
+                        laborables. Si necesitas un servicio más rápido, contamos con un <b>servicio exprés de 7 días
+                            laborables</b>.
+                    </li>
+                </ul>
+                <p>
+                    Nuestros <b>plazos de entrega para camisetas serigrafiadas</b> son rápidos y confiables,
+                    garantizando que tus productos lleguen a tiempo para cualquier ocasión.
+                </p>
+            </article>
+
+            <div class="clearfix"></div>
+
+            <article class="col-lg-12 cuadro_home">
+                {% if ofertas | length > 0 %}
+                    <div class="recommended_items carousel">
+                        <h2 class="text-center title">{% trans %}PRODUCTOS EN OFERTA{% endtrans %}</h2>
+                        <p>
+                            ¡No te pierdas nuestras ofertas! Regularmente actualizamos nuestra sección de productos con
+                            <b>camisetas personalizadas baratas</b> y otros artículos con descuentos especiales. Revisa
+                            las últimas promociones y aprovecha para personalizar tus productos con nuestra <b>serigrafía
+                                textil</b> al mejor precio.
+                        </p>
+                        {# {% if textoOfertas is defined %} #}
+                        {# <div style="padding: 15px; font-size: 13px;"> #}
+                        {# {{ textoOfertas |raw }} #}
+                        {# </div> #}
+                        {# {% endif %} #}
+                        <div>
+                            {% for oferta in ofertas %}
+                                {% if oferta.nombre is defined %}
+{#                                    <a href="{{ path('ss_tienda_producto_detalle',{'productoNombre':oferta.getModelos[0].nombreUrl}) }}"#}
+                                    <a href="#"
+                                       style="color: white">
+                                        <div class="col-xs-6 col-sm-4 col-md-3 col-lg-2"
+                                             style="padding-left: 2px; padding-right: 2px">
+                                            <div class="product-image-wrapper zoomHoverTKM" style="position: relative;">
+                                                <div class="single-products" style="height: 280px">
+                                                    <div class="productinfo text-center">
+                                                        <img src="{{ asset('images/dummy200.png') }}"
+                                                             class="lazy"
+                                                             data-src="{{ sonata_path(oferta.imagen, 'grid') }}"
+                                                             alt="{{ oferta.nombre }}"/>
+                                                    </div>
+                                                </div>
+
+                                                <div class="productoGridDescripcion">
+                                                    <br>
+                                                    <p style="height: 42px;">{{ oferta.nombre | upper }}</p>
+                                                    <p>
+                                                        Desde: {{ oferta.precio  | number_format(2, ',', '.') }}
+                                                        €</p>
+                                                    <br>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </article>
+
+
+            <article class="col-lg-12 cuadro_home">
+                <header>
+                    <h2 class="title text-center">{% trans %}SOLICITA TU PRESUPUESTO{% endtrans %}</h2>
+                </header>
+                <p>
+                    Solicitar un presupuesto con <b>TusKamisetas</b> es muy sencillo. Solo tienes que seguir estos
+                    pasos:
+
+                </p>
+                <ul style="list-style: square;">
+                    <li style="list-style-type: decimal;">Selecciona el producto de nuestro catálogo.</li>
+                    <li style="list-style-type: decimal;">Indica el color, la cantidad por talla y el tipo de
+                        personalización que deseas (serigrafía, sublimación, etc.).
+                    </li>
+                    <li style="list-style-type: decimal;">Añade tus personalizaciones en el producto: puedes elegir
+                        diferentes ubicaciones (espalda, pecho, mangas, etc.).
+                    </li>
+                    <li style="list-style-type: decimal;">El precio se actualizará automáticamente y podrás añadir más
+                        productos a tu pedido.
+                    </li>
+                </ul>
+                <p>
+                    Una vez que tengas todo listo, confirma tu pedido y en breve te enviaremos tu presupuesto detallado.
+                    Si tienes dudas o necesitas ayuda, nuestro equipo está disponible para asistirte por teléfono o
+                    correo electrónico.
+                </p>
+            </article>
+        </div>
+    </section>
+
+
+
+
+    <script>
+        //funcion para modificar la imagen del grid de productos en funcion al color que se le haga hover
+        $('.cuadro-color-grid').hover(function () {
+            var imagen = $(this).data('imagen');
+            var id = $(this).data('modelo');
+            $('#' + id).attr("src", imagen);
+        }, function () {
+            var id = $(this).data('modelo');
+            var imagen = $('#' + id).data('imagen');
+            $('#' + id).attr("src", imagen);
+        });
+    </script>
+{% endblock %}
+
+{% block postProductosVistos %}
+    <article class="cuadro_home">
+        <h2 class="text-center">PREGUNTAS FRECUENTES</h2>
+        <div class="accordion" id="myAccordion">
+            <div class="panel">
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-1"
+                    data-parent="#myAccordion">¿Qué es una empresa de serigrafía textil?
+                </h3>
+                <div id="collapsible-1" class="collapse">
+                    <p>Una empresa de <b>serigrafía textil</b> se especializa en la personalización de prendas y otros
+                        productos textiles utilizando la técnica de serigrafía. En TusKamisetas, ofrecemos camisetas
+                        serigrafiadas de alta calidad, ideales para eventos, promociones y ropa de trabajo. Nuestros
+                        servicios permiten personalizar tus diseños en camisetas, sudaderas, gorras y más, siempre con
+                        la mejor calidad.</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-2"
+                    data-parent="#myAccordion">¿Cómo puedo conseguir camisetas personalizadas baratas?
+                </h3>
+                <div id="collapsible-2" class="collapse">
+                    <p>
+                        En <b>TusKamisetas</b>, te ofrecemos <b>camisetas personalizadas baratas</b> sin sacrificar la
+                        calidad. Al ser una empresa de serigrafía textil con amplia experiencia, podemos ofrecer precios
+                        competitivos en grandes tiradas. Puedes elegir entre una variedad de modelos de camisetas y
+                        personalizarlas a través de nuestra serigrafía, bordados o impresión digital, todo a un precio
+                        accesible para tu presupuesto.
+                    </p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-3"
+                    data-parent="#myAccordion">¿Cuál es la diferencia entre serigrafía y otras técnicas de impresión de
+                    camisetas?
+                </h3>
+                <div id="collapsible-3" class="collapse">
+                    <p>
+                        La <b>serigrafía de camisetas</b> es una de las técnicas más populares y económicas,
+                        especialmente si
+                        necesitas personalizar grandes cantidades. A diferencia de la impresión digital o la
+                        sublimación, la serigrafía es ideal para diseños sencillos o con pocos colores, y ofrece una
+                        alta durabilidad en la prenda.
+                    </p>
+                    <p>Si buscas un método económico y efectivo para personalizar camisetas, la <b>serigrafía
+                            camisetas</b> es una opción excelente.</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-4"
+                    data-parent="#myAccordion">¿Qué tipo de camisetas personalizáis?
+                </h3>
+                <div id="collapsible-4" class="collapse">
+                    <p>
+                        Ofrecemos una <b>amplia gama de camisetas personalizadas</b> en diferentes estilos, colores y
+                        materiales, perfectas para cualquier proyecto. Desde camisetas serigrafiadas para eventos hasta
+                        ropa de trabajo o camisetas para promociones, contamos con opciones adaptadas a todas tus
+                        necesidades.
+                    </p>
+                    <p>¡Si no encuentras lo que buscas, no dudes en preguntarnos y te ayudaremos a encontrar la mejor
+                        opción para tu personalización! </p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-5"
+                    data-parent="#myAccordion">¿Cuáles son los plazos de entrega para camisetas personalizadas?
+                </h3>
+                <div id="collapsible-5" class="collapse">
+                    <p>
+                        En TusKamisetas, nos comprometemos a cumplir con nuestros plazos de entrega. Para las <b>camisetas
+                            personalizadas con serigrafía</b>, el tiempo de entrega estándar es de 9-10 días laborables,
+                        aunque
+                        ofrecemos un servicio exprés para recibir tus productos en solo 7 días, también es posible un
+                        servicio aún mas rápido con el que podemos tener <b>tu pedido listo en tan solo 72 horas</b>.
+                    </p>
+                    <p>Las camisetas lisas y otros productos no personalizados pueden ser entregados en un plazo de 4-5
+                        días laborables.</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-6"
+                    data-parent="#myAccordion">¿Cómo puedo realizar un pedido de camisetas personalizadas?
+                </h3>
+                <div id="collapsible-6" class="collapse">
+                    <p>
+                        Para <b>pedir tus camisetas personalizadas baratas</b> en <b>TusKamisetas</b>, simplemente
+                        selecciona el
+                        producto de tu elección en nuestro catálogo, elige los colores, tallas y la cantidad, y luego
+                        añade la personalización que desees (serigrafía, bordado, vinilo, etc.).
+                    </p>
+                    <p>¡Si tienes alguna duda, nuestro equipo está disponible para ayudarte a crear el diseño perfecto
+                        para ti!</p>
+                </div>
+            </div>
+
+        </div>
+    </article>
+{% endblock %}

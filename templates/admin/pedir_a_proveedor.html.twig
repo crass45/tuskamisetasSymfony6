@@ -1,0 +1,110 @@
+{# MIGRACIÓN: Se actualiza la ruta de la plantilla base de la que hereda #}
+{% extends "web/estaticoPlantilla.html.twig" %}
+
+{% block title %}Pedir a Proveedor | Tuskamisetas.com{% endblock %}
+{% block metaDescription %}Ventana para pedir a proveedor.{% endblock %}
+
+{% block cuerpo %}
+    {# MIGRACIÓN: Se usan los nuevos nombres de ruta #}
+    <a class="btn btn-default check_out" href="{{ path('app_admin_supplier_order_pdf') }}" target="_blank">Imprimir PDF</a>
+
+    <form action="{{ path('app_admin_supplier_order_confirm') }}" method="POST">
+        <input id="pedidos" name="pedidos" type="hidden" value="{{ pedidos }}">
+        <div class="accordion" id="accordionExample">
+            {% for fabricante in fabricantes %}
+                <div class="card">
+                    <div class="card-header" id="heading{{ fabricante.id }}">
+                        <h2 class="mb-0">
+                            <button class="btn-link collapsed" type="button" data-toggle="collapse"
+                                    data-target="#collapse{{ fabricante.id }}" aria-expanded="false"
+                                    aria-controls="collapse{{ fabricante.id }}">
+                                {{ fabricante.nombre | upper }}
+                            </button>
+                        </h2>
+                    </div>
+
+                    <div id="collapse{{ fabricante.id }}" class="collapse" aria-labelledby="heading{{ fabricante.id }}"
+                         data-parent="#accordionExample">
+                        <div class="card-body">
+                            {% for modelo in modelos %}
+                                {% if modelo.proveedor == fabricante %}
+                                    <table id="tabla_carrito" class="table-striped accordion table" style="width: 100%;">
+                                        <thead>
+                                        <tr class="cart_menu" data-toggle="collapse"
+                                            data-target="#collapsemodelo{{ modelo.id }}" class="accordion-toggle"
+                                            style="cursor: pointer">
+                                            <th colspan="2" class="description" style="overflow: hidden">
+                                                <h4><b>({{ modelo.referencia }}) - {{ modelo.nombre }} - {{ modelo.supplierArticleName }}</b></h4>
+                                            </th>
+                                            <th class="quantity" style="text-align: right; overflow: hidden">Stock Local</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody class="collapse" id="collapsemodelo{{ modelo.id }}">
+                                        {% set colorActual = "-1" %}
+                                        {% for presupuesto in carrito.items %}
+                                            {% for productoPresupuesto in presupuesto.getProductos() %}
+                                                {% if productoPresupuesto.producto.modelo.referencia == modelo.referencia %}
+                                                    {% if productoPresupuesto.cantidad > 0 %}
+                                                        {% if colorActual != productoPresupuesto.producto.color.nombre %}
+                                                            {% set colorActual = productoPresupuesto.producto.color.nombre %}
+                                                            <tr>
+                                                                <td colspan="3" style="background-color: {{ productoPresupuesto.producto.color.codigoRGB }}">
+                                                                    <p style="margin: 0; color: white; text-shadow: 1px 0 0 black, -1px 0 0 black, 0 1px 0 black, 0 -1px 0 black, 1px 1px black, -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black;">
+                                                                        <b>Color: {{ productoPresupuesto.producto.color.nombre }}</b>
+                                                                    </p>
+                                                                </td>
+                                                            </tr>
+                                                        {% endif %}
+                                                        <tr>
+                                                            <td style="max-width: 40px; width: 40px;">
+                                                                <input type="checkbox" class="abc" required>
+                                                            </td>
+                                                            <td class="cart_description">
+                                                                <p style="margin: 0; color: black">
+                                                                    Talla: {{ productoPresupuesto.producto.talla }} / {{ productoPresupuesto.cantidad }}
+                                                                </p>
+                                                                {% for trabajo in presupuesto.getTrabajos() %}
+                                                                    <p style="margin: 0; color: black">{{ trabajo }}</p>
+                                                                {% endfor %}
+                                                                <p>Ref: {{ productoPresupuesto.producto.referencia }}</p>
+                                                            </td>
+                                                            <td style="text-align: right">
+                                                                {# MIGRACIÓN: Se usa la propiedad 'inventario' en lugar de 'productoHasInventario' #}
+                                                                {% for inventario in productoPresupuesto.producto.inventario %}
+                                                                    {% if inventario.cantidad > 0 %}
+                                                                        <input class="quitar-stock" type="text" id="{{ productoPresupuesto.producto.id }}" name="{{ productoPresupuesto.producto.id }}" value="0" style="width: 30px; display: inline; text-align: right">
+                                                                        <p style="font-size: 10px; text-align: right">
+                                                                            C{{ inventario.caja }} - <b>{{ inventario.cantidad }} u</b>
+                                                                        </p>
+                                                                        {% if inventario.observaciones %}
+                                                                            <p>
+                                                                                <a style="font-size: 10px; text-align: right; padding: 1px; cursor: pointer"
+                                                                                   class="alert alert-danger" data-toggle="tooltip" title="{{ inventario.observaciones }}">!!</a>
+                                                                            </p>
+                                                                            <br>
+                                                                        {% endif %}
+                                                                    {% endif %}
+                                                                {% endfor %}
+                                                            </td>
+                                                        </tr>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <p><b>Pedidos a revisar:</b></p>
+        {% for pedido in arraypedidos %}
+            {# MIGRACIÓN: Se genera la URL al admin de Sonata de forma dinámica y correcta #}
+            <p><a class="sonata-action-element" href="{{ path('admin_app_pedido_show', {'id': pedido.id}) }}" target="_blank">{{ pedido.nombre }}</a></p>
+        {% endfor %}
+        <input type="submit" value="PEDIDO REALIZADO">
+    </form>
+{% endblock %}

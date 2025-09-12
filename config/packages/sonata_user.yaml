@@ -1,0 +1,7 @@
+# config/packages/sonata_user.yaml
+sonata_user:
+  class:
+    user: App\Entity\Sonata\User
+
+  admin:
+  # ...

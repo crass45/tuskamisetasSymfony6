@@ -11,8 +11,20 @@
         "doctrine/doctrine-bundle": "^2.15",
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "^3.5",
+        "friendsofsymfony/ckeditor-bundle": "^2.6",
+        "knplabs/knp-snappy-bundle": "^1.10",
+        "oneup/uploader-bundle": "^5.0",
         "phpdocumentor/reflection-docblock": "^5.6",
         "phpstan/phpdoc-parser": "^2.3",
+        "sonata-project/admin-bundle": "*",
+        "sonata-project/block-bundle": "*",
+        "sonata-project/classification-bundle": "*",
+        "sonata-project/doctrine-orm-admin-bundle": "^4.18",
+        "sonata-project/formatter-bundle": "*",
+        "sonata-project/media-bundle": "*",
+        "sonata-project/translation-bundle": "*",
+        "sonata-project/user-bundle": "^5.15",
+        "stof/doctrine-extensions-bundle": "*",
         "symfony/asset": "6.4.*",
         "symfony/asset-mapper": "6.4.*",
         "symfony/console": "6.4.*",
@@ -76,7 +88,8 @@
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd",
-            "importmap:install": "symfony-cmd"
+            "importmap:install": "symfony-cmd",
+            "ckeditor:install": "symfony-cmd"
         },
         "post-install-cmd": [
             "@auto-scripts"

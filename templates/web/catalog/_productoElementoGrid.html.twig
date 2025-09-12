@@ -1,0 +1,85 @@
+{% if producto.nombreUrl is defined %}
+{#    <a class="enlaceproducto" data-referencia ="{{ producto.getReferencia }}" data-nombre="{{ producto.getNombre }}" data-brand ="{{ producto.getFabricante }}" href="{{ path('ss_tienda_producto_detalle',{'productoNombre':producto.nombreUrl}) }}" style="color: white;">#}
+    <a class="enlaceproducto" data-referencia ="{{ producto.getReferencia }}" data-nombre="{{ producto.getNombre }}" data-brand ="{{ producto.getFabricante }}" href="#" style="color: white;">
+        <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3" style="padding-right: 2px;padding-left: 2px;">
+            <div class="product-image-wrapper" style="position: relative;">
+                <div class="single-products">
+                    <div class="productinfo text-center">
+                        {% if producto.imagen != null %}
+                            <img src="{{ asset('images/dummy200.png') }}" class="lazy" id="{{ producto.id }}"
+                                 data-src="{{ sonata_path(producto.imagen, 'grid') }}"
+                                    {#data-retina="{% path producto.imagen, 'wide' %}"#}
+                                 alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
+                                    {#title="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"#}
+                                 data-imagen="{{ sonata_path(producto.imagen, 'grid') }}"/>
+                        {% else %}
+                            <img src="{{ asset('images/dummy200.png') }}" class="lazy" id="{{ producto.id }}"
+                                 data-src="{{ producto.urlImage }}"
+                                    {#data-retina="{{ producto.urlImage | retina}}"#}
+                                 alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
+                                    {#title="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"#}
+                                 data-imagen="{{ producto.urlImage }}"/>
+                        {% endif %}
+                        {% if producto.isNovelty %}
+                            <img src="{{ asset('template/images/new.png') }}" alt="novedad"
+                                 style="width: 40px;height: auto; position:absolute; right: 0;top: 0;border: none"/>
+                        {% endif %}
+                        {#<h2>{{ producto.precio }}</h2>#}
+
+                        {#<a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add#}
+                        {#to cart</a>#}
+                    </div>
+                </div>
+
+                <div class="productoGridDescripcion" style="color: white">
+                    {% if producto is defined and producto is not null %}
+                        <p style="height: 42px; margin-top: 15px; margin-right: 10px; overflow: hidden">{{ producto.nombre | upper }}</p>
+                        {% if producto.hasColorNino() or producto.hasBlancoNino() %}
+                            <p>Infantil
+                                Desde
+                                <b>{{ producto.getPrecioCantidadBlancasNino(10000, app.user) | number_format(2, ',', '.') }}
+                                    €</b></p>
+                            {#<p>&nbsp;</p>#}
+                            {% if producto.getPrecioCantidadBlancas(10000, app.user) > 0 or producto.getPrecioCantidadColor(1000, app.user) > 0 %}
+                                <p>Adultos Desde
+                                    <b>{{ producto.getPrecioCantidadBlancas(10000,app.user) | number_format(2, ',', '.') }}
+                                        €</b></p>
+                            {% else %}
+                                <p>&nbsp;</p>
+                            {% endif %}
+                        {% else %}
+                            <p>Desde
+                                <b>{{ producto.getPrecioUnidad( app.user ) | number_format(2, ',', '.') }}
+                                    €</b></p>
+                            <p>&nbsp;</p>
+                        {% endif %}
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <a href="{{ 'https://tuskamisetas.com/admin/ss/tienda/modelo/' ~ producto.id ~ '/edit' }}"
+                               style="color: lightblue;"
+                               target="_blank"><i class="fa fa-cog"></i></a>
+                        {% endif %}
+
+                        <div class="grid-producto-colores" style="text-align: center">
+                            {% for color in producto.getColoresProductos() %}
+                                <div {% if (color.color is not null) %}style="background-color: {{ color.color.codigoRGB }};"{% endif %}
+                                     class="cuadro-color cuadro-color-grid"
+                                        {% if color.imagen != null %}
+                                            data-imagen="{{ sonata_path(color.imagen, 'grid') }}"
+                                        {% else %}
+                                            data-imagen="{{ color.urlImage }}"
+                                        {% endif %}
+                                     data-modelo="{{ producto.id }}"></div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                {#<div class="choose">#}
+                {#<ul class="nav nav-pills nav-justified">#}
+                {#<li><a href="#"><i class="fa fa-plus-square"></i>Add to wishlist</a></li>#}
+                {#<li><a href="#"><i class="fa fa-plus-square"></i>Add to compare</a></li>#}
+                {#</ul>#}
+                {#</div>#}
+            </div>
+        </div>
+    </a>
+{% endif %}

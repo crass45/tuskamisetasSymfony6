@@ -1,17 +1,870 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html lang="{{ app.request.locale }}" itemscope itemtype="http://schema.org/WebPage">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% trans %}TITULO_SEO_HOME{% endtrans %}{% endblock %}</title>
+    <meta name="description" content="{% block metaDescription %}{% endblock %}">
+    <meta name="author" content="TusKamisetas">
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
-    </head>
-    <body>
-        {% block body %}{% endblock %}
-    </body>
+    {% block datosEstructurado %}{% endblock %}
+
+    {# --- Bloques de SEO y Metadatos (sin cambios de migración) --- #}
+    <meta name="msvalidate.01" content="C617723FD50E8848505178B55D23B3C4"/>
+    <meta name="twitter:card" content="summary"/>
+    <meta name="twitter:site" content="@tuskamisetas"/>
+    <meta name="twitter:creator" content="@tuskamisetas"/>
+    <meta name="p:domain_verify" content="238319c8d47689a1737b0621c650f691"/>
+
+    {# MIGRACIÓN: La lógica de canonicals y hreflang se mantiene, pero las rutas se actualizarán #}
+    {% block canonical %}
+        {% if(req.attributes.get('_route_params')['pagina'] is defined) %}
+            <link rel="canonical"
+                  href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({'pagina': req.attributes.get('_route_params')['pagina']})) }}"/>
+            {% if(req.attributes.get('_route_params')['pagina'] > 0) %}
+                <link rel="prev" href="{{ absolute_url(
+                    path(
+                        req.attributes.get('_route'),
+                        req.attributes.get('_route_params')|merge({'pagina': req.attributes.get('_route_params')['pagina']-1})
+                    )
+                ) }}{% if (routeFiltros is defined and routeFiltros != null and routeFiltros != "") %}?filtros={{ routeFiltros }} {% endif %}"/>
+            {% endif %}
+            {% if (npaginas is defined and (req.attributes.get('_route_params')['pagina']+1) < npaginas) %}
+                <link rel="next" href="{{ absolute_url(
+                    path(
+                        req.attributes.get('_route'),
+                        req.attributes.get('_route_params')|merge({'pagina': req.attributes.get('_route_params')['pagina']+1})
+                    )
+                ) }}{% if (routeFiltros is defined and routeFiltros != null and routeFiltros != "") %}?filtros={{ routeFiltros }} {% endif %}"/>
+            {% endif %}
+        {% else %}
+            {% if (app.request.attributes.get('_route_params') != null) %}
+                <link rel="canonical"
+                      href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) }}"/>
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+
+    {# --- MIGRACIÓN DE ASSETS (CSS) --- #}
+    {# Se reemplaza el bloque {% stylesheets %} de Assetic por enlaces directos con la función asset() #}
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('cookieconsent/cookieconsent.css') }}">
+        <link rel="stylesheet" href="{{ asset('template/css/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('template/css/font-awesome.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('template/css/price-range.css') }}">
+        <link rel="stylesheet" href="{{ asset('template/css/animate.css') }}">
+        <link rel="stylesheet" href="{{ asset('template/css/main.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/tkmestilos.css') }}">
+        <link rel="stylesheet" href="{{ asset('js/jquery/fileUpload/css/jquery.fileupload.css') }}">
+        <link rel="stylesheet" href="{{ asset('template/css/responsive.css') }}">
+    {% endblock %}
+
+    {# --- Scripts de Tracking y Head (sin cambios) --- #}
+    <script src="{{ asset('cookieconsent/cookieconsent.js') }}"></script>
+    <!-- Google, Facebook, Clarity scripts... -->
+    <!-- Google tag ANALYTICS 4 (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J1ZQDH5W4Q"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+
+        gtag('js', new Date());
+        gtag('config', 'G-J1ZQDH5W4Q');
+    </script>
+
+
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || [];
+            w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            });
+            var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+            j.async = true;
+            j.src =
+                'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+            f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-WGSJ2QM');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Facebook Pixel Code -->
+    <script>
+        !function (f, b, e, v, n, t, s) {
+            if (f.fbq) return;
+            n = f.fbq = function () {
+                n.callMethod ?
+                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n;
+            n.push = n;
+            n.loaded = !0;
+            n.version = '2.0';
+            n.queue = [];
+            t = b.createElement(e);
+            t.async = !0;
+            t.src = v;
+            s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '494621261182777');
+        fbq('track', 'PageView');
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+             src="https://www.facebook.com/tr?id=494621261182777&ev=PageView&noscript=1"/>
+    </noscript>
+    <!-- End Facebook Pixel Code -->
+
+
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="{{ asset('ms-icon-144x144.png') }}">
+    <meta name="theme-color" content="#ffffff">
+    {% block meta %}
+        {% if (ogTitulo is defined) %}
+            <meta property="og:title" content="{{ ogTitulo }}"/>
+        {% else %}
+            <meta property="og:title" content="{{ empresa.nombre }}"/>
+        {% endif %}
+        <meta property="og:type" content="website"/>
+        <meta property="og:url" content="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}"/>
+        <meta property="og:image" content="{{ sonata_path(empresa.logo, 'big') }}"/>
+        {% if (ogDescripcion is defined) %}
+            <meta property="og:description" content="{{ ogDescripcion }}"/>
+        {% else %}
+            <meta property="og:description" content="{{ empresa.descripcion }}"/>
+        {% endif %}
+    {% endblock %}
+
+
+    <link rel="shortcut icon" href="{{ asset('favicon.ico') }}" type="image/x-icon"/>
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}"/>
+    <link rel="apple-touch-icon" sizes="57x57" href="{{ asset('apple-touch-icon-57x57.png') }}"/>
+    <link rel="apple-touch-icon" sizes="72x72" href="{{ asset('apple-touch-icon-72x72.png') }}"/>
+    <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('apple-touch-icon-76x76.png') }}"/>
+    <link rel="apple-touch-icon" sizes="114x114" href="{{ asset('apple-touch-icon-114x114.png') }}"/>
+    <link rel="apple-touch-icon" sizes="120x120" href="{{ asset('apple-touch-icon-120x120.png') }}"/>
+    <link rel="apple-touch-icon" sizes="144x144" href="{{ asset('apple-touch-icon-144x144.png') }}"/>
+    <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('apple-touch-icon-152x152.png') }}"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon-180x180.png') }}"/>
+
+    {# --- MIGRACIÓN DE ASSETS (JAVASCRIPT) --- #}
+    {% block javascripts %}
+        <script src="{{ asset('template/js/jquery.js') }}"></script>
+        <script src="{{ asset('template/js/jquery.cookie.min.js') }}"></script>
+        <script src="{{ asset('template/js/bootstrap.min.js') }}"></script>
+        <script src="{{ asset('template/js/bootstrap-dropdownhover.min.js') }}"></script>
+        <script src="{{ asset('switch/js/bootstrap-switch.js') }}"></script>
+        <script src="{{ asset('js/app-tienda.js') }}"></script>
+        <script src="{{ asset('js/lazy/jquery.lazy.js') }}"></script>
+        {# ... (el resto de tus scripts JS) ... #}
+    {% endblock %}
+
+    {% block aditionalHead %}{% endblock %}
+</head>
+
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WGSJ2QM" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe>
+</noscript>
+
+<div id="container">
+    <div id="canvas">
+        {# MIGRACIÓN: Las variables globales como 'empresa' y 'categorias' ahora deben ser
+               inyectadas en Twig a través de un Event Listener o configuradas en twig.yaml #}
+        {% if empresa is defined %}
+
+            <header id="header">
+                <div class="header_top">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-xs-3 col-md-7">
+                                <div class="contactinfo">
+                                    <div class="logo hidden-md hidden-lg" style="height: 50px;">
+                                        {% if empresa.logo %}
+                                            {# MIGRACIÓN: Se usan los nuevos nombres de ruta #}
+                                            <a href="{{ path('app_home') }}">
+                                                <img src="{{ asset('images/tuskamisetas-logo.png') }}"
+                                                     style="height: 40px;margin-top: 5px"
+                                                     alt="Camisetas personalizadas baratas"/>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                    <ul class="nav nav-pills hidden-sm hidden-xs">
+                                        {% if empresa.telefonoMovil %}
+                                            <li><a href="tel:{{ empresa.telefonoMovil }}" class="tkm-phone"><i
+                                                            class="fa fa-phone"></i>{{ empresa.telefonoMovil }}
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        {% if empresa.email %}
+                                            <li><a href="mailto:{{ empresa.email }}"><i
+                                                            class="fa fa-envelope"></i> {{ empresa.email }}
+                                                </a></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-xs-9 col-md-5">
+                                <div class="social-icons pull-right">
+                                    <div class="contactinfo">
+                                        <ul class="nav nav-pills hidden-xs hidden-sm">
+                                            <li style="cursor: pointer"><a data-toggle="modal"
+                                                                           data-target="#carrito"><i
+                                                            class="fa fa-shopping-cart"
+                                                            style="padding:11px 0"></i> <span
+                                                            class="badge circulo fondoNegro circuloCantidad"
+                                                            style="display:inline;">{% if app.session.get('carrito') %}{{ app.session.get('carrito').getCantidadProductosTotales() }}{% else %}0{% endif %}</span></a>
+                                            </li>
+                                            {% if app.user %}
+                                                <li style="cursor: pointer"><a data-toggle="modal"
+                                                                               data-target="#login"><i
+                                                                class="fa fa-user"
+                                                                style="padding:11px 0; margin-left: 10px;"></i>{{ app.user }}
+                                                    </a>
+                                                </li>
+                                            {% else %}
+                                                <li style="cursor: pointer"><a data-toggle="modal"
+                                                                               data-target="#login"><i
+                                                                class="fa fa-lock"
+                                                                style="padding:11px 0; margin-left: 10px;"></i>
+                                                        Login</a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+
+                                        <div class="nav nav-pills hidden-md hidden-lg text-right "
+                                             style="/*padding: auto; */padding-top: 15px;">
+                                            <a href="tel:{{ empresa.telefonoMovil }}" class="tkm-phone"><i
+                                                        class="fa fa-phone"
+                                                        style="padding:0; margin-left: 10px;font-size: 20px; color: #696763;"></i>
+                                            </a>
+
+                                            <a href="mailto:{{ empresa.email }}"><i
+                                                        class="fa fa-envelope"
+                                                        style="padding:0; margin-left: 10px;font-size: 20px; margin-right: 25px; color: #696763;"></i>
+                                            </a>
+
+                                            <a data-toggle="modal" data-target="#carrito" style="cursor: pointer"><i
+                                                        class="fa fa-shopping-cart"
+                                                        style="padding:0; font-size: 20px; color: #696763;"></i>
+                                                <span
+                                                        class="badge circulo fondoNegro circuloCantidad"
+                                                        style="display:inline">{% if app.session.get('carrito') %}{{ app.session.get('carrito').getCantidadProductosTotales() }}{% else %}0{% endif %}</span></a>
+
+                                            {% if app.user %}
+                                                <a data-toggle="modal" data-target="#login" style="cursor: pointer"><i
+                                                            class="fa fa-user"
+                                                            style="padding:0; margin-left: 10px;font-size: 20px; color: #696763;"></i></a>
+
+                                            {% else %}
+                                                <a data-toggle="modal" data-target="#login" style="cursor:pointer;"><i
+                                                            class="fa fa-lock"
+                                                            style="padding:0; margin-left: 10px;font-size: 20px; color: #696763;"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-middle">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-xs-12 col-md-4 hidden-xs hidden-sm">
+                                <div class="logo">
+                                    {% if empresa.logo %}
+                                        <a href="{{ path('app_home') }}"><img
+                                                    src="{{ asset('images/logohorizontal.jpg') }}" style="height: 50px;"
+                                                    alt="Camisetas personalizadas baratas"/></a>
+                                    {% endif %}
+                                </div>
+                            </div>
+{#boton del menu#}
+                            <div class="col-xs-2 hidden-md hidden-lg">
+                                <nav class="navbar navbar-defaul navbar-tkm"
+                                     style="z-index: 1008; padding: 0; margin: 0">
+                                    <div class="container-fluid">
+                                        <!-- Brand and toggle get grouped for better mobile display -->
+                                        <div class="navbar-header">
+                                            <button id="nav-icon4" type="button"
+                                                    class="TKMAnimationMenu navbar-toggle collapsed"
+                                                    data-toggle="collapse"
+                                                    data-target="#bs-example-navbar-collapse-1"
+                                                    aria-expanded="false"
+                                                    style="margin-bottom: 0; background-color: #044266">
+                                                {# <span class="sr-only">Toggle navigation</span> #}
+                                                <span class="icon-bar"></span>
+                                                <span class="icon-bar"></span>
+                                                <span class="icon-bar"></span>
+                                            </button>
+                                            {# <a class="navbar-brand" href="#"> #}
+
+                                            {# </a> #}
+                                        </div>
+                                    </div>
+                                </nav>
+                            </div>
+
+                            <div class="col-xs-10 col-md-8">
+                                <div class="search_box" style="width: 100%; margin-top: 7px;">
+                                    {# MIGRACIÓN: La ruta del formulario de búsqueda debe actualizarse #}
+                                    {#                                    <form action="{{ path('app_search') }}" method="post"> #}
+                                    {#                                        #}{# ... #}
+                                    {#                                    </form> #}
+                                    <form action="#" method="post">
+                                        <div>
+                                            <input itemprop="query-input" required type="text" name="cadena" data-url
+                                                   placeholder="{% trans %}Buscar{% endtrans %}"
+                                                   style="border: 1px solid #ff9000; width: 100%"
+                                                    {#                                                   data-url-buscar="{{ path('ss_tienda_buscar',{'cadena':'cadenaNombre','pagina':0}) }}"/> #}
+                                                   data-url-buscar="{{ path('app_home',{'cadena':'cadenaNombre','pagina':0}) }}"/>
+                                            <input class="searchSubmit" type="submit" value=""/>
+                                        </div>
+                                        <div id="livesearch"
+                                             style="background-color:#ff9000;max-height:400px; overflow:scroll; background-color: white; position: absolute"></div>
+                                    </form>
+                                </div>
+                            </div>
+
+
+
+                            <div class="col-xs-12" style="padding: 0">
+                                <nav class="navbar navbar-defaul navbar-tkm" style="z-index: 1009;">
+                                    <div class="container-fluid">
+
+                                        <!-- Collect the nav links, forms, and other content for toggling -->
+                                        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"
+                                             style="background-color: white; max-height: fit-content">
+                                            <ul class="nav navbar-nav navbar-left" style="background-color: white">
+
+                                                {% for coleccion in categorias.children %}
+                                                    {# <li> #}
+                                                    {# <a href="{{ path('ss_category'~ coleccion.name|urlSafe) }}">{{ coleccion.name | upper }}</a> #}
+                                                    {# </li> #}
+                                                    {% if coleccion.isVisibleMenu() and coleccion.enabled %}
+                                                        <li class="dropdown menu-item">
+                                                            <a id="navItem{{ coleccion.slug|slugify }}"
+                                                               class="dropdown-toggle nav-link"
+                                                               href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug':  coleccion.slug|slugify }) }}"
+                                                               data-hover="dropdown"
+                                                               data-animations="zoomIn zoomIn zoomIn zoomIn">
+                                                                {{ coleccion.name | capitalize }}<span
+                                                                        class="caret"></span>
+                                                            </a>
+                                                            {% if coleccion.children |length > 0 %}
+                                                                <a href="#"
+                                                                   style="position: absolute; top: 0; right: 0"
+                                                                   class="tkmPlus hidden-sm hidden-md hidden-lg"
+                                                                   data-toggle="dropdown"><i
+                                                                            class="fa fa-plus"></i>
+                                                                </a>
+
+                                                                <ul class="dropdown-menu"
+                                                                    style="z-index: 99999; background-color: white">
+
+                                                                    {% for subcoleccion in coleccion.children %}
+                                                                        {% if subcoleccion.enabled %}
+                                                                            <li>
+                                                                                <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': subcoleccion.slug|slugify }) }}"> {{ subcoleccion.name | capitalize }}</a>
+                                                                            </li>
+                                                                            {% if not loop.last %}
+                                                                                <li role="separator"
+                                                                                    class="divider"></li>
+                                                                            {% endif %}
+                                                                        {% endif %}
+                                                                    {% endfor %}
+                                                                </ul>
+                                                            {% endif %}
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+
+                                                <li class="dropdown menu-item">
+                                                    <a id="navItemMasProductos"
+                                                       class=" dropdown-toggle nav-link"
+                                                            {# href="{{ path('ss_category'~ coleccion.name|urlSafe) }}" #}
+                                                       data-hover="dropdown" data-toggle="dropdown"
+                                                       data-animations="zoomIn zoomIn zoomIn zoomIn"
+                                                       style="cursor: pointer;">
+                                                        Más Productos<span class="caret"></span>
+                                                    </a>
+                                                    <a href="#"
+                                                       style="position: absolute; top: 0; right: 0"
+                                                       class="tkmPlus hidden-sm hidden-md hidden-lg"
+                                                       data-toggle="dropdown"><i class="fa fa-plus"></i>
+                                                    </a>
+
+                                                    <ul class="dropdown-menu"
+                                                        style="z-index: 99999; background-color: white">
+                                                        {% for subcoleccion in categorias.children %}
+                                                            {# <li> #}
+                                                            {# <a href="{{ path('ss_category'~ coleccion.name|urlSafe) }}">{{ coleccion.name | upper }}</a> #}
+                                                            {# </li> #}
+                                                            {% if not subcoleccion.isVisibleMenu() and subcoleccion.enabled %}
+
+                                                                <li>
+                                                                    <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': subcoleccion.slug|slugify}) }}"> {{ subcoleccion.name | capitalize }}</a>
+                                                                </li>
+
+                                                                <li role="separator"
+                                                                    class="divider"></li>
+
+                                                            {% endif %}
+                                                        {% endfor %}
+
+
+                                                        <li>
+{#                                                            <a href="{{ path('ss_tienda_ofertas') }}"> {% trans %}Ofertas{% endtrans %}</a>#}
+                                                            <a href="#"> {% trans %}Ofertas{% endtrans %}</a>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+
+                                            </ul>
+                                            <ul class="nav navbar-nav navbar-right">
+                                                <li class="dropdown">
+                                                    <a id="navItemMarcas" class="dropdown-toggle nav-link"
+{#                                                       href="{{ path('ss_tienda_marcas') }}"#}
+                                                       href="#"
+                                                       data-hover="dropdown"
+                                                       data-animations="zoomIn zoomIn zoomIn zoomIn">Marcas<span
+                                                                class="caret"></span></a>
+                                                    <a href="#" style="position: absolute; top: 0; right: 0"
+                                                       class="tkmPlus hidden-sm hidden-md hidden-lg" U
+                                                       data-toggle="dropdown"><i class="fa fa-plus"></i> </a>
+                                                    <ul class="dropdown-menu ulDouble tkmSublink"
+                                                        style="z-index: 99999; background-color: white">
+
+                                                        {% for proveedor in proveedores %}
+                                                            {% if proveedor.showMenu == true %}
+                                                                <li itemscope
+                                                                    itemtype="http://schema.org/Organization">
+                                                                    <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': proveedor.nombreUrl}) }}">
+
+                                                                        <span class="helperAlign"></span>
+                                                                        <div style="height: 100%; width: 30px;display: inline-block;vertical-align: middle">
+
+                                                                            <img
+                                                                                    src="{{ asset('images/dummy40.png') }}"
+                                                                                    class="lazy img-responsive"
+                                                                                    id="{{ proveedor.id }}"
+                                                                                    data-src="{{ sonata_path(proveedor.imagen, 'mini') }}"
+                                                                                    alt="{{ proveedor.nombre }}"/>
+                                                                        </div>
+
+                                                                        <span style="vertical-align: middle; margin-left: 15px"
+                                                                              itemprop="name">{{ proveedor.nombre | upper }}</span>
+                                                                    </a>
+                                                                    <meta itemprop="url"
+                                                                          content="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': proveedor.nombreUrl}) }}"/>
+                                                                </li>
+                                                                {# <li role="separator" class="divider"></li> #}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                        <li>
+{#                                                            <a href="{{ path('ss_tienda_marcas') }}">#}
+                                                                <a href="#">
+                                                                {# <div style="height: 100%; width: 30px;display: inline-block;vertical-align: middle"> #}
+                                                                {# </div> #}
+                                                                <span>{% trans %}VER TODAS LAS MARCAS{% endtrans %}</span></a>
+                                                        </li>
+                                                    </ul>
+                                                </li>
+
+                                                {# <li class="nav-link"> #}
+                                                {# <a id="navItemOfertas" href="{{ path('ss_tienda_ofertas') }}"> #}
+                                                {# {% trans %}Ofertas{% endtrans %} #}
+                                                {# <span class="caret"></span> #}
+                                                {# </a> #}
+                                                {# </li> #}
+
+
+                                                <li class="dropdown">
+                                                    <a id="navItemServicios" class=" dropdown-toggle nav-link"
+                                                            {# href="{{ path('ss_category'~ coleccion.name|urlSafe) }}" #}
+                                                       data-hover="dropdown" data-toggle="dropdown"
+                                                       data-animations="zoomIn zoomIn zoomIn zoomIn"
+                                                       style="cursor: pointer;">
+
+                                                        {% trans %}Servicios{% endtrans %}
+                                                        <span class="caret"></span>
+                                                    </a>
+                                                    <a href="#" style="position: absolute; top: 0; right: 0"
+                                                       class="tkmPlus hidden-sm hidden-md hidden-lg"
+                                                       data-toggle="dropdown"><i class="fa fa-plus"></i> </a>
+                                                    <ul class="dropdown-menu ulSingle tkmSublink"
+                                                        style="z-index: 99999; background-color: white">
+                                                        <li>
+                                                            <a href="{{ path('app_service_serigrafia') }}">Serigrafía</a>
+                                                        </li>
+                                                        <li role="separator" class="divider"></li>
+                                                        <li>
+                                                            <a href="{{ path('app_service_sublimacion') }}">Sublimación</a>
+                                                        </li>
+                                                        <li role="separator" class="divider"></li>
+                                                        <li><a href="{{ path('app_service_dtf') }}">Impresión
+                                                                DTF</a></li>
+                                                        <li role="separator" class="divider"></li>
+                                                        <li><a href="{{ path('app_service_dtg') }}">Impresión
+                                                                Digital</a></li>
+                                                        <li role="separator" class="divider"></li>
+                                                        <li><a href="{{ path('app_service_bordados') }}">Bordados y
+                                                                Parches</a></li>
+                                                        <li role="separator" class="divider"></li>
+                                                        <li><a href="{{ path('app_service_vinilo') }}">Vinilo de
+                                                                corte</a></li>
+                                                        {# <li role="separator" class="divider"></li> #}
+                                                        {# <li><a href="#">Transfer Serigráfico</a></li> #}
+                                                        <li role="separator" class="divider"></li>
+                                                        <li><a href="{{ path('app_service_fullprint') }}">Full
+                                                                Print</a></li>
+                                                        <li role="separator" class="divider"></li>
+                                                        <li><a href="{{ path('app_service_tampografia') }}">Tampografía</a>
+                                                        </li>
+                                                        <li role="separator" class="divider"></li>
+                                                        <li><a href="{{ path('app_service_etiquetas') }}">Personalizar
+                                                                Etiquetas</a></li>
+                                                        <li role="separator" class="divider"></li>
+                                                        <li><a href="{{ path('app_service_packaging') }}">Embalado
+                                                                y
+                                                                Packaging</a></li>
+                                                        {# <li role="separator" class="divider"></li> #}
+                                                        {# <li><a href="#">Carteles Publicitarios</a></li> #}
+                                                        {# <li role="separator" class="divider"></li> #}
+                                                        {# <li><a href="#">Diseño e Ilustración</a></li> #}
+                                                    </ul>
+                                                </li>
+                                                <li class="nav-link">
+                                                    <a id="navItemContacta" class="nav-link"
+{#                                                       href="{{ path('ss_tienda_contacto') }}"#}
+                                                       href="#"
+                                                       rel="nofollow">
+                                                        {% trans %}Contacta{% endtrans %}
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div><!-- /.navbar-collapse -->
+                                    </div><!-- /.container-fluid -->
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+        {% endif %}
+
+        <div>
+            {% block fueraBloques %}{% endblock %}
+        </div>
+
+        <div class="container">
+            {% block migas %}{% endblock %}
+            {# ESTE BLOQUE ES PARA MOSTRAR EL ERROR CUANDO SE HACE LOGIN LA CLASE AUTHENTICATIONHANDLER ES LA QUE SE ENCARGA DE GESTIONARLO #}
+            {% if (app.session.get('AUTHENTICATION_ERROR') is defined and app.session.get('AUTHENTICATION_ERROR')!='') %}
+                <div class="alert alert-danger">
+                    {{ app.session.remove('AUTHENTICATION_ERROR') |trans }}
+                </div>
+            {% endif %}
+            {% block baseBody %}{% endblock %}
+        </div>
+
+        <footer id="footer" class="footer">
+            <div class="footer-bottom">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <div class="single-widget">
+                                <h2>{% trans %}Servicio{% endtrans %}</h2>
+                                <nav aria-label="{% trans %}Navegación de servicio{% endtrans %}">
+                                    <ul class="nav nav-pills nav-stacked">
+                                        {# MIGRACIÓN: Se actualizan los nombres de las rutas #}
+                                        <li>
+                                            <a href="{{ path('app_blog_list', {'_locale': app.request.locale}) }}">{% trans %}Publicaciones{% endtrans %}</a>
+                                        </li>
+                                        <li><a href="{{ path('app_work_with_us', {'_locale': app.request.locale}) }}"
+                                               rel="nofollow">{% trans %}Trabaja con Nosotros{% endtrans %}</a></li>
+                                        <li><a href="{{ path('app_contact', {'_locale': app.request.locale}) }}"
+                                               rel="nofollow">{% trans %}Contacta con Nosotros{% endtrans %}</a></li>
+                                        <li><a href="{{ path('app_profile_orders', {'_locale': app.request.locale}) }}"
+                                               rel="nofollow">{% trans %}Estado de Mi Pedido{% endtrans %}</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-3">
+                            <div class="single-widget">
+                                <h2>{% trans %}Búsqueda Rápida{% endtrans %}</h2>
+                                <nav aria-label="{% trans %}Navegación de categorías{% endtrans %}">
+                                    <ul class="nav nav-pills nav-stacked">
+                                        {# MIGRACIÓN: Se usa la ruta genérica 'app_catalog_resolver' #}
+                                        <li>
+                                            <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'camisetas-unisex'}) }}">{% trans %}Camisetas Baratas{% endtrans %}</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'camisetas-tecnicas'}) }}">{% trans %}Camisetas Tecnicas{% endtrans %}</a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'sudaderas'}) }}">{% trans %}Sudaderas Baratas{% endtrans %}</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-3">
+                            <div class="single-widget">
+                                <h2>{% trans %}Legal{% endtrans %}</h2>
+                                <nav aria-label="{% trans %}Navegación legal{% endtrans %}">
+                                    <ul class="nav nav-pills nav-stacked">
+                                        <li><a href="{{ path('app_terms_of_use', {'_locale': app.request.locale}) }}"
+                                               rel="nofollow">{% trans %}Términos de Uso{% endtrans %}</a></li>
+                                        <li><a href="{{ path('app_privacy_policy', {'_locale': app.request.locale}) }}"
+                                               rel="nofollow">{% trans %}Política de Privacidad{% endtrans %}</a></li>
+                                        <li><a href="{{ path('app_cookies_policy', {'_locale': app.request.locale}) }}"
+                                               rel="nofollow">{% trans %}Política de Cookies{% endtrans %}</a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-3">
+                            <div class="single-widget">
+                                <h2>{% trans %}Mantente Informado{% endtrans %}</h2>
+                                <form action="{{ path('app_newsletter_subscribe_simple', {'_locale': app.request.locale}) }}"
+                                      method="post" class="searchform">
+                                    <label for="newsletter-email"
+                                           class="sr-only">{% trans %}Introduce tu email{% endtrans %}</label>
+                                    <input name="newsletteremail" id="newsletter-email" type="email"
+                                           placeholder="{% trans %}Introduce tu email{% endtrans %}" required>
+                                    <button type="submit" class="btn btn-default"
+                                            aria-label="{% trans %}Suscribirse al boletín{% endtrans %}">
+                                        <i class="fa fa-arrow-circle-o-right" aria-hidden="true"></i>
+                                    </button>
+                                    <p class="newsletter-text">{% trans %}TEXTO_NEWSLETTER{% endtrans %}</p>
+                                </form>
+                            </div>
+                            <div class="social-icons">
+                                <ul class="nav navbar-nav">
+                                    {% if empresa.facebook %}
+                                        <li><a href="{{ empresa.facebook }}" aria-label="Facebook"><i
+                                                        class="fab fa-facebook-f" aria-hidden="true"></i></a></li>
+                                    {% endif %}
+                                    {% if empresa.twitter %}
+                                        <li><a href="{{ empresa.twitter }}" aria-label="Twitter"><i
+                                                        class="fab fa-twitter" aria-hidden="true"></i></a></li>
+                                    {% endif %}
+                                    {% if empresa.youtube %}
+                                        <li><a href="{{ empresa.youtube }}" aria-label="YouTube"><i
+                                                        class="fab fa-youtube" aria-hidden="true"></i></a></li>
+                                    {% endif %}
+                                    {% if empresa.pinterest %}
+                                        <li><a href="{{ empresa.pinterest }}" aria-label="Pinterest"><i
+                                                        class="fab fa-pinterest-p" aria-hidden="true"></i></a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<!-- Modals -->
+<section>
+    <div id="login" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    {% if app.user %}
+{#                         MIGRACIÓN: La forma de renderizar controladores ha cambiado#}
+{#                        {{ render(controller('App\\Controller\\ProfileController::editProfileAction')) }}#}
+                        {% else %}
+                        {{ render(controller('App\\Controller\\SecurityController::modalLoginAction')) }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+{% block modals %}
+{% endblock %}
+<section>
+    <div id="carrito" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h3 class="modal-title">Tu Carrito</h3>
+                </div>
+
+                <div class="modal-body">
+                    {% include 'web/partials/_ultimos_vistos_grid.html.twig' %}
+                </div>
+                <div class="modal-footer">
+                    {#                    <button onclick="window.location.href='{{ path('ss_tienda_carrito') }}'" class="button"> #}
+                    <button onclick="window.location.href='{{ path('app_home') }}'" class="button">
+                        Abrir
+                        Carrito
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div> <!--/#carrito-->
+</section>
+<!-- END Modal -->
+
+{% block flotantes %}
+{% endblock %}
+<script>
+    $(function () {
+        // IMPORTANTE: El selector ahora solo apunta a la clase .lazy.
+        // El plugin ignorará por completo los elementos .banerLazy, ya que no son seleccionados.
+        $('.lazy').lazy({
+            effect: 'fadeIn',
+            effectTime: 500,
+
+            // Esta lógica se aplicará únicamente a los elementos que tengan la clase .lazy
+            afterLoad: function (element) {
+
+                // Lógica específica si dentro de los .lazy se carga la imagen del producto
+                if (element.is('#imagen-producto')) {
+                    var alturaProducto = element.height();
+                    if (alturaProducto > 0) {
+                        $('#contenedor-imagen-producto').css({
+                            'min-height': alturaProducto,
+                            'max-height': alturaProducto
+                        });
+                    }
+                }
+
+                // Se llama a la función global 'afterload' para cualquier elemento .lazy que termine de cargar
+                if (typeof afterload !== "undefined") {
+                    afterload(element);
+                }
+            },
+
+            onError: function (element) {
+                console.log('Error al cargar: ' + element.data('src'));
+            }
+        });
+    });
+</script>
+
+<script>
+    /*jslint unparam: true */
+    /*global window, $ */
+</script>
+
+{% block javascript %}
+{% endblock %}
+
+<script type="text/javascript">
+
+    // este script sirve para que cuando pulsemos el botón atras del navegador se recargue la web y así el carrito no quede desfasado
+    // window.onpageshow = function (event) {
+    //
+    //     if (event.persisted) {
+    //         window.location.reload();
+    //     }
+    // };
+</script>
+
+<script type="text/javascript">
+    function utf8_to_b64(str) {
+        return window.btoa(encodeURIComponent(escape(str)));
+    }
+
+    function b64_to_utf8(str) {
+        return unescape(decodeURIComponent(window.atob(str)));
+    }
+
+    function b64_to_utf82(str) {
+        return decodeURIComponent(escape(window.atob(str)));
+    }
+
+    // ESTE TROZO DE CÓDIGO ES PARA QUE ESTÉN ACTIVOS LOS TOOLTIPS EN TODAS LAS PAGINAS
+    $(document).ready(function () {
+        $('a[data-toggle="tooltip"]').tooltip({
+            animated: 'fade',
+            placement: 'bottom',
+            html: false
+        });
+
+    });
+
+    function cargarDivCodificado(div, url) {
+        $(div).load(decodeURIComponent(b64_to_utf82(url)));
+    }
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $('#nav-icon1,#nav-icon2,#nav-icon3,#nav-icon4').click(function () {
+            $(this).toggleClass('open');
+        });
+
+        $('.tkmPlus').click(function () {
+            if ($(this).hasClass('open')) {
+                $(this).toggleClass('open');
+
+                tes
+            } else {
+                $('.tkmPlus.open').removeClass('open');
+                $(this).toggleClass('open');
+            }
+        });
+
+        $('#sidebarCollapse').on('click', function () {
+            $('#sidebar').toggleClass('active');
+            $(this).toggleClass('active');
+        });
+
+    });
+</script>
+
+{% if is_granted('ROLE_ADMIN') %}
+    {% if app.user.groups| length > 0 %}
+        <div style="position: fixed;
+                bottom: 15px;
+                right: 15px;
+                border: 1px solid red;
+                padding: 40px 35px 30px;
+        {% if app.user.groups[0].id == 5 %}
+                background: green;
+        {% else %}
+                background: orange;
+        {% endif %}
+                color: white;
+                z-index: 10000;
+                width: 230px;
+                font-size: 14px;">
+            <div class="inner">
+                Estas trabajando con tarifa de {{ app.user.groups[0] | upper }}
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
+
+
+</body>
 </html>
+

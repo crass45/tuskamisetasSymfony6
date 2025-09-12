@@ -1,0 +1,247 @@
+{% extends "web/estaticoPlantilla.html.twig" %}
+
+{% block title %}Sublimacíón textil | Estampación duradera y calidad fotográfica{% endblock %}
+{% block metaDescription %}La sublimación textil ha ido adquiriendo popularidad dentro del mundo de la estampación, y en TusKamisetas te explicamos qué es y cómo funciona. ¡Entra!{% endblock %}
+
+{% block datosEstructurado %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Serigrafía textil",
+            "description": "Servicio de sublimación para personalizar camisetas y todo tipo de merchandising.",
+            "provider": {
+                "@type": "Organization",
+                "name": "TusKamisetas",
+                "url": "https://www.tuskamisetas.com/es/servicios/sublimacion"
+            },
+            "areaServed": {
+                "@type": "Place",
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": "ES"
+                }
+            },
+            "serviceType": "Sublimación textil"
+        }
+    </script>
+{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}" class="miActive">
+                    <span itemprop="name">{% trans %}Sublimación{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>{% trans %}Sublimación textil{% endtrans %}</h1>
+        </div>
+        <div class="col-lg-7">
+            <p>
+                La sublimación textil es una técnica de estampación relativamente reciente, que ha adquirido mucha
+                popularidad en los últimos años gracias a la calidad del resultado final y a la rapidez del proceso. Se
+                trata de un método especialmente recomendado para estampar camisetas u otras prendas textiles
+                deportivas, ya que la tinta no tapa el poro y respeta la transpiración de la pieza.
+            </p>
+            <p>
+                Esta técnica solo puede aplicarse sobre tejidos que estén compuestos por un 100% de poliéster, aunque
+                también puede utilizarse para personalizar otros objetos como tazas o fundas móviles. Se caracteriza
+                principalmente porque la tinta se funde químicamente con el tejido, por lo que es imposible que el
+                diseño se estropee o deteriore.
+            </p>
+        </div>
+        <div class="col-lg-5">
+            <img src="{{ asset('images/1-sublimacion-textil.jpg') }}" style="width: 100%" alt="sublimación textil"/>
+        </div>
+
+        <div class="col-lg-12">
+            <h2>{% trans %}Qué es la sublimación textil{% endtrans %}</h2>
+        </div>
+        <div class="col-lg-5">
+            <img src="{{ asset('images/2-que-es-la-sublimacion-textil.jpg') }}" style="width: 100%"
+                 alt="que es la sublimación textil"/>
+        </div>
+        <div class="col-lg-7">
+            <p>
+                La impresión por sublimación toma su nombre del proceso físico en el que algo en estado sólido pasa
+                directamente a estado gaseoso sin paso intermedio. Esto sucede porque la tinta que se usa en el proceso
+                de sublimar se encuentra en estado sólido y, mediante el calor, se vuelve gaseosa y se funde con el
+                tejido.
+            </p>
+            <p>
+                Para llevar a cabo este método se utiliza una <b>impresora de sublimación</b>. Se trata de un tipo de
+                impresora muy específico que utiliza una tinta concreta para este tipo de estampación.
+            </p>
+            <p>
+                La sublimación se ha convertido en una de las técnicas de estampación textil favoritas para todo tipo de
+                proyectos, ya que la calidad de los colores es muy alta y puede alcanzar incluso un nivel fotográfico.
+                Además, el diseño integrado en la camiseta es inapreciable al tacto, ya que no tapa los poros, por lo
+                que no pesa ni impide la transpiración.
+            </p>
+            <p>
+                No obstante, esta técnica solo puede aplicarse a prendas de poliéster y/o sobre fondos blancos, ya sean
+                camisetas, mochilas, lonas, tazas o carcasas para móvil.
+            </p>
+        </div>
+
+        <div class="col-lg-12">
+            <h2>{% trans %}Proceso de la técnica sublimación textil{% endtrans %}</h2>
+            <p>
+                El procedimiento de la sublimación es bastante sencillo, ya que está automatizado casi en su totalidad y
+                no precisa de ninguna preparación previa de la prenda.
+            </p>
+            <ul class="ularticulo">
+                <li>
+                    Una vez hemos escogido el diseño, lo imprimimos en una impresora específica para la sublimación.
+                    Esta impresora o plotter debe estar cargada con un tipo de tinta específico, ya que es la que
+                    reacciona ante el calor para provocar la sublimación, y el papel sobre el que se imprime se llama
+                    <b>transfer</b> o papel de transferencia, que se caracteriza por ser resistente al calor y por no
+                    absorber
+                    las tintas.
+                </li>
+                <li>
+                    Cuando el diseño ya está impreso, colocamos el papel de transferencia sobre el tejido en el que
+                    vamos a estampar en la <b>máquina de sublimación</b>. Es importante que la cara impresa esté en
+                    contacto
+                    con la prenda.
+                </li>
+                <li>
+                    La máquina de sublimación es en una plancha térmica específica para esta técnica. Esta plancha ha
+                    de ser configurada previamente, escogiendo el tiempo, la temperatura y la presión que ha de ejercer
+                    sobre el papel y el artículo.
+                </li>
+                <li>
+                    La temperatura que se emplea para sublimar normalmente ronda los 190º. El calor hace que la tinta
+                    impresa en el papel transfer, que se encuentra en estado sólido, se evapore, penetrando así en el
+                    tejido y fundiéndose con él.
+                </li>
+                <li>
+                    Cuando la sublimación ha finalizado se retira el papel de la prenda, y ésta de la máquina,
+                    utilizando un guante protector, ya que la plancha puede alcanzar temperaturas muy elevadas durante
+                    el proceso.
+                </li>
+            </ul>
+            <p>
+                El resultado final de este procedimiento garantiza una superficie lisa y suave, puesto que la tinta ha
+                pasado a formar parte del tejido y no hay ningún tipo de relieve.
+            </p>
+        </div>
+
+        <div class="col-lg-12">
+            <h2>{% trans %}Beneficios de la sublimación textil{% endtrans %}</h2>
+            <p>
+                La sublimación textil presenta una serie de ventajas que ninguna otra técnica de estampación puede
+                ofrecer. Al tener lugar una fusión química entre la tinta y el tejido, la sublimación en tela deportiva
+                es uno de los usos más habituales que se le dan a este método, puesto que permite que la prenda sea
+                transpirable. Además, los colores que se pueden emplear son prácticamente ilimitados, por lo que pueden
+                incluirse los nombres de todo tipo de patrocinadores.
+            </p>
+
+            <p>
+                Asimismo, y debido de nuevo a la fusión, el diseño de una camiseta personalizada mediante la sublimación
+                <b>no se va con nada</b>: ni con lavados, ni con el paso del tiempo, ni con el uso.
+            </p>
+
+            <p>
+                El procedimiento que se lleva a cabo no precisa de fotolitos, pantallas u otros elementos, basta con la
+                impresora y la plancha térmica, por lo que se puede adquirir calidad fotográfica sin costes adicionales.
+                Aun así, es preciso tener en cuenta que este tipo de impresión puede resultar algo más lenta, y que la
+                variedad de prendas sobre las que podemos sublimar es más limitada, ya que solo pueden ser de poliéster
+                y de color blanco o de color muy claro.
+            </p>
+        </div>
+
+
+        <div class="col-lg-12">
+            <h2>{% trans %}Qué encontrarás en nuestra tienda de sublimación
+                {% endtrans %}</h2>
+        </div>
+
+        <div class="col-lg-7">
+            <p>
+                En TusKamisetas encontrarás las técnicas más impecables de sublimación textil, ya que llevamos mucho
+                tiempo
+                dedicándonos a este negocio y hemos perfeccionado el proceso. Te enseñaremos ejemplos de sublimación
+                para
+                que puedas escoger cuál es la técnica que mejor se adapta a lo que estás buscando, ya que en nuestra
+                tienda
+                también encontrarás servicios de serigrafía textil y de impresión digital. Además, también podrás
+                observar
+                la cantidad de artículos entre los que puedes elegir, ya que en TusKamisetas podemos estampar todo tipo
+                de
+                productos textiles.
+            </p>
+            <p>
+                Una vez sepamos lo que estás buscando, te asesoraremos para que puedas conocer cuáles son las ventajas
+                que
+                te presentan los diferentes métodos de impresión textil. La sublimación se ha convertido en la favorita
+                de
+                muchos, y es que sus ventajas son muchas. Al tratarse de un proceso en el que la tinta se adhiere por
+                completo al tejido, el diseño no corre el riesgo de irse con los lavados o de deteriorarse, ya que no se
+                trata de una estampación sólida sobre el tejido, sino que se ha fusionado con él. Además, la sublimación
+                consigue que el diseño sea <b>transpirable</b>, lo que se traduce en una prenda mucho más cómoda de
+                llevar.
+                Es precisamente por eso por lo que se ha popularizado tanto a la hora de diseñar camisetas técnicas.
+                Asimismo, se trata de una técnica bastante <b>económica</b>, y en TusKamisetas siempre buscamos la
+                manera de
+                ofrecerte los precios más asequibles.
+            </p>
+        </div>
+        <div class="col-lg-5">
+            <img src="{{ asset('images/3-que-encontraras-en-nuestra-tienda-de-sublimacion.jpg') }}" style="width: 100%"
+                 alt="nuesetra tienda de sublimación"/>
+        </div>
+        <div class="col-lg-12">
+            <p>
+                Sea lo que sea lo que estás buscando, sabemos de buena tinta que en TusKamisetas podemos ofrecértelo.
+                Dinos
+                qué es lo que quieres, y nosotros nos encargamos de todo lo demás.
+            </p>
+        </div>
+
+        <div class="col-lg-12">
+            <h2 style="text-align: center">Preguntas frecuentes sobre sublimación</h2>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Que objetos se pueden personalizar por sublimación?</h3>
+            <p>Cualquier <b>prenda de poliester 100%</b> (o al menos un 60%) o con superficie de <b>poliester</b> puede
+                ser sublimada. El único requisito adicional es que la superficie sea <b>blanca, o de un color muy
+                    claro</b></p>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Como es el tacto de la superficie sublimada?</h3>
+            <p>Al tacto resulta <b>imposible distinguir</b> un objeto impreso y otro igual sin imprimir, ni siquiera en
+                el textil. En este aspecto, es sin duda <b>el mejor sistema de impresión</b>, ya que la tinta penetra
+                completamente en el poliéster sin alterar su textura.</p>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Se pueden sublimar fotografías?</h3>
+            <p>Si, cualquier diseño es apto para ser sublimado. Las impresoras de sublimación modernas obtienen una <b>calidad
+                    y resolución de impresión fantástica</b> por esto es una de las mejores opciones para imprimir
+                fotografias.</p>
+        </div>
+        <div class="col-lg-3">
+            <h3>¿Cual es la durabilidad de la impresión por sublimación?</h3>
+            <p>Las impresiones por sublimación son <b>muy resistentes</b> al desgaste de lavados y roces que con paso
+                del tiempo sometemos a cualquier producto muy especialmente en el caso del textil.</p>
+        </div>
+    </div>
+{% endblock %}

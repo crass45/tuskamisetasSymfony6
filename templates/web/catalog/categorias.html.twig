@@ -1,0 +1,60 @@
+{% extends "web/indexTemplateNoFiltros.html.twig" %}
+
+{% block title %}Categorías | Tuskamisetas.com{% endblock %}
+{% block metaDescription %}En TusKamisetas tenemos las camisetas más baratas y de mejor calidad del mercado.{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem" title="Inicio">
+                <a itemprop="item" href="{{ path('ss_tienda_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span></a>
+                <meta itemprop="position" content="0"/>
+            </li>
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ path('ss_tienda_categorias') }}" class="miActive">
+                    <span itemprop="name">{% trans %}Categorías{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+
+
+    {% set textoCategorias = "En TusKamisetas contamos con <b>el mayor catálogo de artículos para publicidad</b> y eventos. Si vas a hacer una campaña publicitaria o buscas artículos para merchandising, en nuestra web seguro que contamos con los productos que mejor se adaptan a tus necesidades.<br>
+Por este motivo hemos dividio nuestros productos en una serie de categorías para que los encuentres de forma facil.<br><br>
+Recuerda que también puedes usar los filtros y el buscador para encontrar la prenda que mejor se adapte a tus necesidades." %}
+    <div class="features_items">
+        <h1 class="title text-center">{% trans %}CATALOGO ONLINE DE ROPA PARA PUBLICIDAD Y EVENTOS {% endtrans %}</h1>
+        {% if textoCategorias is defined %}
+            <div style="padding: 15px; font-size: 13px;">
+                {{ textoCategorias |raw }}
+            </div>
+        {% endif %}
+        {% include 'SSTiendaBundle:Web:categoriasGrid.html.twig' %}
+    </div>
+
+    {% if ofertas | length > 0 %}
+        <div class="recommended_items carousel">
+            <h2 class="title text-center">{% trans %}NUESTRAS OFERTAS{% endtrans %}</h2>
+            {% if textoOfertas is defined %}
+                <div style="padding: 15px; font-size: 13px;">
+                    {{ textoOfertas |raw }}
+                </div>
+            {% endif %}
+            {% include 'SSTiendaBundle:Web:ofertasGrid.html.twig' %}
+        </div>
+    {% endif %}
+
+    {#<script>#}
+    {#$(function () {#}
+    {#$('.navItem').removeClass('active');#}
+    {#$('#navItemCategorias').addClass('active');#}
+    {#});#}
+    {#</script>#}
+{% endblock %}

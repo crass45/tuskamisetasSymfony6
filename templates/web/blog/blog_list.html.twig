@@ -1,0 +1,167 @@
+{% extends "SSTiendaBundle:Estaticos:estaticoPlantialla.html.twig" %}
+
+{% block aditionalStyle %}
+    .img-fluid {
+    max-width: 100%;
+    height: auto;
+    }
+    .blog-item p {
+    color:black
+    }
+
+    @media (min-width: 768px) {
+    .blog-item h3 {
+    text-align: left;
+    }
+    }
+
+    @supports (position: sticky) {
+    .sticky-top {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    }
+    }
+
+    .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+    }
+
+    .sr-only-focusable:active, .sr-only-focusable:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    }
+
+    .shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+    }
+
+    .shadow {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .shadow-lg {
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+    }
+
+    .shadow-none {
+    box-shadow: none !important;
+    }
+
+
+    .stretched-link::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    pointer-events: auto;
+    content: "";
+    background-color: rgba(0, 0, 0, 0);
+    }
+
+{% endblock %}
+
+{% block title %}Publicaciones y Ayuda{% endblock %}
+{% block metaDescription %}Encuentra las mejores ideas para personalizar camisetas y merchandising por los expertos en el sector{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                {# MIGRACIÓN: Se usan los nuevos nombres de ruta con el parámetro de locale #}
+                <a itemprop="item" href="{{ path('app_home', {'_locale': app.request.locale}) }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ path('app_blog_list', {'_locale': app.request.locale}) }}" class="miActive">
+                    <span itemprop="name">{% trans %}Publicaciones{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>{% trans %}Publicaciones{% endtrans %}</h1>
+        </div>
+
+        <!-- Blog List Start -->
+        {% if publicaciones is defined and publicaciones is not empty %}
+            {% for publicacion in publicaciones %}
+                {# MIGRACIÓN: Se usa la nueva ruta para el detalle de la publicación #}
+                <a style="padding: 10px; display: block; color: inherit; text-decoration: none;" href="{{ path('app_blog_detail', {'_locale': app.request.locale, 'slug': publicacion.nombreUrl}) }}">
+                    <div class="row blog-item px-3 pb-5">
+                        <div class="col-md-5">
+                            <img class="img-fluid mb-4 mb-md-0" src="{{ publicacion.urlImagenPortada }}" alt="{{ publicacion.titulo }}">
+                        </div>
+                        <div class="col-md-7">
+                            <h3 class="mt-md-4 px-md-3 mb-2 py-2 bg-white font-weight-bold">{{ publicacion.titulo }}</h3>
+                            <div class="d-flex mb-3" style="text-align: left">
+                                {# MIGRACIÓN: Se usa el filtro 'date' estándar de Twig #}
+                                <small class="mr-2 text-muted"><i class="fa fa-calendar-alt"></i> {{ publicacion.fecha|date('d/m/Y') }}</small>
+                            </div>
+                            <p>{{ publicacion.textoPortada | raw }}</p>
+                            <p style="text-align: left">Leer más <i class="fa fa-angle-right"></i></p>
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        {% else %}
+            <p>No hay publicaciones disponibles.</p>
+        {% endif %}
+
+        {# MIGRACIÓN: Lógica de paginación simplificada usando las nuevas variables del controlador #}
+        <div class="col-xs-12">
+            {% if totalPages > 1 %}
+                <nav aria-label="Paginación de publicaciones">
+                    <ul class="pagination">
+                        {# Botón 'Anterior' #}
+                        <li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ path('app_blog_list', {'page': currentPage - 1}) }}">&lt;</a>
+                        </li>
+
+                        {# Números de página #}
+                        {% for i in 1..totalPages %}
+                            <li class="page-item {{ i == currentPage ? 'active' : '' }}">
+                                <a class="page-link" href="{{ path('app_blog_list', {'page': i}) }}">{{ i }}</a>
+                            </li>
+                        {% endfor %}
+
+                        {# Botón 'Siguiente' #}
+                        <li class="page-item {{ currentPage == totalPages ? 'disabled' : '' }}">
+                            <a class="page-link" href="{{ path('app_blog_list', {'page': currentPage + 1}) }}">&gt;</a>
+                        </li>
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+        <!-- Blog List End -->
+    </div>
+{% endblock %}
+{% block javascript %}
+<script>
+    $(".pop").on("click", function () {
+    $('#imagepreview').attr('src', $(this).find('.imageresource').attr('src')); // here asign the image to the modal when the user click the enlarge link
+    $('#imagemodal').modal('show'); // imagemodal is the id attribute assigned to the bootstrap modal, then i use the show function
+});
+</script>
+{% endblock %}

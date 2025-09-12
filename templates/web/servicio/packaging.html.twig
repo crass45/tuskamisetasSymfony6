@@ -1,0 +1,145 @@
+{% extends "web/estaticoPlantilla.html.twig" %}
+{% block title %}Packaging de ropa y embalaje para envíos{% endblock %}
+{% block metaDescription %}Somos conscientes de la importancia de la presentación y por eso ofrecemos servicios especiales de empaquetado y packaging. ¡Entra e infórmate!{% endblock %}
+
+{% block datosEstructurado %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Embalaje Personalizado",
+            "description": "Servicio de modificar el embalaje por defecto de tu pedido",
+            "provider": {
+                "@type": "Organization",
+                "name": "TusKamisetas",
+                "url": "https://www.tuskamisetas.com/es/servicios/full-print"
+            },
+            "areaServed": {
+                "@type": "Place",
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": "ES"
+                }
+            },
+            "serviceType": "Embalaje personalizado"
+        }
+    </script>
+{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}" class="miActive">
+                    <span itemprop="name">{% trans %}Embalado y Packaging{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+
+    <div class="col-lg-12 fondoblanco">
+        <h1>{% trans %}Embalaje y packaging{% endtrans %}</h1>
+    </div>
+    <div class="col-lg-12">
+        <div class="parallax-window" data-parallax="scroll"
+             data-image-src="{{ asset('images/1-embalaje-y-packaging.jpg') }}">
+        </div>
+    </div>
+    {#<img src="{{ asset('images/1-embalaje-y-packaging.jpg') }}" style="width: 100%" alt="embalaje y packaging"/>#}
+    <div class="col-lg-12 fondoblanco">
+        <p>
+            Disponer de un embalaje o packaging adecuado es crucial para poder aportar una buena imagen y, además,
+            conservar correctamente los pedidos. Existen diversas formas de embalar las prendas textiles, ya sean estas
+            camisetas, sudaderas o polos, en función de las necesidades del cliente.
+        </p>
+        <p>
+            El tipo de embalaje suele ir directamente relacionado con el volumen de camisetas que se haya solicitado,
+            aunque pueden añadirse pequeños extras como un embolsado más específico o la inclusión del logo en el
+            packaging para sumar profesionalidad.
+        </p>
+    </div>
+    <div class="col-lg-12">
+        <h2>{% trans %}Embalaje por defecto{% endtrans %}</h2>
+    </div>
+    <div class="col-lg-6">
+        <img src="{{ asset('images/packagint-tuskamisetas.jpg') }}" style="width: 100%" alt="embalaje por defecto"/>
+    </div>
+    <div class="col-lg-6">
+        <p>
+            El embalaje que realizamos por defecto en TusKamisetas consiste en agrupar las prendas bien dobladas en
+            <b>cajas recicladas</b>. Este tipo de embalaje es especialmente cómodo y eficiente porque permite realizar
+            envíos
+            de tiradas grandes sin tener que recurrir a un trasporte engorroso.
+        </p>
+        <p>
+            Las camisetas se empaquetan en paquetes de diez y los polos en paquetes de cinco, en tanto que las sudaderas
+            se empaquetan una en una. A continuación, estos paquetes individuales, que ya contienen varias prendas, se
+            incorporan a las cajas con las que se realiza el envío, pudiendo enviar <b>hasta 100 camisetas</b> en una
+            sola
+            caja, 50 en el caso de los polos y 30 o 35 si son sudaderas.
+        </p>
+        <p>
+            Este embalaje se realiza <b>sin ningún tipo de coste adicional</b>, ya que es el tipo de packaging al que
+            recurrimos por defecto y en beneficio del usuario. Permite al cliente recibir todas sus prendas de una
+            manera cómoda, especialmente si hablamos de pedidos masivos en los que se ha de recibir un volumen muy
+            elevado de prendas.
+        </p>
+        <p>
+            Nuestro sistema de packaging para los regalos publicitarios y los artículos que no son textiles en esencia
+            es similar, pero su organización depende tanto del número solicitado como del tamaño del producto. Las
+            camisetas, los polos y las sudaderas, al constituir las prendas más solicitadas, están medidas en función de
+            las cajas que utilizamos, pero los tamaños de los artículos de regalo de distinta naturaleza pueden variar.
+        </p>
+        <p>
+            En nuestro catálogo figuran diversos productos de estas características, por lo que para conocer el tipo de
+            embalaje necesario es preciso concretar la compra.
+        </p>
+        <p>
+            El método de packaging que utilizamos en TusKamisetas tiene múltiples ventajas. Se trata de un sistema
+            gratuito, y la metodología es rápida y eficiente, lo cual es perfecto para los clientes que solicitan
+            prendas personalizadas para vender en tienda, por ejemplo.
+        </p>
+    </div>
+    <div class="col-lg-12">
+        <h2>{% trans %}Embalaje personalizado{% endtrans %}</h2>
+        <img src="{{ asset('images/3-embalaje-personalizado.jpg') }}" style="width: 100%" alt="embalaje personalizado"/>
+        <p>
+            En TusKamisetas también ofrecemos la posibilidad de optar por un <b>packaging personalizado</b> por un
+            ligero coste
+            adicional.
+        </p>
+        <p>
+            Existen diferentes maneras de personalizar el embalaje de las prendas textiles. Una de las más utilizadas
+            por nuestros clientes es la del <b>embolsado individual de las prendas</b>. Este packaging se caracteriza
+            porque
+            cada prenda textil, ya sea camiseta, polo o sudadera, se dobla y se embolsa individualmente. Se trata de uno
+            de los sistemas de packaging preferidos por los que solicitan merchandising, como grupos de música u otros
+            artistas. Estas bolsas se incorporan luego a las cajas recicladas en las que se realiza el envío, por lo que
+            las tiradas que pueden enviarse en una sola caja son muy similares.
+        </p>
+        <p>
+            Otra de las opciones que ofrecemos es la de realizar <b>cajas personalizadas</b> en las que enviar las
+            prendas. Se
+            trata de una solicitud más inusual, por lo que es necesario ponerse en contacto con la tienda para explicar
+            qué es lo que se desea. En este servicio ofrecemos la posibilidad de que las cajas se personalicen
+            <b>incluyendo el logotipo</b> de la marca.
+        </p>
+        <p>
+            Mediante este proceso, además de recibir las prendas personalizadas también se reciben en una caja con el
+            logotipo de la empresa, lo que suma profesionalidad a los artículos promocionales o a cualquier otro
+            producto relacionado con el cliente.
+        </p>
+    </div>
+{% endblock %}

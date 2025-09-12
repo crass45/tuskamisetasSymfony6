@@ -22,3 +22,177 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\Twig\Extension\TiendaExtension:
+      tags:
+        - { name: twig.extension }
+
+
+  # ===============================
+  # GRUPO: Web
+  # ===============================
+    App\Admin\EmpresaAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Empresa, group: "Web", label: "Empresa" }
+
+    App\Admin\EmpresaHasMediaAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\EmpresaHasMedia, group: "Web", label: "Medias Empresa", show_in_dashboard: false }
+
+    App\Admin\BannerHomeAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\BannerHome, group: "Web", label: "Banner Home" }
+
+    App\Admin\DireccionAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Direccion, group: "Web", label: "Dirección" }
+
+    App\Admin\OfertaAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Oferta, group: "Web", label: "Ofertas" }
+
+  # ===============================
+  # GRUPO: Blog
+  # ===============================
+    App\Admin\PublicacionAdmin: # Corregido: PublicacionesAdmin -> PublicacionAdmin
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Publicacion, group: "Blog", label: "Publicaciones" }
+
+  # ===============================
+  # GRUPO: Productos
+  # ===============================
+    App\Admin\ProveedorAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Proveedor, group: "Productos", label: "Proveedores" }
+
+    App\Admin\FabricanteAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Fabricante, group: "Productos", label: "Marcas" }
+
+    App\Admin\ModeloAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Modelo, group: "Productos", label: "Modelos" }
+      calls:
+        - [ addChild, [ '@App\Admin\ProductoAdmin' ,'modelo'] ]
+
+    App\Admin\InventarioAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Inventario, group: "Productos", label: "Inventario" }
+
+    App\Admin\ProductoAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Producto, group: "Productos", label: "Productos", show_in_dashboard: false }
+
+    App\Admin\ColorAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Color, group: "Productos", label: "Colores" }
+
+    App\Admin\FamiliaAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Familia, group: "Productos", label: "Familias" }
+
+    App\Admin\ModeloAtributoAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\ModeloAtributo, group: "Productos", label: "Atributos", show_in_dashboard: true, keepOpen: true, icon: "<i class='fa fa-child'></i>" }
+
+    App\Admin\TarifaAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Tarifa, group: "Productos", label: "Tarifas", controller: App\Controller\Admin\TarifaCRUDController }
+
+    App\Admin\TarifaPreciosAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\TarifaPrecios, group: "Productos", label: "Precios Tarifa", show_in_dashboard: false }
+
+    App\Admin\ModeloHasTecnicasEstampadoAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\ModeloHasTecnicasEstampado, group: "Productos", label: "Técnicas de Modelo", show_in_dashboard: false }
+
+  # ===============================
+  # GRUPO: Tienda
+  # ===============================
+    App\Admin\FacturaAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Factura, group: "Tienda", label: "Facturas", controller: App\Controller\Admin\FacturaCRUDController }
+
+    App\Admin\PedidoAdmin:
+      arguments:
+        - '@doctrine.orm.entity_manager'
+        - '@mailer'
+        - '@twig'
+        - '@knp_snappy.pdf'
+        - '@request_stack'
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Pedido, group: "Tienda", label: "Pedidos", controller: App\Controller\Admin\PedidoCRUDController }
+
+    App\Admin\DescuentoAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Descuento, group: "Tienda", label: "Descuentos" }
+
+    App\Admin\ZonaEnvioAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\ZonaEnvio, group: "Tienda", label: "Gastos de Envío" }
+
+    App\Admin\ZonaEnvioPrecioCantidadAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\ZonaEnvioPrecioCantidad, group: "Tienda", label: "Precios Zona Envío", show_in_dashboard: false }
+
+    App\Admin\PersonalizacionAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Personalizacion, group: "Tienda", label: "Personalizaciones" }
+
+    App\Admin\PersonalizacionPrecioCantidadAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\PersonalizacionPrecioCantidad, group: "Tienda", label: "Precios Personalización", show_in_dashboard: false }
+
+    App\Admin\ContactoAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Contacto, group: "Tienda", label: "Clientes" }
+      calls:
+        - [ addChild, [ '@App\Admin\PedidoAdmin' ] ]
+
+    App\Admin\PedidoLineaLibreAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\PedidoLineaLibre, group: "Tienda", label: "Línea Libre de Pedido", show_in_dashboard: false }
+
+    App\Admin\PedidoLineaAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\PedidoLinea, group: "Tienda", label: "Línea de Pedido", show_in_dashboard: false }
+
+    App\Admin\PedidoLineaHasTrabajoAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\PedidoLineaHasTrabajo, group: "Tienda", label: "Trabajos de Línea de Pedido", show_in_dashboard: false }
+
+    App\Admin\PedidoTrabajoAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\PedidoTrabajo, group: "Tienda", label: "Trabajos Realizados", show_in_dashboard: false }
+
+    App\Admin\AreasTecnicasEstampadoAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\AreasTecnicasEstampado, group: "Productos", label: "Áreas de Estampado", show_in_dashboard: false }
+
+
+  # ===============================
+  # GRUPO: Usuarios (SonataUserBundle)
+  # ===============================
+    sonata.user.admin.user:
+      class: Sonata\UserBundle\Admin\Model\UserAdmin
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Sonata\User, group: "Usuarios", label: "Usuarios" }
+      arguments:
+        - '@sonata.user.manager.user' # Argumento para el manager de usuarios
+
+    App\Admin\GroupAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Group, group: "Usuarios", label: "Grupos" }
+
+  # REGISTRAMOS NUESTRA EXTENSIÓN
+    App\Admin\Extension\CategoryAdminExtension:
+      tags:
+        # Esta etiqueta le dice a Sonata a qué Admin debe aplicarse esta extensión
+        - { name: sonata.admin.extension, target: sonata.classification.admin.category }
+        # ==========================================================
+        # ALIASES PARA LA INYECCIÓN DE DEPENDENCIAS
+        # ==========================================================
+        # Le decimos a Symfony que cuando alguien pida la clase 'MediaExtension',
+        # en realidad le debe entregar el servicio 'sonata.media.twig.extension'.
+    Sonata\MediaBundle\Twig\Extension\MediaExtension: '@sonata.media.twig.extension'

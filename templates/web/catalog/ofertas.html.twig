@@ -1,0 +1,49 @@
+{% extends "web/indexTemplateNoFiltros.html.twig" %}
+
+{% block title %}Ofertas | tuskamisetas{% endblock %}
+{% block metaDescription %}Descubre todas nuestras ofertas en artículos personalizados y lisos.{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        {# MIGRACIÓN: Se usan los nuevos nombres de ruta con el parámetro de locale #}
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home', {'_locale': app.request.locale}) }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ path('app_offer_list', {'_locale': app.request.locale}) }}" class="miActive">
+                    <span itemprop="name">{% trans %}Ofertas{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+    {# El controlador ahora es el responsable de pasar esta variable, pero la conservamos por si la necesitas #}
+    {% set textoOfertas = "De vez en cuando os vamos presentando diferentes <b>ofertas en camisetas</b>, artículos publicitarios, mochilas, gorras, bragas de cuello, etc. Todo lo que necesites para tus <b>eventos</b> y para configurar la <b>bolsa de corredor</b> para que puedas realizarlos al mejor precio posible.<br> En <b>Tuskamisetas</b> intentamos dar <b>el mejor precio</b> al material que necesitas para tus eventos. Todo ello, sin quitar <b>calidad</b>.<br><br> Cada cliente <b>es tratado como si fuera el único cliente</b>, estudiando y presentando los diseños para la personalización hasta la <b>total satisfacción</b> de ambas partes." %}
+
+    {% if ofertas is defined and ofertas|length > 0 %}
+        <div class="features_items"><!--features_items-->
+            <h1 class="title text-center">{% trans %}NUESTRAS OFERTAS{% endtrans %}</h1>
+            <p class="subtitle text-center">- Productos increíbles a un precio inigualable -</p>
+            {% if textoOfertas is defined %}
+                <div style="padding: 15px; font-size: 13px;">
+                    {{ textoOfertas|raw }}
+                </div>
+            {% endif %}
+
+            {# MIGRACIÓN: Se actualiza la ruta de la plantilla incluida y se le pasa la variable 'ofertas' #}
+            {% include 'web/catalog/_oferta_grid.html.twig' with {'ofertas': ofertas} %}
+        </div>
+    {% else %}
+        <div class="text-center" style="padding: 40px;">
+            <h2>Actualmente no tenemos ofertas disponibles.</h2>
+            <p>¡Vuelve a visitarnos pronto!</p>
+        </div>
+    {% endif %}
+{% endblock %}

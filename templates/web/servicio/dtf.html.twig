@@ -1,0 +1,354 @@
+{% extends "web/estaticoPlantilla.html.twig" %}
+
+{% block title %}Impresión DTF | El método de estampación textil mas versatil{% endblock %}
+{% block metaDescription %}Descubre nuestro servicio de impresión DTF de camisetas ➤ Te explicamos en qué consiste y cuáles son sus ventajas para tus proyectos. ¡Saber más!{% endblock %}
+
+{% block datosEstructurado %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "Service",
+            "name": "Impresión DTF",
+            "description": "Servicio de impresión DTF por metros y directamente en prendas.",
+            "provider": {
+                "@type": "Organization",
+                "name": "TusKamisetas",
+                "url": "https://www.tuskamisetas.com/es/servicios/impresion-dtf"
+            },
+            "areaServed": {
+                "@type": "Place",
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": "ES"
+                }
+            },
+            "serviceType": "Impresión DTF"
+        }
+    </script>
+{% endblock %}
+
+{% block migas %}
+    <!-- Creates the bootstrap modal where the image will appear -->
+    <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span
+                                aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                </div>
+                <div class="modal-body">
+                    <img src="" id="imagepreview" style="width: 100%">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="breadcrumbs">
+        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home') }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            <li itemprop="itemListElement" itemscope
+                itemtype="http://schema.org/ListItem" class="active">
+                <a itemprop="item" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}" class="miActive">
+                    <span itemprop="name">{% trans %}Impresión DTF{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        </ol>
+    </div><!--/breadcrums-->
+{% endblock %}
+
+{% block cuerpo %}
+    <div class="row">
+        <div class="col-lg-12">
+            <h1>{% trans %}Impresión DTF{% endtrans %}</h1>
+            <img src="{{ asset('images/dtf/impresora-dtf.jpeg') }}" style="width: 100%"
+                 alt="servicios de serigrafía textil"/>
+            <h2>DTF: ¿Qué es esta técnica de personalización de camisetas?</h2>
+            <p>
+                La <b>impresión DTF</b> es una de las técnicas más modernas que podemos encontrar en la actualidad para
+                la
+                personalización de camisetas, así como de otros tipos de prendas. Este método proviene de las siglas en
+                inglés <b><i>Direct Transfer Film</i></b> o bien <b><i>Direct To Film</i></b> y, como su nombre indica,
+                se basa en la transferencia
+                directa del diseño impreso a partir de un film especial. La impresión DTF se realiza mediante la
+                confección de transfers digitales a través un plotter de impresión y un film de poliéster como soporte.
+                Una vez completada y curada la impresión, esta puede ser aplicada tanto en camisetas de algodón como de
+                otros materiales y de cualquier color. Incluso nos permite realizar mezclas con tinta blanca, la cual
+                ofrece excelentes resultados (una de las características más destacadas).
+            </p>
+        </div>
+        <div class="col-lg-12">
+            <h2>DFT impresión: ¿Cómo se realiza?</h2>
+        </div>
+        <div class="col-lg-6">
+            <p>
+                La impresión DTF se realiza con impresoras especializadas que, por lo general, suelen poseer dos
+                cabezales de impresión. Uno para los colores CMYK (cian, magenta, amarillo y negro) y otro para el
+                blanco, que se imprime como una base sobre el color CMYK. El respaldo de tinta blanca, además, soporta
+                el polvo de poliamida o poliuretano y proporciona elasticidad y viveza en el resultado final. Los pasos
+                son los siguientes:
+            </p>
+            <ul class="ularticulo">
+                <li>
+                    Impresión en el film.
+                </li>
+                <li>
+                    Acondicionamiento del film y curación de la tinta hasta su enfriamiento.
+                </li>
+                <li>
+                    Corte del diseño, si resulta necesario.
+                </li>
+                <li>
+                    Transferencia de la impresión DTF sobre las prendas mediante una plancha de termotransferencia a
+                    presión, a una temperatura aproximada de 145 grados y durante 9-12 segundos.
+                </li>
+            </ul>
+
+            <p>
+                Hay que tener en cuenta que la tinta se aplica seca y que se adhiere a la prenda gracias al pegamento de
+                poliuretano o polímero de poliamida que se encuentra en dichas tintas (DTF en polvo). Además, la calidad
+                de estas impresiones es fotográfica, superando a la de otros transfers tradicionales. Con la impresión
+                DTF es posible <b>imprimir imágenes de más de 1440 puntos</b>.
+            </p>
+        </div>
+        <div class="col-lg-6">
+            <img src="{{ asset('images/dtf/impresion-dtf-textil.webp') }}" style="width: 100%"
+                 alt="DTF Como se realiza"/>
+        </div>
+
+        <div class="col-lg-12">
+            <h2>Ventajas de la impresión DTF</h2>
+            <p>
+                Cada técnica de personalización textil, como las que trabajamos en <b>TusKamisetas</b>, cuentan con sus
+                ventajas, lo que las hace destacar entre sí y convertirse en la opción más adecuada para determinados
+                tipos de tejidos y acabados. Al hablar de DTF, impresión y sus ventajas debes saber que esta técnica
+                como tal también presenta características específicas y sus propias ventajas, que además resultan muy
+                importantes. Las más destacadas son las siguientes:
+
+            </p>
+            <ul class="ularticulo">
+                <li>
+                    <b>Rapidez y calidad</b>: La técnica DTF no requiere de la confección de pantallas propia de otros
+                    transfers. Esto influye de manera directa en la rapidez del proceso, y sin afectar a la calidad. Los
+                    colores son muy vivos y duraderos a los lavados, por lo que están indicados para la ropa laboral que
+                    se lava a diario.
+                </li>
+                <li>
+                    <b>Para cualquier prenda</b>: La impresión en DTF puede ser aplicada en prácticamente cualquier tipo
+                    de
+                    prenda y sobre cualquier color, desde las camisetas —que son nuestra especialidad—, así como también
+                    en gorras, chaquetas acolchadas, calcetines, etiquetas de cuello y mucho más.
+
+                </li>
+                <li>
+                    <b>El tejido</b>: Aparte de su versatilidad en diferentes prendas, al hablar de DTF, impresión
+                    textil y
+                    aplicaciones debes saber que esta técnica puede ser utilizada tanto en algodón, como en sus mezclas,
+                    incluso en poliéster, chaquetas de nylon, poliamida, lycra y muchos tejidos más.
+                </li>
+                <li>
+                    <b>Impresoras con canales para tinta blanca</b>: Como indicábamos, este transfer digital permite la
+                    utilización del color blanco, garantizando resultados de alta calidad y durabilidad en una amplia
+                    variedad de tejidos.
+                </li>
+                <li>
+                    <b>Elasticidad de la impresión</b>: La impresión DTF destaca por su calidad y durabilidad, pero
+                    también por la elasticidad. Los diseños realizados con esta impresión mantienen su integridad al ser
+                    estirados.
+                </li>
+
+            </ul>
+        </div>
+
+
+        <div class="col-lg-12">
+            <h2>Impresión DTF camisetas: ¡Descubre nuestro servicio!</h2>
+            <p>
+                La impresión DTF es ideal para empresas que requieren de un servicio de personalización al por mayor de
+                camisetas y de cualquier otro tipo de prenda, con independencia de los materiales puesto que abre la
+                puerta a una amplia gama de textiles. Además, destaca su precio ajustado y competitivo, en comparación
+                con otras técnicas.
+            </p>
+            <p>
+                En TusKamisetas nos especializamos en la personalización de todo tipo de prendas y accesorios. Sobre
+                todo, a través de la serigrafía de camisetas, pero también trabajamos con una amplia gama de productos
+                textiles sobre los que realizamos impresiones serigráficas y transfers, como la impresión DTF. <b>Contamos
+                    con más de 20 años de experiencia en el sector</b>, lo que nos ha permitido consolidarnos como una
+                empresa
+                líder en el ámbito de la personalización textil. Ofrecemos una amplia variedad de técnicas, como
+                bordados, impresión digital y sublimación, siendo nuestra fortaleza la personalización de camisetas para
+                eventos. Además, proporcionamos asesoramiento personalizado para ayudar a nuestros clientes a elegir la
+                técnica más adecuada para su proyecto, en función del acabado final al tacto, la viveza de los colores y
+                lo que sea que estén buscando. Cumplimos estrictamente con los plazos de entrega, ofreciendo opciones
+                estándar de 9 a 10 días y un servicio exprés de 7 días laborales. También tenemos prendas sin
+                personalizar
+                que se entregan en 4 a 5 días, según tus necesidades.
+            </p>
+            <p>
+                En cuanto al precio, ofrecemos tarifas muy competitivas, asegurándote siempre la venta de camisetas
+                personalizadas de alta calidad y a un costo asequible. ¡Cuéntanos tu idea y nosotros nos ocupamos del
+                resto!
+            </p>
+        </div>
+
+
+        <div class="col-lg-12">
+
+
+            <div class="embed-container">
+                <iframe class="embed-responsive-item" title="vimeo-player"
+                        src="https://player.vimeo.com/video/861611269?playsinline=1&color&autopause=0&dnt=true&loop=1&muted=0&title=0&portrait=0&byline=0"
+                        width="auto" height="auto" frameborder="0"></iframe>
+            </div>
+
+
+            <h2>Comprar DTF por metros, todas las opciones en TusKamisetas</h2>
+            <p>
+                Ahora bien, si lo que buscas es <b>DTF por metros</b>, en TusKamisetas también puedes hacerlo. Te
+                ofrecemos
+                la posibilidad de comprar DTF por metros al por mayor para tu empresa, para plancharlo en tu negocio
+                cómodamente y disponer de él siempre que lo necesites. Comprar DTF (Direct to Film) por metros
+                ofrece una serie de ventajas para quienes buscan flexibilidad y control en sus proyectos de
+                impresión textil. Una de las principales es que permite adquirir la cantidad exacta de material que
+                necesitas, evitando desperdicios y optimizando el presupuesto. Además, al comprar por metros, puedes
+                personalizar la cantidad para proyectos grandes o pequeños sin necesidad de comprometerte a comprar
+                rollos completos. Esto es especialmente útil para empresas o emprendedores que buscan gestionar sus
+                recursos de manera eficiente.
+            </p>
+            <p>
+                También es ideal para quienes están probando la tecnología DTF y desean experimentar con distintas
+                aplicaciones antes de invertir en grandes cantidades. Por otro lado, al adquirirlo por metros,
+                puedes adaptarlo a diferentes tipos de prendas y textiles, lo que aumenta la versatilidad y
+                posibilidades creativas. Además, este método ofrece una alta calidad de impresión, durabilidad y
+                resistencia en todo tipo de tejidos. E incluso podrás combinar varias técnicas de personalización en
+                una misma prenda, si así lo deseas. ¡Solicítanos más información sobre el servicio de DTF por
+                metros!
+            </p>
+
+            <h2>Dudas sobre la impresión en DTF</h2>
+            <div class="col-lg-3">
+                <h3>¿Sustituto del vinilo?</h3>
+                <p>
+                    A diferencia del vinilo, en la que también se emplea un film especial que se estampa sobre la prenda
+                    en
+                    cuestión, con el DTF se transfiere directamente la tinta. No es una pieza de plastico que se adhiere
+                    a
+                    la prenda, si no que es la tinta directamente la que se transfiere al tejido. Mediante este proceso
+                    se logra
+                    un <b>tacto mas agradable</b> y menos plastificado.
+                </p>
+            </div>
+            <div class="col-lg-3">
+                <h3>Precio de la impresión DTF</h3>
+                <p>
+                    El precio de las impresiones DTF varía según la cantidad solicitada y de los materiales elegidos
+                    para
+                    aplicar la transferencia de la tinta. Es una técnica asequible que resulta más barata en comparación
+                    con
+                    el vinilo. Además, las confecciones son rápidas.
+                </p>
+            </div>
+            <div class="col-lg-3">
+                <h3>¿Como es el acabado al tacto de la impresión DTF?</h3>
+                <p>
+                    Como indicábamos, se trata de una impresión de calidad, con colores vivos y muy duradera; además de
+                    ser
+                    apta para todo tipo de tejidos y colores. Su <b>acabado al tacto es más plastificado</b> en
+                    comparación con
+                    otros metodos de estampación como la serigrafía tradicional, pero mucho <b>mas agradable al
+                        tacto</b> que
+                    el
+                    vinilo textil.
+                </p>
+            </div>
+            <div class="col-lg-3">
+                <h3>¿Cual es la durabilidad del DTF?</h3>
+                <p>
+                    En TusKamisetas utilizamos <b>los mejores materiales</b> para elaborar nuestras impresiones DTF es
+                    por esto
+                    que su durabilidad es bastante elevada, si bien la calidad de la prenda sobre la que se transfiere
+                    el DTF es un
+                    factor importante a tener en cuenta, nuestras impresiones DTF suelen tener una durabilidad de <b>mas
+                        de 50 lavados</b> si
+                    se mantienen una serie de cuidados básicos a la hora de lavar y secar las prendas.
+                </p>
+            </div>
+
+        </div>
+
+        <div class="col-lg-12">
+            <h3>EJEMPLOS DE NUESTRA IMPRESIÓN DTF</h3>
+        </div>
+        <a href="#" class="pop">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3"
+                 style="padding-left: 2px; padding-right: 2px">
+                <div class="single-products" style="height: 210px; overflow: hidden">
+                    <div class="product-image-wrapper zoomHoverTKM" style="position: relative;">
+                        <div class="productinfo text-center">
+                            <img class="imageresource" src="{{ asset('images/dtf/impresion-dtf-dibujo.jpg') }}"
+                                 alt="serigrafía separación indexado"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+
+        <a href="#" class="pop">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3"
+                 style="padding-left: 2px; padding-right: 2px">
+                <div class="single-products" style="height: 210px; overflow: hidden">
+                    <div class="product-image-wrapper zoomHoverTKM" style="position: relative;">
+                        <div class="productinfo text-center">
+                            <img class="imageresource"
+                                 src="{{ asset('images/dtf/impresiondtf-motivopng.jpg') }}"
+                                 alt="serigrafía cuatricomia"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        <a href="#" class="pop">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3"
+                 style="padding-left: 2px; padding-right: 2px">
+                <div class="single-products" style="height: 210px; overflow: hidden">
+                    <div class="product-image-wrapper zoomHoverTKM" style="position: relative;">
+                        <div class="productinfo text-center">
+                            <img class="imageresource"
+                                 src="{{ asset('images/dtf/gorras-dtf.jpg') }}"
+                                 alt="serigrafía separación simulado"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        <a href="#" class="pop">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-3"
+                 style="padding-left: 2px; padding-right: 2px">
+                <div class="single-products" style="height: 210px;overflow: hidden">
+                    <div class="product-image-wrapper zoomHoverTKM" style="position: relative;">
+                        <div class="productinfo text-center">
+                            <img class="imageresource"
+                                 src="{{ asset('images/dtf/bolsas-dtf.jpg') }}"
+                                 alt="serigrafía colores planos"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    $(".pop").on("click", function () {
+    $('#imagepreview').attr('src', $(this).find('.imageresource').attr('src')); // here asign the image to the modal when the user click the enlarge link
+    $('#imagemodal').modal('show'); // imagemodal is the id attribute assigned to the bootstrap modal, then i use the show function
+});
+</script>
+{% endblock %}

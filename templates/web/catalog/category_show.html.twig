@@ -1,0 +1,49 @@
+{% extends "web/indexTemplate.html.twig" %}
+
+
+{% block title %}
+    {% if tituloSEO is defined %}
+        {% if (categoria is defined) %}
+            {% if categoria != "fabricante" %}
+                {# {{ cantidadArticulos }} #}
+            {% endif %}{% endif %}{{ tituloSEO | capitalize }}
+    {% else %}
+        {% if (categoria is defined) %}
+            {% if categoria != "fabricante" %}
+                {# {{ cantidadArticulos }} #}
+            {% endif %}{% endif %} {{ titulo | capitalize }}
+    {% endif %}
+{% endblock %}
+
+{% block metaDescription %}{{ descripcion }}{% endblock %}
+
+{% block migas %}
+    {# MIGRACIÓN: El bloque de migas de pan ahora es mucho más simple y se construye a partir del objeto 'context' #}
+    {% include 'web/partials/_breadcrumbs.html.twig' %}
+{% endblock %}
+
+{% block cuerpo %}
+    <div class="features_items">
+        {# ... (Tu lógica para mostrar los filtros activos) ... #}
+
+        <h1 class="title text-center">{{ nombrePanel|default(context.name|default('Catálogo')) }}</h1>
+        <p class="subtitle text-center">- {{ cantidadArticulos }} Artículos -</p>
+
+        {# ... (Tu lógica para mostrar subcategorías si aplica) ... #}
+
+        {# MIGRACIÓN: Incluimos la nueva parrilla de productos, pasándole los modelos del paginador #}
+                {% include 'web/catalog/_producto_grid.html.twig' with {'modelos': modelos} %}
+    </div>
+
+    {# ... (Tu lógica de textos arriba/abajo y paginación) ... #}
+
+    {# MIGRACIÓN: El JavaScript ahora necesita generar las URLs de los filtros #}
+    <script>
+        function eliminaFabricante(fabricanteId) {
+            const params = new URLSearchParams(window.location.search);
+            params.delete('fabricante'); // Suponiendo que el filtro se llama 'fabricante'
+            window.location.search = params.toString();
+        }
+        // ... (lógica similar para eliminaColor y eliminaFiltro)
+    </script>
+{% endblock %}

@@ -1,0 +1,9 @@
+{# src/AppBundle/Resources/views/CRUD/list__action_clone.html.twig #}
+
+<li><a class="sonata-action-element" href="{{ admin.generateObjectUrl('showOrdenPedido', object) }}" target="_blank"><i
+                class="fa fa-file-pdf-o" aria-hidden="true"></i> Ver Orden de Trabajo</a></li>
+{% if object.getFactura != null %}
+    <li><a class="sonata-action-element" href="{{ admin.generateObjectUrl('showFactura', object) }}" target="_blank"><i
+                    class="fa fa-file-pdf-o" aria-hidden="true"></i> Ver Factura</a></li>
+{% else %}
+{% endif %}
