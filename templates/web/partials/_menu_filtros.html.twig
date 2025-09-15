@@ -1,29 +1,34 @@
 {# templates/web/partials/_filters_panel.html.twig #}
 {# Este fichero contiene la lógica del panel de filtros lateral. #}
 
+{% set initially_open_filters = ['Genero', 'Detalles', 'Color'] %}
+
 {% import _self as macros %}
 
-{# Macro para los grupos de checkboxes (Atributos, Marcas, etc.) #}
-{% macro filterCheckboxGroup(title, key, items, filtros_activos) %}
+{# La macro no cambia, sigue recibiendo una lista de items #}
+{% macro filterCheckboxGroup(title, accordion_key, key, items, filtros_activos, is_open = false) %}
     <div class="filter-group">
         <h3 class="filter-group__title">
-            <button class="filter-group__toggle" type="button" data-toggle="collapse" data-target="#filter-{{ key|slug }}">
+            <button class="filter-group__toggle {% if not is_open %}collapsed{% endif %}" type="button" data-toggle="collapse" data-target="#filter-{{ accordion_key|slug }}">
                 {{ title|upper }} <i class="fa fa-plus pull-right"></i>
             </button>
         </h3>
-        <div id="filter-{{ key|slug }}" class="panel-collapse collapse in">
+        <div id="filter-{{ accordion_key|slug }}" class="panel-collapse collapse {% if is_open %}in{% endif %}" >
             <fieldset class="filter-group__body">
                 <legend class="sr-only">{{ title }}</legend>
                 {% for item in items %}
                     {% set itemId = item.id %}
                     {% set itemName = item.valor is defined ? item.valor : item.nombre %}
                     <div class="filter-group__option">
-                        <input type="checkbox"
-                               class="checkboxtkm filter-control"
-                               data-filter-group="{{ key }}"
-                               data-filter-value="{{ itemId }}"
-                               {% if itemId in filtros_activos %}checked{% endif %}>
-                        <label>{{ itemName | capitalize }}</label>
+                        <label for="filter-item-{{ itemId }}" style="cursor: pointer; font-weight: normal; width: 100%; margin: 0;">
+                            <input type="checkbox"
+                                   class="checkboxtkm filter-control"
+                                   data-filter-group="{{ key }}"
+                                   data-filter-value="{{ itemId }}"
+                                   id="filter-item-{{ itemId }}"
+                                   {% if itemId in filtros_activos %}checked{% endif %}>
+                            <span style="padding-left: 5px;">{{ itemName | capitalize }}</span>
+                        </label>
                     </div>
                 {% endfor %}
             </fieldset>
@@ -36,19 +41,28 @@
 
     {# 1. MARCAS #}
     {% if filtrosDisponibles.fabricantes is defined and filtrosDisponibles.fabricantes is not empty %}
-        {{ macros.filterCheckboxGroup('MARCAS'|trans, 'fabricante', filtrosDisponibles.fabricantes, filtros.fabricante ? [filtros.fabricante.id] : []) }}
+        {% set is_marcas_open = filtros.fabricante is not null %}
+        {# Se ordena el array de fabricantes por la propiedad 'nombre' antes de pasarlo a la macro #}
+        {% set sorted_fabricantes = filtrosDisponibles.fabricantes|sort((a, b) => a.nombre <=> b.nombre) %}
+        {{ macros.filterCheckboxGroup('MARCAS'|trans, 'fabricante','fabricante', sorted_fabricantes, filtros.fabricante ? [filtros.fabricante.id] : [], is_marcas_open) }}
     {% endif %}
 
     {# 2. GÉNERO #}
     {% if filtrosDisponibles.atributos['Genero'] is defined %}
-        {{ macros.filterCheckboxGroup('GÉNERO'|trans, 'atributos', filtrosDisponibles.atributos['Genero'], filtros.atributos) }}
+        {% set genero_item_ids = filtrosDisponibles.atributos['Genero']|map(item => item.id) %}
+        {% set active_genero_filters = genero_item_ids|filter(id => id in filtros.atributos) %}
+        {% set is_genero_open = active_genero_filters|length > 0 or ('Genero' in initially_open_filters) %}
+        {# Se ordena el array de atributos de género por la propiedad 'valor' #}
+        {% set sorted_genero = filtrosDisponibles.atributos['Genero']|sort((a, b) => a.valor <=> b.valor) %}
+        {{ macros.filterCheckboxGroup('GÉNERO'|trans, 'genero','atributos', sorted_genero, filtros.atributos, is_genero_open) }}
     {% endif %}
 
-    {# 3. FILTRO DE COLOR #}
+    {# 3. FILTRO DE COLOR (se mantiene como estaba, ya viene ordenado desde el repositorio) #}
     {% if filtrosDisponibles.colores is defined and filtrosDisponibles.colores is not empty %}
+        {% set is_color_open = filtros.colores is not empty or ('Color' in initially_open_filters) %}
         <div class="filter-group">
-            <h3 class="filter-group__title"><button class="filter-group__toggle" type="button" data-toggle="collapse" data-target="#filter-color-accordion">{{ 'Color'|trans|upper }} <i class="fa fa-plus pull-right"></i></button></h3>
-            <div id="filter-color-accordion" class="panel-collapse collapse in">
+            <h3 class="filter-group__title"><button class="filter-group__toggle {% if not is_color_open %}collapsed{% endif %}" type="button" data-toggle="collapse" data-target="#filter-color-accordion">{{ 'Color'|trans|upper }} <i class="fa fa-plus pull-right"></i></button></h3>
+            <div id="filter-color-accordion" class="panel-collapse collapse {% if is_color_open %}in{% endif %}">
                 <div class="filter-group__body filter-group__body--colors">
                     {% for color in filtrosDisponibles.colores %}
                         <div class="cuadro-color filter-control {% if color.rgbUnificado in filtros.colores %}checked{% endif %}"
@@ -66,16 +80,19 @@
     {% if filtrosDisponibles.atributos is defined %}
         {% for key, values in filtrosDisponibles.atributos %}
             {% if key not in ['Genero', 'Color', 'Categoría de peso', 'Productos Sostenibles'] %}
-                {{ macros.filterCheckboxGroup(key, 'atributos', values, filtros.atributos) }}
+                {% set attribute_item_ids = values|map(item => item.id) %}
+                {% set active_attribute_filters = attribute_item_ids|filter(id => id in filtros.atributos) %}
+                {% set is_attribute_open = active_attribute_filters|length > 0 or (key in initially_open_filters) %}
+                {# Se ordena el array de atributos para este grupo por la propiedad 'valor' #}
+                {% set sorted_values = values|sort((a, b) => a.valor <=> b.valor) %}
+                {{ macros.filterCheckboxGroup(key, key,'atributos', sorted_values, filtros.atributos, is_attribute_open) }}
             {% endif %}
         {% endfor %}
     {% endif %}
 </aside>
 
 
-{# =================================================================== #}
-{# EL "MOTOR" DE LOS FILTROS - SCRIPT ACTUALIZADO #}
-{# =================================================================== #}
+{# EL SCRIPT JAVASCRIPT SE MANTIENE EXACTAMENTE IGUAL #}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         function updateUrlAndReload(target) {
@@ -83,8 +100,7 @@
             const filterGroup = target.dataset.filterGroup;
             const filterValue = target.dataset.filterValue;
 
-            // Lógica para filtros multi-selección (arrays en la URL, como colores o atributos)
-            if (filterGroup.endsWith('s')) { // Asumimos que los plurales son multi-selección
+            if (filterGroup.endsWith('s')) {
                 const paramName = filterGroup + '[]';
                 let values = currentUrl.searchParams.getAll(paramName);
                 const isActive = target.type === 'checkbox' ? target.checked : !target.classList.contains('checked');
@@ -99,11 +115,8 @@
                 if (values.length > 0) {
                     values.forEach(v => currentUrl.searchParams.append(paramName, v));
                 }
-            } else { // Lógica para filtros de selección ÚNICA (como fabricante)
+            } else {
                 const paramName = filterGroup;
-                const currentVal = currentUrl.searchParams.get(paramName);
-
-                // Si hacemos clic en un checkbox que ya está marcado, lo quitamos. Si no, lo establecemos.
                 if (target.checked) {
                     currentUrl.searchParams.set(paramName, filterValue);
                 } else {
@@ -115,10 +128,7 @@
             window.location.href = currentUrl.toString();
         }
 
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Se cambia el selector de '.filter-checkbox' a '.filter-control' para que coincida con el HTML
         document.querySelectorAll('.filter-control').forEach(element => {
-            // --- FIN DE LA CORRECCIÓN ---
             const eventType = element.tagName === 'INPUT' ? 'change' : 'click';
             element.addEventListener(eventType, function() {
                 updateUrlAndReload(this);
@@ -126,3 +136,4 @@
         });
     });
 </script>
+

@@ -25,6 +25,7 @@
 {% block cuerpo %}
     <div class="features_items">
         {# ... (Tu lógica para mostrar los filtros activos) ... #}
+        {% include 'web/partials/_filtros_activos.html.twig' %}
 
         <h1 class="title text-center">{{ nombrePanel|default(context.name|default('Catálogo')) }}</h1>
         <p class="subtitle text-center">- {{ cantidadArticulos }} Artículos -</p>
