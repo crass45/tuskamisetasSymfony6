@@ -106,7 +106,22 @@ class ModeloRepository extends ServiceEntityRepository
             ->andWhere('m.precioMin > 0');
 
         if ($filtros->getBusqueda()) {
-            // ... Lógica de búsqueda ...
+            // Lógica de Búsqueda por palabra clave
+            if ($filtros->getBusqueda()) {
+                $keywords = explode(" ", $filtros->getBusqueda());
+                $qb->leftJoin('m.fabricante', 'f');
+
+                foreach ($keywords as $key => $keyword) {
+                    if (!empty($keyword)) {
+                        $paramName = ':busqueda' . $key;
+                        $qb->andWhere($qb->expr()->orX(
+                            'm.referencia LIKE ' . $paramName,
+                            'm.nombre LIKE ' . $paramName,
+                            'f.nombre LIKE ' . $paramName
+                        ))->setParameter($paramName, '%' . rtrim($keyword, 'es') . '%');
+                    }
+                }
+            }
         }
 
         if ($filtros->getCategory()) {

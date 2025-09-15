@@ -23,8 +23,71 @@ class CatalogController extends AbstractController
         $this->em = $entityManager;
     }
 
+    // ===================================================================
+    // NUEVA ACCIÓN: Procesa el envío del formulario de búsqueda principal
+    // ===================================================================
     /**
-     * Esta única acción ahora maneja TODAS las páginas de listado.
+     * Esta acción se encarga de recibir el POST del formulario de búsqueda
+     * y redirigir a la página de resultados.
+     */
+    #[Route('/{_locale}/buscar/submit', name: 'app_search_handle', methods: ['POST'], requirements: ['_locale' => 'es|en|fr'])]
+    public function handleSearchAction(Request $request): Response
+    {
+        // Usamos 'q' como nombre estándar para el parámetro de búsqueda
+        $searchTerm = $request->request->get('q', '');
+
+        // Redirigimos a la nueva ruta de resultados de búsqueda
+        return $this->redirectToRoute('app_search_results', [
+            '_locale' => $request->getLocale(),
+            'q' => $searchTerm
+        ]);
+    }
+
+    // ===================================================================
+    // NUEVA ACCIÓN: Muestra la página de resultados de búsqueda
+    // ===================================================================
+    /**
+     * Esta acción reemplaza a tu antiguo 'buscaAction'. Muestra la página
+     * de resultados y permite aplicar más filtros sobre la búsqueda.
+     */
+    #[Route('/{_locale}/buscar', name: 'app_search_results', requirements: ['_locale' => 'es|en|fr'])]
+    public function searchResultsAction(Request $request, ModeloRepository $modeloRepository): Response
+    {
+        // 1. Creamos un objeto Filtros a partir de TODOS los parámetros de la URL
+        $filtros = Filtros::createFromRequest($request, $this->em);
+
+        $page = $request->query->getInt('page', 1);
+
+        // 2. Le pasamos el objeto de filtros al repositorio para obtener los productos
+        $paginator = $modeloRepository->findByFiltros($filtros, $page);
+
+        // 3. Obtenemos los filtros disponibles para los resultados encontrados
+        $filtrosDisponibles = $modeloRepository->findAvailableFilters($filtros);
+
+        $busqueda = $filtros->getBusqueda();
+        $nombrePanel = sprintf('Búsqueda: "%s"', $busqueda);
+
+        return $this->render('web/catalog/category_show.html.twig', [
+            'modelos' => $paginator,
+            'filtros' => $filtros,
+            'filtrosDisponibles' => $filtrosDisponibles,
+            'paginaActual' => $page,
+            'npaginas' => ceil($paginator->count() / ModeloRepository::PAGINATOR_PER_PAGE),
+            'cantidadArticulos' => $paginator->count(),
+            'busqueda' => $busqueda,
+            'nombrePanel' => $nombrePanel,
+            'context' => null, // No hay un contexto (categoría/marca) en una búsqueda
+            'fabDisp' => $filtrosDisponibles['fabricantes'],
+            'coloresFiltros' => $filtrosDisponibles['colores'],
+            'atributos' => $filtrosDisponibles['atributos'],
+            'titulo' => "Resultados para '" . $busqueda . "'",
+            'descripcion' => "Resultados de la búsqueda para '" . $busqueda . "' en nuestra tienda.",
+        ]);
+    }
+
+    /**
+     * Esta es tu acción actual para mostrar categorías, marcas y familias.
+     * No la modificamos para no romper la funcionalidad que ya tienes.
      */
     #[Route('/{_locale}/{slug}', name: 'app_catalog_resolver', requirements: ['_locale' => 'es|en|fr'], priority: -1)]
     public function showListingAction(Request $request, ModeloRepository $modeloRepository, string $slug): Response
@@ -34,7 +97,6 @@ class CatalogController extends AbstractController
         $contextObject = null;
         $template = 'web/catalog/category_show.html.twig';
 
-        // Resolvemos el slug para establecer el filtro principal
         if ($category = $this->em->getRepository(ClassificationCategory::class)->findOneBy(['slug' => $slug])) {
             $filtros->setCategory($category);
             $contextObject = $category;
@@ -61,6 +123,12 @@ class CatalogController extends AbstractController
             'npaginas' => ceil($paginator->count() / ModeloRepository::PAGINATOR_PER_PAGE),
             'cantidadArticulos' => $paginator->count(),
             'nombrePanel' => $contextObject->__toString(),
+            'busqueda' => $filtros->getBusqueda(),
+//            'fabDisp' => $filtrosDisponibles['fabricantes'],
+//            'coloresFiltros' => $filtrosDisponibles['colores'],
+//            'atributos' => $filtrosDisponibles['atributos'],
+//            'titulo' => $contextObject->getTituloSEO() ?? $contextObject->__toString(),
+//            'descripcion' => $contextObject->getDescripcion() ?? '',
         ]);
     }
 }

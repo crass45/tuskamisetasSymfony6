@@ -321,13 +321,12 @@
                                     {#                                    <form action="{{ path('app_search') }}" method="post"> #}
                                     {#                                        #}{# ... #}
                                     {#                                    </form> #}
-                                    <form action="#" method="post">
+                                    <form action="{{ path('app_search_handle', {'_locale': app.request.locale}) }}" method="post">
                                         <div>
-                                            <input itemprop="query-input" required type="text" name="cadena" data-url
+                                            {# CORRECCIÓN: El nombre del campo ahora es 'q' #}
+                                            <input itemprop="query-input" required type="text" name="q"
                                                    placeholder="{% trans %}Buscar{% endtrans %}"
-                                                   style="border: 1px solid #ff9000; width: 100%"
-                                                    {#                                                   data-url-buscar="{{ path('ss_tienda_buscar',{'cadena':'cadenaNombre','pagina':0}) }}"/> #}
-                                                   data-url-buscar="{{ path('app_home',{'cadena':'cadenaNombre','pagina':0}) }}"/>
+                                                   style="border: 1px solid #ff9000; width: 100%"/>
                                             <input class="searchSubmit" type="submit" value=""/>
                                         </div>
                                         <div id="livesearch"

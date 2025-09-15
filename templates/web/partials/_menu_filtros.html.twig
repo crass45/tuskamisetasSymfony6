@@ -65,7 +65,7 @@
     {# 4. RESTO DE ATRIBUTOS #}
     {% if filtrosDisponibles.atributos is defined %}
         {% for key, values in filtrosDisponibles.atributos %}
-            {% if key != 'Genero' %}
+            {% if key not in ['Genero', 'Color', 'Categoría de peso', 'Productos Sostenibles'] %}
                 {{ macros.filterCheckboxGroup(key, 'atributos', values, filtros.atributos) }}
             {% endif %}
         {% endfor %}

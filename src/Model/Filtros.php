@@ -18,6 +18,8 @@ class Filtros
     private ?ClassificationCategory $category = null;
     private string $orden = "";
     private ?string $busqueda = null;
+    private string $locale = 'es'; // <-- Se añade la propiedad para el idioma
+
 
     /**
      * Crea un objeto Filtros a partir de los parámetros de la URL.
@@ -31,6 +33,7 @@ class Filtros
         $filtros->setColores($request->query->all('colores'));
         $filtros->setOrden($request->query->get('orden', ''));
         $filtros->setBusqueda($request->query->get('q'));
+        $filtros->setLocale($request->getLocale());
 
         // Leemos el ID del fabricante de la URL
         $fabricanteId = $request->query->get('fabricante');
@@ -170,5 +173,7 @@ class Filtros
     public function setOrden(string $orden): void { $this->orden = $orden; }
     public function getBusqueda(): ?string { return $this->busqueda; }
     public function setBusqueda(?string $busqueda): void { $this->busqueda = $busqueda; }
+    public function getLocale(): string { return $this->locale; }
+    public function setLocale(string $locale): self { $this->locale = $locale; return $this; }
 }
 
