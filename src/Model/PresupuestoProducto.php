@@ -4,7 +4,7 @@
 namespace App\Model;
 
 use App\Entity\Producto;
-use App\Entity\User; // NOTA: Asumimos que tu entidad de usuario se llamará 'User'
+use App\Entity\Sonata\User; // NOTA: Asumimos que tu entidad de usuario se llamará 'User'
 
 /**
  * Representa un producto dentro de un presupuesto. No es una entidad de Doctrine.
@@ -137,5 +137,13 @@ class PresupuestoProducto
     {
         $this->cantidadFabricante = $cantidadFabricante;
         return $this;
+    }
+
+    /**
+     * @param int $cantidadTotal
+     */
+    public function setCantidadTotal(int $cantidadTotal): void
+    {
+        $this->cantidadTotal = $cantidadTotal;
     }
 }

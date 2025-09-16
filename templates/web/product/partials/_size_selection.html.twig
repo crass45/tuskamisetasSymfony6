@@ -1,0 +1,91 @@
+{# templates/web/product/partials/_size_selection.html.twig #}
+{# Este fichero es la migración de tu plantilla original, conservando la estructura y funcionalidad. #}
+
+<div style="text-align: left; border-bottom: 1px solid lightgrey; padding: 5px;">
+    <span class="camiseta-tallas">
+        {% set firstProduct = productosTalla|first %}
+        {% if firstProduct %}
+            {% if firstProduct.imagen %}
+                <img {% if firstProduct.viewsImages %}data-toggle="modal" data-target="#fotos-detalle-modal" data-imagenes="{{ firstProduct.viewsImages }}"{% endif %}
+                     src="{{ sonata_path(firstProduct.imagen, 'mini') }}"
+                     alt="{{ color.nombre }}"
+                     style="width: 40px; height: auto; display: inline-block; cursor:pointer;">
+            {% elseif firstProduct.urlImage %}
+                <img {% if firstProduct.viewsimages %}data-toggle="modal" data-target="#fotos-detalle-modal" data-imagenes="{{ firstProduct.viewsImages }}"{% endif %}
+                     src="{{ firstProduct.urlImage }}"
+                     alt="{{ color.nombre }}"
+                     style="width: 40px; height: auto; display: inline-block; cursor:pointer;">
+            {% else %}
+                <div style="width: 40px; height: 40px; display: inline-block; border: 1px solid #c8c6c6; background-color: {{ color.codigoRGB }};">&nbsp;</div>
+            {% endif %}
+            <p style="font-weight: bold; font-size: 11px">{{ color.nombre | capitalize }}</p>
+            <p id="cantidadTotalCamisetas_{{ color.nombreUrl }}" style="font-weight: bold"></p>
+        {% endif %}
+    </span>
+
+    {% for productoTalla in productosTalla %}
+        {% if productoTalla.activo %}
+            <span style="text-align: center; vertical-align:middle; display: inline-block; margin: 0 5px;">
+                <label style="font-size: 11px" for="talla-{{ productoTalla.id }}">{{ productoTalla.talla }}</label><br>
+                <input class="talla modificadorPrecio"
+                       data-color="{{ color.nombreUrl }}"
+                       data-ref="{{ productoTalla.referencia }}" {# Importante para la calculadora de precios #}
+                       data-pack="{{ modelo.obligadaVentaEnPack ? modelo.pack : 1 }}"
+                       type="number" pattern="[0-9]*" inputmode="numeric"
+                       name="cantidades[{{ productoTalla.referencia }}]"
+                       id="talla-{{ productoTalla.id }}"
+                       value="" min="0" step="{{ modelo.obligadaVentaEnPack ? modelo.pack : 1 }}"
+                       {% if productoTalla.modelo.proveedor.controlDeStock and not productoTalla.modelo.proveedor.permiteVentaSinStock %}
+                           data-min_max
+                           data-max="{{ productoTalla.stock }}"
+                           data-min="0"
+                           title="STOCK actual {{ productoTalla.stock }}"
+                       {% endif %}
+                       data-toggle="just_number"
+                       style="width: 63px; {% if productoTalla.modelo.proveedor.controlDeStock and productoTalla.stock <= 0 %} background-color: #ff55;{% endif %}">
+                <br>
+                {% if productoTalla.modelo.proveedor.controlDeStock %}
+                    <span style="width: 100%;text-align: center;font-size: 12px; color: #888888;">{{ productoTalla.stock }}
+                        {% if productoTalla.stock < 100 %}
+                            <a data-toggle="tooltip" title="{% if productoTalla.stockFuturo %}{{ productoTalla.stockFuturo|upper }}{% else %}Nuevas entradas: sin fecha programada{% endif %}" style="cursor: pointer;"><i class="fa fa-info-circle"></i></a>
+                        {% endif %}
+                    </span>
+                {% endif %}
+
+                {% if is_granted('ROLE_ADMIN') %}
+                    {% for inventario in productoTalla.inventario %}
+                        {% if inventario.cantidad > 0 %}
+                            <p style="font-size: 10px; text-align: right">C{{ inventario.caja }} - <b>{{ inventario.cantidad }} u</b></p>
+                            {% if inventario.observaciones %}
+                            <p><a style="font-size: 10px; text-align: right; padding: 1px; cursor: pointer" class="alert alert-danger" data-toggle="tooltip" title="{{ inventario.observaciones }}">!!</a></p>
+                        {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </span>
+        {% endif %}
+    {% endfor %}
+</div>
+
+{# MIGRACIÓN: Este script es específico para esta plantilla y se ha conservado #}
+<script>
+    $(document).ready(function () {
+        // Estas funciones deben estar definidas en tu fichero JS principal (ej. app-tienda.js)
+        if (typeof delete_cookie === 'function') {
+            delete_cookie('tallas');
+            delete_cookie('serigrafiaPecho');
+            delete_cookie('serigrafiaEspalda');
+        }
+        if (typeof pintaTallas === 'function') {
+            pintaTallas();
+        }
+
+        // Tooltips
+        $('a[data-toggle="tooltip"]').tooltip({
+            animated: 'fade',
+            placement: 'bottom',
+            html: false
+        });
+    });
+</script>
+

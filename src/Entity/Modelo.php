@@ -547,6 +547,52 @@ class Modelo implements Translatable
         return false;
     }
 
+    public function hasColor()
+    {
+
+        foreach ($this->productos as $producto) {
+            if ($producto->isActivo()) {
+                if ($this->testColor($producto)) {
+                    if (!$producto->isTallaNino()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public function getTallasP()
+    {
+        $tallas = new ArrayCollection();
+        foreach ($this->productos as $producto) {
+            if ($producto->isActivo()) {
+                if (!$tallas->contains($producto->getTalla())) {
+                    $tallas[$producto->getTalla()] = $producto;
+                }
+            }
+        }
+
+        return $tallas;
+    }
+
+    public function variaPrecioEntreTallas($usuario)
+    {
+        $productoPrimero = null;
+        foreach ($this->getTallasP() as $producto) {
+            if ($productoPrimero == null) {
+                $productoPrimero = $producto;
+                continue;
+            }
+            if (($productoPrimero->isTallaNino() && $producto->isTallaNino()) || (!$productoPrimero->isTallaNino() && !$producto->isTallaNino())) {
+                if ($productoPrimero->getPrecioMin($usuario) != $producto->getPrecioMin($usuario)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
     private function testBlanco($producto)
     {
@@ -555,6 +601,22 @@ class Modelo implements Translatable
                 return true;
             }
         }
+        return false;
+    }
+    public function hasBlanco()
+    {
+
+        foreach ($this->productos as $producto) {
+            if ($producto->isActivo()) {
+                if ($this->testBlanco($producto)) {
+                    if (!$producto->isTallaNino() and $producto->getTalla()) {
+                        return true;
+
+                    }
+                }
+            }
+        }
+
         return false;
     }
     public function hasBlancoNino()
@@ -687,5 +749,22 @@ class Modelo implements Translatable
 //        var_dump("Estamos devolviendo mal");
         return 0;
     }
+
+    public function getTallasString(): string
+    {
+        $tallas = [];
+        foreach ($this->productos as $producto) {
+            if ($producto->isActivo() && $producto->getTalla() && !in_array($producto->getTalla(), $tallas, true)) {
+                $tallas[] = $producto->getTalla();
+            }
+        }
+
+        // Aquí podrías añadir una lógica de ordenación si es necesario, por ejemplo:
+        // sort($tallas, SORT_NATURAL);
+
+        return implode(', ', $tallas);
+    }
+
+
 
 }

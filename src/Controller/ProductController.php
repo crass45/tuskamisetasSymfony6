@@ -1,0 +1,179 @@
+<?php
+// src/Controller/ProductController.php
+
+namespace App\Controller;
+
+use App\Entity\Color;
+use App\Entity\Empresa;
+use App\Entity\Modelo;
+use App\Entity\Personalizacion;
+use App\Entity\Producto;
+use App\Model\Presupuesto;
+use App\Model\PresupuestoProducto;
+use App\Model\PresupuestoTrabajo;
+use App\Repository\ModeloRepository;
+use App\Service\FechaEntregaservice;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Routing\Annotation\Route;
+
+class ProductController extends AbstractController
+{
+    private EntityManagerInterface $em;
+
+    public function __construct(
+        private FechaEntregaservice $deliveryDateService, EntityManagerInterface $entityManager
+    )
+    {
+        $this->em = $entityManager;
+    }
+
+    /**
+     * Muestra la página de detalle de un producto (Modelo).
+     */
+    #[Route('/{_locale}/producto/{slug}', name: 'app_product_detail', requirements: ['_locale' => 'es|en|fr'])]
+    public function showAction(string $slug, ModeloRepository $modeloRepository): Response
+    {
+        $modelo = $modeloRepository->findOneBy(['nombreUrl' => $slug]);
+
+        if (!$modelo) {
+            throw $this->createNotFoundException('El producto solicitado no existe.');
+        }
+
+        if (!$modelo->isActivo()) {
+            return $this->render('web/product/discontinued.html.twig', ['modelo' => $modelo]);
+        }
+
+        $deliveryDates = $this->deliveryDateService->getDeliveryDatesForModel($modelo);
+
+        return $this->render('web/product/show.html.twig', [
+            'modelo' => $modelo,
+            'deliveryDates' => $deliveryDates,
+        ]);
+    }
+
+    /**
+     * Esta acción se llama por AJAX para añadir un nuevo bloque de formulario de personalización.
+     */
+    // --- INICIO DE LA CORRECCIÓN ---
+    // 1. Cambiamos la firma para pedir el ID en lugar del objeto
+    #[Route('/{_locale}/ajax/product/{id}/add-customization/{nPersonalizaciones}', name: 'app_product_add_customization', requirements: ['_locale' => 'es|en|fr'])]
+    public function addCustomizationAction(int $id, int $nPersonalizaciones, SessionInterface $session): Response
+    {
+        // 2. Hacemos la búsqueda del Modelo explícitamente
+        $modelo = $this->em->getRepository(Modelo::class)->find($id);
+        if (!$modelo) {
+            return new Response('Modelo no encontrado.', 404);
+        }
+        // --- FIN DE LA CORRECCIÓN ---
+
+        $personalizaciones = $modelo->getTecnicas();
+        $personalizacionesCarrito = [];
+        $carrito = $session->get('carrito');
+
+        if ($carrito) {
+            // Lógica para encontrar las personalizaciones ya existentes en el carrito...
+        }
+
+        return $this->render('web/product/partials/_customization_form_row.html.twig', [
+            'personalizaciones' => $personalizaciones,
+            'nPersonalizaciones' => $nPersonalizaciones,
+            'personalizacionesCarrito' => $personalizacionesCarrito,
+        ]);
+    }
+
+    /**
+     * Esta acción se llama por AJAX para obtener las tallas de un color específico.
+     */
+    #[Route('/{_locale}/ajax/producto/{modeloId}/get-sizes/{colorId}', name: 'app_product_get_sizes', requirements: ['_locale' => 'es|en|fr'])]
+    public function getSizesAction(int $modeloId, string $colorId): Response
+    {
+        $modelo = $this->em->getRepository(Modelo::class)->find($modeloId);
+        if (!$modelo) {
+            return new Response('Modelo no encontrado.', 404);
+        }
+
+        $color = $this->em->getRepository(Color::class)->find($colorId);
+        if (!$color) {
+            return new Response('Color no encontrado.', 404);
+        }
+
+        $productosTalla = $this->em->getRepository(Producto::class)->findByModelAndColor($modelo, $color);
+
+
+        return $this->render('web/product/partials/_size_selection.html.twig', [
+            'productosTalla' => $productosTalla,
+            'color' => $color,
+            'modelo' => $modelo,
+        ]);
+    }
+
+
+    /**
+     * Esta acción se llama por AJAX para calcular el precio del presupuesto.
+     * Reemplaza a tu antiguo 'calculaPresupuestoAction'.
+     */
+    #[Route('/{_locale}/ajax/producto/update-price', name: 'app_product_update_price', methods: ['POST'], requirements: ['_locale' => 'es|en|fr'])]
+    public function updatePriceAction(Request $request, SessionInterface $session): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        if (!$data) {
+            return new Response('Datos inválidos.', 400);
+        }
+
+        $presupuesto = new Presupuesto();
+        $cantidadTotal = 0;
+
+        // 1. Calcular cantidad total
+        foreach ($data['productos'] ?? [] as $prodData) {
+            $cantidadTotal += (int)($prodData['cantidad'] ?? 0);
+        }
+
+        // 2. Añadir productos al presupuesto
+        foreach ($data['productos'] ?? [] as $prodData) {
+            if (!empty($prodData['referencia']) && !empty($prodData['cantidad'])) {
+                $producto = $this->em->getRepository(Producto::class)->findOneBy(['referencia' => $prodData['referencia']]);
+                if ($producto) {
+                    $presupuestoProducto = new PresupuestoProducto();
+                    $presupuestoProducto->setCantidad((int)$prodData['cantidad']);
+                    $presupuestoProducto->setProducto($producto, $cantidadTotal, $this->getUser());
+                    $presupuesto->addProducto($presupuestoProducto, $this->getUser());
+                }
+            }
+        }
+
+        // 3. Añadir trabajos de personalización
+        foreach ($data['trabajos'] ?? [] as $trabajoData) {
+            $trabajo = $this->em->getRepository(Personalizacion::class)->findOneBy(['codigo' => $trabajoData['codigo']]);
+            if ($trabajo) {
+                $presupuestoTrabajo = new PresupuestoTrabajo();
+                $presupuestoTrabajo->setTrabajo($trabajo);
+                $presupuestoTrabajo->setCantidad((int)($trabajoData['cantidad'] ?? 0));
+                // Aquí se setearían otras propiedades como urlImage, ubicacion, etc.
+                $presupuesto->addTrabajo($presupuestoTrabajo);
+            }
+        }
+        $empresa = $this->em->getRepository(Empresa::class)->findOneBy([], ['id' => 'DESC']);
+        $ivaGeneral = $empresa->getIvaGeneral() / 100;
+        $productosGTag = $producto->getModelo()->getReferencia();
+        $productosGTagNombre = $producto->getModelo()->getNombre();
+        $productosGTagBrand = $producto->getModelo()->getFabricante();
+
+        // Guardamos el presupuesto calculado en la sesión para el siguiente paso (añadir al carrito)
+        $session->set('presupuesto', $presupuesto);
+
+        // Renderizamos el fragmento de HTML con el resumen del precio
+        return $this->render('web/product/partials/_price_summary.html.twig', [
+            'presupuesto' => $presupuesto,
+            'ivaGeneral' => $ivaGeneral,
+            'productosGTAG_ref' => $productosGTag,
+            'productosGTagNombre' => $productosGTagNombre,
+            'productosGTAG_brand' => $productosGTagBrand,
+            'producto' => $producto,
+        ]);
+    }
+}
+

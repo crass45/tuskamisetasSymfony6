@@ -3,7 +3,7 @@
 
 namespace App\Model;
 
-use App\Entity\User;
+use App\Entity\Sonata\User;
 use App\Model\PresupuestoProducto;
 use App\Model\PresupuestoTrabajo;
 

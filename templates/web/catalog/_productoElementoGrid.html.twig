@@ -1,6 +1,11 @@
 {% if producto.nombreUrl is defined %}
 {#    <a class="enlaceproducto" data-referencia ="{{ producto.getReferencia }}" data-nombre="{{ producto.getNombre }}" data-brand ="{{ producto.getFabricante }}" href="{{ path('ss_tienda_producto_detalle',{'productoNombre':producto.nombreUrl}) }}" style="color: white;">#}
-    <a class="enlaceproducto" data-referencia ="{{ producto.getReferencia }}" data-nombre="{{ producto.getNombre }}" data-brand ="{{ producto.getFabricante }}" href="#" style="color: white;">
+    <a class="enlaceproducto"
+       data-referencia="{{ producto.referencia }}"
+       data-nombre="{{ producto.nombre }}"
+       data-brand="{{ producto.fabricante }}"
+       href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': producto.nombreUrl}) }}"
+       style="color: white;">
         <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3" style="padding-right: 2px;padding-left: 2px;">
             <div class="product-image-wrapper" style="position: relative;">
                 <div class="single-products">

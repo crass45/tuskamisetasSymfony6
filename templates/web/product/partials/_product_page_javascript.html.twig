@@ -1,0 +1,345 @@
+{# templates/web/product/partials/_product_page_javascript.html.twig #}
+{# Contiene TODO el JavaScript específico para la ficha de producto #}
+<script>
+    // 1. Definimos las rutas que nuestro script necesita, aquí mismo.
+    var TUSKAM_ROUTES = {
+        // NOTA: El ParamConverter no funciona en addCustomizationAction, por eso pasamos el ID.
+        add_customization: "{{ path('app_product_add_customization', { '_locale': app.request.locale, 'id': modelo.id, 'nPersonalizaciones': 'N_PERS' }) }}",
+        get_sizes: "{{ path('app_product_get_sizes', { '_locale': app.request.locale, 'modeloId': modelo.id, 'colorId': 'SLUG_COLOR' }) }}",
+        update_price: "{{ path('app_product_update_price', {'_locale': app.request.locale}) }}",
+        // Ruta para el plugin de subida de ficheros. Necesitarás un controlador para esto.
+        file_upload: "{{ oneup_uploader_endpoint('gallery') }}"
+    };
+
+    // 2. Envolvemos toda nuestra lógica en un listener para asegurar que la página está lista.
+    document.addEventListener('DOMContentLoaded', function() {
+        (function($) { // Usamos una clausura de jQuery para seguridad y compatibilidad
+
+            // --- FUNCIÓN DE UTILIDAD: DEBOUNCE ---
+            // Evita que una función se ejecute demasiadas veces seguidas (ej. al teclear).
+            function debounce(callback, wait) {
+                let timeout;
+                return function(...args) {
+                    const context = this;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => callback.apply(context, args), wait);
+                };
+            }
+
+            // --- LÓGICA DE CÁLCULO DE PRECIOS ---
+            const calculatePrice = debounce(function() {
+                const data = {
+                    productos: [],
+                    trabajos: [],
+                    doblado: $('#doblembol').is(':checked')
+                };
+
+                // Recoger las cantidades de cada talla
+                $('#tallas input[type=number]').each(function() {
+                    const quantity = parseInt($(this).val(), 10) || 0;
+                    if (quantity > 0) {
+                        data.productos.push({
+                            referencia: $(this).data('ref'),
+                            cantidad: quantity
+                        });
+                    }
+                });
+
+                // Recoger los datos de cada personalización
+                $('#estampacionLugar .personalization-row').each(function() {
+                    const row = $(this);
+                    const trabajo = {
+                        codigo: row.find('.personalizacionTipo').val(),
+                        cantidad: row.find('.tintas').val(),
+                        ubicacion: row.find('.ubicacion').val(),
+                        observaciones: row.find('.observaciones').val(),
+                        archivo: row.find('.files').text() // Se lee el nombre del fichero subido
+                    };
+                    if (trabajo.codigo) { data.trabajos.push(trabajo); }
+                });
+
+                // Hacer la llamada AJAX
+                $.ajax({
+                    url: TUSKAM_ROUTES.update_price,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(html) {
+                        $('#div_precio').html(html);
+                        const precioUnidadText = $(html).find('.precio-unidad-valor').text();
+                        $('#circuloPrecioUnidad > div').html(`<p style="font-size: 24px; margin-top: 15px;"><b>${precioUnidadText}</b></p>`);
+                    },
+                    error: function() {
+                        $('#div_precio').html('<p class="alert alert-danger">Error al calcular el precio.</p>');
+                    }
+                });
+            }, 500);
+
+            // --- FUNCIÓN PARA MOSTRAR/OCULTAR PANELES ---
+            function checkQuantitiesAndTogglePanels() {
+                let totalQuantity = 0;
+                $('#tallas input[type=number]').each(function() {
+                    totalQuantity += parseInt($(this).val(), 10) || 0;
+                });
+
+                if (totalQuantity > 0) {
+                    $('#div_serigrafia, #div_precio').slideDown();
+                    $('#circuloPrecioUnidad').fadeIn();
+                    calculatePrice();
+                } else {
+                    $('#div_serigrafia, #div_precio').slideUp();
+                    $('#circuloPrecioUnidad').fadeOut();
+                }
+            }
+
+            // --- FUNCIÓN PARA INICIALIZAR EL PLUGIN DE SUBIDA DE FICHEROS ---
+            function initializeFileUpload(selector) {
+                $(selector).fileupload({
+                    url: TUSKAM_ROUTES.file_upload,
+                    dataType: 'json',
+                    done: function (e, data) {
+                        const container = $(this).closest('.personalization-row');
+                        $.each(data.result.files, function (index, file) {
+                            container.find('.files').html($('<p class="file-subido"/>').text(file.name));
+                        });
+                        calculatePrice();
+                    },
+                    progressall: function (e, data) {
+                        const progress = parseInt(data.loaded / data.total * 100, 10);
+                        const container = $(this).closest('.personalization-row');
+                        container.find('.progress-bar').css('width', progress + '%');
+                    }
+                });
+            }
+
+            // --- LÓGICA DE PERSONALIZACIÓN ---
+            let nPersonalizaciones = 0;
+            $('body').on('click', '#addPersonalizacion, .addPersonalizacion', function() {
+                nPersonalizaciones++;
+                const url = TUSKAM_ROUTES.add_customization.replace('N_PERS', nPersonalizaciones);
+
+                const container = $('#estampacionLugar');
+                const loadingDiv = $('<div style="text-align:center;"><img src="{{ asset("images/loading.gif") }}" alt="cargando"></div>');
+                container.append(loadingDiv);
+
+                $.ajax({
+                    url: url,
+                    success: function(html) {
+                        loadingDiv.replaceWith(html);
+                        // IMPORTANTE: Se inicializa el plugin de subida para la nueva fila
+                        initializeFileUpload(`#fileUpload-${nPersonalizaciones}`);
+                    }
+                });
+            });
+
+            // Lógica para el botón de eliminar personalización
+            $('body').on('click', '.remove-personalization-row', function() {
+                $(this).closest('.personalization-row').remove();
+                calculatePrice(); // Recalculamos el precio
+            });
+
+            // --- LÓGICA PARA CARGAR LAS TALLAS POR AJAX ---
+            function loadTallas() {
+                $(".colorProductoPresupuesto").each(function () {
+                    const button = $(this);
+                    const colorSlug = button.data('color');
+                    const url = TUSKAM_ROUTES.get_sizes.replace('SLUG_COLOR', colorSlug);
+
+                    const divId = `tallas-para-${colorSlug}`;
+                    const container = $('#tallas');
+
+                    if (container.find(`#${divId}`).length === 0) {
+                        const div = $(`<div id="${divId}" style="text-align:center;"><img src="{{ asset('images/loading.gif') }}" alt="cargando"></div>`);
+                        container.append(div);
+                        div.load(url, function(response, status, xhr) {
+                            if (status == "error") {
+                                console.error('Error al cargar las tallas para', colorSlug, ':', xhr.status, xhr.statusText);
+                                div.html("<p class='alert alert-danger'>Error al cargar las tallas.</p>");
+                            }
+                        });
+                    }
+                });
+            }
+
+            // --- LISTENERS DE EVENTOS ---
+            checkQuantitiesAndTogglePanels(); // Comprobación inicial al cargar la página
+            $(window).on('load', loadTallas);
+
+            $('body').on('change keyup', '#tallas input[type=number]', checkQuantitiesAndTogglePanels);
+            $('body').on('change', '#estampacionLugar select, #doblembol', calculatePrice);
+            $('body').on('keyup', '#estampacionLugar input, #estampacionLugar textarea', calculatePrice);
+
+            // Galería de imágenes (si existe la vista simple)
+            const mainImage = $('#imagen-producto-main');
+            if (mainImage.length) {
+                const originalImageSrc = mainImage.data('imagen-original');
+                $('.colorProducto a').on('mouseover', function() {
+                    const newImageSrc = $(this).children().data('imagen-grande');
+                    if (newImageSrc) { mainImage.attr('src', newImageSrc); }
+                }).on('mouseout', function() {
+                    mainImage.attr('src', originalImageSrc);
+                });
+            }
+        })(jQuery);
+    });
+</script>
+
+
+
+
+
+{# templates/web/product/partials/_product_page_javascript.html.twig #}
+{# Contiene TODO el JavaScript específico para la ficha de producto #}
+{#<script>#}
+{#    // 1. Definimos las rutas que nuestro script necesita, aquí mismo.#}
+{#    var TUSKAM_ROUTES = {#}
+{#        add_customization: "{{ path('app_product_add_customization', { '_locale': app.request.locale, 'id': modelo.id, 'nPersonalizaciones': 'N_PERS' }) }}",#}
+{#        get_sizes: "{{ path('app_product_get_sizes', { '_locale': app.request.locale, 'modeloId': modelo.id, 'colorId': 'SLUG_COLOR' }) }}",#}
+{#        update_price: "{{ path('app_product_update_price', {'_locale': app.request.locale}) }}"#}
+{#    };#}
+
+{#    // 2. Envolvemos toda nuestra lógica en un listener para asegurar que la página está lista.#}
+{#    document.addEventListener('DOMContentLoaded', function() {#}
+{#        (function($) { // Usamos una clausura de jQuery para seguridad y compatibilidad#}
+
+{#            // --- FUNCIÓN DE UTILIDAD: DEBOUNCE ---#}
+{#            // Evita que una función se ejecute demasiadas veces seguidas (ej. al teclear).#}
+{#            function debounce(callback, wait) {#}
+{#                let timeout;#}
+{#                return function(...args) {#}
+{#                    const context = this;#}
+{#                    clearTimeout(timeout);#}
+{#                    timeout = setTimeout(() => callback.apply(context, args), wait);#}
+{#                };#}
+{#            }#}
+
+{#            // --- LÓGICA DE CÁLCULO DE PRECIOS ---#}
+{#            const calculatePrice = debounce(function() {#}
+{#                const data = {#}
+{#                    productos: [],#}
+{#                    trabajos: [],#}
+{#                    doblado: $('#doblembol').is(':checked')#}
+{#                };#}
+
+{#                // Recoger las cantidades de cada talla#}
+{#                $('#tallas input[type=number]').each(function() {#}
+{#                    const quantity = parseInt($(this).val(), 10) || 0;#}
+{#                    if (quantity > 0) {#}
+{#                        data.productos.push({#}
+{#                            referencia: $(this).data('ref'),#}
+{#                            cantidad: quantity#}
+{#                        });#}
+{#                    }#}
+{#                });#}
+
+{#                // Recoger los datos de cada personalización#}
+{#                $('#estampacionLugar .personalization-row').each(function() {#}
+{#                    const row = $(this);#}
+{#                    const trabajo = {#}
+{#                        codigo: row.find('.personalizacionTipo').val(),#}
+{#                        cantidad: row.find('.tintas').val(),#}
+{#                        ubicacion: row.find('.ubicacion').val(),#}
+{#                        observaciones: row.find('.observaciones').val(),#}
+{#                        archivo: row.find('.file-subido').text() || ''#}
+{#                    };#}
+{#                    if (trabajo.codigo) { data.trabajos.push(trabajo); }#}
+{#                });#}
+
+{#                // Hacer la llamada AJAX#}
+{#                $.ajax({#}
+{#                    url: TUSKAM_ROUTES.update_price,#}
+{#                    type: 'POST',#}
+{#                    contentType: 'application/json',#}
+{#                    data: JSON.stringify(data),#}
+{#                    success: function(html) {#}
+{#                        const priceContainer = $('#div_precio');#}
+{#                        priceContainer.html(html);#}
+
+{#                        const precioUnidadText = $(html).find('.precio-unidad-valor').text();#}
+{#                        $('#circuloPrecioUnidad > div').html(`<p style="font-size: 24px; margin-top: 15px;"><b>${precioUnidadText}</b></p>`);#}
+{#                    },#}
+{#                    error: function() {#}
+{#                        $('#div_precio').html('<p class="alert alert-danger">Error al calcular el precio.</p>');#}
+{#                    }#}
+{#                });#}
+{#            }, 500); // 500ms de retardo#}
+
+{#            // --- FUNCIÓN PARA MOSTRAR/OCULTAR PANELES ---#}
+{#            function checkQuantitiesAndTogglePanels() {#}
+{#                let totalQuantity = 0;#}
+{#                $('#tallas input[type=number]').each(function() {#}
+{#                    totalQuantity += parseInt($(this).val(), 10) || 0;#}
+{#                });#}
+
+{#                if (totalQuantity > 0) {#}
+{#                    $('#div_serigrafia').slideDown();#}
+{#                    $('#div_precio').slideDown();#}
+{#                    $('#circuloPrecioUnidad').fadeIn();#}
+{#                    calculatePrice(); // Calcular el precio solo si hay cantidades#}
+{#                } else {#}
+{#                    $('#div_serigrafia').slideUp();#}
+{#                    $('#div_precio').slideUp();#}
+{#                    $('#circuloPrecioUnidad').fadeOut();#}
+{#                }#}
+{#            }#}
+
+{#            // --- LÓGICA PARA CARGAR LAS TALLAS POR AJAX ---#}
+{#            function loadTallas() {#}
+{#                $(".colorProductoPresupuesto").each(function () {#}
+{#                    const button = $(this);#}
+{#                    const colorSlug = button.data('color');#}
+{#                    const url = TUSKAM_ROUTES.get_sizes.replace('SLUG_COLOR', colorSlug);#}
+
+{#                    const divId = `tallas-para-${colorSlug}`;#}
+{#                    const container = $('#tallas');#}
+
+{#                    if (container.find(`#${divId}`).length === 0) {#}
+{#                        const div = $(`<div id="${divId}" style="text-align:center;"><img src="{{ asset('images/loading.gif') }}" alt="cargando"></div>`);#}
+{#                        container.append(div);#}
+{#                        div.load(url, function(response, status, xhr) {#}
+{#                            if (status == "error") {#}
+{#                                console.error('Error al cargar las tallas para', colorSlug, ':', xhr.status, xhr.statusText);#}
+{#                                div.html("<p class='alert alert-danger'>Error al cargar las tallas.</p>");#}
+{#                            }#}
+{#                        });#}
+{#                    }#}
+{#                });#}
+{#            }#}
+
+{#            // --- LISTENERS DE EVENTOS ---#}
+{#            checkQuantitiesAndTogglePanels(); // Comprobación inicial al cargar la página#}
+{#            $(window).on('load', loadTallas);#}
+
+{#            $('body').on('change keyup', '#tallas input[type=number]', checkQuantitiesAndTogglePanels);#}
+{#            $('body').on('change', '#estampacionLugar select, #doblembol', calculatePrice);#}
+{#            $('body').on('keyup', '#estampacionLugar input, #estampacionLugar textarea', calculatePrice);#}
+
+{#            // --- LÓGICA DE LA GALERÍA DE IMÁGENES ---#}
+{#            const mainImage = $('#imagen-producto-main');#}
+{#            if (mainImage.length) {#}
+{#                const originalImageSrc = mainImage.data('imagen-original');#}
+{#                $('.colorProducto a').on('mouseover', function() {#}
+{#                    const newImageSrc = $(this).children().data('imagen-grande');#}
+{#                    if (newImageSrc) { mainImage.attr('src', newImageSrc); }#}
+{#                }).on('mouseout', function() {#}
+{#                    mainImage.attr('src', originalImageSrc);#}
+{#                });#}
+{#            }#}
+
+{#            // --- LÓGICA DE PERSONALIZACIÓN ---#}
+{#            let nPersonalizaciones = 0;#}
+{#            $('body').on('click', '#addPersonalizacion, .addPersonalizacion', function() {#}
+{#                nPersonalizaciones++;#}
+{#                const url = TUSKAM_ROUTES.add_customization.replace('N_PERS', nPersonalizaciones);#}
+
+{#                const container = $('#estampacionLugar');#}
+{#                const loadingDiv = $('<div style="text-align:center;"><img src="{{ asset('images/loading.gif') }}" alt="cargando"></div>');#}
+{#                container.append(loadingDiv);#}
+
+{#                $.ajax({ url: url, success: function(html) { loadingDiv.html(html); }});#}
+{#            });#}
+
+{#        })(jQuery);#}
+{#    });#}
+{#</script>#}
+

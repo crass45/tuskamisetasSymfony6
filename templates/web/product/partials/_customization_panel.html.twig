@@ -1,0 +1,52 @@
+{# templates/web/product/partials/_customization_panel.html.twig #}
+{# Este fichero contiene la estructura principal para la personalización del producto. #}
+
+<div class="row">
+    <div class="col-sm-12" style="padding-bottom: 20px;">
+        <fieldset class="product-information borde_naranja" id="tallas" style="padding: 10px; margin: 0; overflow: visible;">
+            <legend><b><span class="numberCircle">1</span> {% trans %}INTRODUCE CANTIDADES{% endtrans %}</b></legend>
+            {# Este div se rellenará con AJAX por la función loadTallas() #}
+        </fieldset>
+    </div>
+
+    <div class="col-sm-12" id="div_serigrafia" style="display: none;">
+        {% if modelo.tecnicas|length > 0 %}
+            <fieldset class="product-information borde_naranja" style="padding: 10px; display: block; margin-bottom: 0">
+                <legend><b><span class="numberCircle">2</span> {% trans %}PERSONALIZA EL PRODUCTO{% endtrans %}</b></legend>
+
+                {# El contenedor donde el JavaScript añadirá las nuevas filas de personalización #}
+                <div class="col-sm-12" id="estampacionLugar">
+                </div>
+
+                <div>
+                    <p>Puedes añadir tantas personalizaciones como quieras al producto pulsando el botón <span class="naranja addPersonalizacion" style="cursor: pointer">'+ Añadir personalización'</span>...</p>
+                </div>
+                <br>
+
+                <div class="col-sm-12" style="text-align: center">
+                    <button class="button" id="addPersonalizacion" data-modelo="{{ modelo.id }}" style="background-color: white; border: 2px solid #ff9933; color: black">
+                        <span class="glyphicon glyphicon-plus-sign" style="margin: 0"></span>
+                        <span id="textoAddPersonalizacion" style="margin: 0; padding: 0;">{% trans %}Añade MAS Personalizaciones{% endtrans %}</span>
+                    </button>
+                </div>
+                <br>
+
+                <div class="funkyradio">
+                    <div class="funkyradio-success">
+                        <input type="checkbox" name="checkbox" id="doblembol" class="modificadorPrecio"/>
+                        <label for="doblembol" title="{% trans %}Si marcas esta opción enviaremos las camisetas dobladas y embolsadas de forma individual{% endtrans %}">
+                            {% trans %}Doblado y embolsado individual{% endtrans %}
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+        {% else %}
+            {# ... (tu mensaje de 'Consultar precios') ... #}
+        {% endif %}
+    </div>
+
+    <div class="col-sm-12" id="div_precio" style="display: none;">
+        <h4><b>3. {% trans %}Tu presupuesto{% endtrans %}</b></h4>
+    </div>
+</div>
+

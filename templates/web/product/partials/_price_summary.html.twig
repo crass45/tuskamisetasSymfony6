@@ -1,0 +1,86 @@
+{# templates/web/product/partials/_price_summary.html.twig #}
+{# Migración completa de tu plantilla original para el resumen de precios. #}
+
+{% set totalProductos = presupuesto.getCantidadProductos() %}
+{% set precioUnidad = presupuesto.getPrecioUnidad(app.user) %}
+{% set precioSubTotal = presupuesto.getPrecioTotal(app.user) %}
+{% set ivaAplicar = precioSubTotal * (ivaGeneral / 100) %}
+{% set precioTotal = precioSubTotal + ivaAplicar %}
+
+<fieldset class="product-information borde_naranja"
+          style="padding: 10px; display: block; margin-bottom: 0px;">
+
+    <legend><b><span class="numberCircle">3</span> {% trans %}TU PEDIDO{% endtrans %}</b></legend>
+
+    <table class="table-responsive" style="width: 100%">
+        <thead>
+        <tr>
+            <td colspan="2" style="text-align: center; background-color: #f5f5f5"><b>{% trans %}RESUMEN{% endtrans %}</b></td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>{% trans %}Total de Productos{% endtrans %}</td>
+            <td style="text-align: right" id="div_precio_total_productos"><b>{{ totalProductos }} uds</b></td>
+        </tr>
+        <tr>
+            <td>{% trans %}Precio por unidad{% endtrans %}</td>
+            <td style="text-align: right" id="div_precio_precio_unidad">
+                {# Añadimos una clase para que el JS del círculo flotante pueda leer el valor #}
+                <b class="precio-unidad-valor">{{ precioUnidad | number_format(2, ',', '.') }}€</b>
+            </td>
+        </tr>
+        <tr>
+            <td>{% trans %}Subtotal{% endtrans %}</td>
+            <td style="text-align: right"><b>{{ precioSubTotal | number_format(2, ',', '.') }}€</b></td>
+        </tr>
+        {# MIGRACIÓN NOTA: La lógica para serigrafía y gastos de envío para admins se puede añadir aquí si es necesario #}
+        <tr>
+            <td>{% trans %}IVA{% endtrans %} ({{ ivaGeneral*100 }}%)</td>
+            <td style="text-align: right"><b>{{ ivaAplicar | number_format(2, ',', '.') }}€</b></td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr style="font-size: 1.2em;">
+            <td><b>{% trans %}TOTAL{% endtrans %}</b></td>
+            <td style="text-align: right"><b>{{ precioTotal | number_format(2, ',', '.') }}€</b></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div class="text-center">
+                    {% if totalProductos > 0 %}
+                        {# MIGRACIÓN: Se actualiza la ruta al nuevo 'app_cart_add' #}
+                        <form action="{{ path('app_cart_add', {'_locale': app.request.locale}) }}" method="post">
+                            <button id="addAMiPEdido" class="button">
+                                <span class="glyphicon glyphicon-shopping-cart" style="margin: 0"></span>
+                                {% trans %}Añadir al Carrito{% endtrans %}
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        </tfoot>
+    </table>
+</fieldset>
+
+{# MIGRACIÓN: El script de Google Analytics ahora está aquí y usa las variables que le pasa el controlador #}
+<script>
+    $('#addAMiPEdido').click(function(e){
+        if (typeof gtag === 'function') {
+            gtag("event", "add_to_cart", {
+                currency: "EUR",
+                value: "{{ precioTotal|number_format(2, '.', '') }}",
+                items: [
+                    {
+                        item_id: "{{ productosGTAG_ref }}",
+                        item_name: "{{ productosGTagNombre }}",
+                        affiliation: "TusKamisetas.com",
+                        item_brand: "{{ productosGTAG_brand}}"
+                    }
+                ]
+            });
+        }
+    });
+</script>
+

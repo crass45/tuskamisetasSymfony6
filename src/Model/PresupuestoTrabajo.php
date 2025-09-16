@@ -13,7 +13,7 @@ use App\Entity\Personalizacion;
  */
 class PresupuestoTrabajo
 {
-    private ?int $id = null;
+    private ?string $id = null;
     private ?Personalizacion $trabajo = null;
     private ?int $cantidad = null;
     private string $ubicacion = '';
@@ -78,12 +78,12 @@ class PresupuestoTrabajo
         return trim($cadena);
     }
 
-    public function getId(): ?int
+    public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function setId(?int $idProducto): self
+    public function setId(?string $idProducto): self
     {
         $this->id = $idProducto;
         return $this;

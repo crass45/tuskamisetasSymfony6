@@ -1,0 +1,81 @@
+{% extends "base.html.twig" %}
+
+{% block title %}{{ modelo.tituloSEO|default(modelo.nombre) }} | Tuskamisetas.com{% endblock %}
+{% block metaDescription %}{{ modelo.descripcionSEO|default(modelo.descripcion)|striptags|slice(0, 155) }}{% endblock %}
+
+{% block javascripts %}
+    {# 1. Se cargan los scripts de la plantilla base (jQuery, Bootstrap, etc.) #}
+    {{ parent() }}
+
+    {# 2. Se cargan los scripts del plugin jQuery File Upload, que son necesarios para esta página #}
+    <script src="{{ asset('js/jquery/fileUpload/js/vendor/jquery.ui.widget.min.js') }}"></script>
+    <script src="{{ asset('js/jquery/fileUpload/js/jquery.iframe-transport.min.js') }}"></script>
+    <script src="{{ asset('js/jquery/fileUpload/js/jquery.fileupload.min.js') }}"></script>
+
+    {# 3. Finalmente, se incluye el fichero parcial que contiene TODA la lógica específica de esta página #}
+    {% include 'web/product/partials/_product_page_javascript.html.twig' %}
+{% endblock %}
+
+{% block meta %}
+    <meta property="og:site_name" content="www.tuskamisetas.com"/>
+    <meta property="og:type" content="product"/>
+    <meta property="og:title" content="{{ modelo.nombre|title }}"/>
+    <meta property="og:description" content="{{ modelo.descripcion|striptags|slice(0, 200) }}"/>
+    <meta property="og:url" content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
+    {% if modelo.imagen %}
+        <meta property="og:image" content="{{ sonata_path(modelo.imagen, 'big') }}"/>
+    {% elseif modelo.urlImage %}
+        <meta property="og:image" content="{{ modelo.urlImage }}"/>
+    {% endif %}
+    <meta property="product:brand" content="{{ modelo.fabricante.nombre }}">
+    {# ... resto de tus metadatos product:category ... #}
+    <meta property="product:availability" content="instock"/>
+    <meta property="product:condition" content="new">
+    <meta property="product:price:amount" content="{{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }}"/>
+    <meta property="product:price:currency" content="EUR"/>
+    <meta property="product:retailer_item_id" content="{{ modelo.referencia }}">
+{% endblock %}
+
+{% block migas %}
+    {% if modelo.category is not empty and modelo.category|first %}
+        {% include 'web/partials/_breadcrumbs.html.twig' with {'context': modelo.category|first} %}
+    {% endif %}
+{% endblock %}
+
+{% block modals %}
+    {# ... Tus modales (360, medidas y presupuesto rápido) irán aquí ... #}
+{% endblock %}
+
+{% block baseBody %}
+    <div itemscope itemtype="http://schema.org/Product" style="margin-bottom: 15px">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6 col-md-7">
+                    {# Incluimos el parcial de la galería. Lo crearemos en el siguiente paso. #}
+                    {% include 'web/product/partials/_gallery.html.twig' %}
+                </div>
+
+                <div class="col-sm-6 col-md-5" style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">
+                    {# Incluimos el panel derecho. Lo crearemos en el siguiente paso. #}
+                    {% include 'web/product/partials/_details_panel.html.twig' %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12" id="div_personalizacion">
+                {# Incluimos el panel de personalización. Lo crearemos en el siguiente paso. #}
+                {% include 'web/product/partials/_customization_panel.html.twig' %}
+            </div>
+        </div>
+    </div>
+
+    {# ... Tus secciones de "Modelos Relacionados" y "Últimos Vistos" ... #}
+{% endblock %}
+
+{#{% block javascripts %}#}
+{#    {{ parent() }}#}
+{#    #}{# Incluimos un fichero JS dedicado. Lo crearemos en el siguiente paso. #}
+{#    {% include 'web/product/partials/_product_page_javascript.html.twig' %}#}
+{#{% endblock %}#}
+
