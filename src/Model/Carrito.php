@@ -218,4 +218,52 @@ class Carrito
         $totalCajas = $this->getBultos();
         return ($pGastos * ceil(round($totalCajas, 6)));
     }
+
+    /**
+     * Elimina una línea de producto específica de un Presupuesto.
+     * Si el Presupuesto se queda sin productos, lo elimina del carrito.
+     */
+    public function eliminaProductoPorIndice(int $itemIndex, int $productIndex): void
+    {
+        // Comprobamos si el item (Presupuesto) en esa posición existe
+        if (isset($this->items[$itemIndex])) {
+            $presupuesto = $this->items[$itemIndex];
+
+            // Le pedimos al Presupuesto que elimine el producto por su índice interno
+            $presupuesto->eliminaProductoPorIndice($productIndex);
+
+            // Si el Presupuesto se ha quedado sin productos después de la eliminación,
+            // lo eliminamos del carrito.
+            if (count($presupuesto->getProductos()) === 0) {
+                unset($this->items[$itemIndex]);
+                // Re-indexamos el array principal para que no queden huecos en las claves
+                $this->items = array_values($this->items);
+            }
+        }
+    }
+
+    // --- MÉTODOS AÑADIDOS ---
+
+    public function increaseProductQuantity(int $itemIndex, int $productIndex): void
+    {
+        if (isset($this->items[$itemIndex])) {
+            $presupuesto = $this->items[$itemIndex];
+            $presupuesto->increaseProductQuantity($productIndex);
+        }
+    }
+
+    public function decreaseProductQuantity(int $itemIndex, int $productIndex): void
+    {
+        if (isset($this->items[$itemIndex])) {
+            $presupuesto = $this->items[$itemIndex];
+            $presupuesto->decreaseProductQuantity($productIndex);
+
+            // Si el presupuesto se queda vacío después de disminuir la cantidad, lo eliminamos del carrito
+            if (count($presupuesto->getProductos()) === 0) {
+                unset($this->items[$itemIndex]);
+                $this->items = array_values($this->items);
+            }
+        }
+    }
+
 }

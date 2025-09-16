@@ -417,4 +417,51 @@ class Presupuesto
         $precioTrabajo = $this->getTotalTrabajo() / $this->getCantidadProductos();
         return $precio + $precioTrabajo;
     }
+
+    /**
+     * Elimina un producto de este presupuesto por su índice.
+     */
+    public function eliminaProductoPorIndice(int $indice): void
+    {
+        // Comprobamos si el producto en esa posición existe
+        if (isset($this->productos[$indice])) {
+            // Si existe, lo eliminamos
+            unset($this->productos[$indice]);
+            // Re-indexamos el array para que no queden huecos en las claves
+            $this->productos = array_values($this->productos);
+        }
+    }
+
+    // --- MÉTODOS AÑADIDOS ---
+
+    public function increaseProductQuantity(int $productIndex): void
+    {
+        if (isset($this->productos[$productIndex])) {
+            $productoPresupuesto = $this->productos[$productIndex];
+            $modelo = $productoPresupuesto->getProducto()?->getModelo();
+            $cantidadASumar = $modelo?->isObligadaVentaEnPack() ? $modelo->getPack() : 1;
+
+            // Aquí podrías añadir una comprobación de stock si fuera necesario
+
+            $productoPresupuesto->addCantidad($cantidadASumar);
+        }
+    }
+
+    public function decreaseProductQuantity(int $productIndex): void
+    {
+        if (isset($this->productos[$productIndex])) {
+            $productoPresupuesto = $this->productos[$productIndex];
+            $modelo = $productoPresupuesto->getProducto()?->getModelo();
+            $cantidadARestar = $modelo?->isObligadaVentaEnPack() ? $modelo->getPack() : 1;
+
+            $nuevaCantidad = $productoPresupuesto->getCantidad() - $cantidadARestar;
+
+            if ($nuevaCantidad <= 0) {
+                // Si la cantidad llega a 0 o menos, eliminamos el producto de este presupuesto
+                $this->eliminaProductoPorIndice($productIndex);
+            } else {
+                $productoPresupuesto->setCantidad($nuevaCantidad);
+            }
+        }
+    }
 }

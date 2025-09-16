@@ -17,6 +17,7 @@
         {% if carrito is not null and carrito.items is not empty %}
             {% for item in carrito.items %}
                 {# 'item' es un objeto Presupuesto #}
+                {% set itemIndex = loop.index0 %}
 
                 {# Fila para las personalizaciones de este grupo de productos #}
                 <tr style="background-color: #f0f0f0;">
@@ -32,6 +33,7 @@
 
                 {# Bucle para los productos dentro de este grupo #}
                 {% for productoPresupuesto in item.productos %}
+                    {% set productIndex = loop.index0 %}
                     <tr>
                         <td class="cart_product">
                             <a href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': productoPresupuesto.producto.modelo.nombreUrl}) }}">
@@ -52,10 +54,10 @@
                         </td>
                         <td class="cart_quantity">
                             <div class="cart_quantity_button">
-                                {# MIGRACIÓN: Enlaces para aumentar/disminuir cantidad #}
-                                <a class="cart_quantity_up" href="{{ path('app_cart_increase_item', {'_locale': app.request.locale, 'referencia': productoPresupuesto.producto.referencia, 'cantidad': 1}) }}"> + </a>
+                                {# CORRECCIÓN: Se actualizan los enlaces para aumentar/disminuir la cantidad #}
+                                <a class="cart_quantity_up" href="{{ path('app_cart_increase_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> + </a>
                                 <input class="cart_quantity_input" type="text" name="quantity" value="{{ productoPresupuesto.cantidad }}" readonly autocomplete="off" size="2">
-                                <a class="cart_quantity_down" href="{{ path('app_cart_decrease_item', {'_locale': app.request.locale, 'referencia': productoPresupuesto.producto.referencia, 'cantidad': 1}) }}"> - </a>
+                                <a class="cart_quantity_down" href="{{ path('app_cart_decrease_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> - </a>
                             </div>
                         </td>
                         <td class="cart_total">
@@ -63,8 +65,13 @@
                             <p class="cart_total_price">{{ (item.getPrecioUnidad(app.user) * productoPresupuesto.cantidad)|number_format(2, ',', '.') }} €</p>
                         </td>
                         <td class="cart_delete">
-                            {# MIGRACIÓN: Enlace para eliminar el item (presupuesto) completo #}
-                            <a class="cart_quantity_delete" href="{{ path('app_cart_remove_item', {'_locale': app.request.locale, 'id': item.id|default(loop.parent.loop.index0)}) }}"><i class="fa fa-times"></i></a>
+                            {# --- INICIO DE LA CORRECCIÓN --- #}
+                            {# El enlace ahora pasa el índice del grupo Y el índice del producto dentro del grupo #}
+                            <a class="cart_quantity_delete" title="Eliminar este producto"
+                               href="{{ path('app_cart_remove_product', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}">
+                                <i class="fa fa-times"></i>
+                            </a>
+                            {# --- FIN DE LA CORRECCIÓN --- #}
                         </td>
                     </tr>
                 {% endfor %}
@@ -84,9 +91,4 @@
         </tbody>
     </table>
 </div>
-
-{# La sección del resumen de totales (subtotal, IVA, total) que se actualiza con AJAX #}
-{#<div id="cart-summary-wrapper">#}
-{#    {% include 'carrito/partials/_cart_summary.html.twig' %}#}
-{#</div>#}
 

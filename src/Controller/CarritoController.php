@@ -219,5 +219,40 @@ class CarritoController extends AbstractController
         $carrito = $this->getOrCreateCart($session);
         return $this->render('carrito/_quantity.html.twig', ['cantidad' => $carrito->getCantidadProductosTotales()]);
     }
+
+    /**
+     * Elimina una línea de producto específica de un item (Presupuesto) del carrito.
+     */
+    #[Route('/remove-product/{itemIndex}/{productIndex}', name: 'app_cart_remove_product', requirements: ['itemIndex' => '\d+', 'productIndex' => '\d+'])]
+    public function removeProductAction(int $itemIndex, int $productIndex, SessionInterface $session): Response
+    {
+        $carrito = $this->getOrCreateCart($session);
+
+        // Llamamos al nuevo método de la clase Carrito
+        $carrito->eliminaProductoPorIndice($itemIndex, $productIndex);
+
+        $session->set('carrito', $carrito);
+        $this->addFlash('notice', 'El producto ha sido eliminado del carrito.');
+
+        return $this->redirectToRoute('app_cart_show', ['_locale' => $session->get('_locale', 'es')]);
+    }
+
+    #[Route('/increase-quantity/{itemIndex}/{productIndex}', name: 'app_cart_increase_quantity')]
+    public function increaseQuantityAction(int $itemIndex, int $productIndex, SessionInterface $session): Response
+    {
+        $carrito = $this->getOrCreateCart($session);
+        $carrito->increaseProductQuantity($itemIndex, $productIndex);
+        $session->set('carrito', $carrito);
+        return $this->redirectToRoute('app_cart_show', ['_locale' => $session->get('_locale', 'es')]);
+    }
+
+    #[Route('/decrease-quantity/{itemIndex}/{productIndex}', name: 'app_cart_decrease_quantity')]
+    public function decreaseQuantityAction(int $itemIndex, int $productIndex, SessionInterface $session): Response
+    {
+        $carrito = $this->getOrCreateCart($session);
+        $carrito->decreaseProductQuantity($itemIndex, $productIndex);
+        $session->set('carrito', $carrito);
+        return $this->redirectToRoute('app_cart_show', ['_locale' => $session->get('_locale', 'es')]);
+    }
 }
 
