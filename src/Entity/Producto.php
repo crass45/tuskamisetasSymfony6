@@ -504,4 +504,22 @@ class Producto
     {
         $this->viewsImages = $viewsImages;
     }
+
+    public function getPrecioTotal($cantidad, $cantidadTotalFabricante, $usu, $cantidadTallaColor = 0)
+    {
+        if ($cantidad == 0 || $cantidadTotalFabricante == 0) {
+            return 0;
+        }
+        $modeloPack = 1;
+        if ($this->modelo->getPack() > 0) {
+            $modeloPack = $this->modelo->getPack();
+        }
+
+        $resto = $cantidad % $modeloPack;
+        $cantidadCuadrada = $cantidad - $resto;
+        $precio1 = $this->getPrecio($cantidadCuadrada, $cantidad, $usu, $cantidadTallaColor) * $cantidadCuadrada;
+        $precio2 = $this->getPrecio($resto, $cantidad, $usu, $cantidadTallaColor) * $resto;
+//        return $this->getPrecio($cantidad,$cantidadTotal,$usu);
+        return $this->getPrecio($cantidad, $cantidadTotalFabricante, $usu) * $cantidad;
+    }
 }

@@ -1,0 +1,55 @@
+{# MIGRACIÓN: Se actualiza la ruta de la plantilla de la que hereda #}
+{% extends "carrito/layout.html.twig" %}
+
+{% block title %}Carrito de la Compra{% endblock %}
+{% block metaDescription %}Revisa los artículos de tu carrito de la compra y finaliza tu presupuesto.{% endblock %}
+
+{% block cuerpoProceso %}
+    <br>
+    <div class="carrito col-lg-12">
+        <section id="cart_items">
+            <div class="container">
+                {# MIGRACIÓN: Se actualiza la ruta de la plantilla incluida #}
+                {# La crearemos en el siguiente paso #}
+                {% include 'carrito/partials/_cart_details.html.twig' %}
+            </div>
+        </section> <!--/#cart_items-->
+
+        {% if carrito is not null and carrito.items is not empty %}
+            <section id="do_action">
+                <div class="container">
+                    <br>
+                    {# MIGRACIÓN: Se actualiza la ruta a la futura página de confirmación del pedido #}
+{#                    <form action="{{ path('app_checkout_confirmation') }}" method="post">#}
+                    <form action="#" method="post">
+                        <div class="row">
+                            <div class="col-sm-5">
+                                <label for="pedidoObservaciones">Observaciones:</label>
+                                <textarea id="pedidoObservaciones" name="pedidoObservaciones"
+                                          style="width: 100%;min-height: 180px;"
+                                          placeholder="{% trans %}Indica aquí si lo deseas observaciones acerca del pedido{% endtrans %}"></textarea>
+                            </div>
+                            <div class="col-sm-7" id="resumen_pedido">
+                                {# MIGRACIÓN: Se actualiza la ruta de la plantilla incluida #}
+                                {# La crearemos más adelante #}
+                                {% include 'carrito/partials/_cart_summary.html.twig' %}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </section><!--/#do_action-->
+        {% endif %}
+    </div>
+
+    {# MIGRACIÓN: El script de Google Analytics se mantiene, pero la lógica de precios
+       debe ser adaptada para usar el nuevo objeto Carrito/Presupuesto #}
+    <script>
+        $(window).ready(function () {
+            $('#carropaso2').css('color', 'black');
+        });
+
+        // El resto de tu JavaScript para Google Analytics se puede conservar aquí,
+        // asegurándote de que las variables como 'carrito' y 'producto'
+        // se acceden correctamente según la nueva estructura de los objetos.
+    </script>
+{% endblock %}

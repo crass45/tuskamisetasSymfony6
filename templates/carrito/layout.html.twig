@@ -1,0 +1,32 @@
+{% extends "base.html.twig" %}
+
+{% block baseBody %}
+    <div class="col-lg-12" style="border-bottom: 1px solid gainsboro; margin-bottom: 25px;">
+        <div id="carropaso1" class="col-lg-3" style="text-align: center;color: lightgrey;">
+            <h4>1. {% trans %}Selecciona productos{% endtrans %}</h4>
+        </div>
+        <div id="carropaso2" class="col-lg-3" style="text-align: center; color: lightgrey;">
+            <h4>2. {% trans %}Revisa tus artículos{% endtrans %}</h4>
+        </div>
+        <div id="carropaso3" class="col-lg-3" style="text-align: center; color: lightgrey;">
+            <h4>3. {% trans %}Solicita tu Presupuesto<br>Sin compromiso{% endtrans %}</h4>
+        </div>
+
+        <div class="col-lg-3">
+            <fieldset class="borde_naranja" style="padding: 2px">
+                <legend style="font-size: 14px">{% trans %}¿DUDAS?{% endtrans %}</legend>
+                {# La variable 'empresa' viene de nuestra TiendaExtension global #}
+                <div style="text-align: center">
+                    <h5>
+                        <a href="tel:{{ empresa.telefonoMovil }}" class="tkm-phone" style="color: black">{{ empresa.telefonoMovil }}</a> |
+                        <a href="mailto:{{ empresa.email }}" style="color: black">{{ empresa.email }}</a>
+                    </h5>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+    {% block cuerpoProceso %}
+        {# Aquí se insertará el contenido específico de cada paso (carrito, dirección, etc.) #}
+    {% endblock %}
+{% endblock %}

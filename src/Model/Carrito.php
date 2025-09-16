@@ -3,6 +3,7 @@
 
 namespace App\Model;
 
+use App\Entity\Producto;
 use App\Entity\Sonata\User;
 use App\Entity\ZonaEnvio;
 
@@ -28,8 +29,7 @@ class Carrito
     /** @var Presupuesto[] */
     private array $items = [];
 
-    // --- MÉTODOS DE SERIALIZACIÓN MODERNOS PARA PHP 8+ ---
-
+    // --- Serialización (sin cambios) ---
     public function __serialize(): array
     {
         return [
@@ -64,8 +64,6 @@ class Carrito
         $this->items = $data['items'] ?? [];
     }
 
-    // --- LÓGICA DE GESTIÓN DEL CARRITO ---
-
     public function addItem(Presupuesto $item, ?User $user = null): void
     {
         foreach ($this->items as $carritoItem) {
@@ -82,137 +80,39 @@ class Carrito
         return $carritoItem->getTrabajosString() === $item->getTrabajosString();
     }
 
+    /**
+     * Elimina un item (Presupuesto) del carrito.
+     */
     public function eliminaItem(Presupuesto $itemParaEliminar): void
     {
-        $this->items = array_filter($this->items, fn(Presupuesto $item) => $item !== $itemParaEliminar);
+        $this->items = array_filter($this->items, function (Presupuesto $item) use ($itemParaEliminar) {
+            // Comparamos los objetos directamente. Si son el mismo, se filtra.
+            return $item !== $itemParaEliminar;
+        });
+
+        // Re-indexamos el array para evitar huecos en las claves
+        $this->items = array_values($this->items);
     }
 
-    // --- LÓGICA DE CÁLCULO DE PRECIOS Y CANTIDADES ---
+    // ===================================================================
+    // LÓGICA DE CÁLCULO SIMPLIFICADA
+    // ===================================================================
 
-    public function getSubTotal(?User $user): float
+    /**
+     * CORREGIDO: El subtotal del carrito ahora es la suma de los totales de cada item.
+     * Ya no contiene la lógica compleja de cálculo.
+     */
+    public function getSubtotal(?User $user): float
     {
         $subtotal = 0.0;
-        foreach ($this->items as $indice => $item) {
-            foreach ($item->getProductos() as $producto) {
-                if ($producto->getProducto()) {
-                    $subtotal += $this->getPrecioProducto($producto->getProducto()->getId(), $indice, $user) * $producto->getCantidad();
-                }
-            }
+        foreach ($this->items as $item) {
+            // Llama al nuevo método getPrecioTotal de la clase Presupuesto
+            $subtotal += $item->getPrecioTotal($user, $this);
         }
         return $subtotal;
     }
 
-    public function getPrecioProducto(?int $productoID, int $itemIndex, ?User $user): float
-    {
-        if ($productoID === null) return 0.0;
-
-        $precio = 0.0;
-        $item = $this->items[$itemIndex] ?? null;
-
-        if (!$item) return 0.0;
-
-        foreach ($item->getProductos() as $productoPresupuesto) {
-            if ($productoPresupuesto->getId() === $productoID && $productoPresupuesto->getCantidad() > 0) {
-                $productoEntity = $productoPresupuesto->getProducto();
-                if ($productoEntity) {
-                    $cantidadCalculo = ($productoEntity->getModelo()?->getProveedor()?->isAcumulaTotal() && $productoEntity->getModelo()?->isAcumulaTotal())
-                        ? $this->getCantidadProductosFabricante($productoEntity->getModelo()?->getFabricante()?->getId())
-                        : $this->getCantidadProductosIguales($productoEntity->getModelo()?->getId());
-
-                    $precio = $productoEntity->getPrecioTotal($productoPresupuesto->getCantidad(), $cantidadCalculo, $user, $productoPresupuesto->getCantidad()) / $productoPresupuesto->getCantidad();
-                }
-            }
-        }
-
-        $precioPersonalizaciones = $this->getPrecioPersonalizacion($productoID, $itemIndex, $user);
-
-        return $this->roundUp($precio + $precioPersonalizaciones, 3);
-    }
-
-    public function getPrecioProductoSinGrabar(?int $productoID, int $itemIndex, ?User $user): float
-    {
-        if ($productoID === null) return 0.0;
-
-        $precio = 0.0;
-        $item = $this->items[$itemIndex] ?? null;
-        if (!$item) return 0.0;
-
-        foreach ($item->getProductos() as $productoPresupuesto) {
-            if ($productoPresupuesto->getId() === $productoID && $productoPresupuesto->getCantidad() > 0) {
-                $productoEntity = $productoPresupuesto->getProducto();
-                if ($productoEntity) {
-                    $cantidadCalculo = ($productoEntity->getModelo()?->getProveedor()?->isAcumulaTotal() && $productoEntity->getModelo()?->isAcumulaTotal())
-                        ? $this->getCantidadProductosFabricante($productoEntity->getModelo()?->getFabricante()?->getId())
-                        : $this->getCantidadProductosIguales($productoEntity->getModelo()?->getId());
-
-                    $precio = $productoEntity->getPrecio($productoPresupuesto->getCantidad(), $cantidadCalculo, $user);
-                }
-            }
-        }
-
-        return $this->roundUp($precio, 3);
-    }
-
-    public function getPrecioPersonalizacion(?int $productoId, int $itemIndex, ?User $user): float
-    {
-        $precioPersonalizaciones = 0.0;
-        $item = $this->items[$itemIndex] ?? null;
-        if (!$item) return 0.0;
-
-        foreach ($item->getTrabajos() as $trabajoPresupuesto) {
-            $personalizacion = $trabajoPresupuesto->getTrabajo();
-            if ($personalizacion) {
-                $blancas = $this->getCantidadProductosPersonalizacionBlancas($trabajoPresupuesto->getIdentificadorTrabajo());
-                $color = $this->getCantidadProductosPersonalizacionColor($trabajoPresupuesto->getIdentificadorTrabajo());
-                $precioPersonalizaciones += $personalizacion->getPrecio($blancas, $color, $trabajoPresupuesto->getCantidad());
-            }
-        }
-        return $precioPersonalizaciones;
-    }
-
-    public function getIvaAAplicar(?User $user, float $ivaGeneral): float
-    {
-        $gastosEnvio = $this->getGastosEnvio($user);
-        return round(($this->getSubTotal($user) + $gastosEnvio) * $ivaGeneral, 2);
-    }
-
-    public function getGastosEnvio(?User $user, ZonaEnvio $zonaEnvio = null): float
-    {
-        if ($this->tipoEnvio === 3) return 0.0; // Recoger en tienda
-
-        $subTotal = $this->getSubTotal($user);
-
-        if ($zonaEnvio === null) {
-            if ($subTotal >= 300) return 0.0;
-            $pGastos = ($subTotal > 200) ? $this->precioGastosReducidos : $this->precioGastos;
-        } else {
-            if ($zonaEnvio->getEnvioGratis() > 0 && $subTotal >= $zonaEnvio->getEnvioGratis()) {
-                return 0.0;
-            }
-            return (float) $zonaEnvio->getPrecio((int)ceil(round($this->getBultos(), 6)));
-        }
-
-        return $pGastos * ceil(round($this->getBultos(), 6));
-    }
-
-    public function getBultos(): float
-    {
-        $totalCajas = 0.0;
-        foreach ($this->items as $presupuesto) {
-            foreach ($presupuesto->getProductos() as $producto) {
-                $boxSize = $producto->getProducto()?->getModelo()?->getBox();
-                if ($boxSize > 0) {
-                    $totalCajas += $producto->getCantidad() / $boxSize;
-                }
-            }
-        }
-        return $totalCajas;
-    }
-
-    public function getCantidadProductosTotales(): int
-    {
-        return array_sum(array_map(fn(Presupuesto $item) => $item->getCantidadProductos(), $this->items));
-    }
+    // --- MÉTODOS DE AYUDA (necesarios para que Presupuesto funcione) ---
 
     public function getCantidadProductosFabricante(?int $idFabricante): int
     {
@@ -236,48 +136,6 @@ class Carrito
             }
         }
         return $cantidad;
-    }
-
-    public function getCantidadProductosPersonalizacionBlancas(string $codigoPersonalizacion): int
-    {
-        $cantidad = 0;
-        foreach ($this->items as $item) {
-            foreach ($item->getTrabajos() as $trabajo) {
-                if ($trabajo->getIdentificadorTrabajo() === $codigoPersonalizacion) {
-                    foreach ($item->getProductos() as $producto) {
-                        $colorNombre = strtoupper((string)$producto->getColor());
-                        if (str_contains($colorNombre, 'LANCO') || str_contains($colorNombre, 'HITE')) {
-                            $cantidad += $producto->getCantidad();
-                        }
-                    }
-                }
-            }
-        }
-        return $cantidad;
-    }
-
-    public function getCantidadProductosPersonalizacionColor(string $codigoPersonalizacion): int
-    {
-        $cantidad = 0;
-        foreach ($this->items as $item) {
-            foreach ($item->getTrabajos() as $trabajo) {
-                if ($trabajo->getIdentificadorTrabajo() === $codigoPersonalizacion) {
-                    foreach ($item->getProductos() as $producto) {
-                        $colorNombre = strtoupper((string)$producto->getColor());
-                        if (!str_contains($colorNombre, 'LANCO') && !str_contains($colorNombre, 'HITE')) {
-                            $cantidad += $producto->getCantidad();
-                        }
-                    }
-                }
-            }
-        }
-        return $cantidad;
-    }
-
-    private function roundUp(float|string $value, int $precision): float
-    {
-        $pow = 10 ** $precision;
-        return (ceil($pow * (float)$value) + ceil($pow * (float)$value - ceil($pow * (float)$value))) / $pow;
     }
 
     // --- Getters y Setters Estándar ---
@@ -306,4 +164,58 @@ class Carrito
     public function getDescuento(): float { return $this->descuento; }
     public function setDescuento(float $descuento): self { $this->descuento = $descuento; return $this; }
     public function getRecogerTienda(): bool { return $this->tipoEnvio === 3; }
+
+    public function getCantidadProductosTotales()
+    {
+        $cantidad = 0;
+        foreach ($this->items as $carritoItem) {
+            $cantidad += $carritoItem->getCantidadProductos();
+        }
+        return $cantidad;
+    }
+
+    public function getBultos()
+    {
+        $totalCajas = 0;
+
+        foreach ($this->items as $presupuesto) {
+            foreach ($presupuesto->getProductos() as $producto) {
+                if ($producto->getProducto() != null) {
+                    $totalCajas = $totalCajas + $producto->getCantidad() / $producto->getProducto()->getModelo()->getBox();
+                }
+            }
+        }
+        return (ceil(round($totalCajas, 6)));
+    }
+
+    public function getGastosEnvio($user, ZonaEnvio $zonaEnvio = null)
+    {
+        if ($this->tipoEnvio == 3) {
+            return 0;
+        }
+        $totalCajas = 0;
+
+        if ($zonaEnvio==null) {
+            //los gastos envios gratuitos si el subtotal supera los 500€
+            if ($this->getSubTotal($user) >= 300) {
+                return 0;
+            }
+            if ($this->getSubTotal($user) > 200) {
+                $pGastos = $this->precioGastosReducidos;
+            } else {
+                $pGastos = $this->precioGastos;
+            }
+        }else{
+            if($zonaEnvio->getEnvioGratis() > 0) {
+                if ($this->getSubTotal($user) >= $zonaEnvio->getEnvioGratis()) {
+                    return 0;
+                }
+            }
+            $pGastos = $zonaEnvio->getPrecio(ceil(round($this->getBultos(), 6)));
+            return $pGastos;
+        }
+
+        $totalCajas = $this->getBultos();
+        return ($pGastos * ceil(round($totalCajas, 6)));
+    }
 }

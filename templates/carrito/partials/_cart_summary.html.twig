@@ -1,0 +1,99 @@
+{# templates/carrito/partials/_cart_summary.html.twig #}
+{# Este parcial muestra el resumen de costes y las opciones de envío. #}
+
+<div class="total_area">
+    <ul>
+        <li style="background-color: #edc898">
+            <div class="row">
+                <div class="col-lg-4" style="text-align: left">
+                    {# El ID y name ahora son más claros #}
+                    <input id="ch_envio_expres" name="ch_envio_expres" type="checkbox"
+                           class="cart-summary-updater"
+                           {% if carrito.servicioExpres %}checked{% endif %}
+                            {% if not empresa.servicioExpresActivo %}disabled{% endif %}>
+                    <label for="ch_envio_expres" title="Entrega en 7 días laborables.">Servicio Expres</label>
+                </div>
+                <div class="col-lg-4" style="text-align: left">
+                    <input id="rb_envio_agencia" value="agencia" name="envio" type="radio"
+                           class="cart-summary-updater"
+                           {% if not carrito.recogerTienda %}checked{% endif %}>
+                    <label for="rb_envio_agencia">Envío Estándar</label>
+                </div>
+                <div class="col-lg-4">
+                    <input id="rb_envio_tienda" value="tienda" name="envio" type="radio"
+                           class="cart-summary-updater"
+                           {% if carrito.recogerTienda %}checked{% endif %}>
+                    <label for="rb_envio_tienda">Recoger en Tienda</label>
+                </div>
+            </div>
+        </li>
+
+        <li>Sub Total <span>{{ carrito.getSubtotal(app.user) | number_format(2, ',', '.') }}€</span></li>
+
+        {% if not carrito.recogerTienda %}
+            <li>
+                {% if zonasEnvio is defined %}
+                    <select class="form-control chosen-select cart-summary-updater" name="zonaEnvio" id="zonaEnvio"
+                            style="width: 50%; display: inline">
+                        {% for zona in zonasEnvio %}
+                            <option value="{{ zona.id }}" {% if zonaEnvioSeleccionada is defined and zonaEnvioSeleccionada == zona.id %}selected{% endif %}>{{ zona }}</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+
+                {# La variable precioGastos la pasa el controlador #}
+                <span>{{ precioGastos|default(0) | number_format(2, ',', '.') }}€</span>
+            </li>
+        {% endif %}
+
+        {% if carrito.servicioExpres %}
+            <li>Servicio Expres<span>{{ empresa.precioServicioExpres | number_format(2, ',', '.') }}€</span></li>
+        {% endif %}
+
+        {% if carrito.servicioExpres == true %}
+            {% set ivaAAPlicar = (carrito.getSubtotal(app.user)+empresa.precioServicioExpres+precioGastos)*empresa.ivaGeneral/100 %}
+            {% set total = carrito.getSubtotal(app.user)+empresa.precioServicioExpres+precioGastos %}
+            <li>Servicio Expres<span>{{ empresa.precioServicioExpres | number_format(2, ',', '.') }}€</span></li>
+        {% else %}
+            {% set ivaAAPlicar = (carrito.getSubtotal(app.user)+precioGastos)*empresa.ivaGeneral/100 %}
+            {% set total = carrito.getSubtotal(app.user)+precioGastos %}
+        {% endif %}
+
+        <li>IVA a aplicar <span>{{ ivaAAPlicar  | number_format(2, ',', '.') }} €</span></li>
+        <li>Total <span style="font-size: 16px"><b>{{ (carrito.getSubtotal(app.user, precioGastos|default(0)) + ivaAAPlicar)| number_format(2, ',', '.') }}€</b></span></li>
+    </ul>
+
+    <div style="text-align: right">
+        {# MIGRACIÓN: Se actualizan todas las rutas #}
+        <a class="btn btn-default check_out" style="background-color: red" href="{{ path('app_cart_clear', {'_locale': app.request.locale}) }}">
+            {% trans %}Vaciar Carrito{% endtrans %}
+        </a>
+        {% if is_granted('ROLE_ADMIN') %}
+            <a class="btn btn-default check_out" href="{{ path('app_cart_download_pdf', {'_locale': app.request.locale}) }}" target="_blank">Imprimir PDF</a>
+        {% endif %}
+        <a class="btn btn-default check_out" href="{{ path('app_home', {'_locale': app.request.locale}) }}">
+            {% trans %}Seguir Comprando{% endtrans %}
+        </a>
+        <input id="confirmarPedidogtag" type="submit" class="btn btn-default check_out" style="background-color: #ff9000" value="{% trans %}Confirmar Pedido{% endtrans %}">
+    </div>
+</div>
+
+{# MIGRACIÓN: El JavaScript ahora es más limpio y usa una única llamada AJAX #}
+<script>
+    $(document).ready(function() {
+        // Se define la función una sola vez
+        function updateCartSummary() {
+            const data = {
+                zonaEnvio: $('#zonaEnvio').val(),
+                servicioExpres: $('#ch_envio_expres').is(':checked'),
+                tienda: $('#rb_envio_tienda').is(':checked')
+            };
+
+            // Se hace una única llamada AJAX a la nueva ruta
+            $('#resumen_pedido').load("{{ path('app_cart_update_summary', {'_locale': app.request.locale}) }}", data);
+        }
+
+        // Se asigna el mismo listener a todos los elementos que deben actualizar el resumen
+        $('.cart-summary-updater').on('change', updateCartSummary);
+    });
+</script>

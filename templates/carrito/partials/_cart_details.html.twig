@@ -1,0 +1,92 @@
+{# templates/carrito/partials/_cart_details.html.twig #}
+{# Muestra la tabla con los items del carrito, ahora agrupados por personalización. #}
+
+<div class="table-responsive cart_info">
+    <table class="table table-condensed">
+        <thead>
+        <tr class="cart_menu">
+            <td class="image">Artículo</td>
+            <td class="description"></td>
+            <td class="price">Precio Ud.</td>
+            <td class="quantity" style="text-align: center;">Cantidad</td>
+            <td class="total">Total Línea</td>
+            <td></td>
+        </tr>
+        </thead>
+        <tbody>
+        {% if carrito is not null and carrito.items is not empty %}
+            {% for item in carrito.items %}
+                {# 'item' es un objeto Presupuesto #}
+
+                {# Fila para las personalizaciones de este grupo de productos #}
+                <tr style="background-color: #f0f0f0;">
+                    <td colspan="6" style="padding-left: 15px; border-top: 2px solid #ff9000;">
+                        <strong>Personalizaciones para este grupo:</strong>
+                        {% for trabajo in item.trabajos %}
+                            <span>{{ trabajo }}</span>{% if not loop.last %}, {% endif %}
+                        {% else %}
+                            <span>Sin personalización</span>
+                        {% endfor %}
+                    </td>
+                </tr>
+
+                {# Bucle para los productos dentro de este grupo #}
+                {% for productoPresupuesto in item.productos %}
+                    <tr>
+                        <td class="cart_product">
+                            <a href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': productoPresupuesto.producto.modelo.nombreUrl}) }}">
+                                {% if productoPresupuesto.producto.imagen %}
+                                    <img src="{{ sonata_path(productoPresupuesto.producto.imagen, 'mini') }}" alt="{{ productoPresupuesto.producto.modelo.nombre }}" width="80">
+                                {% else %}
+                                    <img src="{{ productoPresupuesto.producto.urlImage|default(asset('images/placeholder.png')) }}" alt="{{ productoPresupuesto.producto.modelo.nombre }}" width="80">
+                                {% endif %}
+                            </a>
+                        </td>
+                        <td class="cart_description">
+                            <h4><a href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': productoPresupuesto.producto.modelo.nombreUrl}) }}">{{ productoPresupuesto.producto.modelo.nombre }}</a></h4>
+                            <p>Ref: {{ productoPresupuesto.producto.referencia }} | Color: {{ productoPresupuesto.producto.color.nombre }} | Talla: {{ productoPresupuesto.producto.talla }}</p>
+                        </td>
+                        <td class="cart_price">
+                            {# Muestra el precio unitario del producto base (sin personalización) #}
+                            <p>{{ item.getPrecioUnidad(app.user) | number_format(2, ',', '.') }} €</p>
+                        </td>
+                        <td class="cart_quantity">
+                            <div class="cart_quantity_button">
+                                {# MIGRACIÓN: Enlaces para aumentar/disminuir cantidad #}
+                                <a class="cart_quantity_up" href="{{ path('app_cart_increase_item', {'_locale': app.request.locale, 'referencia': productoPresupuesto.producto.referencia, 'cantidad': 1}) }}"> + </a>
+                                <input class="cart_quantity_input" type="text" name="quantity" value="{{ productoPresupuesto.cantidad }}" readonly autocomplete="off" size="2">
+                                <a class="cart_quantity_down" href="{{ path('app_cart_decrease_item', {'_locale': app.request.locale, 'referencia': productoPresupuesto.producto.referencia, 'cantidad': 1}) }}"> - </a>
+                            </div>
+                        </td>
+                        <td class="cart_total">
+                            {# Muestra el total de esta línea de producto (sin personalización) #}
+                            <p class="cart_total_price">{{ (item.getPrecioUnidad(app.user) * productoPresupuesto.cantidad)|number_format(2, ',', '.') }} €</p>
+                        </td>
+                        <td class="cart_delete">
+                            {# MIGRACIÓN: Enlace para eliminar el item (presupuesto) completo #}
+                            <a class="cart_quantity_delete" href="{{ path('app_cart_remove_item', {'_locale': app.request.locale, 'id': item.id|default(loop.parent.loop.index0)}) }}"><i class="fa fa-times"></i></a>
+                        </td>
+                    </tr>
+                {% endfor %}
+
+                {# Fila para mostrar el TOTAL de este grupo de productos (incluyendo personalizaciones) #}
+                <tr style="border-bottom: 2px solid #ff9000;">
+                    <td colspan="4" class="text-right"><strong>Total para este grupo:</strong></td>
+                    <td class="cart_total">
+                        <p class="cart_total_price"><strong>{{ item.getPrecioTotal(app.user, carrito)|number_format(2, ',', '.') }} €</strong></p>
+                    </td>
+                    <td></td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            <tr><td colspan="6"><p class="text-center">Tu carrito de la compra está vacío.</p></td></tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+
+{# La sección del resumen de totales (subtotal, IVA, total) que se actualiza con AJAX #}
+{#<div id="cart-summary-wrapper">#}
+{#    {% include 'carrito/partials/_cart_summary.html.twig' %}#}
+{#</div>#}
+

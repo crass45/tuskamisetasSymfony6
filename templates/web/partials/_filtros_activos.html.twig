@@ -8,7 +8,7 @@
 
         {# Píldora para el Fabricante (si está activo) #}
         {% if filtros.fabricante %}
-            {% set fabricante_obj = filtrosDisponibles.fabricantes|filter(f => f.id == filtros.fabricante)|first %}
+            {% set fabricante_obj = filtrosDisponibles.fabricantes|filter(f => f.id == filtros.fabricante.id)|first %}
             {% if fabricante_obj %}
                 <div style="display: inline-block">
                     {# MIGRACIÓN: El enlace ahora elimina el parámetro 'fabricante' de la URL actual #}
