@@ -254,5 +254,22 @@ class CarritoController extends AbstractController
         $session->set('carrito', $carrito);
         return $this->redirectToRoute('app_cart_show', ['_locale' => $session->get('_locale', 'es')]);
     }
+
+    /**
+     * Actualiza la cantidad de un producto específico en el carrito a un valor concreto.
+     */
+    #[Route('/update-quantity/{itemIndex}/{productIndex}/{quantity}', name: 'app_cart_update_quantity', requirements: ['itemIndex' => '\d+', 'productIndex' => '\d+', 'quantity' => '\d+'])]
+    public function updateQuantityAction(int $itemIndex, int $productIndex, int $quantity, SessionInterface $session): Response
+    {
+        $carrito = $this->getOrCreateCart($session);
+
+        // Llamamos al nuevo método de la clase Carrito
+        $carrito->updateProductQuantity($itemIndex, $productIndex, $quantity);
+
+        $session->set('carrito', $carrito);
+        $this->addFlash('success', 'La cantidad del producto ha sido actualizada.');
+
+        return $this->redirectToRoute('app_cart_show', ['_locale' => $session->get('_locale', 'es')]);
+    }
 }
 

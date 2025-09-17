@@ -464,4 +464,31 @@ class Presupuesto
             }
         }
     }
+
+    // --- MÉTODO AÑADIDO ---
+    /**
+     * Actualiza la cantidad de un producto a un valor específico, respetando las reglas de pack.
+     */
+    public function updateProductQuantity(int $productIndex, int $quantity): void
+    {
+        if (isset($this->productos[$productIndex])) {
+            if ($quantity <= 0) {
+                // Si la cantidad es 0 o menos, eliminamos el producto.
+                $this->eliminaProductoPorIndice($productIndex);
+                return;
+            }
+
+            $productoPresupuesto = $this->productos[$productIndex];
+            $modelo = $productoPresupuesto->getProducto()?->getModelo();
+
+            // Si hay que vender en packs, ajustamos la cantidad al múltiplo más cercano.
+            if ($modelo && $modelo->isObligadaVentaEnPack() && $modelo->getPack() > 1) {
+                $pack = $modelo->getPack();
+                // Redondeamos hacia arriba al siguiente múltiplo del pack.
+                $quantity = (int)(ceil($quantity / $pack) * $pack);
+            }
+
+            $productoPresupuesto->setCantidad($quantity);
+        }
+    }
 }

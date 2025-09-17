@@ -53,11 +53,29 @@
                             <p>{{ item.getPrecioUnidad(app.user) | number_format(2, ',', '.') }} €</p>
                         </td>
                         <td class="cart_quantity">
-                            <div class="cart_quantity_button">
-                                {# CORRECCIÓN: Se actualizan los enlaces para aumentar/disminuir la cantidad #}
-                                <a class="cart_quantity_up" href="{{ path('app_cart_increase_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> + </a>
-                                <input class="cart_quantity_input" type="text" name="quantity" value="{{ productoPresupuesto.cantidad }}" readonly autocomplete="off" size="2">
-                                <a class="cart_quantity_down" href="{{ path('app_cart_decrease_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> - </a>
+                            <div class="cart_quantity_button" style="display: flex; justify-content: center; align-items: center; flex-wrap: nowrap;">
+                                {#                                <a class="cart_quantity_up" href="{{ path('app_cart_increase_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> + </a>#}
+                                {#                                <input class="cart_quantity_input" type="text" name="quantity" value="{{ productoPresupuesto.cantidad }}" readonly autocomplete="off" size="2">#}
+                                {#                                <a class="cart_quantity_down" href="{{ path('app_cart_decrease_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> - </a>#}
+
+                                <a class="cart_quantity_down btn btn-default btn-xs" style="margin-right: 5px;" href="{{ path('app_cart_decrease_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> - </a>
+
+                                <input class="cart_quantity_input form-control"
+                                       type="number"
+                                       name="quantity"
+                                       value="{{ productoPresupuesto.cantidad }}"
+                                       autocomplete="off"
+                                        {# CORRECCIÓN: Se ajusta la altura y el padding para alinear con los botones btn-xs #}
+                                       style="width: 60px; text-align: center; height: 22px; padding: 1px 6px;"
+                                       data-item-index="{{ itemIndex }}"
+                                       data-product-index="{{ productIndex }}">
+
+                                <a class="cart_quantity_up btn btn-default btn-xs" style="margin-left: 5px;" href="{{ path('app_cart_increase_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> + </a>
+
+                                <a class="btn btn-primary btn-xs update-quantity-btn" style="margin-left: 10px; margin-top: auto;"
+                                   href="#">
+                                    <i class="fa fa-refresh"></i>
+                                </a>
                             </div>
                         </td>
                         <td class="cart_total">
@@ -91,4 +109,27 @@
         </tbody>
     </table>
 </div>
+
+
+
+{# --- SCRIPT PARA GESTIONAR LA ACTUALIZACIÓN MANUAL --- #}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.update-quantity-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const input = this.closest('.cart_quantity_button').querySelector('.cart_quantity_input');
+                const newQuantity = input.value;
+                const itemIndex = input.dataset.itemIndex;
+                const productIndex = input.dataset.productIndex;
+
+                // CORRECCIÓN: Se construye la URL completamente en JavaScript
+                const locale = '{{ app.request.locale }}';
+                const url = `/${locale}/carrito/update-quantity/${itemIndex}/${productIndex}/${newQuantity}`;
+
+                window.location.href = url;
+            });
+        });
+    });
+</script>
 

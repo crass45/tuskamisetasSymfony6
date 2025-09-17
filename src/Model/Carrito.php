@@ -266,4 +266,23 @@ class Carrito
         }
     }
 
+    // --- MÉTODO AÑADIDO ---
+    /**
+     * Actualiza la cantidad de un producto específico a un valor concreto.
+     */
+    public function updateProductQuantity(int $itemIndex, int $productIndex, int $quantity): void
+    {
+        if (isset($this->items[$itemIndex])) {
+            $presupuesto = $this->items[$itemIndex];
+            $presupuesto->updateProductQuantity($productIndex, $quantity);
+
+            // Si al actualizar la cantidad el producto se elimina (cantidad <= 0)
+            // y el presupuesto se queda vacío, lo eliminamos del carrito.
+            if (count($presupuesto->getProductos()) === 0) {
+                unset($this->items[$itemIndex]);
+                $this->items = array_values($this->items);
+            }
+        }
+    }
+
 }
