@@ -97,18 +97,77 @@
                 $(selector).fileupload({
                     url: TUSKAM_ROUTES.file_upload,
                     dataType: 'json',
+                    // --- INICIO DE LA CORRECCIÓN ---
+                    // La lógica de error ahora está dentro de 'done', porque el servidor responde con 200 OK
                     done: function (e, data) {
                         const container = $(this).closest('.personalization-row');
+
+                        // 1. Comprobamos si la respuesta, aunque exitosa, contiene un error de validación
+                        if (data.result && data.result.files && data.result.files.length > 0 && data.result.files[0].error) {
+                            const fileWithError = data.result.files[0];
+                            let errorMessage = fileWithError.error;
+
+                            switch(errorMessage) {
+                                case 'error.maxsize':
+                                    errorMessage = 'El fichero es demasiado grande.';
+                                    break;
+                                case 'error.blacklist':
+                                    errorMessage = 'El tipo de fichero no está permitido.';
+                                    break;
+                            }
+
+                            container.find('.files').html(`<p class="alert alert-danger" style="margin-top: 5px; padding: 5px; font-size: 12px;">${errorMessage}</p>`);
+                            return; // Detenemos la ejecución
+                        }
+
+                        // 2. Si no hay error, procedemos con la lógica de éxito
                         $.each(data.result.files, function (index, file) {
-                            container.find('.files').html($('<p class="file-subido"/>').text(file.name));
+                            container.find('.files').html($('<p class="file-subido text-success"/>').text(file.name));
+                            container.data('uploaded-file', file.name);
                         });
                         calculatePrice();
                     },
+                    // --- FIN DE LA CORRECCIÓN ---
                     progressall: function (e, data) {
                         const progress = parseInt(data.loaded / data.total * 100, 10);
                         const container = $(this).closest('.personalization-row');
                         container.find('.progress-bar').css('width', progress + '%');
+                    },
+                    // --- INICIO DE LA CORRECCIÓN ---
+                    // Se mejora el manejador de errores 'fail' para que entienda múltiples formatos de respuesta
+                    fail: function(e, data) {
+                        console.log("ERROR");
+                        const container = $(this).closest('.personalization-row');
+                        let errorMessage = 'Error al subir el archivo.';
+
+                        // Comprobamos si la respuesta del servidor existe y tiene contenido
+                        if (data.jqXHR && data.jqXHR.responseJSON) {
+                            const response = data.jqXHR.responseJSON;
+
+                            // Caso 1: El error viene en el formato {files: [{error: "..."}]}
+                            if (response.files && Array.isArray(response.files) && response.files.length > 0 && response.files[0].error) {
+                                // Mapeamos los códigos de error a mensajes más amigables
+                                switch(response.files[0].error) {
+                                    case 'error.maxsize':
+                                        errorMessage = 'El fichero es demasiado grande.';
+                                        break;
+                                    case 'error.blacklist':
+                                        errorMessage = 'El tipo de fichero no está permitido.';
+                                        break;
+                                    default:
+                                        errorMessage = response.files[0].error;
+                                }
+                            }
+                            // Caso 2: El error viene en el formato {error: "..."}
+                            else if (response.error) {
+                                errorMessage = response.error;
+                            }
+                        }
+
+                        // Mostramos el error en la interfaz de usuario
+                        container.find('.files').html(`<p class="alert alert-danger" style="margin-top: 5px; padding: 5px; font-size: 12px;">${errorMessage}</p>`);
                     }
+                    // --- FIN DE LA CORRECCIÓN ---
                 });
             }
 

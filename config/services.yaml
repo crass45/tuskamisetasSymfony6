@@ -28,6 +28,14 @@ services:
         - { name: twig.extension }
 
 
+
+  # --- INICIO DE LA CORRECCIÓN ---
+  # Le decimos a Symfony que nuestra nueva clase UploadListener existe
+  # y que debe ejecutar el método 'onUpload' cada vez que el evento
+  # 'oneup_uploader.post_persist' ocurra para el mapping 'gallery'.
+    App\Uploader\UploadListener:
+      tags:
+        - { name: kernel.event_listener, event: oneup_uploader.post_persist.gallery, method: onUpload }
   # ===============================
   # GRUPO: Web
   # ===============================
