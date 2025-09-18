@@ -19,9 +19,8 @@
             <section id="do_action">
                 <div class="container">
                     <br>
-                    {# MIGRACIÓN: Se actualiza la ruta a la futura página de confirmación del pedido #}
-{#                    <form action="{{ path('app_checkout_confirmation') }}" method="post">#}
-                    <form action="#" method="post">
+                    <form action="{{ path('app_checkout_start', {'_locale': app.request.locale}) }}" method="post">
+
                         <div class="row">
                             <div class="col-sm-5">
                                 <label for="pedidoObservaciones">Observaciones:</label>
@@ -30,8 +29,6 @@
                                           placeholder="{% trans %}Indica aquí si lo deseas observaciones acerca del pedido{% endtrans %}"></textarea>
                             </div>
                             <div class="col-sm-7" id="resumen_pedido">
-                                {# MIGRACIÓN: Se actualiza la ruta de la plantilla incluida #}
-                                {# La crearemos más adelante #}
                                 {% include 'carrito/partials/_cart_summary.html.twig' %}
                             </div>
                         </div>

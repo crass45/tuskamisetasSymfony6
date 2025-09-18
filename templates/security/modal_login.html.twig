@@ -1,1 +1,65 @@
-LOGIN MODAL
+{# templates/security/modal_login.html.twig #}
+{# Este fichero contiene el formulario de login para el modal, completamente migrado. #}
+
+{% if error %}
+    <script>
+        // Pequeño script para asegurar que el modal se muestra si hubo un error de login
+        $(document).ready(function() {
+            $('#login').modal("show");
+        });
+    </script>
+{% endif %}
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="login-form"><!--login form-->
+            {% if error %}
+                <div class="alert alert-danger alert-error">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+
+            <h2>{% trans %}YA SOY USUARIO{% endtrans %}</h2>
+
+            {# MIGRACIÓN: La acción del formulario ahora apunta a la nueva ruta 'app_login' #}
+            <form action="{{ path("app_login", {'_locale': app.request.locale}) }}" method="post">
+                {# MIGRACIÓN: Se usa el token CSRF estándar de Symfony #}
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}"/>
+
+                <input type="text" class="form-control" id="username"
+                       name="_username" value="{{ last_username }}"
+                       required="required" placeholder="Usuario o Email"/>
+
+                <input type="password" class="form-control" id="password"
+                       name="_password" required="required" placeholder="Contraseña"/>
+
+                <span>
+                    <input type="checkbox" id="remember_me" name="_remember_me" value="on"/>
+                    <label for="remember_me">{% trans %}Recordarme{% endtrans %}</label>
+                </span>
+                <br>
+                <span>
+                    {# MIGRACIÓN: El enlace ahora apunta a la nueva ruta 'app_forgot_password_request' #}
+                    <a href="{{ path('app_forgot_password_request', {'_locale': app.request.locale}) }}" rel="nofollow">
+                        {% trans %}He olvidado mi contraseña{% endtrans %}
+                    </a>
+                </span>
+
+                <button type="submit" class="btn btn-default">{% trans %}Entrar{% endtrans %}</button>
+            </form>
+        </div><!--/login form-->
+    </div>
+
+    <div class="col-sm-6">
+        <div class="login-form">
+            <h2>{% trans %}DESEO HACERME CLIENTE{% endtrans %}<BR>{% trans %}Y REGISTRARME{% endtrans %}</h2>
+            <p>{% trans %}TEXTO_REGISTRO{% endtrans %}</p>
+            <br><br><br>
+            <span>
+                {# MIGRACIÓN: El enlace ahora apunta a la nueva ruta 'app_register' #}
+                <a href="{{ path('app_register', {'_locale': app.request.locale}) }}" rel="nofollow">
+                    <div class="btn btn-default">{% trans %}Registro{% endtrans %}</div>
+                </a>
+            </span>
+        </div>
+    </div>
+</div>
+

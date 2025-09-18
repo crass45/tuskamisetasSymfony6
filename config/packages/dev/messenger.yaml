@@ -1,0 +1,11 @@
+framework:
+  messenger:
+    transports:
+      # Redefinimos el transporte 'async' que tienes en tu fichero principal.
+      # En lugar de apuntar a la base de datos, ahora le decimos que sea
+      # síncrono ('sync://'), lo que significa "procesar al instante".
+      async: 'sync://'
+
+#      En desarrollo: No necesitas hacer nada. Gracias al fichero config/packages/dev/messenger.yaml, los correos se procesan al instante y los ves en la barra de depuración.
+#
+#      En producción: Deberás configurar una herramienta como Supervisor en tu servidor para que arranque y mantenga vivo el proceso messenger:consume. php bin/console messenger:consume async

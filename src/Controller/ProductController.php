@@ -152,7 +152,10 @@ class ProductController extends AbstractController
                 $presupuestoTrabajo = new PresupuestoTrabajo();
                 $presupuestoTrabajo->setTrabajo($trabajo);
                 $presupuestoTrabajo->setCantidad((int)($trabajoData['cantidad'] ?? 0));
-                // Aquí se setearían otras propiedades como urlImage, ubicacion, etc.
+                // Se añaden las líneas que faltaban para guardar la ubicación y las observaciones
+                $presupuestoTrabajo->setUbicacion($trabajoData['ubicacion'] ?? '');
+                $presupuestoTrabajo->setObservaciones($trabajoData['observaciones'] ?? '');
+                $presupuestoTrabajo->setUrlImage($trabajoData['archivo'] ?? '');
                 $presupuesto->addTrabajo($presupuestoTrabajo);
             }
         }

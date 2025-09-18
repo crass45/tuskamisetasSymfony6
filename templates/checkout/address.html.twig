@@ -1,0 +1,269 @@
+{% extends "carrito/layout.html.twig" %}
+
+{% block title %}Datos de Envío y Facturación{% endblock %}
+
+{% block cuerpoProceso %}
+    <div class="row" style="background-color: white; padding: 20px;">
+        <form  action="{{ path('app_checkout_process', {'_locale': app.request.locale}) }}" method="post" id="checkoutForm">
+            <input type="hidden" id="tipoEnvio" name="tipoEnvio" value="1">
+
+            <div class="col-lg-6" style="text-align: left;">
+                <div class="border_gris login-form" style="padding: 20px">
+                    <h3 style="font-weight: bold">DATOS DE FACTURACIÓN</h3>
+                    {# Se añade un ID y un data-attribute para que el JS sepa qué provincia seleccionar #}
+                    <div id="billingForm" data-province-id="{{ formContacto.vars.value.direccionFacturacion.provinciaBD.id|default('') }}">
+                        {{ form_start(formContacto, {'attr': {'class': 'form-group'}}) }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form_label(formContacto.nombre) }}
+                                    {{ form_widget(formContacto.nombre, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(formContacto.apellidos) }}
+                                    {{ form_widget(formContacto.apellidos, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(formContacto.cif) }}
+                                    {{ form_widget(formContacto.cif, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(formContacto.telefonoMovil) }}
+                                    {{ form_widget(formContacto.telefonoMovil, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(formContacto.telefonoOtro) }}
+                                    {{ form_widget(formContacto.telefonoOtro, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                {# Renderizamos la dirección de facturación campo a campo #}
+                                {% set billing_address_form = formContacto.direccionFacturacion %}
+                                <div class="form-group">
+                                    {{ form_label(billing_address_form.dir) }}
+                                    {{ form_widget(billing_address_form.dir, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(billing_address_form.cp) }}
+                                    {{ form_widget(billing_address_form.cp, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(billing_address_form.poblacion) }}
+                                    {{ form_widget(billing_address_form.poblacion, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(billing_address_form.paisBD) }}
+                                    {{ form_widget(billing_address_form.paisBD) }}
+                                </div>
+                                <div class="form-group province-select-container">
+                                    {{ form_label(billing_address_form.provinciaBD) }}
+                                    {{ form_widget(billing_address_form.provinciaBD) }}
+                                </div>
+                                <div class="form-group province-text-input-container">
+                                    {{ form_label(billing_address_form.provincia) }}
+                                    {{ form_widget(billing_address_form.provincia, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                </div>
+                            </div>
+                        </div>
+                        {# Se usa form_rest para renderizar campos ocultos como el token CSRF #}
+                        {{ form_rest(formContacto) }}
+                        {{ form_end(formContacto, {'render_rest': false}) }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6" style="text-align: left;">
+                <div class="border_gris" style="padding: 20px">
+                    <h3 style="font-weight: bold">{% trans %}DIRECCIÓN DE ENTREGA{% endtrans %}</h3>
+                    <ul class="nav nav-tabs" id="entregaTab" role="tablist">
+                        <li class="nav-item active"><a class="nav-link" data-toggle="tab" data-tipoenvio="1" href="#mismadireccion">{% trans %}Misma que facturación{% endtrans %}</a></li>
+                        <li class="nav-item"><a class="nav-link" data-toggle="tab" data-tipoenvio="2" href="#nuevadireccion">{% trans %}Otra dirección{% endtrans %}</a></li>
+                        <li class="nav-item"><a class="nav-link" data-toggle="tab" data-tipoenvio="3" href="#recogertienda">{% trans %}Recoger en tienda{% endtrans %}</a></li>
+                    </ul>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade in active" id="mismadireccion"><br><h4 style="font-weight: bold">El pedido se enviará a la dirección de facturación</h4></div>
+                        <div class="tab-pane fade" id="nuevadireccion">
+                            {% if contacto.direccionesEnvio is not empty %}
+                                <h4 style="font-weight: bold; margin-top: 15px;">Mis Direcciones</h4>
+                                <select class="form-control" name="misdirecciones" id="misdirecciones">
+                                    <option value="-1">Crear una nueva dirección</option>
+                                    {% for direccion in contacto.direccionesEnvio %}
+                                        <option value="{{ direccion.id }}"{% if direccion.predeterminada %}selected{% endif %}>{{ direccion }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                            <div id="otraDireccion" style="margin-top: 15px;">
+                                {# El formulario para la nueva dirección se cargará aquí con AJAX #}
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="recogertienda"><br><h4 style="font-weight: bold">{% trans %}RECOGER EN TUSKAMISETAS{% endtrans %}</h4><p>Cuando su pedido esté listo le enviaremos un email para que pueda recogerlo en nuestras instalaciones.</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-12">
+                <div style="margin:15px; border-top: 1px dashed #999;"></div>
+                <div class="col-lg-12 " style="text-align: right">
+                    <div style="margin-bottom: 10px;">
+                        <input id="privacityTKM" type="checkbox" required>
+                        <label for="privacityTKM">Acepto los <a href="{{ path('app_terms_of_use', {'_locale': app.request.locale}) }}" target="_blank">Términos de uso</a> y la <a href="{{ path('app_privacy_policy', {'_locale': app.request.locale}) }}" target="_blank">Política de privacidad</a></label>
+                    </div>
+                </div>
+                <div class="col-xs-6" style="text-align:left; margin-top:20px; margin-bottom: 20px;">
+                    <a class="btn btn-default check_out" href="{{ path('app_cart_show', {'_locale': app.request.locale}) }}">Volver al Carrito</a>
+                </div>
+                <div class="col-xs-6" style="text-align:right; margin-top:20px; margin-bottom: 20px">
+                    <button type="submit" id="confirmarPedidoBtn" class="btn btn-default check_out" style="background-color: #ff9000;">
+                        {% trans %}Continuar con el Pedido{% endtrans %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        $(window).ready(function () {
+            $('#carropaso3').css('color', 'black');
+        });
+        $(document).ready(function() {
+            // --- LÓGICA PARA PESTAÑAS Y CARGA DE DIRECCIONES ---
+            $('#entregaTab a').on('click', function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+                $('#tipoEnvio').val($(this).data('tipoenvio'));
+            });
+
+            if($("#misdirecciones").length && $("#misdirecciones").val() != -1){
+                $('#nuevadireccion-tab').tab('show');
+                $('#tipoEnvio').val(2);
+            } else {
+                $('#mismadireccion-tab').trigger('click');
+            }
+
+            function loadAddressForm(direccionId) {
+                let url = "{{ path('app_checkout_load_address', {'_locale': app.request.locale, 'id': 'DIR_ID'}) }}";
+                url = url.replace('DIR_ID', direccionId > 0 ? direccionId : '');
+
+                $('#otraDireccion').html('<p>Cargando...</p>').load(url, function() {
+                    handleCountryChange($('#otraDireccion').find('.country-selector'));
+                });
+            }
+
+            $('#misdirecciones').on('change', function () {
+                loadAddressForm($(this).val());
+            });
+            loadAddressForm($('#misdirecciones').val() || -1);
+
+            // ===================================================================
+            // INICIO DE LA CORRECCIÓN DEL JAVASCRIPT
+            // ===================================================================
+            function handleCountryChange(countrySelectElement) {
+                // Buscamos el contenedor del formulario más cercano
+                const $form = $(countrySelectElement).closest('form, #billingForm, #addressForm');
+
+                // Usamos las clases de los divs contenedores, que es más seguro
+                const $provinceSelectContainer = $form.find('.province-select-container');
+                const $provinceTextContainer = $form.find('.province-text-input-container');
+                const paisID = $(countrySelectElement).val();
+
+                if (!paisID) {
+                    $provinceSelectContainer.hide();
+                    $provinceTextContainer.show();
+                    return;
+                }
+
+                let url = "{{ path('api_get_country_provinces', {id: 'PAIS_ID'}) }}".replace('PAIS_ID', paisID);
+
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    dataType: "JSON",
+                    success: function (provincias) {
+                        const $provinciasSelect = $form.find('.province-select');
+                        const savedProvinceId = $form.data('province-id');
+
+                        if (provincias.length > 0) {
+                            $provinciasSelect.html('<option value> Selecciona una provincia...</option>');
+                            $.each(provincias, function (key, provincia) {
+                                $provinciasSelect.append(`<option value="${provincia.id}">${provincia.name}</option>`);
+                            });
+
+                            if (savedProvinceId) {
+                                $provinciasSelect.val(savedProvinceId);
+                            }
+
+                            // Si hay provincias, mostramos el select y ocultamos el input
+                            $provinceSelectContainer.show();
+                            $provinceTextContainer.hide();
+                        } else {
+                            // Si NO hay provincias, ocultamos el select y mostramos el input
+                            $provinceSelectContainer.hide();
+                            $provinceTextContainer.show();
+                        }
+                    }
+                });
+            }
+
+            $('body').on('change', '.country-selector', function() {
+                handleCountryChange(this);
+            });
+
+            handleCountryChange($('#billingForm').find('.country-selector'));
+            // ===================================================================
+            // FIN DE LA CORRECCIÓN DEL JAVASCRIPT
+            // ===================================================================
+
+            // --- LÓGICA PARA SUBMIT ---
+            $('#confirmarPedidoBtn').on('click', function(e) {
+                if (!$('#privacityTKM').is(":checked")) {
+                    alert("Debes aceptar los términos y la política de privacidad.");
+                    e.preventDefault();
+                }else{
+                gtag("event", "add_shipping_info", {
+                    currency: "EUR",
+                    value :{{ carrito.getSubtotal(app.user) }},
+                    shipping_tier: "Ground",
+                    items: [
+                        {#                        {% set referenciaModelo = -1 %}#}
+                        {% for presupuesto in carrito.getItems() %}
+                        {% set itemIndex = loop.index0 %}
+                        {% for producto in presupuesto.getProductos() %}
+                        {
+
+                            item_id: "{{ producto.producto.modelo.referencia }}",
+                            item_name: "{{ producto.producto.modelo.nombre }}",
+                            affiliation: "TusKamisetas.com",
+                            // coupon: "SUMMER_FUN",
+                            // discount: 2.22,
+                            // index: 0,
+                            item_brand: "{{ producto.producto.modelo.fabricante }}",
+                            // item_category: "Apparel",
+                            // item_category2: "Adult",
+                            // item_category3: "Shirts",
+                            // item_category4: "Crew",
+                            // item_category5: "Short sleeve",
+                            // item_list_id: "related_products",
+                            // item_list_name: "Related Products",
+                            item_variant: "producto.producto.referencia",
+                            // location_id: "ChIJIQBpAG2ahYAR_6128GcTUEo",
+                            {#price: {{ carrito.getPrecioProducto(producto.producto.getId(), itemIndex , app.user) }},#}
+                            quantity: {{ producto.cantidad }}
+                        }
+                        {% if not loop.last %}
+                        ,
+                        {% endif %}
+                        {% endfor %}
+                        {% if not loop.last %}
+                        ,
+                        {% endif %}
+                        {% endfor %}
+                    ]
+                });
+
+                $("#checkoutForm").submit();
+                }
+            });
+        });
+    </script>
+{% endblock %}
+

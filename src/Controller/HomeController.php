@@ -12,6 +12,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 
 class HomeController extends AbstractController
@@ -70,5 +72,31 @@ class HomeController extends AbstractController
             'destacados'     => $productosDestacados
         ]);
     }
+
+    // --- INICIO DEL NUEVO MÉTODO DE PRUEBA ---
+    /**
+     * Esta acción sirve únicamente para probar el envío de correos.
+     */
+    #[Route('/{_locale}/testmail', name: 'app_test_mail', requirements: ['_locale' => 'es|en|fr'])]
+    public function testMailAction(MailerInterface $mailer): Response
+    {
+        // 1. Creamos un correo simple
+        $email = (new Email())
+            ->from('comercial@tuskamisetas.com')
+            ->to('informatica@tuskamisetas.com')
+            ->subject('¡Prueba de envío desde Tuskamisetas!')
+            ->text('Si puedes ver esto en el Profiler, el Mailer funciona correctamente.')
+            ->html('<p>Si puedes ver esto en el <strong>Profiler</strong>, el Mailer funciona correctamente.</p>');
+
+        // 2. Lo enviamos
+        $mailer->send($email);
+
+        // 3. Añadimos un mensaje para saber que la acción se ha ejecutado
+        $this->addFlash('success', 'Se ha intentado enviar un correo de prueba. ¡Revisa la barra de depuración!');
+
+        // 4. Redirigimos a la página de inicio
+        return $this->redirectToRoute('app_home', ['_locale' => 'es']);
+    }
+    // --- FIN DEL NUEVO MÉTODO DE PRUEBA ---
 }
 

@@ -135,9 +135,16 @@ class Pedido
     // Propiedad no mapeada para lógica interna
     private bool $enviaMail = false;
 
-    public function __construct()
+    public function __construct(\DateTime $fecha, int $fiscalYear, int $numeroPedido)
     {
-        $this->fecha = new \DateTime();
+        $this->fecha = $fecha;
+        $this->fiscalYear = $fiscalYear;
+        $this->numeroPedido = $numeroPedido;
+        $cabecera = "PR";
+        if ($this->temporal) {
+            $cabecera = "PRT";
+        }
+        $this->nombre = $cabecera . date("y", $this->fecha->getTimestamp()) . sprintf('%05d', $this->numeroPedido);
         $this->lineas = new ArrayCollection();
         $this->lineasLibres = new ArrayCollection();
     }
@@ -783,5 +790,51 @@ class Pedido
         $this->total = $total;
     }
 
+    // --- INICIO DE LA CORRECCIÓN ---
+
+    /**
+     * Comprueba si el pedido tiene algún trabajo de personalización.
+     * Recrea la lógica de tu antiguo método 'compruebaTrabajos'.
+     */
+    public function compruebaTrabajos(): bool
+    {
+        foreach ($this->getLineas() as $linea) {
+            // Si encontramos al menos una línea que tiene trabajos, devolvemos true.
+            if (!$linea->getPersonalizaciones()->isEmpty()) {
+                return true;
+            }
+        }
+        // Si hemos recorrido todas las líneas y ninguna tenía trabajos, devolvemos false.
+        return false;
+    }
+
+    /**
+     * Determina si el pedido requiere un pago online inmediato.
+     * Un pedido necesita pago online si NO tiene trabajos de personalización.
+     */
+    public function necesitaPagoOnline(): bool
+    {
+        return !$this->compruebaTrabajos();
+    }
+
+    // --- FIN DE LA CORRECCIÓN ---
+
+    /**
+     * MÉTODO AÑADIDO: Comprueba si un pedido ya está pagado.
+     * Recrea la lógica de tu 'pedidoPagoAction' antiguo.
+     */
+    public function isPagado(): bool
+    {
+        // Si la diferencia entre el total y lo pagado es mínima, o si el estado es 'Pagado' o superior (>=9)
+        if (($this->getTotal() - $this->getCantidadPagada()) <= 1) {
+            return true;
+        }
+
+        if ($this->getEstado() && $this->getEstado()->getId() >= 9) {
+            return true;
+        }
+
+        return false;
+    }
 
 }

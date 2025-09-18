@@ -1,0 +1,27 @@
+{% extends "base.html.twig" %}
+
+{% block title %}¡Presupuesto Recibido!{% endblock %}
+
+{% block baseBody %}
+    <div class="container" style="padding: 40px 15px; text-align: center;">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <i class="fa fa-check-circle" style="font-size: 80px; color: #5cb85c;"></i>
+                <h1 style="margin-top: 20px;">¡Gracias por tu solicitud!</h1>
+                <p class="lead">
+                    Hemos recibido tu solicitud de presupuesto con el número <strong>{{ pedido }}</strong>.
+                </p>
+                <p>
+                    Nuestro equipo comercial la revisará a la mayor brevedad posible. Recibirás un correo electrónico con los detalles y los siguientes pasos para confirmar y pagar tu pedido.
+                </p>
+                <hr>
+                <p>
+                    Si tienes cualquier duda, no dudes en <a href="{{ path('app_contact', {'_locale': app.request.locale}) }}">contactar con nosotros</a>.
+                </p>
+                <a href="{{ path('app_home', {'_locale': app.request.locale}) }}" class="btn btn-primary" style="margin-top: 20px;">
+                    Volver a la página principal
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

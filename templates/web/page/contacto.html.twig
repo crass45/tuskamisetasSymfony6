@@ -38,13 +38,13 @@
         <ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
             <li itemprop="itemListElement" itemscope
                 itemtype="http://schema.org/ListItem">
-                <a itemprop="item" href="{{ path('ss_tienda_home') }}">
+                <a itemprop="item" href="{{ path('app_home') }}">
                     <span itemprop="title">{% trans %}Principal{% endtrans %}</span></a>
                 <meta itemprop="position" content="1"/>
             </li>
             <li class="active" itemprop="itemListElement" itemscope
                 itemtype="http://schema.org/ListItem">
-                <a itemprop="item" href="{{ path('ss_tienda_contacto') }}" class="miActive">
+                <a itemprop="item" href="{{ path('app_contact') }}" class="miActive">
                     <span itemprop="title">{% trans %}Contacto{% endtrans %}</span>
                 </a>
                 <meta itemprop="position" content="2"/>
@@ -64,14 +64,14 @@
                     <h2 class="titulo amarillo"
                         style="margin-top: 0; font-size: 22px;">{{ empresa.descripcionContacto }}</h2>
                     <h4>Si quieres unirte a nuestro equipo de profesionales <a
-                                href="{{ path('ss_tienda_trabaja_con_nosotros') }}">rellena nuestro formulario de
+                                href="{{ path('app_work_with_us') }}">rellena nuestro formulario de
                             empleo</a> y nos pondremos en contacto contigo</h4>
 
                 </div>
 
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12" style="text-align: left">
                     <img class="img-responsive" style="width: 60px; text-align: center" itemprop="image"
-                         src="{% path empresa.logo, 'big' %}" alt="{{ empresa.nombre }}"/>
+                         src="{{ sonata_path(empresa.logo, 'big') }}" alt="{{ empresa.nombre }}"/>
                     <p itemprop="name" style="font-size: 16px;font-weight: bold">
                         {{ empresa.nombre }}
                     </p>

@@ -20,89 +20,67 @@ final class DireccionType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        if ($options['is_shipping_address']) {
+            $builder
+                ->add('nombre', TextType::class, ['label' => 'Nombre / Alias (ej. Casa, Oficina)', 'required' => true])
+                ->add('telefonoMovil', TextType::class, ['label' => 'Teléfono de Contacto', 'required' => false])
+                ->add('predeterminada', CheckboxType::class, ['label' => 'Establecer como dirección de envío por defecto', 'required' => false]);
+        }
+
         $builder
-            ->add('predeterminada', CheckboxType::class, [
-                'label' => 'Establecer como dirección de envío por defecto',
-                'required' => false,
-            ])
-            ->add('nombre', TextType::class, [
-                'label' => 'Nombre / Alias (ej. Casa, Oficina)',
-                'required' => true,
-            ])
-            ->add('telefonoMovil', TextType::class, [
-                'label' => 'Teléfono de Contacto',
-                'required' => false,
-            ])
             ->add('paisBD', EntityType::class, [
                 'class' => Pais::class,
                 'choice_label' => 'nombre',
                 'label' => 'País',
-                'required' => true,
                 'placeholder' => 'Selecciona un país',
-                'attr' => ['class' => 'form-control chosen'],
+                'attr' => ['class' => 'form-control chosen-select country-selector'],
             ])
-            ->add('dir', TextType::class, ['label' => 'Dirección', 'required' => true])
-            ->add('cp', TextType::class, ['label' => 'Código postal', 'required' => true])
-            ->add('poblacion', TextType::class, ['label' => 'Población', 'required' => true])
-            ->add('provincia', TextType::class, [
-                'label' => 'Provincia (si no aparece en la lista)',
-                'required' => false,
-            ]);
+            ->add('dir', TextType::class, ['label' => 'Dirección'])
+            ->add('cp', TextType::class, ['label' => 'Código postal'])
+            ->add('poblacion', TextType::class, ['label' => 'Población']);
 
-        // MIGRACIÓN: Se activan los listeners para el desplegable de provincias dependiente.
         $builder->addEventListener(FormEvents::PRE_SET_DATA, [$this, 'onPreSetData']);
         $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit']);
     }
 
-    /**
-     * Añade el campo de provincia al formulario.
-     */
-    protected function addProvinceField(FormInterface $form, ?Pais $pais): void
+    protected function addProvinceFields(FormInterface $form, ?Pais $pais): void
     {
-        $provinces = $pais ? $pais->getProvincias() : [];
+        $provinces = ($pais && $pais->getProvincias()->count() > 0) ? $pais->getProvincias() : [];
+
+        // CORRECCIÓN: Se eliminan los 'style' => 'display:none'. El JS se encargará de la visibilidad.
+        $form->add('provincia', TextType::class, [
+            'label' => 'Provincia',
+            'required' => false,
+            'attr' => ['class' => 'province-text-input'],
+        ]);
 
         $form->add('provinciaBD', EntityType::class, [
             'class' => Provincia::class,
             'label' => 'Provincia',
             'placeholder' => 'Selecciona una provincia',
             'choices' => $provinces,
-            'required' => false, // No es obligatorio si se escribe a mano
-            'attr' => ['class' => 'form-control chosen'],
+            'required' => false,
+            'attr' => ['class' => 'form-control chosen-select province-select'],
         ]);
     }
 
-    /**
-     * Se ejecuta al crear el formulario. Rellena las provincias si ya hay un país seleccionado.
-     */
     public function onPreSetData(FormEvent $event): void
     {
-        /** @var Direccion|null $data */
         $data = $event->getData();
-        $form = $event->getForm();
-
-        $pais = $data ? $data->getPaisBD() : null;
-        $this->addProvinceField($form, $pais);
+        $pais = $data instanceof Direccion ? $data->getPaisBD() : null;
+        $this->addProvinceFields($event->getForm(), $pais);
     }
 
-    /**
-     * Se ejecuta al enviar el formulario. Actualiza la lista de provincias según el país enviado.
-     */
     public function onPreSubmit(FormEvent $event): void
     {
-        $data = $event->getData();
-        $form = $event->getForm();
-
-        $paisId = $data['paisBD'] ?? null;
-
-        if ($paisId) {
-            $this->addProvinceField($form, null);
-        }
+        $this->addProvinceFields($event->getForm(), null);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Direccion::class,
+            'is_shipping_address' => false,
         ]);
     }
 }

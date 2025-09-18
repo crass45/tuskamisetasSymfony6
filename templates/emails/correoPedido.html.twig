@@ -1,0 +1,174 @@
+{% extends "emails/plantillaMail.html.twig" %}
+{% block cuerpo %}
+
+    <tr>
+        <td bgcolor="white" class="innerpadding">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td class="bodycopy" style="text-align: center">
+                        <b>ESTE DOCUMENTO ES MERAMENTE INFORMATIVO<br></b>
+                        <span style="color: red">NO REALICE NINGÚN PAGO</span> HASTA NO RECIBIR EL PRESUPUESTO
+                        DEFINITIVO
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+
+    <tr bgcolor="white">
+        <td class="" align="center" style="font-family:Helvetica, Arial, sans-serif;text-align: right; padding: 20px;">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <thead>
+                <tr style="background-color: #C1CED9; text-align: center">
+                    <th class="service" style="text-align: left; padding: 10px;">Producto</th>
+                    <th class="desc" style="text-align: left; padding: 10px;">Descripción</th>
+                    <th style="text-align: right; padding: 10px;">Precio Ud.</th>
+                    <th style="text-align: right; padding: 10px;">Cant.</th>
+                    <th style="text-align: right; padding: 10px;"><b>Total</b></th>
+                </tr>
+                </thead>
+                <tbody>
+                {# --- INICIO DE LA CORRECCIÓN --- #}
+                {# Ahora recorremos la variable 'grouped_lines' que nos pasa el OrderService #}
+                {% for group_key, lineas_in_group in grouped_lines %}
+
+                    {# Fila para las personalizaciones de este grupo de productos #}
+                    <tr style="background-color: #f0f0f0;">
+                        <td colspan="5" style="padding: 10px; border-top: 2px solid #ff9000;">
+                            <strong>Personalizaciones:</strong>
+                            {# Tomamos la descripción de la primera línea del grupo, ya que será la misma para todas #}
+                            {% set personalizacion_display = lineas_in_group|first.personalizacion %}
+                            {% if personalizacion_display is not empty %}
+                                <span>{{ personalizacion_display|nl2br }}</span>
+                            {% else %}
+                                <span>Sin personalización</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {# Recorremos los productos dentro de este grupo #}
+                    {% for linea in lineas_in_group %}
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td class="service" style="text-align: left; padding: 10px; vertical-align: top;">
+                                {{ linea.producto.modelo.referencia }}
+                            </td>
+                            <td class="desc" style="text-align: left; padding: 10px; vertical-align: top;">
+                                {{ linea.producto.modelo.nombre | capitalize }}
+                                <br>
+                                <small>Talla: {{ linea.producto.talla }} | Color: {{ linea.producto.color | capitalize }}</small>
+                            </td>
+                            <td class="unit" style="text-align: right; padding: 10px; vertical-align: top;">{{ linea.precio | number_format(2, ',', '.') }}€</td>
+                            <td class="qty" style="text-align: right; padding: 10px; vertical-align: top;">{{ linea.cantidad }}</td>
+                            <td class="total" style="text-align: right; padding: 10px; vertical-align: top;">{{ (linea.precio * linea.cantidad) | number_format(2, ',', '.') }}€</td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+                {# --- FIN DE LA CORRECCIÓN --- #}
+
+                {# --- SECCIÓN DE TOTALES (se mantiene tu lógica original) --- #}
+                <tr><td colspan="5" style="padding-top: 20px;"></td></tr>
+
+                <tr>
+                    <td colspan="3"></td>
+                    <td colspan="1" style="background-color: #d2d7dc; padding: 5px;"><b>Subtotal:</b></td>
+                    <td class="total" style="background-color: #d2d7dc; text-align: right; padding: 5px;">{{ pedido.subTotal | number_format(2, ',', '.') }}€</td>
+                </tr>
+                <tr>
+                    <td colspan="3"></td>
+                    <td colspan="1" style="background-color: #d2d7dc; padding: 5px;"><b>Gastos de envío:</b></td>
+                    <td class="grand total" style="background-color: #d2d7dc; text-align: right; padding: 5px;">{{ pedido.envio | number_format(2, ',', '.') }}€</td>
+                </tr>
+                {% if pedido.pedidoExpres %}
+                    <tr>
+                        <td colspan="3"></td>
+                        <td colspan="1" style="background-color: #d2d7dc; padding: 5px;">Servicio Expres:</td>
+                        <td class="total" style="background-color: #d2d7dc; text-align: right; padding: 5px;">{{ empresa.precioServicioExpres | number_format(2, ',', '.') }}€</td>
+                    </tr>
+                {% endif %}
+                <tr>
+                    <td colspan="3"></td>
+                    <td colspan="1" style="background-color: #d2d7dc; padding: 5px;">IVA ({{ empresa.ivaGeneral }}%):</td>
+                    <td class="total" style="background-color: #d2d7dc; text-align: right; padding: 5px;">{{ pedido.iva | number_format(2, ',', '.') }}€</td>
+                </tr>
+                <tr>
+                    <td colspan="3"></td>
+                    <td colspan="1" style="background-color: #d2d7dc; font-weight: bold; padding: 5px;" class="grand total"><b>Total</b></td>
+                    <td class="grand total" style="background-color: #d2d7dc; font-weight: bold; text-align: right; padding: 5px;">
+                        <b>{{ pedido.total | number_format(2, ',', '.') }}€</b>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+
+
+    <tr bgcolor="white">
+        <td align="left" class="scale-center-both" style="padding: 25px">
+            <table width="100%">
+                <tr>
+                    <td>
+                        <font style="font-family:Helvetica, Arial, sans-serif; font-size: 16px; color: #242424;"
+                              data-headlineColor=""><b>Dirección de facturación</b></font><br>
+                        <font style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;"
+                              data-headlineColor="">{{ pedido.contacto.nombre }} {{ pedido.contacto.apellidos }}</font><br>
+                        <font style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;"
+                              data-headlineColor="">{{ pedido.contacto.direccionFacturacion.dir }}</font><br>
+                        <font style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;"
+                              data-headlineColor="">{{ pedido.contacto.direccionFacturacion.cp }} {{ pedido.contacto.direccionFacturacion.poblacion }}
+                            <br> {{ pedido.contacto.direccionFacturacion.provincia }}
+                            <br> {{ pedido.contacto.direccionFacturacion.pais }}</font><br>
+                        {% if pedido.contacto.telefonoOtro is defined and pedido.contacto.telefonoOtro != "" %}<font
+                                style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;"
+                                data-headlineColor="">Tlf: {{ pedido.contacto.telefonoOtro }}</font><br>{% endif %}
+                        {% if pedido.contacto.telefonoMovil is defined and pedido.contacto.telefonoMovil != "" %}<font
+                                style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;"
+                                data-headlineColor="">Movil: {{ pedido.contacto.telefonoMovil }}</font><br>{% endif %}
+                        <font style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;"
+                              data-headlineColor="">{{ pedido.contacto.usuario.username }}</font>
+                    </td>
+                    <td style="text-align: right">
+                        {% if (pedido.contacto.direccionFacturacion.dir != pedido.direccion.dir) %}
+                            <font style="font-family:Helvetica, Arial, sans-serif; font-size: 16px; color: #242424;"
+                                  data-headlineColor=""><b>Dirección de envío</b></font><br>
+
+                            {% if pedido.recogerEnTienda %}<font
+                                    style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;"
+                                    data-headlineColor="">Recoger en Tienda.</font>
+                                <br>
+                            {% else %}
+                                <font style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;"
+                                {% if (pedido.direccion.nombre != "") %}
+                                    <div>{{ pedido.direccion.nombre }}</div>
+                                {% else %}
+                                    data-headlineColor="">{{ pedido.contacto.nombre }} {{ pedido.contacto.apellidos }}</font>
+                                {% endif %}
+                                <br>
+                                <font style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;"
+                                      data-headlineColor="">{{ pedido.direccion.dir }}</font><br>
+                                <font style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;"
+                                      data-headlineColor="">{{ pedido.direccion.cp }} {{ pedido.direccion.poblacion }}
+                                    <br> {{ pedido.direccion.provincia }}
+                                    <br> {{ pedido.direccion.pais }}</font><br>
+                            {% endif %}
+                        {% endif %}
+                        {# <font style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;" #}
+                        {# data-headlineColor="">Tlf: {{ pedido.idUsuario.telefonoMovil }}</font><br> #}
+                        {# <font style="font-family:Helvetica, Arial, sans-serif; font-size: 12px; color: #242424;" #}
+                        {# data-headlineColor="">{{ pedido.idUsuario.usuario.username }}</font> #}
+                    </td>
+
+                </tr>
+            </table>
+        </td>
+
+    </tr>
+
+    <tr bgcolor="white">
+        <td class="" align="center" style="font-family:Helvetica, Arial, sans-serif;text-align: right; padding: 20px;">
+            {% if (url_pedido is defined) %}
+                <a href="{{ url_pedido }}">Ver el pedido AQUI</a>
+            {% endif %}
+        </td>
+    </tr>
+{% endblock %}

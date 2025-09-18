@@ -1,0 +1,38 @@
+{% extends "carrito/layout.html.twig" %} {# Heredamos del layout del proceso de compra #}
+
+{% block title %}Identifícate para continuar{% endblock %}
+
+{% block cuerpoProceso %}
+    <div class="container" style="padding: 20px;">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="login-form">
+                    <h2>{% trans %}YA SOY USUARIO{% endtrans %}</h2>
+                    <p>Inicia sesión para usar tus direcciones guardadas y ver tu historial de pedidos.</p>
+
+                    {# Incluimos el formulario de login que ya teníamos para el modal #}
+                    {# El controlador de seguridad se encarga de pasar las variables 'error' y 'last_username' #}
+                    {{ render(controller('App\\Controller\\SecurityController::modalLoginAction')) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="login-form">
+                    <h2>{% trans %}CONTINUAR COMO INVITADO{% endtrans %}</h2>
+                    <p>Si no tienes una cuenta, puedes continuar rellenando tus datos de envío en el siguiente paso. Podrás crear una cuenta más adelante.</p>
+                    <br>
+                    <a href="{{ path('app_checkout_address', {'_locale': app.request.locale}) }}" class="btn btn-primary btn-lg">
+                        Continuar como Invitado
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Pequeño script para resaltar el paso correcto del proceso
+        $(document).ready(function() {
+            // Asumiendo que tu layout tiene los IDs carropaso1, carropaso2, etc.
+            $('#carropaso2').css('color', 'black');
+        });
+    </script>
+{% endblock %}

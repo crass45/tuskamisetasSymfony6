@@ -15,6 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -129,7 +130,7 @@ class ProveedorPedidosController extends AbstractController
         $asuntoEmail = sprintf('Nuevo Pedido a Proveedor Generado - %s', $fechaFormateada);
 
         $email = (new Email())
-            ->from('noreply@tuskamisetas.com') // Dirección del remitente
+            ->from('comercial@tuskamisetas.com') // Dirección del remitente
             ->to('joseluis@tuskamisetas.com')     // Tu dirección de correo
             ->subject($asuntoEmail)
             ->text('Se adjunta el PDF con el resumen del pedido a proveedor.');
