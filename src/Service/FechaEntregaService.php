@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 /**
  * Servicio para calcular las fechas de entrega estimadas.
  */
-class FechaEntregaservice
+class FechaEntregaService
 {
     private ?Empresa $empresaConfig;
 
@@ -37,6 +37,12 @@ class FechaEntregaservice
         $diasSinImprimir2 = $this->empresaConfig->getMaximoDiasSinImprimir() + $sumaDias;
         $diasImpreso2 = $this->empresaConfig->getMaximoDiasConImpresion() + $sumaDias;
         $diasExpress = $diasSinImprimir1 + 3; // Lógica para el servicio express
+
+        var_dump($diasSinImprimir1);
+        var_dump($diasSinImprimir2);
+        var_dump($diasImpreso1);
+        var_dump($diasImpreso2);
+        var_dump($diasExpress);
 
         return [
             'fechaEntregaSinImprimir' => $this->calculateDate($diasSinImprimir1),

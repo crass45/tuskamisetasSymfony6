@@ -1,0 +1,47 @@
+{# templates/emails/payment_success_admin.html.twig #}
+{% extends "emails/plantillaMail.html.twig" %}
+
+{% block titulo %}¡Pedido Pagado!{% endblock %}
+{% block subtitulo %}Se ha recibido el pago para el pedido {{ pedido }}.{% endblock %}
+
+{% block cuerpo %}
+    <tr>
+        <td bgcolor="white" class="innerpadding">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td class="bodycopy">
+                        El pedido <strong>{{ pedido }}</strong> ha sido pagado correctamente a través de la pasarela de pago.
+                        <br><br>
+                        Puedes ver los detalles desde el panel de administración.
+                        <br><br>
+                        {% if pedido.observaciones %}
+                            <strong>Observaciones del cliente:</strong>
+                            <p><em>{{ pedido.observaciones|nl2br }}</em></p>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {# --- INICIO DE LA MEJORA --- #}
+    <br><br>
+    <table width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr>
+            <td>
+                <table border="0" cellspacing="0" cellpadding="0" align="center">
+                    <tr>
+                        <td align="center" style="border-radius: 5px;" bgcolor="#ff9000">
+                            {# MIGRACIÓN NOTA: Asegúrate de que la ruta 'admin_app_pedido_edit' existe y es correcta #}
+                            <a href="{{ url('admin_app_pedido_edit', {'id': pedido.id}) }}"
+                               target="_blank"
+                               style="font-size: 16px; font-family: sans-serif; color: #ffffff; text-decoration: none; border-radius: 5px; padding: 12px 18px; border: 1px solid #ff9000; display: inline-block; font-weight: bold;">
+                                Ver Pedido en la Administración
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    {# --- FIN DE LA MEJORA --- #}
+{% endblock %}

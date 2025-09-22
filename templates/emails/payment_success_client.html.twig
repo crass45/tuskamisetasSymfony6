@@ -1,0 +1,92 @@
+{# templates/emails/payment_success_client.html.twig #}
+{% extends "emails/plantillaMail.html.twig" %}
+
+{% block titulo %}¡Hemos recibido el pago de tu pedido!{% endblock %}
+{% block subtitulo %}Te confirmamos que nos ha llegado correctamente el pago de tu pedido {{ pedido }}.{% endblock %}
+
+{% block cuerpo %}
+    <tr>
+        <td bgcolor="white" class="innerpadding">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td class="bodycopy">
+                        Ya estamos trabajando para que recibas tu pedido en la mayor brevedad posible.
+                        <br><br>
+                        Puedes ver los detalles de tu pedido en tu área de cliente.
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    {# --- INICIO DE LA MEJORA --- #}
+    {# Se añade la tabla de resumen del pedido, igual que en el email de confirmación #}
+    <tr bgcolor="white">
+        <td class="" align="center" style="font-family:Helvetica, Arial, sans-serif;text-align: right; padding: 20px;">
+            <table width="100%" border="0" cellpadding="0" cellspacing="0">
+                <thead>
+                <tr style="background-color: #C1CED9; text-align: center">
+                    <th style="text-align: left; padding: 10px;">Producto</th>
+                    <th style="text-align: left; padding: 10px;">Descripción</th>
+                    <th style="text-align: right; padding: 10px;">Precio Ud.</th>
+                    <th style="text-align: right; padding: 10px;">Cant.</th>
+                    <th style="text-align: right; padding: 10px;"><b>Total</b></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for group_key, lineas_in_group in grouped_lines %}
+                    <tr style="background-color: #f0f0f0;">
+                        <td colspan="5" style="padding: 10px; border-top: 2px solid #ff9000;">
+                            <strong>Personalizaciones:</strong>
+                            {% set personalizacion_display = lineas_in_group|first.personalizacion %}
+                            {% if personalizacion_display is not empty %}
+                                <span>{{ personalizacion_display|nl2br }}</span>
+                            {% else %}
+                                <span>Sin personalización</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% for linea in lineas_in_group %}
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="text-align: left; padding: 10px; vertical-align: top;">{{ linea.producto.modelo.referencia }}</td>
+                            <td style="text-align: left; padding: 10px; vertical-align: top;">
+                                {{ linea.producto.modelo.nombre | capitalize }}
+                                <br>
+                                <small>Talla: {{ linea.producto.talla }} | Color: {{ linea.producto.color | capitalize }}</small>
+                            </td>
+                            <td style="text-align: right; padding: 10px; vertical-align: top;">{{ linea.precio | number_format(2, ',', '.') }}€</td>
+                            <td style="text-align: right; padding: 10px; vertical-align: top;">{{ linea.cantidad }}</td>
+                            <td style="text-align: right; padding: 10px; vertical-align: top;">{{ (linea.precio * linea.cantidad) | number_format(2, ',', '.') }}€</td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+
+                {# Sección de Totales #}
+                <tr><td colspan="5" style="padding-top: 20px;"></td></tr>
+                <tr>
+                    <td colspan="3"></td>
+                    <td colspan="1" style="background-color: #d2d7dc; padding: 5px;"><b>Subtotal:</b></td>
+                    <td class="total" style="background-color: #d2d7dc; text-align: right; padding: 5px;">{{ pedido.subTotal | number_format(2, ',', '.') }}€</td>
+                </tr>
+                <tr>
+                    <td colspan="3"></td>
+                    <td colspan="1" style="background-color: #d2d7dc; padding: 5px;"><b>Gastos de envío:</b></td>
+                    <td class="grand total" style="background-color: #d2d7dc; text-align: right; padding: 5px;">{{ pedido.envio | number_format(2, ',', '.') }}€</td>
+                </tr>
+                <tr>
+                    <td colspan="3"></td>
+                    <td colspan="1" style="background-color: #d2d7dc; padding: 5px;">IVA ({{ empresa.ivaGeneral }}%):</td>
+                    <td class="total" style="background-color: #d2d7dc; text-align: right; padding: 5px;">{{ pedido.iva | number_format(2, ',', '.') }}€</td>
+                </tr>
+                <tr>
+                    <td colspan="3"></td>
+                    <td colspan="1" style="background-color: #d2d7dc; font-weight: bold; padding: 5px;" class="grand total"><b>Total</b></td>
+                    <td class="grand total" style="background-color: #d2d7dc; font-weight: bold; text-align: right; padding: 5px;">
+                        <b>{{ pedido.total | number_format(2, ',', '.') }}€</b>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    {# --- FIN DE LA MEJORA --- #}
+{% endblock %}

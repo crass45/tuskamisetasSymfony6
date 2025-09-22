@@ -1,0 +1,79 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Pago del Presupuesto {{ pedido }}{% endblock %}
+{% block metaDescription %}Desde esta página se realiza el pago del presupuesto número {{ pedido }}.{% endblock %}
+
+{% block baseBody %}
+    <div class="col-lg-12 tkmPading">
+        <div style="padding: 20px 0;">
+            <div style="padding: 0; text-align: center;">
+                <img src="{{ asset('images/logohorizontal.jpg') }}" style="height: 80px; width: auto; margin-bottom: 20px;" alt="Logo Tuskamisetas">
+                <hr>
+                {% if pedido.contacto %}
+                    <h4>Cliente: {{ pedido.contacto.nombre }} {{ pedido.contacto.apellidos }}</h4>
+                {% endif %}
+                <h4>Presupuesto: {{ pedido }}</h4>
+                <hr>
+
+                {# Las variables 'dias1' y 'dias2' vienen del PaymentController #}
+                <h4>Su pedido se le entregará en un plazo de {{ dias1 }} a {{ dias2 }} días laborables a partir del pago.</h4>
+
+                {# La variable 'empresa' es global gracias a nuestra TiendaExtension #}
+                {% if empresa.vacacionesActivas %}
+                    <blockquote>• <b>Los plazos anteriores no incluyen el periodo del {{ empresa.fechaInicioVacaciones|date('d/m/Y') }} al {{ empresa.fechaFinVacaciones|date('d/m/Y') }} que permaneceremos cerrados por vacaciones.</b></blockquote>
+                {% endif %}
+
+                <h2>Importe a Pagar: <b>{{ (pedido.total - pedido.cantidadPagada) | number_format(2, ',', '.') }}€</b></h2>
+                <hr>
+                <br>
+                <h1>FORMAS DE PAGO</h1>
+
+                <div class="accordion" id="paymentOptions" style="max-width: 600px; margin: 0 auto;">
+                    <div class="card">
+                        <div class="card-header" id="headingCard">
+                            <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseCard" aria-expanded="true" aria-controls="collapseCard">
+                                <h3>PAGAR CON TARJETA</h3>
+                            </button>
+                        </div>
+                        <div id="collapseCard" class="collapse in" aria-labelledby="headingCard" data-parent="#paymentOptions">
+                            <div class="card-body" style="padding: 20px;">
+                                {# El action y los datos ocultos vienen del RedsysApiService #}
+                                <form id="confirmarPagoTarjeta" action="{{ redsys_data.redsys_url }}" method="POST">
+                                    <input type="hidden" name="Ds_SignatureVersion" value="{{ redsys_data.Ds_SignatureVersion }}"/>
+                                    <input type="hidden" name="Ds_MerchantParameters" value="{{ redsys_data.Ds_MerchantParameters }}"/>
+                                    <input type="hidden" name="Ds_Signature" value="{{ redsys_data.Ds_Signature }}"/>
+                                    <div style="margin-bottom: 15px;">
+                                        <input id="privacityTKM" type="checkbox" required>
+                                        <label for="privacityTKM">Acepto los <a href="{{ path('app_terms_of_use', {'_locale': app.request.locale}) }}" target="_blank">Términos de uso</a> y la <a href="{{ path('app_privacy_policy', {'_locale': app.request.locale}) }}" target="_blank">Política de privacidad</a></label>
+                                    </div>
+                                    <button type="submit" class="button">PAGAR CON TARJETA</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingTransfer">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTransfer" aria-expanded="false" aria-controls="collapseTransfer">
+                                    <h3>PAGAR MEDIANTE TRANSFERENCIA BANCARIA</h3>
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="collapseTransfer" class="collapse" aria-labelledby="headingTransfer" data-parent="#paymentOptions">
+                            <div class="card-body" style="padding: 20px;">
+                                <h4>En caso de pagar mediante transferencia es muy importante enviar el justificante del pago por email a comercial@tuskamisetas.com indicando el número de presupuesto <b>{{ pedido }}</b>.</h4>
+                                <h4>{{ empresa.cuentaBancaria | raw }}</h4>
+                                {# Este botón ahora redirige a la página de éxito #}
+                                <a href="{{ path('app_checkout_success', {'_locale': app.request.locale, 'id': pedido.id}) }}" class="button">HE REALIZADO LA TRANSFERENCIA</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# MIGRACIÓN NOTA: La lógica de Google Analytics se puede añadir aquí si es necesario #}
+    {# Asegúrate de que el controlador pasa las variables 'transaccion' e 'items' si quieres usarla #}
+{% endblock %}
+

@@ -12,7 +12,7 @@ use App\Model\Presupuesto;
 use App\Model\PresupuestoProducto;
 use App\Model\PresupuestoTrabajo;
 use App\Repository\ModeloRepository;
-use App\Service\FechaEntregaservice;
+use App\Service\FechaEntregaService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,7 +25,7 @@ class ProductController extends AbstractController
     private EntityManagerInterface $em;
 
     public function __construct(
-        private FechaEntregaservice $deliveryDateService, EntityManagerInterface $entityManager
+        private FechaEntregaService $deliveryDateService, EntityManagerInterface $entityManager
     )
     {
         $this->em = $entityManager;

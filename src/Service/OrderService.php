@@ -31,7 +31,7 @@ class OrderService
         private MailerInterface $mailer,
         private TwigEnvironment $twig,
         private Security $security,
-        private FechaEntregaservice $deliveryDateService
+        private FechaEntregaService $deliveryDateService
     ) {
     }
 
@@ -190,6 +190,47 @@ class OrderService
             ->subject('Confirmación de tu pedido en Tuskamisetas: ' . $pedido)
             // 3. Pasamos el mismo array agrupado a la plantilla del cliente
             ->html($this->twig->render('emails/correoPedido.html.twig', array('pedido' => $pedido,'grouped_lines'=>$groupedLines, 'url_pedido' => 'https://tuskamisetas.com/admin/ss/tienda/pedido/' . $pedido->getId() . '/edit', 'metodoPago' => 'Transferencia Bancaría', 'emailTitulo' => '¡Nuevo pedido en la tienda!', 'emailSubtitulo' => 'Se ha realizado un nuevo pedido en la web', 'emailTexto' => 'puedes ver más detalles desde la administración.<br><br><b>Observaciones:</b> ' . $pedido->getObservaciones(), 'empresa' => $empresa)));
+        $this->mailer->send($clientEmail);
+    }
+
+
+
+    /**
+     * NUEVO MÉTODO: Envía los correos de confirmación cuando un pago es exitoso.
+     * Migración de la lógica de tu 'pedidoPagoConfirmadoBancoAction'.
+     */
+    public function sendPaymentSuccessEmails(Pedido $pedido): void
+    {
+        $empresa = $this->em->getRepository(Empresa::class)->findOneBy([]);
+        $emailCliente = $pedido->getContacto()?->getUsuario()?->getEmail();
+
+        if (!$emailCliente) {
+            // No se puede enviar correo si no hay un email de cliente.
+            // Aquí podrías añadir un log de error.
+            return;
+        }
+
+        // 1. Enviar email al administrador
+        $adminEmail = (new Email())
+            ->from('comercial@tuskamisetas.com')
+            ->to('comercial@tuskamisetas.com')
+            ->bcc('info@tuskamisetas.com')
+            ->subject('Pedido Pagado: ' . $pedido)
+            ->html($this->twig->render('emails/payment_success_admin.html.twig', [
+                'pedido' => $pedido,
+                'empresa' => $empresa
+            ]));
+        $this->mailer->send($adminEmail);
+
+        // 2. Enviar email al cliente
+        $clientEmail = (new Email())
+            ->from('comercial@tuskamisetas.com')
+            ->to($emailCliente)
+            ->subject('¡Hemos recibido el pago de tu pedido! (' . $pedido . ')')
+            ->html($this->twig->render('emails/payment_success_client.html.twig', [
+                'pedido' => $pedido,
+                'empresa' => $empresa
+            ]));
         $this->mailer->send($clientEmail);
     }
 }
