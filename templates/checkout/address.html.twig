@@ -158,18 +158,24 @@
                 $('#mismadireccion-tab').trigger('click');
             }
 
-            // --- LÓGICA PARA PROVINCIAS CONDICIONALES (CORREGIDA) ---
+            // ===================================================================
+            // INICIO DE LA CORRECCIÓN DEL JAVASCRIPT
+            // ===================================================================
             function handleCountryChange(countrySelectElement) {
                 const $formContainer = $(countrySelectElement).closest('#billingForm, #newAddressFormContainer');
                 if ($formContainer.length === 0) return;
 
                 const $provinceSelectContainer = $formContainer.find('.province-select-container');
                 const $provinceTextContainer = $formContainer.find('.province-text-input-container');
+                const $provinceSelect = $provinceSelectContainer.find('select');
+                const $provinceInput = $provinceTextContainer.find('input');
                 const paisID = $(countrySelectElement).val();
 
                 if (!paisID) {
                     $provinceSelectContainer.hide();
+                    $provinceSelect.prop('disabled', true); // Se desactiva el select
                     $provinceTextContainer.show();
+                    $provinceInput.prop('disabled', false); // Se activa el input
                     return;
                 }
 
@@ -180,31 +186,46 @@
                     type: "GET",
                     dataType: "JSON",
                     success: function (provincias) {
-                        const $provinciasSelect = $formContainer.find('.province-select-container select');
                         const savedProvinceId = $formContainer.data('province-id');
 
                         if (provincias.length > 0) {
-                            $provinciasSelect.html('<option value="">Selecciona una provincia...</option>');
+                            $provinceSelect.html('<option value="">Selecciona una provincia...</option>');
                             $.each(provincias, function (key, provincia) {
-                                $provinciasSelect.append(`<option value="${provincia.id}">${provincia.name}</option>`);
+                                $provinceSelect.append(`<option value="${provincia.id}">${provincia.name}</option>`);
                             });
                             if (savedProvinceId) {
-                                $provinciasSelect.val(savedProvinceId);
+                                $provinceSelect.val(savedProvinceId);
                             }
                             $provinceSelectContainer.show();
+                            $provinceSelect.prop('disabled', false); // Se activa el select
                             $provinceTextContainer.hide();
+                            $provinceInput.prop('disabled', true); // Se desactiva el input
                         } else {
                             $provinceSelectContainer.hide();
+                            $provinceSelect.prop('disabled', true); // Se desactiva el select
                             $provinceTextContainer.show();
+                            $provinceInput.prop('disabled', false); // Se activa el input
                         }
                     },
                     error: function(err) {
                         console.error("Error al cargar las provincias:", err);
                         $provinceSelectContainer.hide();
+                        $provinceSelect.prop('disabled', true);
                         $provinceTextContainer.show();
+                        $provinceInput.prop('disabled', false);
                     }
                 });
             }
+
+            $('body').on('change', '.country-selector', function() {
+                handleCountryChange(this);
+            });
+
+            handleCountryChange($('#billingForm').find('.country-selector'));
+            handleCountryChange($('#newAddressFormContainer').find('.country-selector'));
+            // ===================================================================
+            // FIN DE LA CORRECCIÓN
+            // ===================================================================
 
             // Se usa delegación de eventos para que funcione con ambos formularios
             $('body').on('change', '.country-selector', function() {
