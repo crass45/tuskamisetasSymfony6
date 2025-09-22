@@ -34,7 +34,7 @@
             </div>
             <div class="form-group">
                 {{ form_label(form.paisBD) }}
-                {{ form_widget(form.paisBD, {'attr': {'class': 'form-control form-control-lg'}})}}
+                {{ form_widget(form.paisBD) }}
                 {{ form_errors(form.paisBD) }}
             </div>
             <div class="form-group province-select-container">
@@ -52,7 +52,7 @@
         {% if form.predeterminada is defined %}
             <div class="col-xs-12">
                 <div class="form-group">
-                    {{ form_row(form.predeterminada, {'attr': {'class': 'form-control form-control-lg','required':'false'}}) }}
+                    {{ form_row(form.predeterminada, {'attr': {'class': 'form-control form-control-lg'}}) }}
                 </div>
             </div>
         {% endif %}

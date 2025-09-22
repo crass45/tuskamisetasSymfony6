@@ -28,7 +28,7 @@ class DireccionEnvioType extends AbstractType
         $builder
             ->add('nombre', TextType::class, ['label' => 'Nombre / Alias (ej. Casa, Oficina)'])
             ->add('telefonoMovil', TextType::class, ['label' => 'Teléfono de Contacto'])
-            ->add('predeterminada', CheckboxType::class, ['label' => 'Establecer como dirección de envío por defecto'])
+            ->add('predeterminada', CheckboxType::class, ['label' => 'Establecer como dirección de envío por defecto','required' => false,])
             ->add('dir', TextType::class, ['label' => 'Dirección'])
             ->add('cp', TextType::class, ['label' => 'Código postal'])
             ->add('poblacion', TextType::class, ['label' => 'Población'])
@@ -37,7 +37,7 @@ class DireccionEnvioType extends AbstractType
                 'choice_label' => 'nombre',
                 'label' => 'País',
                 'placeholder' => 'Selecciona un país',
-//                'attr' => ['class' => 'form-control chosen-select country-selector'],
+                'attr' => ['class' => 'form-control chosen-select country-selector'],
             ]);
 
         $this->addProvinceFieldsBasedOnCountry($builder);
@@ -50,8 +50,8 @@ class DireccionEnvioType extends AbstractType
 
             $form->add('provincia', TextType::class, [
                 'label' => 'Provincia',
-//                'required' => empty($provinces),
-//                'constraints' => empty($provinces) ? [new NotBlank(['message' => 'Por favor, introduce una provincia.'])] : [],
+                'required' => empty($provinces),
+                'constraints' => empty($provinces) ? [new NotBlank(['message' => 'Por favor, introduce una provincia.'])] : [],
             ]);
 
             $form->add('provinciaBD', EntityType::class, [
@@ -59,8 +59,8 @@ class DireccionEnvioType extends AbstractType
                 'label' => 'Provincia',
                 'placeholder' => 'Selecciona una provincia',
                 'choices' => $provinces,
-//                'required' => !empty($provinces),
-//                'constraints' => !empty($provinces) ? [new NotBlank(['message' => 'Por favor, selecciona una provincia.'])] : [],
+                'required' => !empty($provinces),
+                'constraints' => !empty($provinces) ? [new NotBlank(['message' => 'Por favor, selecciona una provincia.'])] : [],
             ]);
         };
 
