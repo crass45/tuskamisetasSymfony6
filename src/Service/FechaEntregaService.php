@@ -4,6 +4,7 @@
 namespace App\Service;
 
 use App\Entity\Empresa;
+use App\Entity\Pedido;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -102,6 +103,35 @@ class FechaEntregaService
         $dateString = $date->format('Y-m-d');
 
         return in_array($dateString, $holidays, true);
+    }
+
+    /**
+     * NUEVO MÉTODO: Recalcula la fecha de entrega para un pedido ya pagado.
+     * Migración de la lógica de tu 'pedidoPagoConfirmadoBancoAction'.
+     */
+    public function recalculateForPaidOrder(Pedido $pedido): \DateTime
+    {
+        if (!$this->empresaConfig) {
+            return new \DateTime(); // Devolver ahora si no hay configuración
+        }
+
+        $diasBase = $this->empresaConfig->getMaximoDiasSinImprimir();
+        if ($pedido->compruebaTrabajos()) {
+            $diasBase = $pedido->getPedidoExpres() ? 7 : $this->empresaConfig->getMaximoDiasConImpresion();
+        }
+
+        // Sumamos los días adicionales del proveedor
+        $sumaDiasProveedor = 0;
+        foreach ($pedido->getLineas() as $linea) {
+            $diasEnvio = $linea->getProducto()->getModelo()->getProveedor()->getDiasEnvio();
+            if ($diasEnvio > $sumaDiasProveedor) {
+                $sumaDiasProveedor = $diasEnvio;
+            }
+        }
+
+        $diasTotales = $diasBase + $sumaDiasProveedor + $pedido->getDiasAdicionales();
+
+        return $this->calculateDate($diasTotales);
     }
 }
 

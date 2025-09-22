@@ -93,18 +93,14 @@ class CheckoutController extends AbstractController
         $formEnvio = $this->createForm(DireccionEnvioType::class);
 
         $formContacto->handleRequest($request);
-        var_dump($formContacto->get('nombre')->getData());
+
 
         if ($formContacto->isSubmitted() && $formContacto->isValid()) {
             $tipoEnvio = $request->request->getInt('tipoEnvio', 1);
             $direccionEnvio = ($tipoEnvio === 1) ? $contacto->getDireccionFacturacion() : null;
 
             if ($tipoEnvio === 2) {
-                var_dump("SUBMITED!!!!2222");
-                if($formEnvio->isSubmitted()){
-                    var_dump("SUBMITED!!!!");
-                }
-                $formEnvio->handleRequest($request);
+
 //                if ($formEnvio->isSubmitted() && $formEnvio->isValid()) {
 //                    $direccionEnvio = $formEnvio->getData();
 //                    $direccionEnvio->setIdContacto($contacto);

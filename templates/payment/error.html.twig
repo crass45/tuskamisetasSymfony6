@@ -1,0 +1,29 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Error en el Pago{% endblock %}
+{% block metaDescription %}Ha ocurrido un error en el proceso de compra.{% endblock %}
+
+{% block baseBody %}
+    <div class="col-lg-12 tkmPading">
+        <div style="padding: 40px 15px; text-align: center;">
+            {# Se añade un icono de error para que sea más visual #}
+            <i class="fa fa-times-circle" style="font-size: 80px; color: #d9534f;"></i>
+            <h1 class="titulo text-center" style="margin-top: 20px;">{% trans %}ERROR EN EL PROCESO DE PAGO{% endtrans %}</h1>
+            <br>
+            <div class="texto text-center">
+                <p class="lead">{% trans %}Lo sentimos, pero ha ocurrido un error al procesar tu pago.{% endtrans %}</p>
+                <p>{% trans %}No se ha realizado ningún cargo en tu tarjeta.{% endtrans %}</p>
+                <p>{% trans %}Por favor, inténtalo de nuevo más tarde o contacta con nosotros si el problema persiste.{% endtrans %}</p>
+            </div>
+            <br>
+            <br>
+            <div style="text-align: center; border-top: 1px dashed #ccc; padding-top: 30px;">
+                {# MIGRACIÓN: Se actualiza la ruta al nuevo 'app_home' #}
+                <a href="{{ path('app_home', {'_locale': app.request.locale}) }}" target="_parent"
+                   style="background-color: #ff9000" class="button">
+                    {% trans %}Volver a la tienda{% endtrans %}
+                </a>
+            </div>
+        </div>
+    </div>
+{% endblock %}

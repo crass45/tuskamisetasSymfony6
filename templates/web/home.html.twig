@@ -529,8 +529,8 @@ z-index: 3" class="titulo">TU TIENDA ONLINE PARA PERSONALIZAR CAMISETAS, ROPA Y 
                     necesidades. ¡Visítanos y descubre todas las opciones que tenemos para ti!</p>
                 {% for producto in destacados %}
                     {% if producto.nombreUrl is defined %}
-{#                        <a href="{{ path('ss_tienda_producto_detalle',{'productoNombre':producto.nombreUrl}) }}"#}
-                        <a href="#"
+                        <a href="{{ path('app_product_detail',{'slug':producto.nombreUrl}) }}"
+
                            style="color: white;">
                             <div class="col-xs-6 col-sm-4 col-md-3 col-lg-2"
                                  style="padding-right: 2px;padding-left: 2px;">

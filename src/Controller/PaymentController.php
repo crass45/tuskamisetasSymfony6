@@ -104,8 +104,8 @@ class PaymentController extends AbstractController
                 }
 
                 // Recalcular fecha de entrega (esta lógica debería estar en el FechaEntregaService)
-                // $nuevaFecha = $this->fechaEntregaService->recalculateForPaidOrder($pedido);
-                // $pedido->setFechaEntrega($nuevaFecha);
+                 $nuevaFecha = $this->fechaEntregaService->recalculateForPaidOrder($pedido);
+                 $pedido->setFechaEntrega($nuevaFecha);
 
                 $this->em->flush();
 
@@ -128,8 +128,51 @@ class PaymentController extends AbstractController
     #[Route('/{_locale}/compraOK', name: 'app_payment_success', requirements: ['_locale' => 'es|en|fr'])]
     public function successAction(): Response
     {
-        // Reemplaza a 'compraOKAction'
-        return $this->render('payment/success.html.twig');
+        // Recuperamos el ID del pedido de la sesión
+        $orderId = $session->get('last_success_order_id');
+
+        if (!$orderId) {
+            $this->addFlash('warning', 'No se ha podido encontrar la información de tu último pedido.');
+            return $this->redirectToRoute('app_home');
+        }
+
+        $pedido = $this->em->getRepository(Pedido::class)->find($orderId);
+
+        if (!$pedido) {
+            $this->addFlash('error', 'Ha ocurrido un error al recuperar los detalles de tu pedido.');
+            return $this->redirectToRoute('app_home');
+        }
+
+        // Limpiamos la variable de la sesión para que no se reutilice
+        $session->remove('last_success_order_id');
+
+        // Preparamos los datos para el evento de compra de Google Analytics
+        $transaccion = [
+            'id' => $pedido->getNombre(),
+            'affiliation' => 'TusKamisetas.com',
+            'revenue' => $pedido->getSubTotal(),
+            'shipping' => $pedido->getEnvio(),
+            'tax' => $pedido->getIva(),
+        ];
+
+        $items = [];
+        foreach ($pedido->getPedidoHasLineas() as $linea) {
+            $items[] = [
+                'sku' => $linea->getIdProducto()->getModelo()->getReferencia(),
+                'name' => $linea->getIdProducto()->getModelo()->getNombre(),
+                'brand' => $linea->getIdProducto()->getModelo()->getFabricante()->getNombre(),
+                'variant' => $linea->getIdProducto()->getReferencia(),
+                'category' => $linea->getIdProducto()->getModelo()->getCategory()->first() ? $linea->getIdProducto()->getModelo()->getCategory()->first()->getName() : 'Sin Categoria',
+                'price' => $linea->getPrecio(),
+                'quantity' => $linea->getCantidad(),
+            ];
+        }
+
+        return $this->render('payment/success.html.twig', [
+            'pedido' => $pedido,
+            'transaccion' => $transaccion,
+            'items' => $items,
+        ]);
     }
 
     /**
