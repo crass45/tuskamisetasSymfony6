@@ -5,9 +5,10 @@ namespace App\Controller;
 
 use App\Entity\Contacto;
 use App\Entity\Direccion;
+use App\Entity\Empresa;
 use App\Entity\Pedido;
 use App\Form\Type\ContactoType;
-use App\Form\Type\DireccionType;
+use App\Form\Type\DireccionEnvioType;
 use App\Model\Carrito;
 use App\Service\OrderService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,8 +24,9 @@ class CheckoutController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private OrderService $orderService // El "cerebro" que creará el pedido
-    ) {
+        private OrderService           $orderService // El "cerebro" que creará el pedido
+    )
+    {
     }
 
     /**
@@ -56,85 +58,124 @@ class CheckoutController extends AbstractController
      */
     #[Route('/address', name: 'app_checkout_address')]
     #[IsGranted('ROLE_USER')]
-    public function addressAction(SessionInterface $session): Response
+    public function addressAction(Request $request, SessionInterface $session): Response
     {
-        $contacto = $this->em->getRepository(Contacto::class)->findOneBy(['usuario' => $this->getUser()]);
-        if (!$contacto) {
-            $contacto = new Contacto();
-            $contacto->setUsuario($this->getUser());
+        $contacto = $this->em->getRepository(Contacto::class)->findOneBy(['usuario' => $this->getUser()]) ?? new Contacto();
+        $contacto->setUsuario($this->getUser());
+        if (!$contacto->getDireccionFacturacion()) {
             $contacto->setDireccionFacturacion(new Direccion());
         }
 
         $formContacto = $this->createForm(ContactoType::class, $contacto);
-
-        // CORRECCIÓN: Se usa la clase DireccionType que ya fusionamos.
-//        $formEnvio = $this->createForm(DireccionType::class);
-        $formEnvio = $this->createForm(DireccionType::class, null, [
-            'is_shipping_address' => true,
-        ]);
+        $formEnvio = $this->createForm(DireccionEnvioType::class); // Se crea el form de envío
 
         return $this->render('checkout/address.html.twig', [
             'contacto' => $contacto,
-            'formContacto' => $formContacto->createView(),
-            'formEnvio' => $formEnvio->createView(),
+            'formContacto' => $formContacto,
+            'formEnvio' => $formEnvio, // Se pasa a la plantilla
             'carrito' => $session->get('carrito')
         ]);
     }
 
-    /**
-     * NUEVA ACCIÓN: Se llama por AJAX para cargar un formulario de dirección existente.
-     */
-    #[Route('/load-address/{id}', name: 'app_checkout_load_address', defaults: ['id' => null])]
-    #[IsGranted('ROLE_USER')]
-    public function loadAddressAction(?Direccion $direccion = null): Response
-    {
-        if (!$direccion) {
-            $direccion = new Direccion();
-        }
-
-        // Comprobamos que la dirección pertenece al usuario actual por seguridad
-        if ($direccion->getId() && $direccion->getIdContacto()->getUsuario() !== $this->getUser()) {
-            throw $this->createAccessDeniedException('Esta dirección no le pertenece.');
-        }
-
-//        $formEnvio = $this->createForm(DireccionType::class, $direccion);
-        // CORRECCIÓN: Le pasamos la misma opción al formulario que se carga por AJAX
-        $formEnvio = $this->createForm(DireccionType::class, $direccion, [
-            'is_shipping_address' => true,
-        ]);
-
-        // Renderizamos solo el parcial del formulario
-        return $this->render('checkout/partials/_address_form.html.twig', [
-            'form' => $formEnvio->createView()
-        ]);
-    }
-
-    /**
-     * PASO 3: Procesa los datos de dirección y crea el pedido.
-     * Reemplaza a la parte de procesamiento de 'pedidoConfirmacionAction'.
-     */
     #[Route('/process', name: 'app_checkout_process', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
     public function processAction(Request $request, SessionInterface $session): Response
     {
         $carrito = $session->get('carrito');
-        $contacto = $this->em->getRepository(Contacto::class)->findOneBy(['usuario' => $this->getUser()]);
-
-        // Aquí iría la lógica para validar los formularios de Contacto y Dirección
-        // y para guardar la nueva dirección si es necesario.
-
-        // Usamos nuestro servicio "cerebro" para crear el pedido
-        $pedido = $this->orderService->createOrderFromCart($carrito, $contacto, null /* pasar aquí la dirección de envío si es diferente */);
-
-        // Limpiamos el carrito de la sesión
-        $session->remove('carrito');
-        // Decidimos a dónde redirigir al usuario
-        if ($pedido->necesitaPagoOnline()) { // Necesitaremos añadir este método a la entidad Pedido
-            return $this->redirectToRoute('app_payment_start', ['id' => $pedido->getId()]);
+        if (!$carrito instanceof Carrito) {
+            return $this->redirectToRoute('app_cart_show');
         }
 
-        // Si no necesita pago, es un presupuesto, vamos a la página de éxito
-        return $this->redirectToRoute('app_checkout_success', ['id' => $pedido->getId()]);
+        $contacto = $this->em->getRepository(Contacto::class)->findOneBy(['usuario' => $this->getUser()]) ?? new Contacto();
+        $contacto->setUsuario($this->getUser());
+
+        $formContacto = $this->createForm(ContactoType::class, $contacto);
+        $formEnvio = $this->createForm(DireccionEnvioType::class);
+
+        $formContacto->handleRequest($request);
+        var_dump($formContacto->get('nombre')->getData());
+
+        if ($formContacto->isSubmitted() && $formContacto->isValid()) {
+            $tipoEnvio = $request->request->getInt('tipoEnvio', 1);
+            $direccionEnvio = ($tipoEnvio === 1) ? $contacto->getDireccionFacturacion() : null;
+
+            if ($tipoEnvio === 2) {
+                var_dump("SUBMITED!!!!2222");
+                if($formEnvio->isSubmitted()){
+                    var_dump("SUBMITED!!!!");
+                }
+                $formEnvio->handleRequest($request);
+//                if ($formEnvio->isSubmitted() && $formEnvio->isValid()) {
+//                    $direccionEnvio = $formEnvio->getData();
+//                    $direccionEnvio->setIdContacto($contacto);
+//                } else {
+//                    $this->addFlash('error', 'Por favor, revisa los datos de la nueva dirección de envío.');
+//                    return $this->render('checkout/address.html.twig', ['contacto' => $contacto, 'formContacto' => $formContacto, 'formEnvio' => $formEnvio, 'carrito' => $carrito]);
+//                }
+
+                ///PONEMOS LA LOGICA QUE TENIAMOS EN NUESTRO ANTERIOR SYMFONY
+//                if ($formEnvio->isSubmitted() && $formEnvio->isValid()) {
+                $comboDirecciones = $request->request->get('misdirecciones');
+                if ($comboDirecciones == -1) {
+                    //SE CREA UNA NUEVA DIRECCIÓN
+                    $direccionEnvio = new Direccion();
+                } else {
+                    //SE UTILIZA UNA DIRECCIÓN EXISTENTE
+                    //TODO VER COMO OBTENER LA DIRECCIÓN
+//                    $direccionEnvio = $em->getRepository('')->findOneBy(array('id' => $comboDirecciones));
+                }
+                if ($direccionEnvio == null) {
+                    $direccionEnvio = new Direccion();
+                }
+
+                //si la dirección es predeterminada se pone el resto como no predeterminadas
+                if ($formEnvio->get('predeterminada')->getData()) {
+                    foreach ($contacto->getDireccionesEnvio() as $direccion) {
+                        $direccion->setPredeterminada(false);
+                        $this->em->persist($direccion);
+                        $this->em->persist($contacto);
+                    }
+                }
+                $direccionEnvio->setNombre($formEnvio->get('nombre')->getData());
+                $direccionEnvio->setPredeterminada($formEnvio->get('predeterminada')->getData());
+                $direccionEnvio->setDir($formEnvio->get('dir')->getData());
+                $direccionEnvio->setCp($formEnvio->get('cp')->getData());
+                $direccionEnvio->setTelefonoMovil($formEnvio->get('telefonoMovil')->getData());
+                $direccionEnvio->setPoblacion($formEnvio->get('poblacion')->getData());
+                $direccionEnvio->setProvincia($formEnvio->get('provincia')->getData());
+                $direccionEnvio->setProvinciaBD($formEnvio->get('provinciaBD')->getData());
+//                $direccionEnvio->setPais($formEnvio->get('paisBD')->getData());
+                $direccionEnvio->setPaisBD($formEnvio->get('paisBD')->getData());
+                $direccionEnvio->setIdContacto($contacto);
+                $this->em->persist($direccionEnvio);
+
+            } elseif ($tipoEnvio === 3) {
+                $empresa = $this->em->getRepository(Empresa::class)->findOneBy([]);
+                $direccionEnvio = $empresa ? $empresa->getDireccionEnvio() : null;
+
+            }
+
+//            if ($direccionEnvio && !$direccionEnvio->getId()) {
+            $this->em->persist($direccionEnvio);
+//            }
+            $this->em->persist($contacto);
+            $this->em->flush();
+
+            $pedido = $this->orderService->createOrderFromCart($carrito, $contacto, $direccionEnvio);
+            //MARCAMOS RECOGER EN TIENDA EN EL PEDIDO EN CASO QUE PROCEDA
+            if($tipoEnvio===3){
+                $pedido->setRecogerEnTienda(true);
+            }
+            $session->remove('carrito');
+
+            if ($pedido->necesitaPagoOnline()) {
+                return $this->redirectToRoute('app_payment_start', ['id' => $pedido->getId()]);
+            }
+            return $this->redirectToRoute('app_checkout_success', ['id' => $pedido->getId()]);
+        }
+
+        $this->addFlash('error', 'Por favor, revisa tus datos de facturación.');
+        return $this->render('checkout/address.html.twig', ['contacto' => $contacto, 'formContacto' => $formContacto, 'formEnvio' => $formEnvio, 'carrito' => $carrito]);
     }
 
     /**

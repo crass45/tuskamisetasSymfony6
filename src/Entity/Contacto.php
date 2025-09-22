@@ -19,7 +19,7 @@ class Contacto
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    #[Assert\NotNull]
+    #[Assert\NotBlank(message: 'El campo es obligatorio')]
     private ?string $nombre = null;
 
     #[ORM\Column(length: 100, nullable: true)]
@@ -60,9 +60,11 @@ class Contacto
     #[ORM\JoinColumn(name: 'id_tarifa')]
     private ?Tarifa $tarifa = null;
 
-    /** @var Collection<int, Direccion> */
-    #[ORM\ManyToMany(targetEntity: Direccion::class, cascade: ['persist'])]
-    #[ORM\JoinTable(name: 'contacto_direcciones_envio')]
+    /**
+     * @var Collection<int, Direccion>
+     */
+    // Se cambia de ManyToMany a OneToMany. Un Contacto tiene muchas Direcciones de envío.
+    #[ORM\OneToMany(mappedBy: 'idContacto', targetEntity: Direccion::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $direccionesEnvio;
 
     /** @var Collection<int, Pedido> */
@@ -140,10 +142,32 @@ class Contacto
     public function isIntracomunitario(): bool { return $this->intracomunitario; }
     public function setIntracomunitario(bool $intracomunitario): self { $this->intracomunitario = $intracomunitario; return $this; }
 
-    /** @return Collection<int, Direccion> */
-    public function getDireccionesEnvio(): Collection { return $this->direccionesEnvio; }
-    public function addDireccionesEnvio(Direccion $direccion): self { if (!$this->direccionesEnvio->contains($direccion)) { $this->direccionesEnvio->add($direccion); } return $this; }
-    public function removeDireccionesEnvio(Direccion $direccion): self { $this->direccionesEnvio->removeElement($direccion); return $this; }
+    /**
+     * @return Collection<int, Direccion>
+     */
+    public function getDireccionesEnvio(): Collection
+    {
+        return $this->direccionesEnvio;
+    }
+
+    public function addDireccionesEnvio(Direccion $direccion): self
+    {
+        if (!$this->direccionesEnvio->contains($direccion)) {
+            $this->direccionesEnvio->add($direccion);
+            $direccion->setIdContacto($this);
+        }
+        return $this;
+    }
+
+    public function removeDireccionesEnvio(Direccion $direccion): self
+    {
+        if ($this->direccionesEnvio->removeElement($direccion)) {
+            if ($direccion->getIdContacto() === $this) {
+                $direccion->setIdContacto(null);
+            }
+        }
+        return $this;
+    }
 
     /** @return Collection<int, Pedido> */
     public function getPedidos(): Collection { return $this->pedidos; }

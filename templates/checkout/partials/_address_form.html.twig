@@ -1,67 +1,63 @@
 {# templates/checkout/partials/_address_form.html.twig #}
 {# Este parcial renderiza el formulario para una nueva dirección de envío. #}
-{# Es cargado por la acción loadAddressAction vía AJAX. #}
+{# Es incluido por address.html.twig #}
 
-{# MIGRACIÓN: Se renderizan los campos manualmente para controlar el diseño y añadir las clases correctas #}
-{{ form_start(form, {'attr': {'id': 'addressForm'}}) }}
-<div class="row">
-    <div class="col-md-6">
-        <div class="form-group">
-            {{ form_label(form.nombre) }}
-            {{ form_widget(form.nombre, {'attr': {'class': 'form-control form-control-lg'}}) }}
-            {{ form_errors(form.nombre) }}
-        </div>
-        <div class="form-group">
-            {{ form_label(form.telefonoMovil) }}
-            {{ form_widget(form.telefonoMovil, {'attr': {'class': 'form-control form-control-lg'}}) }}
-            {{ form_errors(form.telefonoMovil) }}
-        </div>
-        <div class="form-group">
-            {{ form_label(form.dir) }}
-            {{ form_widget(form.dir, {'attr': {'class': 'form-control form-control-lg'}}) }}
-            {{ form_errors(form.dir) }}
-        </div>
-        <div class="form-group">
-            {{ form_label(form.cp) }}
-            {{ form_widget(form.cp, {'attr': {'class': 'form-control form-control-lg'}}) }}
-            {{ form_errors(form.cp) }}
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="form-group">
-            {{ form_label(form.poblacion) }}
-            {{ form_widget(form.poblacion, {'attr': {'class': 'form-control form-control-lg'}}) }}
-            {{ form_errors(form.poblacion) }}
-        </div>
-        <div class="form-group">
-            {{ form_label(form.paisBD) }}
-            {{ form_widget(form.paisBD) }}
-            {{ form_errors(form.paisBD) }}
-        </div>
-
-        {# Estos son los campos de provincia condicionales. El JS se encargará de mostrar solo uno. #}
-        <div class="form-group province-select-container">
-            {{ form_label(form.provinciaBD) }}
-            {{ form_widget(form.provinciaBD) }}
-            {{ form_errors(form.provinciaBD) }}
-        </div>
-        <div class="form-group province-text-input-container">
-            {{ form_label(form.provincia) }}
-            {{ form_widget(form.provincia, {'attr': {'class': 'form-control form-control-lg'}}) }}
-            {{ form_errors(form.provincia) }}
-        </div>
-    </div>
-
-    {# El campo 'predeterminada' solo se renderizará si el controlador lo ha añadido al formulario #}
-    {% if form.predeterminada is defined %}
-        <div class="col-xs-12">
+<div id="addressForm" data-province-id="{{ form.vars.value.provinciaBD.id|default('') }}">
+    <div class="row">
+        <div class="col-md-6">
             <div class="form-group">
-                {{ form_row(form.predeterminada) }}
+                {{ form_label(form.nombre) }}
+                {{ form_widget(form.nombre, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(form.nombre) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.telefonoMovil) }}
+                {{ form_widget(form.telefonoMovil, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(form.telefonoMovil) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.dir) }}
+                {{ form_widget(form.dir, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(form.dir) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.cp) }}
+                {{ form_widget(form.cp, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(form.cp) }}
             </div>
         </div>
-    {% endif %}
-</div>
-{# Se renderiza el resto del formulario (token CSRF, etc.) de forma oculta #}
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(form.poblacion) }}
+                {{ form_widget(form.poblacion, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(form.poblacion) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(form.paisBD) }}
+                {{ form_widget(form.paisBD, {'attr': {'class': 'form-control form-control-lg'}})}}
+                {{ form_errors(form.paisBD) }}
+            </div>
+            <div class="form-group province-select-container">
+                {{ form_label(form.provinciaBD) }}
+                {{ form_widget(form.provinciaBD, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(form.provinciaBD) }}
+            </div>
+            <div class="form-group province-text-input-container" style="display: none;">
+                {{ form_label(form.provincia) }}
+                {{ form_widget(form.provincia, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(form.provincia) }}
+            </div>
+        </div>
+
+        {% if form.predeterminada is defined %}
+            <div class="col-xs-12">
+                <div class="form-group">
+                    {{ form_row(form.predeterminada, {'attr': {'class': 'form-control form-control-lg','required':'false'}}) }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    {# Se renderiza el resto del formulario (token CSRF, etc.) de forma oculta #}
     {{ form_rest(form) }}
-{{ form_end(form) }}
+</div>
 

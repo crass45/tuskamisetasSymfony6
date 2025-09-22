@@ -24,7 +24,7 @@ final class DireccionType extends AbstractType
             $builder
                 ->add('nombre', TextType::class, ['label' => 'Nombre / Alias (ej. Casa, Oficina)', 'required' => true])
                 ->add('telefonoMovil', TextType::class, ['label' => 'Teléfono de Contacto', 'required' => false])
-                ->add('predeterminada', CheckboxType::class, ['label' => 'Establecer como dirección de envío por defecto', 'required' => false]);
+                ->add('predeterminada', CheckboxType::class, ['label' => 'Establecer como dirección de envío por defecto perra del infierno']);
         }
 
         $builder

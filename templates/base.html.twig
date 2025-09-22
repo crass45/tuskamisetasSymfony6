@@ -63,7 +63,7 @@
     <script src="{{ asset('cookieconsent/cookieconsent.js') }}"></script>
     <!-- Google, Facebook, Clarity scripts... -->
     <!-- Google tag ANALYTICS 4 (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J1ZQDH5W4Q"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ google_tag_manager_id }}"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
 
@@ -72,7 +72,7 @@
         }
 
         gtag('js', new Date());
-        gtag('config', 'G-J1ZQDH5W4Q');
+        gtag('config', '{{ google_tag_manager_id }}');
     </script>
 
 

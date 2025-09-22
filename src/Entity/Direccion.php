@@ -55,6 +55,9 @@ class Direccion
 
     // --- Relaciones ---
 
+    #[ORM\ManyToOne(inversedBy: 'direccionesEnvio')]
+    private ?Contacto $idContacto = null;
+
     #[ORM\ManyToOne(targetEntity: Pais::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'paisBD', referencedColumnName: 'id', onDelete: 'CASCADE')]
     private ?Pais $paisBD = null;
@@ -71,6 +74,16 @@ class Direccion
     // --- Getters y Setters ---
 
     public function getId(): ?int { return $this->id; }
+    public function getIdContacto(): ?Contacto
+    {
+        return $this->idContacto;
+    }
+
+    public function setIdContacto(?Contacto $idContacto): self
+    {
+        $this->idContacto = $idContacto;
+        return $this;
+    }
     public function isPredeterminada(): ?bool { return $this->predeterminada; }
     public function setPredeterminada(?bool $predeterminada): self { $this->predeterminada = $predeterminada; return $this; }
     public function getNombre(): ?string { return $this->nombre; }
@@ -126,5 +139,14 @@ class Direccion
         }
 
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updatePais(): void
+    {
+        if (null !== $this->getPais()) {
+            $this->pais = $this->paisBD->getNombre();
+        }
     }
 }
