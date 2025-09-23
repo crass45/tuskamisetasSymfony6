@@ -94,13 +94,17 @@
                                 <select class="form-control" name="misdirecciones" id="misdirecciones">
                                     <option value="-1">Crear una nueva dirección</option>
                                     {% for direccion in contacto.direccionesEnvio %}
-                                        <option value="{{ direccion.id }}"{% if direccion.predeterminada %}selected{% endif %}>{{ direccion }}</option>
+                                        {# --- INICIO DE LA MEJORA --- #}
+                                        <option value="{{ direccion.id }}" {% if direccion.predeterminada %}selected{% endif %}>
+                                            {{ direccion.nombre }} - {{ direccion.dir }}, {{ direccion.poblacion }}
+                                        </option>
+                                        {# --- FIN DE LA MEJORA --- #}
                                     {% endfor %}
                                 </select>
                             {% endif %}
 
                             <div id="newAddressFormContainer" style="margin-top: 15px; display: none;">
-                                {% include 'checkout/partials/_address_form.html.twig' with {'form': formEnvio} %}
+                                {# El formulario para la nueva dirección se cargará aquí con AJAX #}
                             </div>
                         </div>
                         <div class="tab-pane fade" id="recogertienda"><br><h4 style="font-weight: bold">{% trans %}RECOGER EN TUSKAMISETAS{% endtrans %}</h4><p>Cuando su pedido esté listo le enviaremos un email para que pueda recogerlo en nuestras instalaciones.</p></div>
@@ -128,91 +132,141 @@
         </form>
     </div>
 
+    {# =================================================================== #}
+    {# INICIO DE LA CORRECCIÓN DEL JAVASCRIPT #}
+    {# =================================================================== #}
     <script>
         $(document).ready(function() {
-            // --- LÓGICA PARA PESTAÑAS Y DESPLEGABLE DE DIRECCIONES ---
+            const $shippingFormContainer = $('#newAddressFormContainer');
+            const $misDireccionesDropdown = $('#misdirecciones');
+            $shippingFormFields = $shippingFormContainer.find('input, select, textarea');
+
+
+
+// // --- FUNCIÓN CENTRAL PARA GESTIONAR EL ESTADO DEL FORMULARIO DE ENVÍO ---#}
+            function updateShippingFormState() {
+                const isOtraDireccionActive = $('#nuevadireccion').hasClass('active');
+                const $shippingFormFields = $shippingFormContainer.find('input, select, textarea');
+                console.warn($shippingFormFields);
+
+                if (isOtraDireccionActive) {
+                    $shippingFormFields.prop('disabled', false); // Activa los campos para validación y envío
+                } else {
+                    $shippingFormFields.prop('disabled', true); // Desactiva los campos
+                }
+            }
+
+
+            // --- LÓGICA PARA PESTAÑAS (ACTUALIZA EL INPUT OCULTO) ---
             $('#entregaTab a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                 const tipoEnvio = $(e.target).data('tipoenvio');
+                $shippingFormFields = $shippingFormContainer.find('input, select, textarea');
+                $shippingFormFields.prop('disabled', true); // Desactiva los campos
+                console.warn($shippingFormFields);
                 $('#tipoEnvio').val(tipoEnvio);
+                console.warn(tipoEnvio);
+                if(tipoEnvio==2){
+                    $shippingFormContainer.show();
+                    updateShippingFormState();
+                }else{
+                    $shippingFormContainer.hide();
+                    updateShippingFormState()
+                }
             });
 
-            function toggleNewAddressForm() {
-                if ($('#misdirecciones').val() == '-1') {
-                    $('#newAddressFormContainer').slideDown();
-                } else {
-                    $('#newAddressFormContainer').slideUp();
+            // --- LÓGICA PARA EL DESPLEGABLE DE DIRECCIONES ---
+            function manageShippingAddressView() {
+                const selectedId = $misDireccionesDropdown.val();
+                if (selectedId == '-1') {
+                    // Cargar un formulario vacío y mostrarlo
+                    loadAddressForm(-1);
+                    $shippingFormContainer.slideDown();
+                } else if (selectedId) {
+                    // Cargar la dirección seleccionada y mostrarla
+                    loadAddressForm(selectedId);
+                    $shippingFormContainer.slideDown();
                 }
             }
-            $('#misdirecciones').on('change', toggleNewAddressForm);
+            $misDireccionesDropdown.on('change', manageShippingAddressView);
 
-            // Se ejecuta al cargar la página para establecer el estado inicial
-            if($("#misdirecciones").length) {
-                toggleNewAddressForm();
-                if ($("#misdirecciones").val() != -1) {
-                    $('#nuevadireccion-tab').tab('show');
-                } else {
-                    $('#mismadireccion-tab').trigger('click');
-                }
+            // --- LÓGICA DE CARGA AJAX ---
+            function loadAddressForm(direccionId) {
+                let url = "{{ path('app_checkout_load_address', {'_locale': app.request.locale, 'id': 'DIR_ID'}) }}";
+                url = url.replace('DIR_ID', direccionId > 0 ? direccionId : '');
+                $shippingFormContainer.html('<p>Cargando...</p>').load(url, function(response, status) {
+                    if (status === 'success') {
+                        handleCountryChange($shippingFormContainer.find('.country-selector'));
+                        updateShippingFormState();
+                    }
+                });
+            }
+
+            // --- LÓGICA DE INICIALIZACIÓN AL CARGAR LA PÁGINA ---
+            const $selectedAddress = $misDireccionesDropdown.find('option:selected');
+            if ($selectedAddress.length > 0 && $selectedAddress.val() != '-1') {
+                // 1. Hay una dirección predeterminada.
+                // Activamos la pestaña "Otra dirección".
+                // $('#nuevadireccion-tab').tab('show');
+                $('.nav-tabs a[href="#nuevadireccion"]').tab('show');
+
+                // 2. Cargamos el formulario con los datos de esa dirección.
+                loadAddressForm($selectedAddress.val());
+                // 3. MOSTRAMOS el contenedor del formulario.
+                $shippingFormContainer.show();
             } else {
-                $('#newAddressFormContainer').show(); // Si no hay direcciones guardadas, se muestra el form por defecto
-                $('#mismadireccion-tab').trigger('click');
+                // 4. No hay dirección predeterminada.
+                // Activamos la pestaña "Misma que facturación" por defecto.
+                // $('#mismadireccion-tab').tab('show');
+                $('.nav-tabs a[href="#mismadireccion"]').tab('show');
+                // 5. Ocultamos el contenedor del formulario de envío.
+                $shippingFormContainer.hide();
+                // 6. Precargamos un formulario vacío para que esté listo si el usuario lo necesita.
+                loadAddressForm(-1);
+
             }
 
-            // ===================================================================
-            // INICIO DE LA CORRECCIÓN DEL JAVASCRIPT
-            // ===================================================================
+            // --- LÓGICA PARA PROVINCIAS ---
             function handleCountryChange(countrySelectElement) {
-                const $formContainer = $(countrySelectElement).closest('#billingForm, #newAddressFormContainer');
+                const $formContainer = $(countrySelectElement).closest('#billingForm, #addressForm');
                 if ($formContainer.length === 0) return;
-
                 const $provinceSelectContainer = $formContainer.find('.province-select-container');
                 const $provinceTextContainer = $formContainer.find('.province-text-input-container');
-                const $provinceSelect = $provinceSelectContainer.find('select');
-                const $provinceInput = $provinceTextContainer.find('input');
                 const paisID = $(countrySelectElement).val();
 
                 if (!paisID) {
                     $provinceSelectContainer.hide();
-                    $provinceSelect.prop('disabled', true); // Se desactiva el select
                     $provinceTextContainer.show();
-                    $provinceInput.prop('disabled', false); // Se activa el input
                     return;
                 }
 
                 let url = "{{ path('api_get_country_provinces', {id: 'PAIS_ID'}) }}".replace('PAIS_ID', paisID);
-
                 $.ajax({
                     url: url,
                     type: "GET",
                     dataType: "JSON",
                     success: function (provincias) {
+                        const $provinciasSelect = $formContainer.find('.province-select-container select');
+                        const $provinciasText = $formContainer.find('.province-text-input-container input');
+                        console.warn($provinciasText);
                         const savedProvinceId = $formContainer.data('province-id');
-
                         if (provincias.length > 0) {
-                            $provinceSelect.html('<option value="">Selecciona una provincia...</option>');
+                            $provinciasSelect.html('<option value="">Selecciona una provincia...</option>');
                             $.each(provincias, function (key, provincia) {
-                                $provinceSelect.append(`<option value="${provincia.id}">${provincia.name}</option>`);
+                                $provinciasSelect.append(`<option value="${provincia.id}">${provincia.name}</option>`);
                             });
                             if (savedProvinceId) {
-                                $provinceSelect.val(savedProvinceId);
+                                $provinciasSelect.val(savedProvinceId);
                             }
                             $provinceSelectContainer.show();
-                            $provinceSelect.prop('disabled', false); // Se activa el select
                             $provinceTextContainer.hide();
-                            $provinceInput.prop('disabled', true); // Se desactiva el input
+                            $provinciasSelect.prop('required',true);
+                            $provinciasText.prop('required',false);
                         } else {
                             $provinceSelectContainer.hide();
-                            $provinceSelect.prop('disabled', true); // Se desactiva el select
                             $provinceTextContainer.show();
-                            $provinceInput.prop('disabled', false); // Se activa el input
+                            $provinciasSelect.prop('required', false);
+                            $provinciasText.prop('required',true);
                         }
-                    },
-                    error: function(err) {
-                        console.error("Error al cargar las provincias:", err);
-                        $provinceSelectContainer.hide();
-                        $provinceSelect.prop('disabled', true);
-                        $provinceTextContainer.show();
-                        $provinceInput.prop('disabled', false);
                     }
                 });
             }
@@ -220,21 +274,7 @@
             $('body').on('change', '.country-selector', function() {
                 handleCountryChange(this);
             });
-
             handleCountryChange($('#billingForm').find('.country-selector'));
-            handleCountryChange($('#newAddressFormContainer').find('.country-selector'));
-            // ===================================================================
-            // FIN DE LA CORRECCIÓN
-            // ===================================================================
-
-            // Se usa delegación de eventos para que funcione con ambos formularios
-            $('body').on('change', '.country-selector', function() {
-                handleCountryChange(this);
-            });
-
-            // Se inicializa para el formulario de facturación al cargar la página
-            handleCountryChange($('#billingForm').find('.country-selector'));
-            handleCountryChange($('#newAddressFormContainer').find('.country-selector'));
 
             // --- LÓGICA PARA SUBMIT ---
             $('#confirmarPedidoBtn').on('click', function(e) {
@@ -242,7 +282,6 @@
                     alert("Debes aceptar los términos y la política de privacidad.");
                     e.preventDefault();
                 }
-                // ... (Tu lógica de GTag aquí)
             });
         });
     </script>

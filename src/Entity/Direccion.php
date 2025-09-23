@@ -95,7 +95,7 @@ class Direccion
     public function getPoblacion(): ?string { return $this->poblacion; }
     public function setPoblacion(?string $poblacion): self { $this->poblacion = $poblacion; return $this; }
     public function getPais(): ?string { return $this->pais; }
-    public function setPais(string $pais): self { $this->pais = $pais; return $this; }
+    public function setPais(?string $pais): self { $this->pais = $pais; return $this; }
     public function getProvincia(): ?string { return $this->provincia; }
     public function setProvincia(?string $provincia): self { $this->provincia = $provincia; return $this; }
     public function getTelefonoMovil(): ?string { return $this->telefonoMovil; }

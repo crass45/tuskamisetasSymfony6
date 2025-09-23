@@ -93,11 +93,13 @@ class CheckoutController extends AbstractController
         $formEnvio = $this->createForm(DireccionEnvioType::class);
 
         $formContacto->handleRequest($request);
+        $formEnvio->handleRequest($request);
 
 
         if ($formContacto->isSubmitted() && $formContacto->isValid()) {
             $tipoEnvio = $request->request->getInt('tipoEnvio', 1);
             $direccionEnvio = ($tipoEnvio === 1) ? $contacto->getDireccionFacturacion() : null;
+            var_dump($tipoEnvio);
 
             if ($tipoEnvio === 2) {
 
@@ -110,7 +112,11 @@ class CheckoutController extends AbstractController
 //                }
 
                 ///PONEMOS LA LOGICA QUE TENIAMOS EN NUESTRO ANTERIOR SYMFONY
-//                if ($formEnvio->isSubmitted() && $formEnvio->isValid()) {
+                if ($formEnvio->isSubmitted() && $formEnvio->isValid()) {
+                    var_dump("ISSUBMITEDDDD");
+                }else{
+                    var_dump("MIERDAPATOS");
+                }
                 $comboDirecciones = $request->request->get('misdirecciones');
                 if ($comboDirecciones == -1) {
                     //SE CREA UNA NUEVA DIRECCIÓN
@@ -140,7 +146,7 @@ class CheckoutController extends AbstractController
                 $direccionEnvio->setPoblacion($formEnvio->get('poblacion')->getData());
                 $direccionEnvio->setProvincia($formEnvio->get('provincia')->getData());
                 $direccionEnvio->setProvinciaBD($formEnvio->get('provinciaBD')->getData());
-//                $direccionEnvio->setPais($formEnvio->get('paisBD')->getData());
+                $direccionEnvio->setPais($formEnvio->get('paisBD')->getData());
                 $direccionEnvio->setPaisBD($formEnvio->get('paisBD')->getData());
                 $direccionEnvio->setIdContacto($contacto);
                 $this->em->persist($direccionEnvio);
@@ -182,5 +188,30 @@ class CheckoutController extends AbstractController
     {
         // ...
         return $this->render('checkout/success.html.twig', ['pedido' => $pedido]);
+    }
+
+    /**
+     * Se llama por AJAX para cargar un formulario de dirección existente o uno nuevo.
+     */
+    #[Route('/load-address/{id}', name: 'app_checkout_load_address', defaults: ['id' => null])]
+    #[IsGranted('ROLE_USER')]
+    public function loadAddressAction(?Direccion $direccion = null): Response
+    {
+        // Si se pasa un ID y la dirección existe, se hace una comprobación de seguridad
+        if ($direccion && $direccion->getIdContacto()?->getUsuario() !== $this->getUser()) {
+            throw $this->createAccessDeniedException('Esta dirección no le pertenece.');
+        }
+
+        // Si no se encuentra una dirección (o no se pasa ID), se crea una nueva
+        if (!$direccion) {
+            $direccion = new Direccion();
+        }
+
+        $formEnvio = $this->createForm(DireccionEnvioType::class, $direccion);
+
+        // Renderizamos solo el parcial del formulario
+        return $this->render('checkout/partials/_address_form.html.twig', [
+            'form' => $formEnvio->createView()
+        ]);
     }
 }

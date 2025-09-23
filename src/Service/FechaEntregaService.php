@@ -39,12 +39,6 @@ class FechaEntregaService
         $diasImpreso2 = $this->empresaConfig->getMaximoDiasConImpresion() + $sumaDias;
         $diasExpress = $diasSinImprimir1 + 3; // Lógica para el servicio express
 
-        var_dump($diasSinImprimir1);
-        var_dump($diasSinImprimir2);
-        var_dump($diasImpreso1);
-        var_dump($diasImpreso2);
-        var_dump($diasExpress);
-
         return [
             'fechaEntregaSinImprimir' => $this->calculateDate($diasSinImprimir1),
             'fechaEntregaImpreso' => $this->calculateDate($diasImpreso1),

@@ -16,7 +16,7 @@
                 <hr>
 
                 {# Las variables 'dias1' y 'dias2' vienen del PaymentController #}
-                <h4>Su pedido se le entregará en un plazo de {{ dias1 }} a {{ dias2 }} días laborables a partir del pago.</h4>
+                <h4>Si realiza el pago ahora mismo. Su pedido se le entregará entre el {{ dias1 }} y el {{ dias2 }}.</h4>
 
                 {# La variable 'empresa' es global gracias a nuestra TiendaExtension #}
                 {% if empresa.vacacionesActivas %}
@@ -32,7 +32,7 @@
                     <div class="card">
                         <div class="card-header" id="headingCard">
                             <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseCard" aria-expanded="true" aria-controls="collapseCard">
-                                <h3>PAGAR CON TARJETA</h3>
+{#                                <h3>PAGAR CON TARJETA</h3>#}
                             </button>
                         </div>
                         <div id="collapseCard" class="collapse in" aria-labelledby="headingCard" data-parent="#paymentOptions">
