@@ -1,0 +1,12 @@
+{# templates/partials/_flash_messages.html.twig #}
+{# Este fichero se encarga de renderizar los mensajes flash (addFlash) #}
+
+{% for label, messages in app.flashes %}
+    {% for message in messages %}
+        {# Usamos las clases de alerta de Bootstrap para que se vea bien #}
+        <div class="alert alert-{{ label }} alert-dismissible" role="alert" style="margin-top: 15px;">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            {{ message|raw }}
+        </div>
+    {% endfor %}
+{% endfor %}

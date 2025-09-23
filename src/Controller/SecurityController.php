@@ -3,13 +3,39 @@
 
 namespace App\Controller;
 
+use App\Entity\Sonata\User;
+use App\Form\Type\ChangePasswordFormType;
+use App\Form\Type\ResetPasswordRequestFormType;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface; // <-- Se asegura de que se usa la interfaz correcta de Symfony
+use Symfony\Component\Mime\Address;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use SymfonyCasts\Bundle\ResetPassword\Controller\ResetPasswordControllerTrait;
+use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
+use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
 
 class SecurityController extends AbstractController
 {
+
+    use ResetPasswordControllerTrait;
+
+    private EntityManagerInterface $em;
+    private ResetPasswordHelperInterface $resetPasswordHelper;
+
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        ResetPasswordHelperInterface $resetPasswordHelper
+    ) {
+        $this->em = $entityManager;
+        $this->resetPasswordHelper = $resetPasswordHelper;
+    }
     /**
      * MIGRACIÓN: Esta acción se encarga de renderizar el formulario de login.
      * La lógica de procesar el login ahora la gestiona el firewall de Symfony.
@@ -29,6 +55,21 @@ class SecurityController extends AbstractController
             'error' => $error,
         ]);
     }
+
+    /**
+     * Esta acción renderiza el panel de bienvenida que se muestra
+     * en el modal cuando el usuario ya ha iniciado sesión.
+     */
+    #[Route('/_modal-profile', name: 'app_modal_profile')]
+    #[IsGranted('ROLE_USER')]
+    public function modalShowAction(): Response
+    {
+        // Esta acción no necesita lógica, solo renderizar la plantilla.
+        // Symfony se encarga de pasar el objeto 'app.user' a la plantilla.
+        return $this->render('profile/_modal_show.html.twig');
+    }
+
+
     /**
      * Esta es la acción principal del login. Es el endpoint que procesa el envío del formulario.
      * Al definir esta ruta, se soluciona el error.
@@ -62,14 +103,101 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * Muestra la página para solicitar el reseteo de contraseña.
+     * Muestra y procesa el formulario para solicitar un reseteo de contraseña.
      */
     #[Route('/{_locale}/resetting-password-request', name: 'app_forgot_password_request', requirements: ['_locale' => 'es|en|fr'])]
-    public function requestPasswordResetAction(): Response
+    public function requestPasswordResetAction(Request $request, MailerInterface $mailer): Response
     {
-        // TODO: Implementar el formulario y la lógica para enviar el email de reseteo.
-        // Por ahora, solo renderizamos la plantilla placeholder que ya creamos.
-        return $this->render('security/reset_password.html.twig');
+        $form = $this->createForm(ResetPasswordRequestFormType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $emailAddress = $form->get('email')->getData();
+            $user = $this->em->getRepository(User::class)->findOneBy(['email' => $emailAddress]);
+
+            // Si se encuentra el usuario, se genera el token y se envía el email
+            if ($user) {
+                try {
+                    $resetToken = $this->resetPasswordHelper->generateResetToken($user);
+
+                    $email = (new TemplatedEmail())
+                        ->from(new Address('comercial@tuskamisetas.com', 'TusKamisetas.com'))
+                        ->to($user->getEmail())
+                        ->subject('Tu solicitud para restablecer la contraseña')
+                        ->htmlTemplate('emails/reset_password.html.twig')
+                        ->context(['resetToken' => $resetToken]);
+
+                    $mailer->send($email);
+
+                } catch (ResetPasswordExceptionInterface $e) {
+                    // No revelamos si el usuario no fue encontrado para mayor seguridad
+                    $this->addFlash('success', 'Se ha enviado un correo con las instrucciones si la dirección existe en nuestra base de datos. FALSO'.$e->getReason());
+                    return $this->redirectToRoute('app_forgot_password_request');
+                }
+            }
+
+            $this->addFlash('success', 'Se ha enviado un correo con las instrucciones si la dirección existe en nuestra base de datos.');
+            return $this->redirectToRoute('app_login', ['_locale' => $request->getLocale()]);
+        }
+
+        return $this->render('security/reset_password.html.twig', [
+            'requestForm' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * Valida el token del email y muestra el formulario para cambiar la contraseña.
+     */
+    #[Route('/{_locale}/reset-password/{token}', name: 'app_reset_password', requirements: ['_locale' => 'es|en|fr'])]
+    public function resetAction(Request $request, UserPasswordHasherInterface $passwordHasher, string $token = null): Response
+    {
+        if ($token) {
+            // Guardamos el token en la sesión y redirigimos para limpiar la URL.
+            $this->storeTokenInSession($token);
+            return $this->redirectToRoute('app_reset_password', ['_locale' => $request->getLocale()]);
+        }
+
+        $token = $this->getTokenFromSession();
+        if (null === $token) {
+            throw $this->createNotFoundException('No se ha encontrado ningún token de reseteo en la URL o en la sesión.');
+        }
+
+        try {
+            $user = $this->resetPasswordHelper->validateTokenAndFetchUser($token);
+        } catch (ResetPasswordExceptionInterface $e) {
+            $this->addFlash('error', sprintf(
+                'Ha ocurrido un problema al validar tu solicitud - %s',
+                $e->getReason()
+            ));
+            return $this->redirectToRoute('app_forgot_password_request');
+        }
+
+        // El token es válido. Permitimos al usuario cambiar su contraseña.
+        $form = $this->createForm(ChangePasswordFormType::class);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // El token se elimina automáticamente al usarse con éxito
+            $this->resetPasswordHelper->removeResetRequest($token);
+
+            $encodedPassword = $passwordHasher->hashPassword(
+                $user,
+                $form->get('plainPassword')->getData()
+            );
+
+            $user->setPassword($encodedPassword);
+            $this->em->flush();
+
+            // Limpiamos la sesión después de cambiar la contraseña.
+            $this->cleanSessionAfterReset();
+
+            $this->addFlash('success', '¡Contraseña actualizada! Ya puedes iniciar sesión.');
+            return $this->redirectToRoute('app_login', ['_locale' => $request->getLocale()]);
+        }
+
+        return $this->render('security/reset.html.twig', [
+            'resetForm' => $form->createView(),
+        ]);
     }
 
     /**

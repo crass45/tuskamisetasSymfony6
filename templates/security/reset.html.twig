@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Restablece tu Contraseña{% endblock %}
+
+{% block baseBody %}
+    <div class="container" style="padding: 40px 15px;">
+        <div class="row">
+            <div class="col-md-6 col-md-offset-3">
+                <h1 class="text-center">Restablece tu Contraseña</h1>
+                <p class="text-center">
+                    Introduce tu nueva contraseña en los campos a continuación.
+                </p>
+
+                <div class="login-form" style="margin-top: 20px;">
+                    {{ form_start(resetForm) }}
+                    {{ form_row(resetForm.plainPassword) }}
+                    <button style="margin-top: 15px;">Restablecer Contraseña</button>
+                    {{ form_end(resetForm) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

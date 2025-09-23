@@ -321,7 +321,8 @@
                                     {#                                    <form action="{{ path('app_search') }}" method="post"> #}
                                     {#                                        #}{# ... #}
                                     {#                                    </form> #}
-                                    <form action="{{ path('app_search_handle', {'_locale': app.request.locale}) }}" method="post">
+                                    <form action="{{ path('app_search_handle', {'_locale': app.request.locale}) }}"
+                                          method="post">
                                         <div>
                                             {# CORRECCIÓN: El nombre del campo ahora es 'q' #}
                                             <input itemprop="query-input" required type="text" name="q"
@@ -692,7 +693,7 @@
                 <div class="modal-body">
                     {% if app.user %}
                         {#                         MIGRACIÓN: La forma de renderizar controladores ha cambiado #}
-                        {#                        {{ render(controller('App\\Controller\\ProfileController::editProfileAction')) }} #}
+                        {{ render(controller('App\\Controller\\SecurityController::modalShowAction')) }}
                     {% else %}
                         {{ render(controller('App\\Controller\\SecurityController::modalLoginAction')) }}
                     {% endif %}
