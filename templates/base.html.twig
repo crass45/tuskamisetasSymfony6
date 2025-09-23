@@ -575,6 +575,8 @@
                     {{ app.session.remove('AUTHENTICATION_ERROR') |trans }}
                 </div>
             {% endif %}
+            {# Se incluye el parcial para mostrar los mensajes flash (addFlash) #}
+            {% include 'partials/_flash_messages.html.twig' %}
             {% block baseBody %}{% endblock %}
         </div>
 
