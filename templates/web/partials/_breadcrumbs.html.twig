@@ -1,19 +1,16 @@
 {# templates/web/partials/_breadcrumbs.html.twig #}
 
-{# 1. Definimos una "macro" recursiva para construir la ruta de padres #}
+{# 1. Tu macro recursiva se mantiene, ya que es la forma correcta de hacerlo #}
 {% macro breadcrumb_links(category, position) %}
-    {# Importamos el contexto de la macro para poder usarla recursivamente #}
     {% import _self as macros %}
 
-    {# Paso recursivo: Si hay un padre, primero llamamos a la macro con el padre #}
     {% if category.parent and category.parent.parent %}
         {{ macros.breadcrumb_links(category.parent, position - 1) }}
     {% endif %}
 
-    {# CORRECCIÓN: Se añade una condición para no mostrar la categoría si se llama 'Home' #}
     {% if category.name != 'Home' %}
-        {# Paso base: Renderizamos el 'li' para la categoría actual #}
         <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+            {# MIGRACIÓN NOTA: Asegúrate de que la ruta 'app_catalog_resolver' existe #}
             <a itemprop="item" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': category.slug}) }}">
                 <span itemprop="name">{{ category.name }}</span>
             </a>
@@ -22,7 +19,6 @@
     {% endif %}
 {% endmacro %}
 
-{# Importamos la macro que acabamos de crear para poder usarla #}
 {% import _self as macros %}
 
 <div class="breadcrumbs">
@@ -35,19 +31,41 @@
             <meta itemprop="position" content="1"/>
         </li>
 
-        {# Si tenemos un contexto (una categoría, marca, etc.), construimos sus migas de pan #}
+        {# --- INICIO DE LA CORRECCIÓN --- #}
+
+        {# 1. Primero, determinamos si hay un fabricante que mostrar #}
+        {% set fabricante_a_mostrar = null %}
+        {% if breadcrumb_fabricante is defined and breadcrumb_fabricante %}
+            {% set fabricante_a_mostrar = breadcrumb_fabricante %}
+        {% elseif context is defined and attribute(context, 'getMarca') is defined and context.getMarca %}
+            {% set fabricante_a_mostrar = context.getMarca %}
+        {% endif %}
+
+        {# 2. Si hemos encontrado un fabricante, lo mostramos #}
+        {% if fabricante_a_mostrar %}
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': fabricante_a_mostrar.nombreUrl}) }}">
+                    <span itemprop="name">{{ fabricante_a_mostrar.nombre }}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+        {% endif %}
+
+        {# 3. Si tenemos un contexto (una categoría, marca, etc.), construimos el resto de las migas de pan #}
         {% if context is defined and context %}
-            {# Llamamos a nuestra macro recursiva para dibujar la ruta de padres #}
-            {% if context.parent %}
-                {{ macros.breadcrumb_links(context.parent, 2) }}
+            {# Si el contexto tiene un padre (es una categoría anidada), llamamos a la macro recursiva #}
+            {% if attribute(context, 'parent') is defined and context.parent %}
+                {# La posición inicial de la macro ahora depende de si hemos mostrado un fabricante o no #}
+                {{ macros.breadcrumb_links(context.parent, (fabricante_a_mostrar ? 3 : 2)) }}
             {% endif %}
 
             {# Finalmente, mostramos la página actual como texto (no como enlace) #}
             <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem" class="active">
-                <span itemprop="name">{{ context.name }}</span>
+                <span itemprop="name">{{ context }}</span>
                 <meta itemprop="position" content="99"/> {# Un número alto para que siempre sea el último #}
             </li>
         {% endif %}
+        {# --- FIN DE LA CORRECCIÓN --- #}
     </ol>
 </div>
 

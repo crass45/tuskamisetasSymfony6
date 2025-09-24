@@ -1,81 +1,91 @@
-{% extends "SSTiendaBundle:Web:indexTemplateNoFiltros.html.twig" %}
+{% extends "base.html.twig" %}
 
 {% block title %}Marcas de ropa para personalizar | tuskamisetas{% endblock %}
 {% block metaDescription %}En TusKamisetas tenemos las mejores marcas en camisetas baratas, sudaderas baratas y regalos de empresa del mercado.{% endblock %}
 
-{% block migas %}
-    <div class="breadcrumbs">
-        <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
-            <li itemprop="itemListElement" itemscope
-                itemtype="http://schema.org/ListItem">
-                <a itemprop="item" href="{{ path('ss_tienda_home') }}">
-                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
-                </a>
-                <meta itemprop="position" content="1"/>
-            </li>
-            <li itemprop="itemListElement" itemscope
-                itemtype="http://schema.org/ListItem" class="active">
-                <a itemprop="item" href="{{ path('ss_tienda_marcas') }}" class="miActive">
-                    <span itemprop="name">{% trans %}Marcas{% endtrans %}</span>
-                </a>
-                <meta itemprop="position" content="2"/>
-            </li>
-        </ol>
-    </div><!--/breadcrums-->
-{% endblock %}
+{% block baseBody %}
+    <div class="container" style="padding: 20px 0;">
+        {% include 'web/partials/_breadcrumbs.html.twig' with {'context': context} %}
 
-{% block cuerpo %}
+        <div class="features_items">
+            <h1 class="titulo text-center">NUESTRAS MARCAS DE ROPA PARA PUBLICIDAD Y EVENTOS</h1>
 
-    {% set textoCategorias = "En nuestro catálogo contamos con los más prestigiosos <b>fabricantes de ropa</b> para publicidad, ropa deportiva y regalos de empresa para personalizar. Si quieres <b>serigrafíar camisetas de una marca en concreto</b>, nosotros ponemos a tu disposición todo el catálogo del fabricante.<br> En esta sección te mostramos todos los fabricantes con los que trabajamos para que encuentres las prendas que buscas a precios de mayorista.<br>También disponemos de <b>marcas especializadas</b> en bolsas, gorras, ropa deportiva, camisetas técnicas o en ropa laboral. Echa un vistazo por todos nuestros fabricantes de confianza y no te pierdas nada. " %}
-
-    <div class="features_items">
-        <h1 class="title text-center">{% trans %}NUESTRAS MARCAS DE ROPA PARA PUBLICIDAD Y EVENTOS{% endtrans %}</h1>
-        {% if textoCategorias is defined %}
-            <div style="padding: 15px; font-size: 13px;">
-                {{ textoCategorias |raw }}
+            <div style="padding: 15px; font-size: 13px; text-align: center; max-width: 800px; margin: 0 auto 30px auto;">
+                En nuestro catálogo contamos con los más prestigiosos <b>fabricantes de ropa</b> para publicidad, ropa deportiva y regalos de empresa para personalizar. Si quieres <b>serigrafíar camisetas de una marca en concreto</b>, nosotros ponemos a tu disposición todo el catálogo del fabricante.<br> En esta sección te mostramos todos los fabricantes con los que trabajamos para que encuentres las prendas que buscas a precios de mayorista.
             </div>
-        {% endif %}
-        <div id="tkmCuerpo">
-            <div id="productoGrid">
 
-                {% for proveedor in proveedores %}
-                    <a href="{{ path('ss_marca'~ proveedor.nombreUrl) }}">
-                        <div class="col-xs-6 col-sm-4 col-md-3 col-lg-2">
-                            <div class="product-image-wrapper" style="position: relative;">
-                                <div class="single-products"
-                                     style="height: 180px; background-color: white; text-align: center; padding: 5px">
-                                    {#<div class="productinfo text-center">#}
-                                    <span class="helperAlign"></span> <img
-                                            src="{{ asset('images/dummy200.png') }}"
-                                            class="lazy img-responsive"
-                                            {#class="img-responsive"#}
-                                            id="{{ proveedor.id }}"
-                                            data-src="{% path proveedor.imagen, 'wide' %}"
-                                            alt="{{ proveedor.nombre }}"
-                                            style="vertical-align: middle;display: inline-block; width:100%; height:auto;"/>
-                                    {#</div>#}
-                                </div>
+            <!-- INICIO DE LA MEJORA: Filtro de Búsqueda -->
+            <div class="row" style="margin-bottom: 30px;">
+                <div class="col-md-6 col-md-offset-3">
+                    <input type="text" id="brand-search-filter" class="form-control" placeholder="Buscar marca por nombre...">
+                </div>
+            </div>
+            <!-- FIN DE LA MEJORA -->
 
-                                <div class="productoGridDescripcion"
-                                     style="position: absolute;bottom: 0; text-align: center;padding: 15px;">
-                                    {#<br>#}
-                                    <p style="height:28px; margin: auto;  overflow: hidden; vertical-align: middle">{{ proveedor.nombre | upper }}</p>
+            <div class="row" id="brands-grid">
+                {% if fabricantes is not empty %}
+                    {% for fabricante in fabricantes %}
+                        <div class="col-sm-3 brand-item" style="margin-bottom: 30px;">
+                            <div class="product-image-wrapper text-center" style="border: 1px solid #e0e0e0; padding: 15px; border-radius: 5px; height: 100%;">
+                                <div class="single-products">
+                                    <div class="productinfo">
+                                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': fabricante.nombreUrl}) }}" style="text-decoration: none; color: inherit;">
+                                            {% if fabricante.imagen %}
+                                                <img src="{{ sonata_path(fabricante.imagen, 'default_medium') }}" alt="{{ fabricante.nombre }}" class="img-responsive" style="height: 150px; width: auto; margin: 0 auto; object-fit: contain;"/>
+                                            {% else %}
+                                                <div style="height: 150px; display: flex; align-items: center; justify-content: center; background-color: #f5f5f5; border-radius: 4px;">
+                                                    <span style="font-size: 18px; color: #888;">{{ fabricante.nombre }}</span>
+                                                </div>
+                                            {% endif %}
+                                            <h4 style="margin-top: 15px; font-weight: bold;">{{ fabricante.nombre }}</h4>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-
                         </div>
-                    </a>
-                {% endfor %}
+                    {% endfor %}
+                    <div class="col-xs-12 text-center" id="no-brands-found" style="display: none;">
+                        <p class="alert alert-warning">No se han encontrado marcas que coincidan con tu búsqueda.</p>
+                    </div>
+                {% else %}
+                    <div class="col-xs-12">
+                        <p class="alert alert-info">No hay marcas disponibles para mostrar en este momento.</p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('brand-search-filter');
+            const brandsGrid = document.getElementById('brands-grid');
+            const brands = brandsGrid.querySelectorAll('.brand-item');
+            const noResultsMessage = document.getElementById('no-brands-found');
+
+            searchInput.addEventListener('keyup', function() {
+                const filterValue = this.value.toLowerCase().trim();
+                let visibleBrands = 0;
+
+                brands.forEach(function(brand) {
+                    const brandName = brand.querySelector('h4').textContent.toLowerCase();
+
+                    if (brandName.includes(filterValue)) {
+                        brand.style.display = '';
+                        visibleBrands++;
+                    } else {
+                        brand.style.display = 'none';
+                    }
+                });
+
+                // Muestra u oculta el mensaje de "no se encontraron resultados"
+                if (visibleBrands === 0) {
+                    noResultsMessage.style.display = 'block';
+                } else {
+                    noResultsMessage.style.display = 'none';
+                }
+            });
+        });
+    </script>
 {% endblock %}
 
-{#{% block javascript %}#}
-    {#<script>#}
-        {#$(function () {#}
-            {#$('.navItem').removeClass('active');#}
-            {#$('#navItemMarcas').addClass('active');#}
-        {#});#}
-    {#</script>#}
-{#{% endblock %}#}

@@ -39,10 +39,31 @@
 <aside class="left-sidebar no-print">
     <p class="tituloMenu">{% trans %}Filtros{% endtrans %}</p>
 
-    {# 1. MARCAS #}
-    {% if filtrosDisponibles.fabricantes is defined and filtrosDisponibles.fabricantes is not empty %}
+    {# 1. MARCAS O FAMILIAS DE LA MARCA #}
+    {% if is_brand_page is defined and is_brand_page and families is not empty %}
+        {# Si estamos en la página de una marca, mostramos sus familias como una lista de enlaces con la apariencia de un filtro #}
+        <div class="filter-group">
+            <h3 class="filter-group__title">
+                <button class="filter-group__toggle" type="button" data-toggle="collapse" data-target="#filter-families">
+                    FAMILIAS: <i class="fa fa-plus pull-right"></i>
+                </button>
+            </h3>
+            <div id="filter-families" class="panel-collapse collapse in">
+                <div class="filter-group__body">
+                    {% for family in families %}
+                        <div class="filter-group__option">
+                            {# Se usa un enlace 'a' en lugar de un 'label' con 'input' #}
+                            <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': family.nombreUrl}) }}" style="display: block; width: 100%; text-decoration: none; color: inherit; padding: 3px 0; {% if context is defined and attribute(context, 'id') is defined and context.id == family.id %}font-weight: bold;{% endif %}">
+                                <span style="padding-left: 5px;">{{ family.nombre | capitalize }}</span>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% elseif filtrosDisponibles.fabricantes is defined and filtrosDisponibles.fabricantes is not empty %}
+        {# Si no, mostramos el filtro de marcas normal #}
         {% set is_marcas_open = filtros.fabricante is not null %}
-        {# Se ordena el array de fabricantes por la propiedad 'nombre' antes de pasarlo a la macro #}
         {% set sorted_fabricantes = filtrosDisponibles.fabricantes|sort((a, b) => a.nombre <=> b.nombre) %}
         {{ macros.filterCheckboxGroup('MARCAS'|trans, 'fabricante','fabricante', sorted_fabricantes, filtros.fabricante ? [filtros.fabricante.id] : [], is_marcas_open) }}
     {% endif %}

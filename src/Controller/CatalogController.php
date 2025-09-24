@@ -7,6 +7,7 @@ use App\Entity\Fabricante;
 use App\Entity\Familia;
 use App\Entity\Sonata\ClassificationCategory;
 use App\Model\Filtros;
+use App\Repository\FabricanteRepository;
 use App\Repository\ModeloRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,21 @@ class CatalogController extends AbstractController
     public function __construct(EntityManagerInterface $entityManager)
     {
         $this->em = $entityManager;
+    }
+
+    /**
+     * Muestra la página con el listado de todas las marcas que tienen productos.
+     */
+    #[Route('/{_locale}/marcas', name: 'app_marcas_list', requirements: ['_locale' => 'es|en|fr'])]
+    public function marcasAction(FabricanteRepository $fabricanteRepository): Response
+    {
+        // Se utiliza el nuevo método para obtener solo fabricantes con productos activos
+        $fabricantes = $fabricanteRepository->findActiveWithProducts();
+
+        return $this->render('web/catalog/marcas.html.twig', [
+            'fabricantes' => $fabricantes,
+            'context' => 'Marcas'
+        ]);
     }
 
     // ===================================================================
@@ -92,20 +108,25 @@ class CatalogController extends AbstractController
     #[Route('/{_locale}/{slug}', name: 'app_catalog_resolver', requirements: ['_locale' => 'es|en|fr'], priority: -1)]
     public function showListingAction(Request $request, ModeloRepository $modeloRepository, string $slug): Response
     {
-        $filtros = Filtros::createFromRequest($request,$this->em);
+        $filtros = Filtros::createFromRequest($request, $this->em);
 
         $contextObject = null;
         $template = 'web/catalog/category_show.html.twig';
-
+        $isBrandPage = false;
+        $families = null;
         if ($category = $this->em->getRepository(ClassificationCategory::class)->findOneBy(['slug' => $slug])) {
             $filtros->setCategory($category);
             $contextObject = $category;
         } elseif ($brand = $this->em->getRepository(Fabricante::class)->findOneBy(['nombreUrl' => $slug])) {
             $filtros->setFabricante($brand);
             $contextObject = $brand;
+            $isBrandPage = true;
+            $families = $brand->getFamilias();
         } elseif ($family = $this->em->getRepository(Familia::class)->findOneBy(['nombreUrl' => $slug])) {
             $filtros->setFamilia($family);
             $contextObject = $family;
+            $isBrandPage = true;
+            $families = $family->getMarca()->getFamilias();
         } else {
             throw $this->createNotFoundException('La página solicitada no existe.');
         }
@@ -124,6 +145,8 @@ class CatalogController extends AbstractController
             'cantidadArticulos' => $paginator->count(),
             'nombrePanel' => $contextObject->__toString(),
             'busqueda' => $filtros->getBusqueda(),
+            'is_brand_page' => $isBrandPage,
+            'families' => $families,
 //            'fabDisp' => $filtrosDisponibles['fabricantes'],
 //            'coloresFiltros' => $filtrosDisponibles['colores'],
 //            'atributos' => $filtrosDisponibles['atributos'],
