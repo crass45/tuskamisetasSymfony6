@@ -1,0 +1,10 @@
+# config/packages/stof_doctrine_extensions.yaml
+stof_doctrine_extensions:
+  default_locale: es
+  translation_fallback: true
+
+  # ESTA ES LA SECCIÓN CLAVE QUE FALTABA Y CORRIGE TODO
+  orm:
+    default: # Aplica esta configuración al gestor de entidades por defecto
+      translatable: true
+      sluggable: true # Activamos también el de slugs, que lo usamos en las entidades

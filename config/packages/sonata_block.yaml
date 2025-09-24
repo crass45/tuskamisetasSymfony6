@@ -1,0 +1,11 @@
+# config/packages/sonata_block.yaml
+sonata_block:
+  default_contexts: [cms]
+  blocks:
+    sonata.admin.block.admin_list:
+      contexts: [admin]
+    sonata.admin.block.search_result:
+      contexts: [admin]
+    sonata.admin.block.stats: ~
+    sonata.user.block.menu: ~
+    sonata.user.block.account: ~

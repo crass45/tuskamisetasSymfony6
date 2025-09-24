@@ -1,0 +1,76 @@
+{# templates/profile/partials/_address_form_modal.html.twig #}
+{# Este parcial contiene el formulario para añadir/editar una dirección de envío. #}
+{# Se carga con AJAX dentro del modal de la página de perfil. #}
+
+{# La variable 'addressForm' es pasada por la acción saveAddressAction del ProfileController #}
+{# Se especifica explícitamente la 'action' para que el formulario se envíe a la ruta correcta #}
+{{ form_start(addressForm, {
+    'action': path('app_profile_save_address', {'_locale': app.request.locale, 'id': addressForm.vars.value.id}),
+    'method': 'POST'
+}) }}
+
+    {# Se añade el id="addressForm", que es crucial para que el JS lo encuentre #}
+<div id="addressForm" data-province-id="{{ addressForm.vars.value.provinciaBD.id|default('') }}">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(addressForm.nombre) }}
+                {{ form_widget(addressForm.nombre, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(addressForm.nombre) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(addressForm.telefonoMovil) }}
+                {{ form_widget(addressForm.telefonoMovil, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(addressForm.telefonoMovil) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(addressForm.dir) }}
+                {{ form_widget(addressForm.dir, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(addressForm.dir) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(addressForm.cp) }}
+                {{ form_widget(addressForm.cp, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(addressForm.cp) }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ form_label(addressForm.poblacion) }}
+                {{ form_widget(addressForm.poblacion, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(addressForm.poblacion) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(addressForm.paisBD) }}
+                {{ form_widget(addressForm.paisBD) }}
+                {{ form_errors(addressForm.paisBD) }}
+            </div>
+            <div class="form-group province-select-container">
+                {{ form_label(addressForm.provinciaBD) }}
+                {{ form_widget(addressForm.provinciaBD) }}
+                {{ form_errors(addressForm.provinciaBD) }}
+            </div>
+            <div class="form-group province-text-input-container" style="display: none;">
+                {{ form_label(addressForm.provincia) }}
+                {{ form_widget(addressForm.provincia, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                {{ form_errors(addressForm.provincia) }}
+            </div>
+        </div>
+
+        {% if addressForm.predeterminada is defined %}
+            <div class="col-xs-12">
+                <div class="form-group">
+                    {{ form_row(addressForm.predeterminada) }}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    {{ form_rest(addressForm) }}
+</div>
+
+<div class="modal-footer" style="margin-top: 20px; padding-right: 0;">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+    <button type="submit" class="btn btn-primary">Guardar Dirección</button>
+</div>
+{{ form_end(addressForm) }}
+

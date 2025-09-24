@@ -160,66 +160,66 @@
     </div>
     <div id="company" class="clearfix">
     </div>
-    {% if pedido.idDireccion is defined  and pedido.idDireccion != null %}
+    {% if pedido.direccion is defined  and pedido.direccion != null %}
         <div id="project"
              style="text-align: left;float: left; border: 1px solid white; padding: 15px; padding-left: 0;">
             <div style="border-bottom: 1px solid grey;">DATOS DE ENVÍO</div>
             <br>
             {% if pedido.recogerEnTienda %}
                 <h4>RECOGE EN TIENDA</h4>
-                <div>{% if pedido.idDireccion is not null %}{{ pedido.idDireccion.dir }}
-                        <br> {{ pedido.idDireccion.cp }}
-                        <br> {{ pedido.idDireccion.poblacion }}<br> {{ pedido.idDireccion.provincia }}
-                        <br> {{ pedido.idDireccion.pais }}<br>{% endif %}
+                <div>{% if pedido.direccion is not null %}{{ pedido.direccion.dir }}
+                        <br> {{ pedido.direccion.cp }}
+                        <br> {{ pedido.direccion.poblacion }}<br> {{ pedido.direccion.provincia }}
+                        <br> {{ pedido.direccion.pais }}<br>{% endif %}
                 </div>
             {% else %}
                 {#<div><span>PROJECT</span> Website development</div>#}
-                {% if (pedido.idDireccion.nombre != "") %}
-                    <div>{{ pedido.idDireccion.nombre }}</div>
+                {% if (pedido.direccion.nombre != "") %}
+                    <div>{{ pedido.direccion.nombre }}</div>
                 {% else %}
-                    {% if pedido.idUsuario is defined and pedido.idUsuario != null %}
-                        <div>{{ pedido.idUsuario.nombre }}</div>
-                        <div>{{ pedido.idUsuario.apellidos }}</div>
+                    {% if pedido.contacto is defined and pedido.contacto != null %}
+                        <div>{{ pedido.contacto.nombre }}</div>
+                        <div>{{ pedido.contacto.apellidos }}</div>
                     {% endif %}
                 {% endif %}
-                <div>{% if pedido.idDireccion is not null %}{{ pedido.idDireccion.dir }}
-                        <br> {{ pedido.idDireccion.cp }}
-                        <br> {{ pedido.idDireccion.poblacion }}<br> {{ pedido.idDireccion.provincia }}
-                        <br> {{ pedido.idDireccion.pais }}<br>{% endif %}
+                <div>{% if pedido.direccion is not null %}{{ pedido.direccion.dir }}
+                        <br> {{ pedido.direccion.cp }}
+                        <br> {{ pedido.direccion.poblacion }}<br> {{ pedido.direccion.provincia }}
+                        <br> {{ pedido.direccion.pais }}<br>{% endif %}
                 </div>
-                {% if pedido.idUsuario is defined and pedido.idUsuario != null %}
-                    {% if pedido.idDireccion.telefonoMovil is defined and pedido.idDireccion.telefonoMovil != "" %}
-                        <div>Telf: {{ pedido.idDireccion.telefonoMovil }}</div>
+                {% if pedido.contacto is defined and pedido.contacto != null %}
+                    {% if pedido.direccion.telefonoMovil is defined and pedido.direccion.telefonoMovil != "" %}
+                        <div>Telf: {{ pedido.direccion.telefonoMovil }}</div>
                     {% else %}
-                        {% if pedido.idUsuario.telefonoMovil is defined and pedido.idUsuario.telefonoMovil != "" %}
-                            <div>Telf 1: {{ pedido.idUsuario.telefonoMovil }}</div>{% endif %}
-                        {% if pedido.idUsuario.telefonoOtro is defined and pedido.idUsuario.telefonoOtro != "" %}
-                            <div>Telf 2: {{ pedido.idUsuario.telefonoOtro }}</div>{% endif %}
+                        {% if pedido.contacto.telefonoMovil is defined and pedido.contacto.telefonoMovil != "" %}
+                            <div>Telf 1: {{ pedido.contacto.telefonoMovil }}</div>{% endif %}
+                        {% if pedido.contacto.telefonoOtro is defined and pedido.contacto.telefonoOtro != "" %}
+                            <div>Telf 2: {{ pedido.contacto.telefonoOtro }}</div>{% endif %}
                     {% endif %}
-                    <div><a href="mailto:{{ pedido.idUsuario.usuario.email }}">{{ pedido.idUsuario.usuario.email }}</a>
+                    <div><a href="mailto:{{ pedido.contacto.usuario.email }}">{{ pedido.contacto.usuario.email }}</a>
                     </div>
                 {% endif %}
                 {#<div><span>DUE DATE</span> September 17, 2015</div>#}
             {% endif %}
         </div>
     {% endif %}
-    {% if pedido.idUsuario is defined and pedido.idUsuario != null %}
+    {% if pedido.contacto is defined and pedido.contacto != null %}
         <div id="project" style="text-align: right; float: right">
-            <div>{{ "CL%06d"|format(pedido.idUsuario.id) }}</div>
+            <div>{{ "CL%06d"|format(pedido.contacto.id) }}</div>
             {#<div><span>PROJECT</span> Website development</div>#}
-            <div>{{ pedido.idUsuario.nombre }}</div>
-            <div>{{ pedido.idUsuario.apellidos }}</div>
-            <div>{{ pedido.idUsuario.cif }}</div>
-            <div>{% if pedido.idUsuario.direccionFacturacion is not null %}{{ pedido.idUsuario.direccionFacturacion.dir }}
-                    <br> {{ pedido.idUsuario.direccionFacturacion.cp }}<br> {{ pedido.idUsuario.direccionFacturacion.poblacion }}
-                    <br> {{ pedido.idUsuario.direccionFacturacion.provincia }}
-                    <br> {{ pedido.idUsuario.direccionFacturacion.pais }}{% endif %}
+            <div>{{ pedido.contacto.nombre }}</div>
+            <div>{{ pedido.contacto.apellidos }}</div>
+            <div>{{ pedido.contacto.cif }}</div>
+            <div>{% if pedido.contacto.direccionFacturacion is not null %}{{ pedido.contacto.direccionFacturacion.dir }}
+                    <br> {{ pedido.contacto.direccionFacturacion.cp }}<br> {{ pedido.contacto.direccionFacturacion.poblacion }}
+                    <br> {{ pedido.contacto.direccionFacturacion.provincia }}
+                    <br> {{ pedido.contacto.direccionFacturacion.pais }}{% endif %}
             </div>
-            {% if pedido.idUsuario.telefonoMovil is defined and pedido.idUsuario.telefonoMovil != "" %}
-                <div>Telf 1: {{ pedido.idUsuario.telefonoMovil }}</div>{% endif %}
-            {% if pedido.idUsuario.telefonoOtro is defined and pedido.idUsuario.telefonoOtro != "" %}
-                <div>Telf 2: {{ pedido.idUsuario.telefonoOtro }}</div>{% endif %}
-            <div><a href="mailto:{{ pedido.idUsuario.usuario.email }}">{{ pedido.idUsuario.usuario.email }}</a></div>
+            {% if pedido.contacto.telefonoMovil is defined and pedido.contacto.telefonoMovil != "" %}
+                <div>Telf 1: {{ pedido.contacto.telefonoMovil }}</div>{% endif %}
+            {% if pedido.contacto.telefonoOtro is defined and pedido.contacto.telefonoOtro != "" %}
+                <div>Telf 2: {{ pedido.contacto.telefonoOtro }}</div>{% endif %}
+            <div><a href="mailto:{{ pedido.contacto.usuario.email }}">{{ pedido.contacto.usuario.email }}</a></div>
             {#<div><span>DUE DATE</span> September 17, 2015</div>#}
         </div>
     {% endif %}
@@ -245,13 +245,13 @@
             <th>PRECIO</th>
             <th><b>TOTAL</b></th>
         </tr>
-        {% for lineaPedido in pedido.pedidoHasLineas %}
+        {% for lineaPedido in pedido.lineas %}
             <tr>
-                <td class="service">{{ lineaPedido.idProducto.modelo.referencia }}<br>
-                    ({{ lineaPedido.idProducto.referencia }})
+                <td class="service">{{ lineaPedido.producto.modelo.referencia }}<br>
+                    ({{ lineaPedido.producto.referencia }})
                 </td>
-                <td class="desc">{{ lineaPedido.idProducto.modelo.nombre }}
-                    T/{{ lineaPedido.idProducto.talla }} {{ lineaPedido.idProducto.color }}
+                <td class="desc">{{ lineaPedido.producto.modelo.nombre }}
+                    T/{{ lineaPedido.producto.talla }} {{ lineaPedido.producto.color }}
                     {% for pers in lineaPedido.personalizaciones %}
                         <p style="font-size: 11px; font-weight: bold">{{ pers.getCadenaTrabajo }} {% if pers.pedidoTrabajo.nombre != "" %}({{ pers.pedidoTrabajo.nombre }}){% endif %}{{ pers.getObservaciones }}</p>
 
@@ -263,7 +263,7 @@
             </tr>
         {% endfor %}
 
-        {% for lineaPedido in pedido.pedidoHasLineasLibre %}
+        {% for lineaPedido in pedido.lineasLibres %}
             <tr>
                 <td class="service">
                     LLB{{ lineaPedido.id }}
@@ -320,7 +320,7 @@
                 <td class="total">{{ pedido.iva | number_format(2, ',', '.') }}€</td>
             {% endif %}
         </tr>
-        {% if pedido.idUsuario.recargoEquivalencia is defined and pedido.idUsuario.recargoEquivalencia %}
+        {% if pedido.contacto.recargoEquivalencia is defined and pedido.contacto.recargoEquivalencia %}
             <tr>
                 <td colspan="4">RE 5,20%</td>
                 <td class="total">{{ pedido.recargoEquivalencia | number_format(2, ',', '.') }}€</td>
@@ -330,7 +330,7 @@
             <td colspan="4" class="grand total">TOTAL</td>
             <td class="grand total">
                 {% if pedido.iva != 0 %}
-                {% if pedido.idUsuario.recargoEquivalencia is defined and pedido.idUsuario.recargoEquivalencia %}
+                {% if pedido.contacto.recargoEquivalencia is defined and pedido.contacto.recargoEquivalencia %}
                     <b>{{ ((pedido.subTotal + pedido.envio + precioGastos - (pedido.subTotal * pedido.descuento /100))*(1+empresa.ivaGeneral/100)+ pedido.recargoEquivalencia) | number_format(2, ',', '.') }}
                         €</b>
                 {% else %}
@@ -339,7 +339,7 @@
                 {% endif %}
             </td>
             {% else %}
-                {% if pedido.idUsuario.recargoEquivalencia is defined and pedido.idUsuario.recargoEquivalencia %}
+                {% if pedido.contacto.recargoEquivalencia is defined and pedido.contacto.recargoEquivalencia %}
                     <b>{{ ((pedido.subTotal + pedido.envio + precioGastos - (pedido.subTotal * pedido.descuento /100))+ pedido.recargoEquivalencia) | number_format(2, ',', '.') }}
                         €</b></td>
                 {% else %}

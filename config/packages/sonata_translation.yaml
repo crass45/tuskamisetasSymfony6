@@ -1,0 +1,7 @@
+# config/packages/sonata_translation.yaml
+sonata_translation:
+  locales: [es, en] # O los idiomas que necesites
+  default_locale: es
+  gedmo:
+    enabled: true
+    translatable_listener_service: stof_doctrine_extensions.listener.translatable

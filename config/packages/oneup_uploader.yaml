@@ -1,0 +1,31 @@
+# config/packages/oneup_uploader.yaml
+oneup_uploader:
+  mappings:
+    gallery:
+      frontend: blueimp
+
+      storage:
+        type: filesystem
+        directory: '%kernel.project_dir%/public/uploads/design'
+
+#      allowed_mimetypes:
+#        # Imágenes estándar
+#        - image/png
+#        - image/jpeg
+#        - image/gif
+#        - image/svg+xml # SVG (Vectores)
+#        - image/tiff
+#        - image/heic    # <-- Se añade el formato HEIC
+#        # Ficheros de Adobe
+#        - application/pdf # PDF
+#        - image/vnd.adobe.photoshop # PSD (Photoshop)
+#        - application/postscript    # AI (Illustrator), EPS
+#        # Ficheros de CorelDRAW
+#        - application/vnd.corel-draw
+#        # Archivos comprimidos (para enviar varias cosas)
+#        - application/zip
+#        - application/x-rar-compressed
+#
+#      # Aumentamos el tamaño máximo a 50MB para ficheros de diseño
+      max_size: 200M
+

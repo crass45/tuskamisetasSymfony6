@@ -1,95 +1,242 @@
 {% extends "base.html.twig" %}
 
+{% block title %}Mi Perfil{% endblock %}
+
 {% block baseBody %}
-    <div style="background-color:white; padding:30px;">
-        <h2 class="titulo">{% trans %}Datos Personales{% endtrans %}</h2>
-        <div class="texto" style="opacity:0.8">
-            {# Aquí puedes poner un texto de introducción #}
-        </div>
+    <div class="container" style="background-color:white; padding:30px; margin-top: 20px; margin-bottom: 20px; border: 1px solid #e0e0e0; border-radius: 5px;">
+        <h2 class="titulo">{% trans %}Mi Perfil y Direcciones{% endtrans %}</h2>
+        <hr>
 
+{#        {% include 'partials/_flash_messages.html.twig' %}#}
 
-        <div class="col-lg-6 col-lg-push-4 login-form">
-            {# MIGRACIÓN: Se usa la nueva ruta 'app_profile_edit' para la acción del formulario #}
-            {{ form_start(form, {
-                'action': path('app_profile_edit', {'_locale': app.request.locale}),
-                'method': 'POST',
-                'attr': {'class': 'form-group', 'id': 'contactoForm'}
-            }) }}
-
-            {{ form_widget(form) }}
-
-            <div style="width: 100%; text-align: right; margin-top: 30px;">
-                <button type="submit" class="btn btn-default" style="width: 100%;">
-                    {% trans %}Guardar Cambios{% endtrans %}
-                </button>
+        <div class="row">
+            {# FORMULARIO DE DATOS DE FACTURACIÓN #}
+            <div class="col-md-6">
+                <div class="login-form">
+                    <h4>Datos de Facturación</h4>
+                    <p class="text-muted" style="margin-bottom: 20px;">Estos son tus datos principales y la dirección que usamos para las facturas.</p>
+                    <div id="billingForm" data-province-id="{{ form.vars.value.direccionFacturacion.provinciaBD.id|default('') }}">
+                        {{ form_start(form, {'attr': {'id': 'contactoForm'}}) }}
+                        {# --- INICIO DE LA CORRECCIÓN --- #}
+                        {# Se reemplaza form_widget(form) por el renderizado manual de cada campo #}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form_label(form.nombre) }}
+                                    {{ form_widget(form.nombre, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                    {{ form_errors(form.nombre) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(form.apellidos) }}
+                                    {{ form_widget(form.apellidos, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                    {{ form_errors(form.apellidos) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(form.cif) }}
+                                    {{ form_widget(form.cif, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                    {{ form_errors(form.cif) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(form.telefonoMovil) }}
+                                    {{ form_widget(form.telefonoMovil, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                    {{ form_errors(form.telefonoMovil) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(form.telefonoOtro) }}
+                                    {{ form_widget(form.telefonoOtro, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                    {{ form_errors(form.telefonoOtro) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                {% set billing_address_form = form.direccionFacturacion %}
+                                <div class="form-group">
+                                    {{ form_label(billing_address_form.dir) }}
+                                    {{ form_widget(billing_address_form.dir, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                    {{ form_errors(billing_address_form.dir) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(billing_address_form.cp) }}
+                                    {{ form_widget(billing_address_form.cp, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                    {{ form_errors(billing_address_form.cp) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(billing_address_form.poblacion) }}
+                                    {{ form_widget(billing_address_form.poblacion, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                    {{ form_errors(billing_address_form.poblacion) }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form_label(billing_address_form.paisBD) }}
+                                    {{ form_widget(billing_address_form.paisBD) }}
+                                    {{ form_errors(billing_address_form.paisBD) }}
+                                </div>
+                                <div class="form-group province-select-container">
+                                    {{ form_label(billing_address_form.provinciaBD) }}
+                                    {{ form_widget(billing_address_form.provinciaBD) }}
+                                    {{ form_errors(billing_address_form.provinciaBD) }}
+                                </div>
+                                <div class="form-group province-text-input-container" style="display: none;">
+                                    {{ form_label(billing_address_form.provincia) }}
+                                    {{ form_widget(billing_address_form.provincia, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                                    {{ form_errors(billing_address_form.provincia) }}
+                                </div>
+                            </div>
+                        </div>
+                        {{ form_rest(form) }}
+                        {# --- FIN DE LA CORRECCIÓN --- #}
+                        <div style="text-align: right; margin-top: 20px;">
+                            <button type="submit" class="btn btn-primary">
+                                Guardar Datos de Facturación
+                            </button>
+                        </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
             </div>
 
-            {{ form_end(form) }}
+            {# SECCIÓN DE DIRECCIONES DE ENVÍO #}
+            <div class="col-md-6">
+                <div class="login-form">
+                    <h4>Mis Direcciones de Envío</h4>
+                    <p class="text-muted" style="margin-bottom: 20px;">Gestiona las direcciones a las que enviamos tus pedidos.</p>
+
+                    {% if contacto.direccionesEnvio is not empty %}
+                        <ul class="list-group">
+                            {% for address in contacto.direccionesEnvio %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center" style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <strong>{{ address.nombre }}</strong> {% if address.predeterminada %}<span class="label label-info">Por defecto</span>{% endif %}
+                                        <p style="margin-bottom: 0;">{{ address.dir }}, {{ address.cp }} {{ address.poblacion }}</p>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-default btn-xs edit-address-btn" data-url="{{ path('app_profile_save_address', {'_locale': app.request.locale, 'id': address.id}) }}" title="Editar">
+                                            <i class="fa fa-pencil"></i>
+                                        </button>
+                                        <form action="{{ path('app_profile_delete_address', {'_locale': app.request.locale, 'id': address.id}) }}" method="post" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que quieres eliminar esta dirección?');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ address.id) }}">
+                                            <button type="submit" class="btn btn-danger btn-xs" title="Eliminar">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="alert alert-info">No tienes ninguna dirección de envío guardada.</div>
+                    {% endif %}
+
+                    <hr>
+                    <button type="button" class="btn btn-success add-address-btn" data-url="{{ path('app_profile_save_address', {'_locale': app.request.locale}) }}">
+                        <i class="fa fa-plus"></i> Añadir Nueva Dirección
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Añadir/Editar Dirección -->
+    <div class="modal fade" id="addressModal" tabindex="-1" role="dialog" aria-labelledby="addressModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="addressModalLabel">Gestionar Dirección de Envío</h4>
+                </div>
+                <div class="modal-body">
+                    {# El contenido del formulario se cargará aquí con AJAX #}
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        $(document).ready(function () {
-            const paisSelected = $('#contacto_direccionFacturacion_paisBD');
-            const provinciasSelectDiv = $("#contacto_direccionFacturacion_provinciaBD").parent();
-            const provinciasInputDiv = $("#contacto_direccionFacturacion_provincia").parent();
+        $(document).ready(function() {
 
-            function toggleProvinciaFields() {
-                const codigoSeleccionado = paisSelected.val();
+            // --- LÓGICA PARA GESTIONAR EL MODAL ---
+            $('.add-address-btn, .edit-address-btn').on('click', function() {
+                const url = $(this).data('url');
+                const $modalBody = $('#addressModal .modal-body');
+                $modalBody.html('<p>Cargando formulario...</p>');
+                $('#addressModal').modal('show');
 
-                // 73 es el ID para España en tu base de datos antigua
-                if (codigoSeleccionado == 73) {
-                    provinciasSelectDiv.show();
-                    provinciasInputDiv.hide();
-                } else {
-                    provinciasSelectDiv.hide();
-                    provinciasInputDiv.show();
+                $modalBody.load(url, function(response, status, xhr) {
+                    if (status == "error") {
+                        $modalBody.html("<div class='alert alert-danger'>Error al cargar el formulario.</div>");
+                    } else {
+                        // Una vez cargado el formulario en el modal, inicializamos su lógica de provincias
+                        handleCountryChange($('#addressModal').find('.country-selector'));
+                    }
+                });
+            });
+
+            // --- LÓGICA PARA PROVINCIAS CONDICIONALES (CORREGIDA Y FINAL) ---
+            function handleCountryChange(countrySelectElement) {
+                // Se busca el contenedor del formulario más cercano, que ahora tiene el ID correcto
+                const $formContainer = $(countrySelectElement).closest('#billingForm, #addressForm');
+                if ($formContainer.length === 0) {
+                    console.error('No se encontró el contenedor del formulario para el selector de país.');
+                    return;
+                }else{
+                    console.log($formContainer);
                 }
-            }
 
-            // Lógica inicial para asegurar que España esté seleccionada si no hay nada
-            if (!paisSelected.val()) {
-                paisSelected.val(73);
-            }
-            toggleProvinciaFields();
+                const $provinceSelectContainer = $formContainer.find('.province-select-container');
+                const $provinceTextContainer = $formContainer.find('.province-text-input-container');
+                const $provinciasSelect = $provinceSelectContainer.find('select');
+                const $provinciasText = $provinceTextContainer.find('input');
+                const paisID = $(countrySelectElement).val();
 
-            paisSelected.on('change', function () {
-                const paisSelector = $(this);
-                const provinciasSelect = $("#contacto_direccionFacturacion_provinciaBD");
-
-                toggleProvinciaFields();
-
-                // Si el país no es España, no hacemos la llamada AJAX
-                if (paisSelector.val() != 73) {
-                    provinciasSelect.html('<option value> Escribe tu provincia manualmente ...</option>');
+                if (!paisID) {
+                    $provinciasSelect.prop('disabled', true);
+                    $provinciasText.prop('disabled', false);
+                    $provinceSelectContainer.hide();
+                    $provinceTextContainer.show();
                     return;
                 }
 
-                // MIGRACIÓN: La URL de la API ahora es dinámica y usa la nueva ruta
-                const url = "{{ path('api_get_country_provinces', {id: 'PAIS_ID'}) }}".replace('PAIS_ID', paisSelector.val());
+                let url = "{{ path('api_get_country_provinces', {id: 'PAIS_ID'}) }}".replace('PAIS_ID', paisID);
 
                 $.ajax({
                     url: url,
                     type: "GET",
                     dataType: "JSON",
                     success: function (provincias) {
-                        provinciasSelect.html('');
-                        provinciasSelect.append('<option value> Selecciona una provincia de ' + paisSelector.find("option:selected").text() + ' ...</option>');
-
-                        $.each(provincias, function (key, provincia) {
-                            provinciasSelect.append('<option value="' + provincia.id + '">' + provincia.name + '</option>');
-                        });
+                        const savedProvinceId = $formContainer.data('province-id');
+                        if (provincias.length > 0) {
+                            $provinciasSelect.html('<option value="">Selecciona una provincia...</option>');
+                            $.each(provincias, function (key, provincia) {
+                                $provinciasSelect.append(`<option value="${provincia.id}">${provincia.name}</option>`);
+                            });
+                            if (savedProvinceId) {
+                                $provinciasSelect.val(savedProvinceId);
+                            }
+                            $provinciasSelect.prop('disabled', false);
+                            $provinciasText.prop('disabled', true);
+                            $provinceSelectContainer.show();
+                            $provinceTextContainer.hide();
+                        } else {
+                            $provinciasSelect.prop('disabled', true);
+                            $provinciasText.prop('disabled', false);
+                            $provinceSelectContainer.hide();
+                            $provinceTextContainer.show();
+                        }
                     },
-                    error: function (err) {
-                        console.error("Ha ocurrido un error al cargar las provincias.");
+                    error: function(err) {
+                        console.error("Error al cargar las provincias:", err);
+                        $provinceSelectContainer.hide();
+                        $provinceTextContainer.show();
                     }
                 });
+            }
+
+            // Se usa delegación de eventos para que funcione con ambos formularios
+            $('body').on('change', '.country-selector', function() {
+                handleCountryChange(this);
             });
 
-            // Para frameworks como Chosen.js si los usas
-            if ($.fn.chosen) {
-                $('.chosen').chosen();
-            }
+            // Se inicializa para el formulario de facturación al cargar la página
+            handleCountryChange($('#billingForm').find('.country-selector'));
         });
     </script>
 {% endblock %}
+

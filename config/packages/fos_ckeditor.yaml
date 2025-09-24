@@ -1,0 +1,9 @@
+# Read the documentation: https://symfony.com/doc/current/bundles/FOSCKEditorBundle/index.html
+
+
+# config/packages/fos_ck_editor.yaml
+fos_ck_editor:
+  default_config: my_config
+  configs:
+    my_config:
+      toolbar: "standard"

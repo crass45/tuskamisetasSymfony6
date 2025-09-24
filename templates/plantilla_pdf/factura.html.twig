@@ -150,7 +150,7 @@
             </div>
             <div>{{ empresa.telefonoOtro }}</div>
             <div><a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a></div>
-            <div>{% if pedido.idUsuario.intracomunitario %}ES{% endif %}{{ empresa.cif }}</div>
+            <div>{% if pedido.contacto.intracomunitario %}ES{% endif %}{{ empresa.cif }}</div>
         </div>
 
         <div style="float: right;text-align: right;/*border: 1px solid black;*/padding: 10px">
@@ -165,7 +165,7 @@
     </div>
     {% if pedido.factura.razonSocial is defined and pedido.factura.razonSocial != "" %}
         <div id="project" style="text-align: right; float: right">
-            <div>{{ "CL%06d"|format(pedido.idUsuario.id) }}</div>
+            <div>{{ "CL%06d"|format(pedido.contacto.id) }}</div>
             {#<div><span>PROJECT</span> Website development</div>#}
             <div>{{ pedido.factura.razonSocial }}</div>
             <div>{{ pedido.factura.direccion }}
@@ -177,17 +177,17 @@
 
             <br>
         </div>
-    {% elseif  pedido.idUsuario is defined and pedido.idUsuario != null %}
+    {% elseif  pedido.contacto is defined and pedido.contacto != null %}
         <div id="project" style="text-align: right; float: right">
-            <div>{{ "CL%06d"|format(pedido.idUsuario.id) }}</div>
+            <div>{{ "CL%06d"|format(pedido.contacto.id) }}</div>
             {#<div><span>PROJECT</span> Website development</div>#}
-            <div>{{ pedido.idUsuario.nombre }} {{ pedido.idUsuario.apellidos }}</div>
-            <div>{% if pedido.idUsuario.direccion is not null %}{{ pedido.idUsuario.direccion.dir }}
-                    <br> {{ pedido.idUsuario.direccion.cp }} {{ pedido.idUsuario.direccion.poblacion |capitalize }}
-                    - {{ pedido.idUsuario.direccion.provincia |capitalize }}
-                    <br> {{ pedido.idUsuario.direccion.pais |capitalize }}{% endif %}
+            <div>{{ pedido.contacto.nombre }} {{ pedido.contacto.apellidos }}</div>
+            <div>{% if pedido.contacto.direccionFacturacion is not null %}{{ pedido.contacto.direccionFacturacion.dir }}
+                    <br> {{ pedido.contacto.direccionFacturacion.cp }} {{ pedido.contacto.direccionFacturacion.poblacion |capitalize }}
+                    - {{ pedido.contacto.direccionFacturacion.provincia |capitalize }}
+                    <br> {{ pedido.contacto.direccionFacturacion.pais |capitalize }}{% endif %}
             </div>
-            <div>{{ pedido.idUsuario.cif }}</div>
+            <div>{{ pedido.contacto.cif }}</div>
 
             <br>
         </div>
@@ -208,11 +208,11 @@
             <th>PRECIO</th>
             <th><b>TOTAL</b></th>
         </tr>
-        {% for lineaPedido in pedido.pedidoHasLineas %}
+        {% for lineaPedido in pedido.lineas %}
             <tr>
-                <td class="service">{{ lineaPedido.idProducto.referencia }}</td>
-                <td class="desc">{{ lineaPedido.idProducto.modelo.nombre }}
-                    T/{{ lineaPedido.idProducto.talla }} {{ lineaPedido.idProducto.color }}
+                <td class="service">{{ lineaPedido.producto.referencia }}</td>
+                <td class="desc">{{ lineaPedido.producto.modelo.nombre }}
+                    T/{{ lineaPedido.producto.talla }} {{ lineaPedido.producto.color }}
                     <br> <span style="font-size: 9px">{{ lineaPedido.personalizacion }}</span></td>
                 <td class="qty">{{ lineaPedido.cantidad }}</td>
                 <td class="unit">{{ lineaPedido.precio | number_format(3, ',', '.') }}€</td>
@@ -220,7 +220,7 @@
                 <td class="total">{{ (lineaPedido.precio * lineaPedido.cantidad) | number_format(3, ',', '.') }}€</td>
             </tr>
         {% endfor %}
-        {% for lineaPedido in pedido.pedidoHasLineasLibre %}
+        {% for lineaPedido in pedido.lineasLibres %}
             <tr>
                 <td class="service">
                     LLB{{ lineaPedido.id }}
@@ -293,7 +293,7 @@
                 <td class="total">{{ pedido.iva | number_format(2, ',', '.') }}€</td>
             {% endif %}
         </tr>
-        {% if pedido.idUsuario.recargoEquivalencia is defined and pedido.idUsuario.recargoEquivalencia %}
+        {% if pedido.contacto.recargoEquivalencia is defined and pedido.contacto.recargoEquivalencia %}
             <tr>
                 <td colspan="4">RE 5,20%</td>
                 <td class="total">{{ pedido.recargoEquivalencia | number_format(2, ',', '.') }}€</td>
@@ -302,7 +302,7 @@
         <tr>
             <td colspan="4" class="grand total">TOTAL</td>
             {% if pedido.iva != 0 %}
-                {% if pedido.idUsuario.recargoEquivalencia is defined and pedido.idUsuario.recargoEquivalencia %}
+                {% if pedido.contacto.recargoEquivalencia is defined and pedido.contacto.recargoEquivalencia %}
                     <td class="grand total">
                         <b>{{ ((pedido.subTotal + pedido.envio + precioGastos - (pedido.subTotal * pedido.descuento /100))*(1+empresa.ivaGeneral/100)+pedido.recargoEquivalencia) | number_format(2, ',', '.') }}
                             €</b></td>
@@ -312,7 +312,7 @@
                             €</b></td>
                 {% endif %}
             {% else %}
-                {% if pedido.idUsuario.recargoEquivalencia is defined and pedido.idUsuario.recargoEquivalencia %}
+                {% if pedido.contacto.recargoEquivalencia is defined and pedido.contacto.recargoEquivalencia %}
                     <td class="grand total">
                         <b>{{ (pedido.subTotal + pedido.envio + precioGastos - (pedido.subTotal * pedido.descuento /100)+pedido.recargoEquivalencia) | number_format(2, ',', '.') }}
                             €</b></td>
