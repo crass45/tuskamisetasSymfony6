@@ -1,22 +1,69 @@
 # config/packages/sonata_media.yaml
 sonata_media:
+  # Se mantienen las clases de tu nuevo proyecto
   class:
     media: App\Entity\Sonata\Media
     gallery: App\Entity\Sonata\Gallery
     gallery_item: App\Entity\Sonata\GalleryItem
     category: App\Entity\Sonata\ClassificationCategory # <-- ESTA ES LA LÍNEA AÑADIDA
+
   db_driver: doctrine_orm
   default_context: default
+
+  # Se mantiene la configuración moderna del sistema de ficheros
+  filesystem:
+    local:
+      directory: '%kernel.project_dir%/public/uploads/media'
+      create: true
+
+  # --- INICIO DE LA MIGRACIÓN DE CONTEXTOS ---
   contexts:
     default:
       providers:
+        - sonata.media.provider.youtube
+        - sonata.media.provider.vimeo
         - sonata.media.provider.image
         - sonata.media.provider.file
-        - sonata.media.provider.youtube
+      formats:
+        wide:    { width: 820, quality: 100}
+        grid:    { width: 300, quality: 90}
+        mini:    { width: 40, quality: 90}
+        grid4:   { width: 210, quality: 90}
+        preview: { width: 100, quality: 100}
+        big:     { width: 3000, quality: 100}
+
+    producto:
+      providers:
+        - sonata.media.provider.image
+      formats:
+        wide:    { width: 820, quality: 100}
+        grid:    { width: 300, quality: 90}
+        mini:    { width: 40, quality: 90}
+        grid4:   { width: 210, quality: 90}
+        preview: { width: 100, quality: 100}
+
+    sonata_category:
+      providers:
+        - sonata.media.provider.image
+      formats:
+        preview: { width: 100, quality: 100}
+        wide:    { width: 820, quality: 100}
+        grid:    { width: 300, quality: 90}
+        grid4:   { width: 210, quality: 90}
+        mini:    { width: 40, quality: 90}
+  # --- FIN DE LA MIGRACIÓN DE CONTEXTOS ---
+
   cdn:
     server:
       path: /uploads/media
-  filesystem:
-    local:
-      directory: "%kernel.project_dir%/public/uploads/media"
-      create: true
+
+  # --- INICIO DE LA MIGRACIÓN DE PROVIDERS ---
+  providers:
+    image:
+      resizer: sonata.media.resizer.simple
+      allowed_extensions: ['jpg', 'png', 'gif', 'jpeg']
+      allowed_mime_types: ['image/pjpeg','image/jpeg','image/png','image/x-png', 'image/gif']
+    youtube:
+      html5: true
+  # --- FIN DE LA MIGRACIÓN DE PROVIDERS ---
+

@@ -31,7 +31,7 @@
                                     <div class="productinfo">
                                         <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': fabricante.nombreUrl}) }}" style="text-decoration: none; color: inherit;">
                                             {% if fabricante.imagen %}
-                                                <img src="{{ sonata_path(fabricante.imagen, 'default_medium') }}" alt="{{ fabricante.nombre }}" class="img-responsive" style="height: 150px; width: auto; margin: 0 auto; object-fit: contain;"/>
+                                                <img src="{{ sonata_path(fabricante.imagen, 'wide') }}" alt="{{ fabricante.nombre }}" class="img-responsive" style="height: 150px; width: auto; margin: 0 auto; object-fit: contain;"/>
                                             {% else %}
                                                 <div style="height: 150px; display: flex; align-items: center; justify-content: center; background-color: #f5f5f5; border-radius: 4px;">
                                                     <span style="font-size: 18px; color: #888;">{{ fabricante.nombre }}</span>
