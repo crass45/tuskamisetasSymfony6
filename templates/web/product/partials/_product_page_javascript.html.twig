@@ -47,15 +47,24 @@
 
                 // Recoger los datos de cada personalización
                 $('#estampacionLugar .personalization-row').each(function() {
-                    const row = $(this);
-                    const trabajo = {
-                        codigo: row.find('.personalizacionTipo').val(),
-                        cantidad: row.find('.tintas').val(),
-                        ubicacion: row.find('.ubicacion').val(),
-                        observaciones: row.find('.observaciones').val(),
-                        archivo: row.find('.files').text() // Se lee el nombre del fichero subido
-                    };
-                    if (trabajo.codigo) { data.trabajos.push(trabajo); }
+                    const $row = $(this);
+                    const isReusing = $row.find('.personalizacionCarritoRadio').length > 0 && $row.find('.personalizacionCarritoRadio:checked').val() === 'Si';
+
+                    if (isReusing) {
+                        data.trabajos.push({
+                            reutilizado: true,
+                            identificador: $row.find('.personalizacionExistenteSelect').val()
+                        });
+                    } else {
+                        data.trabajos.push({
+                            reutilizado: false,
+                            codigo: $row.find('.personalizacionTipo').val(),
+                            cantidad: $row.find('.tintas').val() || 0,
+                            ubicacion: $row.find('.ubicacion').val(),
+                            observaciones: $row.find('.observaciones').val(),
+                            archivo: $row.data('uploaded-file') || ''
+                        });
+                    }
                 });
 
                 // Hacer la llamada AJAX
@@ -127,13 +136,13 @@
                         });
                         calculatePrice();
                     },
-                    // --- FIN DE LA CORRECCIÓN ---
+
                     progressall: function (e, data) {
                         const progress = parseInt(data.loaded / data.total * 100, 10);
                         const container = $(this).closest('.personalization-row');
                         container.find('.progress-bar').css('width', progress + '%');
                     },
-                    // --- INICIO DE LA CORRECCIÓN ---
+
                     // Se mejora el manejador de errores 'fail' para que entienda múltiples formatos de respuesta
                     fail: function(e, data) {
                         console.log("ERROR");
@@ -167,7 +176,6 @@
                         // Mostramos el error en la interfaz de usuario
                         container.find('.files').html(`<p class="alert alert-danger" style="margin-top: 5px; padding: 5px; font-size: 12px;">${errorMessage}</p>`);
                     }
-                    // --- FIN DE LA CORRECCIÓN ---
                 });
             }
 
@@ -219,6 +227,36 @@
                     }
                 });
             }
+
+            // --- NUEVA LÓGICA PARA LOS RADIO BUTTONS ---
+            $('body').on('change', '.personalizacionCarritoRadio', function() {
+                const $row = $(this).closest('.personalization-row');
+                console.warn(this.value);
+                if (this.value === 'Si') {
+                    console.warn($row);
+                    $row.find('.nuevaPersonalizacionContainer').hide();
+                    $row.find('.personalizacionDeCarritoContainer').show();
+                } else {
+                    $row.find('.nuevaPersonalizacionContainer').show();
+                    $row.find('.personalizacionDeCarritoContainer').hide();
+                }
+                calculatePrice(); // Se recalcula el precio al cambiar de opción
+            });
+
+            // Lógica para mostrar/ocultar el campo de tintas
+            function toggleTintasVisibility(selectElement) {
+                const selectedOptionValue = $(selectElement).val();
+                const $tintasContainer = $(selectElement).closest('.nuevaPersonalizacionContainer').find('.tintas-container');
+                if (selectedOptionValue === 'A1') { // Asumimos que 'A1' es el código de Serigrafía
+                    $tintasContainer.show();
+                } else {
+                    $tintasContainer.hide();
+                }
+            }
+            $('body').on('change', '.personalizacionTipo', function() {
+                toggleTintasVisibility(this);
+                calculatePrice();
+            });
 
             // --- LISTENERS DE EVENTOS ---
             checkQuantitiesAndTogglePanels(); // Comprobación inicial al cargar la página

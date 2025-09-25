@@ -76,6 +76,12 @@ class ProductController extends AbstractController
 
         if ($carrito) {
             // Lógica para encontrar las personalizaciones ya existentes en el carrito...
+            foreach ($carrito->getItems() as $presupuesto) {
+                foreach ($presupuesto->getTrabajos() as $trabajo) {
+                    // Usamos el identificador único para evitar duplicados
+                    $personalizacionesCarrito[$trabajo->getIdentificadorTrabajo()] = $trabajo;
+                }
+            }
         }
 
         return $this->render('web/product/partials/_customization_form_row.html.twig', [
@@ -147,16 +153,28 @@ class ProductController extends AbstractController
 
         // 3. Añadir trabajos de personalización
         foreach ($data['trabajos'] ?? [] as $trabajoData) {
-            $trabajo = $this->em->getRepository(Personalizacion::class)->findOneBy(['codigo' => $trabajoData['codigo']]);
-            if ($trabajo) {
-                $presupuestoTrabajo = new PresupuestoTrabajo();
-                $presupuestoTrabajo->setTrabajo($trabajo);
-                $presupuestoTrabajo->setCantidad((int)($trabajoData['cantidad'] ?? 0));
-                // Se añaden las líneas que faltaban para guardar la ubicación y las observaciones
-                $presupuestoTrabajo->setUbicacion($trabajoData['ubicacion'] ?? '');
-                $presupuestoTrabajo->setObservaciones($trabajoData['observaciones'] ?? '');
-                $presupuestoTrabajo->setUrlImage($trabajoData['archivo'] ?? '');
+            var_dump($trabajoData);
+            if ($trabajoData['reutilizado']) {
+                var_dump($trabajoData['identificador']);
+                $carrito = $session->get('carrito');
+
+
+                $presupuestoTrabajo = $carrito->getTrabajoPorIentificador($trabajoData['identificador']);
                 $presupuesto->addTrabajo($presupuestoTrabajo);
+
+            } else {
+                $trabajo = $this->em->getRepository(Personalizacion::class)->findOneBy(['codigo' => $trabajoData['codigo']]);
+
+                if ($trabajo) {
+                    $presupuestoTrabajo = new PresupuestoTrabajo();
+                    $presupuestoTrabajo->setTrabajo($trabajo);
+                    $presupuestoTrabajo->setCantidad((int)($trabajoData['cantidad'] ?? 0));
+                    // Se añaden las líneas que faltaban para guardar la ubicación y las observaciones
+                    $presupuestoTrabajo->setUbicacion($trabajoData['ubicacion'] ?? '');
+                    $presupuestoTrabajo->setObservaciones($trabajoData['observaciones'] ?? '');
+                    $presupuestoTrabajo->setUrlImage($trabajoData['archivo'] ?? '');
+                    $presupuesto->addTrabajo($presupuestoTrabajo);
+                }
             }
         }
         $empresa = $this->em->getRepository(Empresa::class)->findOneBy([], ['id' => 'DESC']);

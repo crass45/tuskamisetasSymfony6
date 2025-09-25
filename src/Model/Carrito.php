@@ -3,6 +3,7 @@
 
 namespace App\Model;
 
+use App\Entity\Personalizacion;
 use App\Entity\Producto;
 use App\Entity\Sonata\User;
 use App\Entity\ZonaEnvio;
@@ -73,6 +74,19 @@ class Carrito
             }
         }
         $this->items[] = $item;
+    }
+
+//    NOS DEVUELVE UN TRABAJO A PARTIR DE SU IDENTIFICADOR UNICO CREADO EN CARRITO
+    public function getTrabajoPorIentificador($identificador): ?PresupuestoTrabajo
+    {
+        foreach ($this->items as $item){
+            foreach ($item->getTrabajos() as $trabajo){
+                if ($trabajo->getIdentificadorTrabajo() == $identificador){
+                    return $trabajo;
+                }
+            }
+        }
+        return null;
     }
 
     private function comparaItems(Presupuesto $carritoItem, Presupuesto $item): bool
