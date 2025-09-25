@@ -45,24 +45,26 @@
                     }
                 });
 
-                // Recoger los datos de cada personalización
                 $('#estampacionLugar .personalization-row').each(function() {
                     const $row = $(this);
-                    const isReusing = $row.find('.personalizacionCarritoRadio').length > 0 && $row.find('.personalizacionCarritoRadio:checked').val() === 'Si';
+                    const selectedOption = $row.find('.personalizacion-selector').val();
 
-                    if (isReusing) {
-                        data.trabajos.push({
-                            reutilizado: true,
-                            identificador: $row.find('.personalizacionExistenteSelect').val()
-                        });
-                    } else {
+                    if (selectedOption === '-1') {
+                        console.warn("selected -1")
+                        // Se está creando una nueva personalización
                         data.trabajos.push({
                             reutilizado: false,
                             codigo: $row.find('.personalizacionTipo').val(),
-                            cantidad: $row.find('.tintas').val() || 0,
+                            cantidad: $row.find('.tintas-container').is(':visible') ? ($row.find('.tintas').val() || 1) : 1,
                             ubicacion: $row.find('.ubicacion').val(),
                             observaciones: $row.find('.observaciones').val(),
                             archivo: $row.data('uploaded-file') || ''
+                        });
+                    } else {
+                        // Se está reutilizando una personalización existente
+                        data.trabajos.push({
+                            reutilizado: true,
+                            identificador: selectedOption
                         });
                     }
                 });
@@ -209,7 +211,6 @@
                 const $tintasContainer = $row.find('.tintas-container');
                 const $ubicacionSelect = $row.find('.ubicacion');
 
-                console.warn(maxColores);
                 if (maxColores > 1) {
                     $tintasContainer.show();
                 } else {
@@ -272,9 +273,7 @@
             // --- NUEVA LÓGICA PARA LOS RADIO BUTTONS ---
             $('body').on('change', '.personalizacionCarritoRadio', function() {
                 const $row = $(this).closest('.personalization-row');
-                console.warn(this.value);
                 if (this.value === 'Si') {
-                    console.warn($row);
                     $row.find('.nuevaPersonalizacionContainer').hide();
                     $row.find('.personalizacionDeCarritoContainer').show();
                 } else {
@@ -296,6 +295,20 @@
             }
             $('body').on('change', '.personalizacionTipo', function() {
                 toggleTintasVisibility(this);
+                calculatePrice();
+            });
+
+
+            // --- NUEVA LÓGICA PARA EL DESPLEGABLE UNIFICADO ---
+            $('body').on('change', '.personalizacion-selector', function() {
+                const $row = $(this).closest('.personalization-row');
+                if ($(this).val() === '-1') {
+                    $row.find('.nuevaPersonalizacionContainer').slideDown();
+                    // Se inicializa el panel de nueva personalización
+                    $row.find('.personalizacionTipo').trigger('change');
+                } else {
+                    $row.find('.nuevaPersonalizacionContainer').slideUp();
+                }
                 calculatePrice();
             });
 

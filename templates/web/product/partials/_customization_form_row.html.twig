@@ -9,22 +9,21 @@
     <br>
     <div class="row">
 
-        {% if personalizacionesCarrito is not empty %}
-            <div class="col-sm-12" style="margin-bottom: 15px;">
-                <p><strong>¿Quieres utilizar alguna personalización que ya tienes en el carrito?</strong></p>
-                <label class="radio-inline"><input type="radio" class="personalizacionCarritoRadio" name="personalizacionCarrito{{ nPersonalizaciones }}" value="Si"> Sí</label>
-                <label class="radio-inline"><input type="radio" class="personalizacionCarritoRadio" name="personalizacionCarrito{{ nPersonalizaciones }}" value="No" checked> No, quiero crear una nueva</label>
-            </div>
-        {% endif %}
-
-        <div class="personalizacionDeCarritoContainer col-sm-12" style="display: none; margin-bottom: 15px;">
-            <label>Selecciona la personalización a reutilizar:</label>
-            <select class="form-control personalizacionExistenteSelect">
-                {% for trabajo in personalizacionesCarrito %}
-                    <option value="{{ trabajo.identificadorTrabajo }}">{{ trabajo }}</option>
-                {% endfor %}
+        {# --- INICIO DE LA MEJORA --- #}
+        <div class="col-sm-12" style="margin-bottom: 15px;">
+{#            <label>Elige una opción de personalización:</label>#}
+            <select class="form-control personalizacion-selector">
+                <option value="-1">Crear un nuevo diseño...</option>
+                {% if personalizacionesCarrito is not empty %}
+                    <optgroup label="Usar un diseño existente del carrito">
+                        {% for trabajo in personalizacionesCarrito %}
+                            <option value="{{ trabajo.identificadorTrabajo }}">{{ trabajo }}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endif %}
             </select>
         </div>
+        {# --- FIN DE LA MEJORA --- #}
 
         <div class="nuevaPersonalizacionContainer">
             <div class="col-md-3 col-sm-6">
