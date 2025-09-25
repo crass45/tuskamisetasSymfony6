@@ -20,7 +20,7 @@ class AreasTecnicasEstampado
      * Se ha corregido el 'targetEntity' para que apunte a la clase correcta.
      */
     #[ORM\ManyToOne(targetEntity: ModeloHasTecnicasEstampado::class, inversedBy: 'areas')]
-    #[ORM\JoinColumn(name: 'tecnica_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'area_tecnica_id', referencedColumnName: 'id', nullable: false)]
     private ?ModeloHasTecnicasEstampado $tecnica = null;
 
     #[ORM\Column(name: 'areawidth', type: 'decimal', precision: 10, scale: 4)]

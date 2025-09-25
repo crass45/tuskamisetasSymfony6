@@ -138,6 +138,15 @@ class Carrito
         return $cantidad;
     }
 
+    public function  getCantidadTotalProductos()
+    {
+        $cantidad = 0;
+        foreach ($this->items as $item) {
+            $cantidad += $item->getCantidadProductos();
+        }
+        return $cantidad;
+    }
+
     public function getCantidadProductosIguales(?int $idModelo): int
     {
         if ($idModelo === null) return 0;

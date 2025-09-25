@@ -12,10 +12,22 @@
 
     <legend><b><span class="numberCircle">3</span> {% trans %}TU PEDIDO{% endtrans %}</b></legend>
 
+    {# --- INICIO DE LA MEJORA --- #}
+    {# Si hay productos en el carrito, se muestra un mensaje informativo #}
+    {% if cantidadEnCarrito is defined and cantidadEnCarrito > 0 %}
+        <div class="alert alert-info" style="font-size: 12px; padding: 10px; margin-bottom: 10px;">
+            <i class="fa fa-info-circle"></i>
+            {#            El precio por unidad se ha calculado teniendo en cuenta los <strong>{{ cantidadEnCarrito }} productos</strong> que ya tienes en el carrito. #}
+            El precio que se muestra en este resumen es para {{ totalProductos }} unidades. El precio por unidad se recalculara cuando añada los productos al carrito teniendo en cuenta los  <strong>{{ cantidadEnCarrito }}
+                productos</strong> que ya tienes en el carrito.
+        </div>
+    {% endif %}
+    {# --- FIN DE LA MEJORA --- #}
     <table class="table-responsive" style="width: 100%">
         <thead>
         <tr>
-            <td colspan="2" style="text-align: center; background-color: #f5f5f5"><b>{% trans %}RESUMEN{% endtrans %}</b></td>
+            <td colspan="2" style="text-align: center; background-color: #f5f5f5">
+                <b>{% trans %}RESUMEN{% endtrans %}</b></td>
         </tr>
         </thead>
         <tbody>
@@ -66,7 +78,7 @@
 
 {# MIGRACIÓN: El script de Google Analytics ahora está aquí y usa las variables que le pasa el controlador #}
 <script>
-    $('#addAMiPEdido').click(function(e){
+    $('#addAMiPEdido').click(function (e) {
         if (typeof gtag === 'function') {
             gtag("event", "add_to_cart", {
                 currency: "EUR",
@@ -76,7 +88,7 @@
                         item_id: "{{ productosGTAG_ref }}",
                         item_name: "{{ productosGTagNombre }}",
                         affiliation: "TusKamisetas.com",
-                        item_brand: "{{ productosGTAG_brand}}"
+                        item_brand: "{{ productosGTAG_brand }}"
                     }
                 ]
             });

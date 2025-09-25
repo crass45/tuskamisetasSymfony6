@@ -29,6 +29,11 @@ class Presupuesto
     public function addTrabajo(PresupuestoTrabajo $trabajo): void { $this->trabajos[] = $trabajo; }
     public function getCantidadProductos(): int { return array_reduce($this->productos, fn($carry, $p) => $carry + $p->getCantidad(), 0); }
 
+    public function getCantidadProductosConCarrito(int $cantidadCarrito): int {
+
+        return $this->getCantidadProductos() + $cantidadCarrito;
+    }
+
     // ===================================================================
     // INICIO DE LA CORRECCIÓN EN LA LÓGICA DE CÁLCULO
     // ===================================================================

@@ -8,6 +8,7 @@ use App\Entity\Empresa;
 use App\Entity\Modelo;
 use App\Entity\Personalizacion;
 use App\Entity\Producto;
+use App\Model\Carrito;
 use App\Model\Presupuesto;
 use App\Model\PresupuestoProducto;
 use App\Model\PresupuestoTrabajo;
@@ -130,6 +131,23 @@ class ProductController extends AbstractController
             return new Response('Datos inválidos.', 400);
         }
 
+        // --- INICIO DE LA MEJORA ---
+        // 1. Recuperamos el carrito existente de la sesión.
+        $carrito = $session->get('carrito', new Carrito());
+        $cantidadEnCarrito = $carrito->getCantidadTotalProductos();
+
+        // 2. Calculamos la cantidad de los nuevos productos que se están añadiendo.
+        $cantidadSiendoAnadida = 0;
+        foreach ($data['productos'] ?? [] as $prodData) {
+            $cantidadSiendoAnadida += (int)($prodData['cantidad'] ?? 0);
+        }
+
+        // 3. Calculamos la cantidad total combinada para el cálculo de precios.
+        $cantidadTotalParaPrecio = $cantidadEnCarrito + $cantidadSiendoAnadida;
+
+//        FALTARIA VER Y COMPROBAR QUE SOLO SE ACTUALICEN LAS CANTIDADES DE PRODUCTOS QUE LO PERMITAN... SEAN DEL MISMO FABRICANTE Y TENGAN ACUMLA_TOTAL A TRUE
+        // --- FIN DE LA MEJORA ---
+
         $presupuesto = new Presupuesto();
         $cantidadTotal = 0;
 
@@ -145,7 +163,7 @@ class ProductController extends AbstractController
                 if ($producto) {
                     $presupuestoProducto = new PresupuestoProducto();
                     $presupuestoProducto->setCantidad((int)$prodData['cantidad']);
-                    $presupuestoProducto->setProducto($producto, $cantidadTotal, $this->getUser());
+                    $presupuestoProducto->setProducto($producto, $cantidadTotalParaPrecio, $this->getUser());
                     $presupuesto->addProducto($presupuestoProducto, $this->getUser());
                 }
             }
@@ -153,12 +171,8 @@ class ProductController extends AbstractController
 
         // 3. Añadir trabajos de personalización
         foreach ($data['trabajos'] ?? [] as $trabajoData) {
-            var_dump($trabajoData);
             if ($trabajoData['reutilizado']) {
-                var_dump($trabajoData['identificador']);
-                $carrito = $session->get('carrito');
-
-
+//                $carrito = $session->get('carrito');
                 $presupuestoTrabajo = $carrito->getTrabajoPorIentificador($trabajoData['identificador']);
                 $presupuesto->addTrabajo($presupuestoTrabajo);
 
@@ -194,6 +208,8 @@ class ProductController extends AbstractController
             'productosGTagNombre' => $productosGTagNombre,
             'productosGTAG_brand' => $productosGTagBrand,
             'producto' => $producto,
+            'cantidadEnCarrito' => $cantidadEnCarrito,
+            'carrito' => $carrito,
         ]);
     }
 }
