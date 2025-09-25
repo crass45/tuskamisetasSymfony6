@@ -199,6 +199,47 @@
                 });
             });
 
+            // --- LÓGICA PARA LOS ELEMENTOS DINÁMICOS DEL PANEL DE PERSONALIZACIÓN ---
+            function updateCustomizationPanel(selectElement) {
+                const $row = $(selectElement).closest('.personalization-row');
+                const $selectedOption = $(selectElement).find('option:selected');
+                const selectedCode = $selectedOption.val();
+                const maxColores = $selectedOption.data('max-colores');
+                const areas = $selectedOption.data('areas');
+                const $tintasContainer = $row.find('.tintas-container');
+                const $ubicacionSelect = $row.find('.ubicacion');
+
+                console.warn(maxColores);
+                if (maxColores > 1) {
+                    $tintasContainer.show();
+                } else {
+                    $tintasContainer.hide();
+                }
+
+                let areasToShow = [];
+                if (areas && areas.length > 0) {
+                    areasToShow = areas;
+                } else {
+                    if (selectedCode === 'A1') {
+                        areasToShow = ['Pecho', 'Espalda', 'Manga Izquierda', 'Manga Derecha'];
+                    } else {
+                        areasToShow = ['Delantera', 'Trasera'];
+                    }
+                }
+
+                // Se construye el HTML de las nuevas opciones
+                let optionsHtml = '';
+                $.each(areasToShow, function(index, area) {
+                    optionsHtml += `<option value="${area}">${area}</option>`;
+                });
+
+                // Se crea el nuevo <select> completo como una cadena de texto
+                const newSelectHtml = `<select id="${$ubicacionSelect.attr('id')}" class="form-control ubicacion">${optionsHtml}</select>`;
+
+                // Se reemplaza el select antiguo por el nuevo. Esto es más robusto que .html().
+                $ubicacionSelect.replaceWith(newSelectHtml);
+            }
+
             // Lógica para el botón de eliminar personalización
             $('body').on('click', '.remove-personalization-row', function() {
                 $(this).closest('.personalization-row').remove();
@@ -265,6 +306,10 @@
             $('body').on('change keyup', '#tallas input[type=number]', checkQuantitiesAndTogglePanels);
             $('body').on('change', '#estampacionLugar select, #doblembol', calculatePrice);
             $('body').on('keyup', '#estampacionLugar input, #estampacionLugar textarea', calculatePrice);
+            $('body').on('change', '.personalizacionTipo', function() {
+                updateCustomizationPanel(this);
+                calculatePrice();
+            });
 
             // Galería de imágenes (si existe la vista simple)
             const mainImage = $('#imagen-producto-main');

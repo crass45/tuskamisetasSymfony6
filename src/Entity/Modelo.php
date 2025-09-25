@@ -187,7 +187,7 @@ class Modelo implements Translatable
     private Collection $atributos;
 
     /** @var Collection<int, ModeloHasTecnicasEstampado> */
-    #[ORM\OneToMany(mappedBy: 'modelo', targetEntity: ModeloHasTecnicasEstampado::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'modelo', targetEntity: ModeloHasTecnicasEstampado::class, cascade: ['persist', 'remove'], orphanRemoval: true, fetch: 'EAGER')]
     private Collection $tecnicas;
 
     /** @var Collection<int, ClassificationCategory> */

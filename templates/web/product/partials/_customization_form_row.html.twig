@@ -1,30 +1,19 @@
 {# templates/web/product/partials/_customization_form_row.html.twig #}
-{# Este fichero representa una única fila de personalización, con el diseño y la funcionalidad corregidos. #}
+{# Esta plantilla ahora utiliza atributos de datos para la lógica de JavaScript #}
 
-<div class="personalization-row" id="personalization-row-{{ nPersonalizaciones }}"
-     style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px; position: relative;">
+<div class="personalization-row" id="personalization-row-{{ nPersonalizaciones }}" style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px; position: relative;">
 
-    {# Botón para eliminar esta fila de personalización #}
-    <button type="button" class="close remove-personalization-row" aria-label="Close"
-            style="position: absolute; top: 15px; right: 15px;">
+    <button type="button" class="close remove-personalization-row" aria-label="Close" style="position: absolute; top: 15px; right: 15px;">
         <span aria-hidden="true">&times;</span>
     </button>
     <br>
     <div class="row">
-        {# --- INICIO DE LA MEJORA --- #}
+
         {% if personalizacionesCarrito is not empty %}
             <div class="col-sm-12" style="margin-bottom: 15px;">
                 <p><strong>¿Quieres utilizar alguna personalización que ya tienes en el carrito?</strong></p>
-                <label for="personalizacionCarritoSi{{ nPersonalizaciones }}" class="radio-inline">
-                    <input type="radio" class="personalizacionCarritoRadio"
-                           name="personalizacionCarrito{{ nPersonalizaciones }}" value="Si"
-                           id="personalizacionCarritoSi{{ nPersonalizaciones }}"> Sí
-                </label>
-                <label for="personalizacionCarritoNo{{ nPersonalizaciones }}" class="radio-inline">
-                    <input type="radio" class="personalizacionCarritoRadio"
-                           name="personalizacionCarrito{{ nPersonalizaciones }}" value="No"
-                           id="personalizacionCarritoNo{{ nPersonalizaciones }}" checked> No, quiero crear una nueva
-                </label>
+                <label class="radio-inline"><input type="radio" class="personalizacionCarritoRadio" name="personalizacionCarrito{{ nPersonalizaciones }}" value="Si"> Sí</label>
+                <label class="radio-inline"><input type="radio" class="personalizacionCarritoRadio" name="personalizacionCarrito{{ nPersonalizaciones }}" value="No" checked> No, quiero crear una nueva</label>
             </div>
         {% endif %}
 
@@ -36,52 +25,50 @@
                 {% endfor %}
             </select>
         </div>
-        {# --- FIN DE LA MEJORA --- #}
+
         <div class="nuevaPersonalizacionContainer">
             <div class="col-md-3 col-sm-6">
-                <label for="personalizacion-tipo-{{ nPersonalizaciones }}">Técnica de Estampado</label>
-                <select id="personalizacion-tipo-{{ nPersonalizaciones }}" class="form-control personalizacionTipo">
+                <label>Técnica de Estampado</label>
+                <select class="form-control personalizacionTipo">
                     <option value="">Selecciona una técnica...</option>
-                    {# El controlador pasa la variable 'personalizaciones' con las técnicas disponibles #}
-                    {% for tecnica in personalizaciones %}
-                        <option value="{{ tecnica.personalizacion.codigo }}">{{ tecnica.personalizacion.nombre }}</option>
+                    {# Se itera sobre las 'tecnicas' (ModeloHasTecnicasEstampado) que pasa el controlador #}
+                    {% for tecnica in tecnicas %}
+                        {# Se extraen las áreas y se guardan en atributos data-* #}
+                        {% set areas = tecnica.areas|map(a => a.area) %}
+                        <option value="{{ tecnica.personalizacion.codigo }}"
+                                data-max-colores="{% if tecnica.maxColores >0 %}{{ tecnica.maxColores }}{% else %}{{ tecnica.personalizacion.numeroMaximoColores }}{% endif %}"
+                                data-areas="{{ areas|json_encode }}">
+                            {{ tecnica.personalizacion.nombre }}
+                        </option>
                     {% endfor %}
                 </select>
             </div>
 
-            <div class="col-md-3 col-sm-6">
+            <div class="col-md-2 col-sm-6 tintas-container" style="display: none;">
+                <label>Nº Tintas</label>
+                <input type="number" class="form-control tintas" min="1" value="1">
+            </div>
+
+            <div class="col-md-3 col-sm-6 ubicacion-container">
                 <label for="personalizacion-ubicacion-{{ nPersonalizaciones }}">Ubicación</label>
                 <select id="personalizacion-ubicacion-{{ nPersonalizaciones }}" class="form-control ubicacion">
-                    <option value="pecho">Pecho</option>
-                    <option value="espalda">Espalda</option>
-                    <option value="manga-izquierda">Manga Izquierda</option>
-                    <option value="manga-derecha">Manga Derecha</option>
+                    {# El JavaScript se encargará de rellenar este desplegable #}
                 </select>
             </div>
 
-            <div class="col-md-2 col-sm-6">
-                <label for="personalizacion-tintas-{{ nPersonalizaciones }}">Nº Tintas</label>
-                <input type="number" id="personalizacion-tintas-{{ nPersonalizaciones }}" class="form-control tintas"
-                       min="1" value="1">
-            </div>
-
             <div class="col-md-4 col-sm-6">
-                <label for="fileUpload-{{ nPersonalizaciones }}">Tu Diseño (Opcional)</label>
-                {# MIGRACIÓN: Se usa la estructura HTML que espera el plugin jQuery File Upload #}
+                <label>Tu Diseño (Opcional)</label>
                 <span class="btn btn-success fileinput-button">
-                <i class="glyphicon glyphicon-plus"></i>
-                <span>Seleccionar archivo...</span>
-                <input id="fileUpload-{{ nPersonalizaciones }}" class="file-upload-input" type="file" name="files[]">
-            </span>
-                <div id="progress-{{ nPersonalizaciones }}" class="progress" style="margin-top: 5px;">
-                    <div class="progress-bar progress-bar-success"></div>
-                </div>
-                <div id="fileUploadFiles-{{ nPersonalizaciones }}" class="files"></div>
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>Seleccionar archivo...</span>
+                    <input class="file-upload-input" type="file" name="files[]">
+                </span>
+                <div class="progress" style="margin-top: 5px; margin-bottom: 5px; height: 10px;"><div class="progress-bar progress-bar-success"></div></div>
+                <div class="files"></div>
             </div>
 
-            <div class="col-sm-12" style="margin-bottom: 15px">
-                <textarea class="form-control observaciones" rows="2"
-                          placeholder="Observaciones sobre este diseño (ej. 'color Pantone 185C, tamaño 10cm de ancho')..."></textarea>
+            <div class="col-sm-12" style="margin-top: 15px;">
+                <textarea class="form-control observaciones" rows="2" placeholder="Observaciones sobre este diseño..."></textarea>
             </div>
         </div>
     </div>

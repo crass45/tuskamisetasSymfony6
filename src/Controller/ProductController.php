@@ -85,8 +85,9 @@ class ProductController extends AbstractController
             }
         }
 
+
         return $this->render('web/product/partials/_customization_form_row.html.twig', [
-            'personalizaciones' => $personalizaciones,
+            'tecnicas' => $personalizaciones,
             'nPersonalizaciones' => $nPersonalizaciones,
             'personalizacionesCarrito' => $personalizacionesCarrito,
         ]);
