@@ -48,6 +48,12 @@ class ModeloRepository extends ServiceEntityRepository
     {
         $qb = $this->createFindByFiltrosQueryBuilder($filtros);
 
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Se elimina cualquier cláusula de ordenación de la consulta, ya que
+        // para buscar los filtros disponibles no la necesitamos y puede causar conflictos.
+//        $qb->resetDQLPart('orderBy');
+        // --- FIN DE LA CORRECCIÓN ---
+
         $qb->select('DISTINCT m.id');
         $modelIds = array_column($qb->getQuery()->getScalarResult(), 'id');
 
@@ -178,7 +184,7 @@ class ModeloRepository extends ServiceEntityRepository
 //            case "Precio ASC": $qb->orderBy('m.precioMin', 'ASC'); break;
 //            case "Precio DESC": $qb->orderBy('m.precioMin', 'DESC'); break;
 
-            case "Orden Por Defecto": $qb->addOrderBy('m.importancia', 'DESC')->addOrderBy('o.precioMinAdulto', 'ASC'); break;
+            case "Orden Por Defecto": $qb->addOrderBy('m.importancia', 'DESC')->addOrderBy('m.precioMinAdulto', 'ASC'); break;
             case "Precio Adulto DESC": $qb->orderBy('m.precioMinAdulto', 'DESC'); break;
             case "Precio Adulto ASC": $qb->orderBy('m.precioMinAdulto', 'ASC'); break;
             case "Precio DESC": $qb->orderBy('m.precioMin', 'DESC'); break;
