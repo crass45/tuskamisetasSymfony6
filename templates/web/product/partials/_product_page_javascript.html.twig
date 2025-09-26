@@ -194,9 +194,33 @@
                 $.ajax({
                     url: url,
                     success: function(html) {
-                        loadingDiv.replaceWith(html);
-                        // IMPORTANTE: Se inicializa el plugin de subida para la nueva fila
-                        initializeFileUpload(`#fileUpload-${nPersonalizaciones}`);
+
+                        // loadingDiv.replaceWith(html);
+                        // // IMPORTANTE: Se inicializa el plugin de subida para la nueva fila
+                        // initializeFileUpload(`#fileUpload-${nPersonalizaciones}`);
+                        // --- INICIO DE LA MEJORA ---
+                        // 1. Convertimos el HTML recibido en un objeto jQuery para poder manipularlo
+                        const $html = $(html);
+
+                        // 2. Buscamos el select de 'Técnica de Estampado' dentro del nuevo panel
+                        const $tecnicaSelect = $html.find('.personalizacionTipo');
+
+                        // 3. Eliminamos la primera opción ("Selecciona una técnica...")
+                        $tecnicaSelect.find('option[value=""]').remove();
+
+                        // 4. Seleccionamos la nueva primera opción de la lista
+                        $tecnicaSelect.find('option:first').prop('selected', true);
+
+                        // 5. Insertamos el HTML ya modificado en la página
+                        loadingDiv.replaceWith($html);
+                        // --- FIN DE LA MEJORA ---
+
+                        // 6. El resto de la lógica de inicialización se mantiene igual
+                        const newPanel = container.find('.personalization-row').last();
+                        initializeFileUpload(newPanel.find('.file-upload-input'));
+                        newPanel.find('.personalizacion-selector').trigger('change');
+
+
                     }
                 });
             });
