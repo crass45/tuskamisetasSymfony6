@@ -148,7 +148,7 @@
                 <H3 style="margin-bottom: 0px">PEDIDO EXPRES</H3>
             {% endif %}
             <img src="https://www.tuskamisetas.com/qr{{ pedido }}.png" title="Link to Google.com"/>
-{#           <p>https://www.tuskamisetas.com/qr{{ pedido }}.png</p>#}
+            {#           <p>https://www.tuskamisetas.com/qr{{ pedido }}.png</p> #}
             {% if pedido.fechaEntrega is not null %}<h4 style="margin-top: 0px">Fecha
                 entrega: {{ pedido.fechaEntrega | date('d-m-Y') }}</h4>{% endif %}
         </div>
@@ -164,7 +164,7 @@
                 <p>{{ pedido.idUsuario.nombre }}</p>
                 <p>{{ pedido.idUsuario.appellidos }}</p>
             {% else %}
-                {#<div><span>PROJECT</span> Website development</div>#}
+                {# <div><span>PROJECT</span> Website development</div> #}
                 {% if (pedido.idDireccion.nombre != "") %}
                     <div>{{ pedido.idDireccion.nombre }}</div>
                 {% else %}
@@ -178,7 +178,7 @@
                         <br> {{ pedido.idDireccion.poblacion }}<br> {{ pedido.idDireccion.provincia }}
                         <br> {{ pedido.idDireccion.pais }}<br>{% endif %}
                 </div>
-                {#<div><span>DUE DATE</span> September 17, 2015</div>#}
+                {# <div><span>DUE DATE</span> September 17, 2015</div> #}
 
                 {% if pedido.idDireccion.telefonoMovil is defined and pedido.idDireccion.telefonoMovil != "" %}
                     <div>Telf: {{ pedido.idDireccion.telefonoMovil }}</div>
@@ -190,7 +190,7 @@
                     <div><a href="mailto:{{ pedido.idUsuario.usuario.email }}">{{ pedido.idUsuario.usuario.email }}</a>
                     </div>
                 {% endif %}
-                {#<div><span>DUE DATE</span> September 17, 2015</div>#}
+                {# <div><span>DUE DATE</span> September 17, 2015</div> #}
             {% endif %}
         </div>
     {% else %}
@@ -199,7 +199,7 @@
                  style="text-align: right;float: right; border: 1px solid white; padding: 15px; padding-left: 0;">
                 <div style="border-bottom: 1px solid grey;">DATOS DE ENVÍO</div>
                 <br>
-                {#<div><span>PROJECT</span> Website development</div>#}
+                {# <div><span>PROJECT</span> Website development</div> #}
                 <div>{{ pedido.idUsuario.nombre }}</div>
                 <div>{{ pedido.idUsuario.apellidos }}</div>
                 <div>{{ pedido.idUsuario.cif }}</div>
@@ -208,17 +208,17 @@
                         <br> {{ pedido.idUsuario.direccion.provincia }}
                         <br> {{ pedido.idUsuario.direccion.pais }}{% endif %}
                 </div>
-                {#{% if pedido.idDireccion.telefonoMovil is defined and pedido.idDireccion.telefonoMovil != "" %}#}
-                    {#<div>Telf: {{ pedido.idDireccion.telefonoMovil }}</div>#}
-                {#{% else %}#}
-                    {% if pedido.idUsuario.telefonoMovil is defined and pedido.idUsuario.telefonoMovil != "" %}
-                        <div>Telf: {{ pedido.idUsuario.telefonoMovil }}</div>{% endif %}
-                    {% if pedido.idUsuario.telefonoOtro is defined and pedido.idUsuario.telefonoOtro != "" %}
-                        <div>Movil: {{ pedido.idUsuario.telefonoOtro }}</div>{% endif %}
-                {#{% endif %}#}
+                {# {% if pedido.idDireccion.telefonoMovil is defined and pedido.idDireccion.telefonoMovil != "" %} #}
+                {# <div>Telf: {{ pedido.idDireccion.telefonoMovil }}</div> #}
+                {# {% else %} #}
+                {% if pedido.idUsuario.telefonoMovil is defined and pedido.idUsuario.telefonoMovil != "" %}
+                    <div>Telf: {{ pedido.idUsuario.telefonoMovil }}</div>{% endif %}
+                {% if pedido.idUsuario.telefonoOtro is defined and pedido.idUsuario.telefonoOtro != "" %}
+                    <div>Movil: {{ pedido.idUsuario.telefonoOtro }}</div>{% endif %}
+                {# {% endif %} #}
                 <div><a href="mailto:{{ pedido.idUsuario.usuario.email }}">{{ pedido.idUsuario.usuario.email }}</a>
                 </div>
-                {#<div><span>DUE DATE</span> September 17, 2015</div>#}
+                {# <div><span>DUE DATE</span> September 17, 2015</div> #}
             </div>
         {% endif %}
     {% endif %}
@@ -226,9 +226,9 @@
     <br>
 </header>
 <main>
-    {#<div style="width: 100%; text-align: right;font-size: 12px; padding-right: 15px ">#}
-    {#Fecha de validez:  {{ "now" | date_modify("+10 day") | date('d-m-Y') }} y bajo disponibilidad de stock#}
-    {#</div>#}
+    {# <div style="width: 100%; text-align: right;font-size: 12px; padding-right: 15px "> #}
+    {# Fecha de validez:  {{ "now" | date_modify("+10 day") | date('d-m-Y') }} y bajo disponibilidad de stock #}
+    {# </div> #}
 
     <div style="width: 100%; text-align: left;font-size: 12px; padding-right: 15px ">
         Fecha de expedición: {{ pedido.fecha | date('d-m-Y') }}
@@ -243,13 +243,13 @@
             <th class="desc">DESCRIPCION</th>
             <th>CANTIDAD</th>
         </tr>
-        {% for lineaPedido in pedido.pedidoHasLineas %}
+        {% for lineaPedido in pedido.lineas %}
             <tr>
-                <td class="service">{{ lineaPedido.idProducto.modelo.referencia }}<br>
-                    ({{ lineaPedido.idProducto.referencia }})
+                <td class="service">{{ lineaPedido.producto.modelo.referencia }}<br>
+                    ({{ lineaPedido.producto.referencia }})
                 </td>
-                <td class="desc">{{ lineaPedido.idProducto.modelo.nombre }}
-                    T/{{ lineaPedido.idProducto.talla }} {{ lineaPedido.idProducto.color }}
+                <td class="desc">{{ lineaPedido.producto.modelo.nombre }}
+                    T/{{ lineaPedido.producto.talla }} {{ lineaPedido.producto.color }}
                     {% for pers in lineaPedido.personalizaciones %}
                         <p style="font-size: 11px; font-weight: bold">{{ pers.getCadenaTrabajo }} {% if pers.pedidoTrabajo.nombre != "" %}({{ pers.pedidoTrabajo.nombre }}){% endif %} {{ pers.getObservaciones }}</p>
 
@@ -260,7 +260,7 @@
             </tr>
         {% endfor %}
 
-        {% for lineaPedido in pedido.pedidoHasLineasLibre %}
+        {% for lineaPedido in pedido.lineasLibres %}
             <tr>
                 <td class="service">
                     LLB{{ lineaPedido.id }}
@@ -291,7 +291,10 @@
 
     <div>
         {% for trabajo in pedido.getTrabajos %}
-            <img style="width: 100%; height: auto" src="{% path trabajo.getMontaje(), 'reference' %}"/>
+            {% if trabajo.getMontaje() != null %}
+                <img style="width: 100%; height: auto" src="{{ sonata_path(trabajo.getMontaje(), 'reference') }}"/>
+                {#            <img style="width: 100%; height: auto" src="{% path trabajo.getMontaje(), 'reference' %}"/> #}
+            {% endif %}
         {% endfor %}
 
     </div>

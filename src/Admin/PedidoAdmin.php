@@ -283,4 +283,36 @@ final class PedidoAdmin extends AbstractAdmin
         $collection->add('reloadEnvio', 'reload-envio');
         $collection->remove('create');
     }
+
+    /**
+     * Se añaden los botones a la vista de edición.
+     */
+    protected function configureActionButtons(array $buttonList, string $action, ?object $object = null): array
+    {
+        if (in_array($action, ['edit', 'show']) && $object) {
+            $buttonList['showPDF'] = [
+                'template' => 'admin/button_show_pdf.html.twig',
+            ];
+            $buttonList['showOrdenPedido'] = [
+                'template' => 'admin/button_show_orden_pedido.html.twig',
+            ];
+            $buttonList['showProforma'] = [
+                'template' => 'admin/button_show_proforma.html.twig',
+            ];
+            $buttonList['recalcular'] = [
+                'template' => 'admin/button_recalculate.html.twig',
+            ];
+            if ($object->getFactura()) {
+                $buttonList['showFactura'] = [
+                    'template' => 'admin/button_show_factura.html.twig',
+                ];
+            } else {
+                $buttonList['facturar'] = [
+                    'template' => 'admin/button_facturar.html.twig',
+                ];
+            }
+        }
+
+        return $buttonList;
+    }
 }

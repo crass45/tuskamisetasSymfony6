@@ -245,13 +245,13 @@
             <th>PRECIO</th>
             <th><b>TOTAL</b></th>
         </tr>
-        {% for lineaPedido in pedido.pedidoHasLineas %}
+        {% for lineaPedido in pedido.lineas %}
             <tr>
-                <td class="service">{{ lineaPedido.idProducto.modelo.referencia }}<br>
-                    ({{ lineaPedido.idProducto.referencia }})
+                <td class="service">{{ lineaPedido.producto.modelo.referencia }}<br>
+                    ({{ lineaPedido.producto.referencia }})
                 </td>
-                <td class="desc">{{ lineaPedido.idProducto.modelo.nombre }}
-                    T/{{ lineaPedido.idProducto.talla }} {{ lineaPedido.idProducto.color }}
+                <td class="desc">{{ lineaPedido.producto.modelo.nombre }}
+                    T/{{ lineaPedido.producto.talla }} {{ lineaPedido.producto.color }}
                     {% for pers in lineaPedido.personalizaciones %}
                         <p style="font-size: 11px; font-weight: bold">{{ pers.getCadenaTrabajo }} {% if pers.pedidoTrabajo.nombre != "" %}({{ pers.pedidoTrabajo.nombre }}){% endif %}</p>
 
@@ -263,7 +263,7 @@
             </tr>
         {% endfor %}
 
-        {% for lineaPedido in pedido.pedidoHasLineasLibre %}
+        {% for lineaPedido in pedido.lineasLibres %}
             <tr>
                 <td class="service">
                     LLB{{ lineaPedido.id }}

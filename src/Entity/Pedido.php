@@ -859,4 +859,19 @@ class Pedido
         return false;
     }
 
+    public function getTrabajos()
+    {
+        $trabajos = array();
+        foreach ($this->lineas as $linea) {
+            foreach ($linea->getPersonalizaciones() as $personalizacione) {
+                if (!in_array($personalizacione->getPedidoTrabajo(), $trabajos)) {
+                    $trabajos[] = $personalizacione->getPedidoTrabajo();
+                }
+            }
+
+//            $this->lineasString = $this->lineasString . $linea->getCantidad() . ":" . $linea->getIdProducto()->getModelo()->nombre . ", ";
+        }
+        return $trabajos;
+    }
+
 }

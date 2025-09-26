@@ -88,13 +88,13 @@ class Factura
             $factura->setRazonSocial($contacto->getNombre() . " " . $contacto->getApellidos());
             $factura->setCif($contacto->getCif() ?? '-');
 
-            $direccionFacturacion = $contacto->getDireccion();
+            $direccionFacturacion = $contacto->getDireccionFacturacion();
             if ($direccionFacturacion) {
                 $factura->setDireccion($direccionFacturacion->getDir());
                 $factura->setCp($direccionFacturacion->getCp());
                 $factura->setPoblacion($direccionFacturacion->getPoblacion());
-                $factura->setProvincia($direccionFacturacion->getProvincia()?->getNombre());
-                $factura->setPais($direccionFacturacion->getPais()?->getNombre());
+                $factura->setProvincia($direccionFacturacion->getProvincia());
+                $factura->setPais($direccionFacturacion->getPais());
             }
         }
 
