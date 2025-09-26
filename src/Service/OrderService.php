@@ -39,7 +39,7 @@ class OrderService
      * Crea un Pedido en la base de datos a partir de un Carrito.
      * Reemplaza toda la lógica de tu antiguo método 'confirmaPresupuesto'.
      */
-    public function createOrderFromCart(Carrito $carrito, Contacto $contacto, ?Direccion $direccionEnvio = null): Pedido
+    public function createOrderFromCart(Carrito $carrito, Contacto $contacto, ?Direccion $direccionEnvio = null, ?string $googleClientId = null, ?int $tipoEnvio): Pedido
     {
         $fecha = new \DateTime();
         $fiscalYear = (int)$fecha->format('y');
@@ -50,6 +50,11 @@ class OrderService
         $numeroPedido = $ultimoPedido ? $ultimoPedido->getNumeroPedido() + 1 : 1;
 
         $pedido = new Pedido($fecha, $fiscalYear, $numeroPedido);
+
+        // --- INICIO DE LA MEJORA ---
+        // Se guarda el Client ID en el nuevo pedido
+        $pedido->setGoogleClientId($googleClientId);
+        // --- FIN DE LA MEJORA ---
 
         // 2. Asignar estado inicial y usuario
         $estadoInicial = $this->em->getRepository(Estado::class)->find(1); // Asumiendo que 1 es 'Pendiente'
@@ -133,6 +138,9 @@ class OrderService
         $iva = ($subtotal + $gastosEnvio) * $ivaGeneral;
         $total = $subtotal + $gastosEnvio + $iva;
 
+        if($tipoEnvio===3){
+            $pedido->setRecogerEnTienda(true);
+        }
         $pedido->setSubTotal($subtotal);
         $pedido->setEnvio($gastosEnvio);
         $pedido->setIva($iva);

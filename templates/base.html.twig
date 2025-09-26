@@ -866,7 +866,64 @@
     {% endif %}
 {% endif %}
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        /**
+         * Lee la cookie de Google Analytics (_ga) y extrae el Client ID.
+         */
+        function getGoogleAnalyticsClientId() {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.startsWith('_ga=')) {
+                    const value = cookie.substring(4);
+                    const parts = value.split('.');
+                    if (parts.length >= 4) {
+                        return parts[2] + '.' + parts[3];
+                    }
+                }
+            }
+            return null;
+        }
 
+        // Se seleccionan todos los enlaces cuyo href empieza con "mailto:"
+        document.querySelectorAll('a[href^="mailto:"]').forEach(function(mailLink) {
+            mailLink.addEventListener('click', function(event) {
+                // Se previene la acción por defecto para poder modificar el enlace
+                event.preventDefault();
+
+                const clientId = getGoogleAnalyticsClientId();
+                if (!clientId) {
+                    // Si no se encuentra el ID, simplemente se abre el enlace original
+                    window.location.href = this.href;
+                    return;
+                }
+
+                const originalHref = this.getAttribute('href');
+                const textToAppend = "\n\n---\nGoogle Analytics Client ID: " + clientId;
+                let newHref = originalHref;
+
+                // Se comprueba si el enlace ya tiene parámetros (como un 'subject')
+                if (originalHref.includes('?')) {
+                    // Si ya tiene un 'body', se añade el texto al final
+                    if (originalHref.includes('body=')) {
+                        newHref = originalHref.replace('body=', 'body=' + encodeURIComponent(textToAppend));
+                    } else {
+                        // Si no tiene 'body', se añade
+                        newHref += '&body=' + encodeURIComponent(textToAppend);
+                    }
+                } else {
+                    // Si no tiene ningún parámetro, se añade el 'body'
+                    newHref += '?body=' + encodeURIComponent(textToAppend);
+                }
+
+                // Se abre el gestor de correo con el enlace ya modificado
+                window.location.href = newHref;
+            });
+        });
+    });
+</script>
+{# --- FIN DE LA MEJORA --- #}
 </body>
 </html>
 

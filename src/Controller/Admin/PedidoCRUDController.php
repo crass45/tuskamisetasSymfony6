@@ -4,6 +4,7 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Pedido;
+use App\Service\GoogleAnalyticsService;
 use Knp\Snappy\Pdf;
 use Sonata\AdminBundle\Controller\CRUDController;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,7 +14,8 @@ final class PedidoCRUDController extends CRUDController
 {
     // Symfony inyectará los servicios que necesites aquí
     public function __construct(
-        private Pdf $snappy
+        private Pdf $snappy,
+        private GoogleAnalyticsService $googleAnalyticsService
     ) {
     }
 
@@ -66,6 +68,13 @@ final class PedidoCRUDController extends CRUDController
     {
         $pedido = $this->admin->getSubject();
         // TODO: Tu lógica para crear la Factura a partir de este Pedido.
+
+        // Y finalmente, notificas a Google
+        $this->googleAnalyticsService->sendPurchaseEvent($pedido);
+
+        $this->addFlash('sonata_flash_success', 'Factura creada y evento de compra enviado a Google Analytics.');
+
+
         return $this->redirectToRoute('admin_app_pedido_edit', ['id' => $pedido->getId()]); // Ejemplo de redirección
     }
 

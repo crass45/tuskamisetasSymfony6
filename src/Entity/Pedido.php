@@ -18,6 +18,12 @@ class Pedido
     #[ORM\Column]
     private ?int $id = null;
 
+    // --- INICIO DE LA MEJORA ---
+    // Nuevo campo para almacenar el Client ID de Google Analytics del usuario
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $googleClientId = null;
+    // --- FIN DE LA MEJORA ---
+
     #[ORM\Column]
     private ?int $fiscalYear = null;
 
@@ -788,6 +794,22 @@ class Pedido
     public function setTotal(?string $total): void
     {
         $this->total = $total;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getGoogleClientId(): ?string
+    {
+        return $this->googleClientId;
+    }
+
+    /**
+     * @param string|null $googleClientId
+     */
+    public function setGoogleClientId(?string $googleClientId): void
+    {
+        $this->googleClientId = $googleClientId;
     }
 
     // --- INICIO DE LA CORRECCIÓN ---

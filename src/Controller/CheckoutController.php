@@ -163,7 +163,16 @@ class CheckoutController extends AbstractController
             $this->em->persist($contacto);
             $this->em->flush();
 
-            $pedido = $this->orderService->createOrderFromCart($carrito, $contacto, $direccionEnvio);
+            // --- INICIO DE LA MEJORA ---
+            // 1. Se recupera el Google Client ID del campo oculto del formulario
+            $googleClientId = $request->request->get('googleClientId');
+            var_dump("EL CLIENTE DE GOOGLE:");
+            var_dump($googleClientId);
+
+            // 2. Se pasa el Client ID al servicio que crea el pedido
+            $pedido = $this->orderService->createOrderFromCart($carrito, $contacto, $direccionEnvio, $googleClientId, $tipoEnvio);
+            // --- FIN DE LA MEJORA ---
+
             //MARCAMOS RECOGER EN TIENDA EN EL PEDIDO EN CASO QUE PROCEDA
             if($tipoEnvio===3){
                 $pedido->setRecogerEnTienda(true);

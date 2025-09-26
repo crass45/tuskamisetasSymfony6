@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Entity\Estado;
 use App\Entity\Pedido;
+use App\Service\GoogleAnalyticsService;
 use App\Service\OrderService;
 use App\Service\RedsysApiService;
 use App\Service\FechaEntregaService; // Importamos el servicio de fechas
@@ -21,8 +22,9 @@ class PaymentController extends AbstractController
         private EntityManagerInterface $em,
         private RedsysApiService $redsysApi,
         private FechaEntregaService $fechaEntregaService,
-        private OrderService $orderService, // Se inyecta el OrderService
-        private LoggerInterface $logger    // Se inyecta el Logger
+        private OrderService $orderService,
+        private LoggerInterface $logger,
+        private GoogleAnalyticsService $googleAnalyticsService // Se inyecta el servicio
     ) {
     }
 
@@ -109,8 +111,11 @@ class PaymentController extends AbstractController
 
                 $this->em->flush();
 
-                // Usar el OrderService para enviar los correos de confirmación de pago
+                // 1. Se envían los correos de confirmación de pago
                 $this->orderService->sendPaymentSuccessEmails($pedido);
+
+                // 2. Se envía el evento de compra a Google Analytics desde el servidor
+                $this->googleAnalyticsService->sendPurchaseEvent($pedido);
 
                 $this->logger->info('[Redsys Notification] Pedido ' . $pedido->getId() . ' actualizado correctamente.');
             } else {

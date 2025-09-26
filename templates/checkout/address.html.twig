@@ -278,12 +278,55 @@
             });
             handleCountryChange($('#billingForm').find('.country-selector'));
 
+
+
+            // --- INICIO DE LA MEJORA: CAPTURA DEL CLIENT ID DE GOOGLE ANALYTICS ---
+
+            /**
+             * Lee la cookie de Google Analytics (_ga) y extrae el Client ID.
+             * Formato de la cookie: GA1.1.123456789.1234567890
+             * El Client ID son las dos últimas partes: "123456789.1234567890"
+             */
+            function getGoogleAnalyticsClientId() {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    let cookie = cookies[i].trim();
+                    if (cookie.startsWith('_ga=')) {
+                        const value = cookie.substring(4); // Elimina "_ga="
+                        const parts = value.split('.');
+                        if (parts.length >= 4) {
+                            return parts[2] + '.' + parts[3];
+                        }
+                    }
+                }
+                return null; // Devuelve null si no se encuentra la cookie
+            }
+
+
             // --- LÓGICA PARA SUBMIT ---
             $('#confirmarPedidoBtn').on('click', function(e) {
                 if (!$('#privacityTKM').is(":checked")) {
                     alert("Debes aceptar los términos y la política de privacidad.");
                     e.preventDefault();
+                    return;
                 }
+                // 1. Obtenemos el Client ID
+                const clientId = getGoogleAnalyticsClientId();
+
+                // 2. Si lo encontramos, creamos un campo oculto en el formulario para enviarlo
+                if (clientId) {
+                    // Se elimina cualquier campo anterior para evitar duplicados
+                    $('#googleClientIdField').remove();
+
+                    $('<input>').attr({
+                        type: 'hidden',
+                        id: 'googleClientIdField',
+                        name: 'googleClientId',
+                        value: clientId
+                    }).appendTo('#checkoutForm');
+                }
+
+                // El formulario se enviará de forma natural después de esto
             });
         });
     </script>

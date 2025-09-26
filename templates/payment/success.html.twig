@@ -24,35 +24,4 @@
             </div>
         </div>
     </div>
-
-    {# Google Analytics Purchase Event #}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            {% if transaccion is defined and items is defined %}
-            if (typeof gtag === 'function') {
-                gtag('event', 'purchase', {
-                    'currency': 'EUR',
-                    'transaction_id': '{{ transaccion.id }}',
-                    'value': '{{ transaccion.revenue }}',
-                    'affiliation': '{{ transaccion.affiliation }}',
-                    'shipping': '{{ transaccion.shipping }}',
-                    'tax': '{{ transaccion.tax }}',
-                    'items': [
-                        {% for item in items %}
-                        {
-                            'item_id': '{{ item.sku|e('js') }}',
-                            'item_name': '{{ item.name|e('js') }}',
-                            'item_category': '{{ item.category|e('js') }}',
-                            'item_brand': '{{ item.brand|e('js') }}',
-                            'item_variant': '{{ item.variant|e('js') }}',
-                            'price': '{{ item.price }}',
-                            'quantity': '{{ item.quantity }}'
-                        }{% if not loop.last %},{% endif %}
-                        {% endfor %}
-                    ]
-                });
-            }
-            {% endif %}
-        });
-    </script>
 {% endblock %}
