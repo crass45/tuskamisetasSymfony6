@@ -311,7 +311,7 @@ final class PedidoAdmin extends AbstractAdmin
         $collection->add('showProforma', $this->getRouterIdParameter() . '/show-proforma');
         $collection->add('documentarEnvioNACEX', $this->getRouterIdParameter() . '/documentar-envio-nacex/{agencia}/{bultos}/{servicio}');
         $collection->add('verEtiquetas', $this->getRouterIdParameter() . '/ver-etiquetas');
-        $collection->add('editarPedido', $this->getRouterIdParameter() . '/editar-pedido');
+        $collection->add('editarPedido', $this->getRouterIdParameter().'/editar-pedido');
         $collection->add('facturar', $this->getRouterIdParameter() . '/facturar');
         $collection->add('showFactura', $this->getRouterIdParameter() . '/show-factura');
         $collection->add('recalcular', $this->getRouterIdParameter() . '/recalcular');
@@ -337,6 +337,10 @@ final class PedidoAdmin extends AbstractAdmin
             $buttonList['recalcular'] = [
                 'template' => 'admin/button_recalculate.html.twig',
             ];
+            $buttonList['editarPedido'] = [
+                'template' => 'admin/button_edit_as_cart.html.twig',
+            ];
+
             if ($object->getFactura()) {
                 $buttonList['showFactura'] = [
                     'template' => 'admin/button_show_factura.html.twig',

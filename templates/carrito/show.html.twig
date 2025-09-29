@@ -5,6 +5,16 @@
 {% block metaDescription %}Revisa los artículos de tu carrito de la compra y finaliza tu presupuesto.{% endblock %}
 
 {% block cuerpoProceso %}
+    {# --- INICIO DE LA MEJORA --- #}
+    {# Se muestra un aviso si estamos en modo edición #}
+    {% if editing_order_id is defined and editing_order_id %}
+        <div class="alert alert-warning">
+            <i class="fa fa-exclamation-triangle"></i>
+            <strong>Modo Edición:</strong> Estás modificando el pedido <strong>#{{ editing_order_id }}</strong>.
+            Cualquier cambio que realices y confirmes se guardará sobre el pedido original.
+        </div>
+    {% endif %}
+    {# --- FIN DE LA MEJORA --- #}
     <br>
     <div class="carrito col-lg-12">
         <section id="cart_items">
@@ -19,7 +29,12 @@
             <section id="do_action">
                 <div class="container">
                     <br>
-                    <form action="{{ path('app_checkout_start', {'_locale': app.request.locale}) }}" method="post">
+                    {# Se cambia la acción del formulario si estamos en modo edición #}
+                    {% set form_action = (editing_order_id is defined and editing_order_id)
+                        ? path('app_cart_save_edited_order')
+                        : path('app_checkout_start', {'_locale': app.request.locale})
+                    %}
+                    <form action="{{ form_action }}" method="post">
 
                         <div class="row">
                             <div class="col-sm-5">

@@ -3,6 +3,7 @@
 
 namespace App\Model;
 
+use App\Entity\PedidoLineaHasTrabajo;
 use App\Entity\Personalizacion;
 
 /**
@@ -160,5 +161,22 @@ class PresupuestoTrabajo
     {
         $this->identificadorTrabajo = $identif;
         return $this;
+    }
+
+    /**
+     * NUEVO MÉTODO: Rellena este objeto con los datos de una personalización de un pedido existente.
+     */
+    public function fromPedidoLineaHasTrabajo(PedidoLineaHasTrabajo $personalizacion): void
+    {
+        $pedidoTrabajo = $personalizacion->getPedidoTrabajo();
+        if ($pedidoTrabajo) {
+            $this->setId($pedidoTrabajo->getId());
+            $this->setCantidad($pedidoTrabajo->getNColores());
+            $this->setIdentificadorTrabajo($pedidoTrabajo->getCodigo());
+            $this->setUrlImage($pedidoTrabajo->getUrlImagen());
+            $this->setTrabajo($pedidoTrabajo->getPersonalizacion());
+        }
+        $this->setObservaciones($personalizacion->getObservaciones());
+        $this->setUbicacion($personalizacion->getUbicacion());
     }
 }

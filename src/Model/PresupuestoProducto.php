@@ -3,6 +3,7 @@
 
 namespace App\Model;
 
+use App\Entity\PedidoLinea;
 use App\Entity\Producto;
 use App\Entity\Sonata\User; // NOTA: Asumimos que tu entidad de usuario se llamará 'User'
 
@@ -145,5 +146,17 @@ class PresupuestoProducto
     public function setCantidadTotal(int $cantidadTotal): void
     {
         $this->cantidadTotal = $cantidadTotal;
+    }
+
+    /**
+     * NUEVO MÉTODO: Rellena este objeto con los datos de un producto de un pedido existente.
+     */
+    public function fromPedidoLinea(PedidoLinea $linea): void
+    {
+        $this->setId($linea->getProducto()->getId());
+        $this->setCantidad($linea->getCantidad());
+        // Se establece el producto. El precio se recalculará dinámicamente en el carrito
+        // cuando se llame al método setProducto.
+        $this->setProducto($linea->getProducto(), $linea->getCantidad(), null);
     }
 }

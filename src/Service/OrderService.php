@@ -36,56 +36,117 @@ class OrderService
     }
 
     /**
-     * Crea un Pedido en la base de datos a partir de un Carrito.
-     * Reemplaza toda la lógica de tu antiguo método 'confirmaPresupuesto'.
+     * Decide si crear un nuevo pedido o actualizar uno existente.
      */
-    public function createOrderFromCart(Carrito $carrito, Contacto $contacto, ?Direccion $direccionEnvio = null, ?string $googleClientId = null, ?int $tipoEnvio): Pedido
-    {
+    public function createOrUpdateOrderFromCart(
+        Carrito $carrito,
+        Contacto $contacto,
+        ?Direccion $direccionEnvio = null,
+        ?string $googleClientId = null,
+        ?int $editingOrderId = null,
+        ?int $tipoEnvio = null
+    ): Pedido {
+        if ($editingOrderId) {
+            return $this->updateOrderFromCart($carrito, $editingOrderId, $tipoEnvio);
+        }
+
+        return $this->createOrderFromCart($carrito, $contacto, $direccionEnvio, $googleClientId, $tipoEnvio);
+    }
+
+    private function createOrderFromCart(
+        Carrito $carrito,
+        Contacto $contacto,
+        ?Direccion $direccionEnvio,
+        ?string $googleClientId,
+        ?int $tipoEnvio
+    ): Pedido {
         $fecha = new \DateTime();
         $fiscalYear = (int)$fecha->format('y');
-        $user = $this->security->getUser();
-
-        // 1. Calcular el número del nuevo pedido
         $ultimoPedido = $this->em->getRepository(Pedido::class)->findOneBy(['fiscalYear' => $fiscalYear], ['numeroPedido' => 'DESC']);
         $numeroPedido = $ultimoPedido ? $ultimoPedido->getNumeroPedido() + 1 : 1;
 
         $pedido = new Pedido($fecha, $fiscalYear, $numeroPedido);
-
-        // --- INICIO DE LA MEJORA ---
-        // Se guarda el Client ID en el nuevo pedido
         $pedido->setGoogleClientId($googleClientId);
-        // --- FIN DE LA MEJORA ---
-
-        // 2. Asignar estado inicial y usuario
-        $estadoInicial = $this->em->getRepository(Estado::class)->find(1); // Asumiendo que 1 es 'Pendiente'
-        if ($estadoInicial) {
-            $pedido->setEstado($estadoInicial);
-        }
         $pedido->setContacto($contacto);
+        $pedido->setDireccion($direccionEnvio ?? $contacto->getDireccionFacturacion());
 
-        // 3. Asignar observaciones y opciones de envío
+        // Se rellena el pedido con los datos del carrito
+        $this->fillPedidoFromCarrito($pedido, $carrito, $tipoEnvio);
+
+        $this->em->persist($pedido);
+        $this->em->flush();
+
+        $empresa = $this->em->getRepository(Empresa::class)->findOneBy([]);
+        $this->sendConfirmationEmails($pedido, $empresa);
+        return $pedido;
+    }
+
+    /**
+     * Actualiza un pedido existente con los datos de un carrito.
+     */
+    private function updateOrderFromCart(Carrito $carrito, int $orderId, ?int $tipoEnvio): Pedido
+    {
+        $pedido = $this->em->getRepository(Pedido::class)->find($orderId);
+        if (!$pedido) {
+            throw new \Exception('No se encontró el pedido para actualizar.');
+        }
+
+        // 1. Borramos las líneas y trabajos antiguos para evitar inconsistencias
+        foreach($pedido->getLineas() as $linea) {
+            $this->em->remove($linea);
+        }
+        // También borramos las líneas libres que pudieran existir
+        foreach($pedido->getLineasLibres() as $lineaLibre){
+            $this->em->remove($lineaLibre);
+        }
+
+        $this->em->flush(); // Se aplica el borrado
+
+        // 2. Rellenamos el pedido con los nuevos datos del carrito
+        $this->fillPedidoFromCarrito($pedido, $carrito, $tipoEnvio);
+
+        $this->em->flush();
+        return $pedido;
+    }
+
+    /**
+     * Rellena un objeto Pedido con los datos de un Carrito.
+     * Esta lógica ahora está centralizada aquí.
+     */
+    private function fillPedidoFromCarrito(Pedido $pedido, Carrito $carrito, ?int $tipoEnvio): void
+    {
+        $user = $this->security->getUser();
+        $contacto = $pedido->getContacto();
+
+        // 1. Asignar estado inicial si es un pedido nuevo
+        if (!$pedido->getId()) {
+            $estadoInicial = $this->em->getRepository(Estado::class)->find(1); // 'Pendiente'
+            if ($estadoInicial) {
+                $pedido->setEstado($estadoInicial);
+            }
+        }
+
+        // 2. Asignar observaciones y opciones de envío
         $pedido->setObservaciones($carrito->getObservaciones());
         $pedido->setPedidoExpres($carrito->isServicioExpres());
+        $pedido->setRecogerEnTienda($tipoEnvio === 3);
 
-        // 4. Crear las líneas del pedido y los trabajos de personalización
+        // 3. Crear las líneas del pedido y los trabajos de personalización
         $trabajosCreados = [];
-        foreach ($carrito->getItems() as $itemIndex => $presupuesto) {
+        foreach ($carrito->getItems() as $presupuesto) {
             $arrayTrabajosParaLinea = [];
 
-            // --- INICIO DE LA CORRECCIÓN ---
             foreach ($presupuesto->getTrabajos() as $trabajoPresupuesto) {
                 $personalizacionEntity = $this->em->getRepository(Personalizacion::class)->findOneBy(['codigo' => $trabajoPresupuesto->getTrabajo()->getCodigo()]);
                 if ($personalizacionEntity) {
                     $codigoUnico = $trabajoPresupuesto->getIdentificadorTrabajo();
                     if (!isset($trabajosCreados[$codigoUnico])) {
                         $trabajoBD = new PedidoTrabajo();
-                        // Se copia el identificador único del presupuesto al pedido
                         $trabajoBD->setCodigo($codigoUnico);
                         $trabajoBD->setPersonalizacion($personalizacionEntity);
                         $trabajoBD->setNColores($trabajoPresupuesto->getCantidad());
                         $trabajoBD->setUrlImagen($trabajoPresupuesto->getUrlImage());
                         $trabajoBD->setContacto($contacto);
-
                         $this->em->persist($trabajoBD);
                         $trabajosCreados[$codigoUnico] = $trabajoBD;
                     }
@@ -99,60 +160,40 @@ class OrderService
                     if ($productoEntity) {
                         $pedidoLinea = new PedidoLinea();
                         $pedidoLinea->setCantidad($productoPresupuesto->getCantidad());
-//                        $pedidoLinea->setPedido($pedido);
                         $pedidoLinea->setProducto($productoEntity);
                         $pedidoLinea->setPrecio($productoEntity->getPrecioUnidad());
 
                         $personalizacionCadena = "";
-                        // Asociamos los trabajos a esta línea de pedido
                         foreach ($arrayTrabajosParaLinea as $trabajoData) {
                             $pedidoLineaTrabajo = new PedidoLineaHasTrabajo();
-
                             $pedidoLineaTrabajo->setPedidoLinea($pedidoLinea);
                             $pedidoLineaTrabajo->setPedidoTrabajo($trabajoData['trabajoBD']);
                             $pedidoLineaTrabajo->setUbicacion($trabajoData['presupuestoTrabajo']->getUbicacion());
                             $pedidoLineaTrabajo->setObservaciones($trabajoData['presupuestoTrabajo']->getObservaciones());
-                            $pedidoLineaTrabajo->setcantidad($trabajoData['presupuestoTrabajo']->getCantidad());
+                            $pedidoLineaTrabajo->setCantidad($trabajoData['presupuestoTrabajo']->getCantidad());
                             $pedidoLinea->addPersonalizacione($pedidoLineaTrabajo);
-                            // Reconstruimos la cadena de texto para esta línea
                             $trabajo = $trabajoData['presupuestoTrabajo'];
                             $personalizacionCadena .= (string) $trabajo . "\n";
                         }
-                        // Guardamos la cadena construida en la propiedad de la línea del pedido
                         $pedidoLinea->setPersonalizacion(trim($personalizacionCadena));
                         $pedido->addLinea($pedidoLinea);
-                        $this->em->persist($pedidoLinea);
                     }
                 }
             }
-            // --- FIN DE LA CORRECCIÓN ---
         }
 
-        // 5. Asignar dirección y calcular totales
-        $pedido->setDireccion($direccionEnvio ?? $contacto->getDireccionFacturacion());
+        // 4. Calcular y asignar totales
         $subtotal = $carrito->getSubTotal($user);
-        $gastosEnvio = $carrito->getGastosEnvio($user); // Aquí se necesitaría la lógica de ZonaEnvio
-
+        $gastosEnvio = $carrito->getGastosEnvio($user);
         $empresa = $this->em->getRepository(Empresa::class)->findOneBy([]);
         $ivaGeneral = $empresa ? $empresa->getIvaGeneral() / 100 : 0.21;
         $iva = ($subtotal + $gastosEnvio) * $ivaGeneral;
         $total = $subtotal + $gastosEnvio + $iva;
 
-        if($tipoEnvio===3){
-            $pedido->setRecogerEnTienda(true);
-        }
         $pedido->setSubTotal($subtotal);
         $pedido->setEnvio($gastosEnvio);
         $pedido->setIva($iva);
         $pedido->setTotal($total);
-
-        $this->em->persist($pedido);
-        $this->em->flush();
-
-        // 6. Enviar correos de confirmación
-        $this->sendConfirmationEmails($pedido,$empresa);
-
-        return $pedido;
     }
 
     private function sendConfirmationEmails(Pedido $pedido, Empresa $empresa): void

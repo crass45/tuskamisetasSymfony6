@@ -5,13 +5,19 @@ namespace App\Controller\Admin;
 
 use App\Entity\Factura;
 use App\Entity\Pedido;
+use App\Model\Carrito;
+use App\Model\Presupuesto;
+use App\Model\PresupuestoProducto;
+use App\Model\PresupuestoTrabajo;
 use App\Service\GoogleAnalyticsService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
 use Sonata\AdminBundle\Controller\CRUDController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use PHPQRCode\QRcode;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 final class PedidoCRUDController extends CRUDController
 {
@@ -119,13 +125,6 @@ final class PedidoCRUDController extends CRUDController
         return new Response(sprintf('Etiquetas para %s', $pedido->getNombre()));
     }
 
-    public function editarPedidoAction(Request $request): Response
-    {
-        $pedido = $this->admin->getSubject();
-        // TODO: Tu lógica para la vista de edición especial del pedido.
-        return new Response(sprintf('Editando pedido especial %s', $pedido->getNombre()));
-    }
-
 
     /**
      * Crea una factura para el pedido si no existe, y la muestra en PDF.
@@ -221,5 +220,54 @@ final class PedidoCRUDController extends CRUDController
     {
         // TODO: Tu lógica para la acción 'reloadEnvio'.
         return new Response('Recargando envío...');
+    }
+
+    /**
+     * NUEVA ACCIÓN: Carga un pedido existente en el carrito del frontend para su edición.
+     */
+    public function editarPedidoAction(Request $request, SessionInterface $session): Response
+    {
+        $pedido = $this->assertObjectExists($request, true);
+        $this->admin->checkAccess('edit', $pedido);
+
+        $carrito = new Carrito();
+        $carrito->setObservaciones($pedido->getObservaciones());
+        $carrito->setServicioExpres($pedido->getPedidoExpres());
+//        $carrito->setRecogerTienda($pedido->getRecogerEnTienda());
+
+        // Agrupamos las líneas por personalización para reconstruir los 'presupuestos'
+        $lineasAgrupadas = [];
+        foreach ($pedido->getLineas() as $linea) {
+            $key = $linea->getPersonalizacion() ?? 'sin-personalizacion';
+            $lineasAgrupadas[$key][] = $linea;
+        }
+
+        foreach ($lineasAgrupadas as $grupo) {
+            $presupuesto = new Presupuesto();
+            // Añadimos los trabajos (serán los mismos para todo el grupo)
+            if (isset($grupo[0])) {
+                foreach ($grupo[0]->getPersonalizaciones() as $pers) {
+                    $presupuestoTrabajo = new PresupuestoTrabajo();
+                    $presupuestoTrabajo->fromPedidoLineaHasTrabajo($pers);
+                    $presupuesto->addTrabajo($presupuestoTrabajo);
+                }
+            }
+            // Añadimos los productos
+            foreach ($grupo as $linea) {
+                $presupuestoProducto = new PresupuestoProducto();
+                $presupuestoProducto->fromPedidoLinea($linea);
+                $presupuesto->addProducto($presupuestoProducto, $pedido->getContacto()->getUsuario());
+            }
+            $carrito->addItem($presupuesto);
+        }
+
+        // Guardamos el carrito y el ID del pedido en la sesión
+        $session->set('carrito', $carrito);
+        $session->set('editing_order_id', $pedido->getId());
+
+        $this->addFlash('sonata_flash_info', 'Estás editando el pedido ' . $pedido . '. Los cambios se guardarán sobre el pedido original.');
+
+        // Redirigimos al carrito del frontend
+        return new RedirectResponse($this->generateUrl('app_cart_show'));
     }
 }

@@ -9,6 +9,7 @@ use App\Entity\ZonaEnvio;
 use App\Model\Carrito;
 use App\Model\Presupuesto;
 use App\Repository\GastosEnvioRepository;
+use App\Service\OrderService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -51,6 +52,11 @@ class CarritoController extends AbstractController
     public function showAction(SessionInterface $session): Response
     {
         $carrito = $this->getOrCreateCart($session);
+        // --- INICIO DE LA MEJORA ---
+        // Se comprueba si estamos en modo edición y se pasa el ID del pedido a la plantilla
+        $editingOrderId = $session->get('editing_order_id');
+        // --- FIN DE LA MEJORA ---
+
         $zonasEnvio = $this->em->getRepository(ZonaEnvio::class)->findAll();
 
         return $this->render('carrito/show.html.twig', [
@@ -59,6 +65,7 @@ class CarritoController extends AbstractController
             'zonaSeleccionada' => 0, // O el valor que corresponda
             'precioGastos' => $carrito->getGastosEnvio($this->getUser()),
             'recogerTienda' => false,
+            'editing_order_id' => $editingOrderId,
         ]);
     }
 
@@ -270,6 +277,39 @@ class CarritoController extends AbstractController
         $this->addFlash('success', 'La cantidad del producto ha sido actualizada.');
 
         return $this->redirectToRoute('app_cart_show', ['_locale' => $session->get('_locale', 'es')]);
+    }
+
+    /**
+     * NUEVA ACCIÓN: Guarda los cambios de un pedido que se está editando.
+     */
+    #[Route('/carrito/save-edited', name: 'app_cart_save_edited_order', methods: ['POST'])]
+    public function saveEditedOrderAction(SessionInterface $session, OrderService $orderService): Response
+    {
+        $carrito = $session->get('carrito');
+        $editingOrderId = $session->get('editing_order_id');
+
+        if (!$carrito instanceof Carrito || !$editingOrderId) {
+            // Si no estamos en modo edición, redirigir al carrito normal
+            return $this->redirectToRoute('app_cart_show');
+        }
+
+        // Usamos nuestro servicio para actualizar el pedido
+        $pedido = $orderService->createOrUpdateOrderFromCart(
+            $carrito,
+            $this->getUser()->getContacto(),
+            null,
+            null,
+            $editingOrderId
+        );
+
+        // Limpiamos la sesión para salir del modo edición
+        $session->remove('carrito');
+        $session->remove('editing_order_id');
+
+        $this->addFlash('sonata_flash_success', 'El pedido #' . $pedido->getId() . ' ha sido actualizado correctamente.');
+
+        // Redirigimos de vuelta al panel de administración, a la página de edición del pedido
+        return $this->redirectToRoute('admin_app_pedido_edit', ['id' => $pedido->getId()]);
     }
 }
 

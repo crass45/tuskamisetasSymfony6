@@ -36,7 +36,8 @@
                     <select class="form-control chosen-select cart-summary-updater" name="zonaEnvio" id="zonaEnvio"
                             style="width: 50%; display: inline">
                         {% for zona in zonasEnvio %}
-                            <option value="{{ zona.id }}" {% if zonaEnvioSeleccionada is defined and zonaEnvioSeleccionada == zona.id %}selected{% endif %}>{{ zona }}</option>
+                            <option value="{{ zona.id }}"
+                                    {% if zonaEnvioSeleccionada is defined and zonaEnvioSeleccionada == zona.id %}selected{% endif %}>{{ zona }}</option>
                         {% endfor %}
                     </select>
                 {% endif %}
@@ -60,27 +61,37 @@
         {% endif %}
 
         <li>IVA a aplicar <span>{{ ivaAAPlicar  | number_format(2, ',', '.') }} €</span></li>
-        <li>Total <span style="font-size: 16px"><b>{{ (carrito.getSubtotal(app.user, precioGastos|default(0)) + ivaAAPlicar)| number_format(2, ',', '.') }}€</b></span></li>
+        <li>Total <span
+                    style="font-size: 16px"><b>{{ (carrito.getSubtotal(app.user, precioGastos|default(0)) + ivaAAPlicar)| number_format(2, ',', '.') }}€</b></span>
+        </li>
     </ul>
 
     <div style="text-align: right">
         {# MIGRACIÓN: Se actualizan todas las rutas #}
-        <a class="btn btn-default check_out" style="background-color: red" href="{{ path('app_cart_clear', {'_locale': app.request.locale}) }}">
+        <a class="btn btn-default check_out" style="background-color: red"
+           href="{{ path('app_cart_clear', {'_locale': app.request.locale}) }}">
             {% trans %}Vaciar Carrito{% endtrans %}
         </a>
         {% if is_granted('ROLE_ADMIN') %}
-            <a class="btn btn-default check_out" href="{{ path('app_cart_download_pdf', {'_locale': app.request.locale}) }}" target="_blank">Imprimir PDF</a>
+            <a class="btn btn-default check_out"
+               href="{{ path('app_cart_download_pdf', {'_locale': app.request.locale}) }}" target="_blank">Imprimir
+                PDF</a>
         {% endif %}
         <a class="btn btn-default check_out" href="{{ path('app_home', {'_locale': app.request.locale}) }}">
             {% trans %}Seguir Comprando{% endtrans %}
         </a>
-        <input id="confirmarPedidogtag" type="submit" class="btn btn-default check_out" style="background-color: #ff9000" value="{% trans %}Confirmar Pedido{% endtrans %}">
+        <input id="confirmarPedidogtag" type="submit" class="btn btn-default check_out"
+               style="background-color: #ff9000" value="{% if editing_order_id is defined and editing_order_id %}
+                                                Guardar Cambios en el Pedido
+                                            {% else %}
+                                                Confirmar Pedido
+                                            {% endif %}">
     </div>
 </div>
 
 {# MIGRACIÓN: El JavaScript ahora es más limpio y usa una única llamada AJAX #}
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         // Se define la función una sola vez
         function updateCartSummary() {
             const data = {

@@ -131,6 +131,7 @@ final class ContactoAdmin extends AbstractAdmin
                 ->with('Historial de Pedidos', ['class' => 'col-md-12'])
                 ->add('pedidos', TextType::class, [
                     'label' => false,
+                    'required' => false,
                     'mapped' => false,
                     'help_html' => true,
                     // Se renderiza la plantilla directamente y se pasa el HTML a la ayuda
