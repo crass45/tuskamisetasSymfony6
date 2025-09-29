@@ -53,7 +53,7 @@ class OrderService
         return $this->createOrderFromCart($carrito, $contacto, $direccionEnvio, $googleClientId, $tipoEnvio);
     }
 
-    private function createOrderFromCart(
+    public function createOrderFromCart(
         Carrito $carrito,
         Contacto $contacto,
         ?Direccion $direccionEnvio,
@@ -84,7 +84,7 @@ class OrderService
     /**
      * Actualiza un pedido existente con los datos de un carrito.
      */
-    private function updateOrderFromCart(Carrito $carrito, int $orderId, ?int $tipoEnvio): Pedido
+    public function updateOrderFromCart(Carrito $carrito, int $orderId, ?int $tipoEnvio): Pedido
     {
         $pedido = $this->em->getRepository(Pedido::class)->find($orderId);
         if (!$pedido) {
