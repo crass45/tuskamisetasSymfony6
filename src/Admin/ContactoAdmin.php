@@ -19,9 +19,18 @@ use Sonata\DoctrineORMAdminBundle\Filter\ModelFilter;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Twig\Environment;
 
 final class ContactoAdmin extends AbstractAdmin
 {
+
+    // --- INICIO DE LA CORRECCIÓN ---
+    // Se inyecta el servicio de Twig a través del constructor
+    public function __construct(private Environment $twig)
+    {
+        parent::__construct();
+    }
+    // --- FIN DE LA CORRECCIÓN ---
     // NO HAY ATRIBUTO #[Admin] AQUÍ
     // Pega este método completo en tu clase App\Admin\ContactoAdmin
 
@@ -63,6 +72,7 @@ final class ContactoAdmin extends AbstractAdmin
     protected function configureFormFields(FormMapper $form): void
     {
         $form
+            ->tab('Usuario') // Se añade un tab para organizar mejor
             ->with('Usuario', ['class' => 'col-md-6'])
             ->add('usuario.email')
             ->add('nombre', TextType::class)
@@ -100,12 +110,40 @@ final class ContactoAdmin extends AbstractAdmin
             ->add('recargoEquivalencia', CheckboxType::class, ['required' => false])
             ->add('intracomunitario', CheckboxType::class, ['required' => false])
             ->end()
+            ->end() // Se cierra el tab 'Usuario'
+            ->tab('Dirección de Facturación')
             ->with('Dirección de Facturación')
             ->add('direccionFacturacion', AdminType::class, [
                 'delete' => false,
             ])
             ->end()
-        ;
+            ->end(); // Se cierra el tab 'Dirección de Facturación'
+        // --- INICIO DE LA MEJORA ---
+        // Si estamos editando un contacto existente, se añade la pestaña de pedidos
+        if ($this->getSubject() && $this->getSubject()->getId()) {
+            // --- INICIO DE LA CORRECCIÓN ---
+            // Se obtienen los servicios necesarios
+            $pedidosAdmin = $this->getConfigurationPool()->getAdminByAdminCode(PedidoAdmin::class);
+            $contacto = $this->getSubject();
+
+            $form
+                ->tab('Pedidos')
+                ->with('Historial de Pedidos', ['class' => 'col-md-12'])
+                ->add('pedidos', TextType::class, [
+                    'label' => false,
+                    'mapped' => false,
+                    'help_html' => true,
+                    // Se renderiza la plantilla directamente y se pasa el HTML a la ayuda
+                    'help' => $this->twig->render('admin/contacto/pedidos_tab.html.twig', [
+                        'contacto' => $contacto,
+                        'pedidos_admin' => $pedidosAdmin
+                    ])
+                ])
+                ->end()
+                ->end();
+            // --- FIN DE LA CORRECCIÓN ---
+        }
+        // --- FIN DE LA MEJORA ---
     }
 
     protected function configureDatagridFilters(DatagridMapper $datagrid): void
@@ -144,28 +182,28 @@ final class ContactoAdmin extends AbstractAdmin
             ->add('telefonoMovil');
     }
 
-    protected function configureTabMenu(MenuItemInterface $menu, string $action, ?AdminInterface $childAdmin = null): void
-    {
-        if ('edit' !== $action) {
-            return;
-        }
-
-        $admin = $this->isChild() ? $this->getParent() : $this;
-        $id = $admin->getRequest()->get('id');
-
-        if (!$id) {
-            return;
-        }
-
-//        $pedidosAdmin = $this->getConfigurationPool()->getAdminByAdminCode('sonata.admin.pedidos');
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Se reemplaza el ID de servicio antiguo ('sonata.admin.pedidos')
-        // por el nombre completo de la clase PedidoAdmin, que es el ID correcto en Symfony moderno.
-        $pedidosAdmin = $this->getConfigurationPool()->getAdminByAdminCode(PedidoAdmin::class);
-        // --- FIN DE LA CORRECCIÓN ---
-
-        $menu->addChild('Pedidos de este Cliente', [
-            'uri' => $pedidosAdmin->generateUrl('list', ['filter' => ['contacto' => ['value' => $id]]])
-        ]);
-    }
+//    protected function configureTabMenu(MenuItemInterface $menu, string $action, ?AdminInterface $childAdmin = null): void
+//    {
+//        if ('edit' !== $action) {
+//            return;
+//        }
+//
+//        $admin = $this->isChild() ? $this->getParent() : $this;
+//        $id = $admin->getRequest()->get('id');
+//
+//        if (!$id) {
+//            return;
+//        }
+//
+////        $pedidosAdmin = $this->getConfigurationPool()->getAdminByAdminCode('sonata.admin.pedidos');
+//        // --- INICIO DE LA CORRECCIÓN ---
+//        // Se reemplaza el ID de servicio antiguo ('sonata.admin.pedidos')
+//        // por el nombre completo de la clase PedidoAdmin, que es el ID correcto en Symfony moderno.
+//        $pedidosAdmin = $this->getConfigurationPool()->getAdminByAdminCode(PedidoAdmin::class);
+//        // --- FIN DE LA CORRECCIÓN ---
+//
+//        $menu->addChild('Pedidos de este Cliente', [
+//            'uri' => $pedidosAdmin->generateUrl('list', ['filter' => ['contacto' => ['value' => $id]]])
+//        ]);
+//    }
 }

@@ -24,20 +24,12 @@ final class DireccionAdmin extends AbstractAdmin
             ->add('dir', TextType::class, ['label' => 'Dirección'])
             ->add('cp', TextType::class, ['label' => 'Código Postal'])
             ->add('poblacion', TextType::class, ['label' => 'Población'])
-            ->add('provinciaBD', ModelType::class, [
-                'label' => 'Provincia (desde BD)',
-                'property' => 'nombre',
-                'required' => false,
-            ])
+            ->add('provinciaBD')
             ->add('provincia', TextType::class, [
                 'label' => 'Provincia (texto)',
                 'help' => 'Se rellena automáticamente al seleccionar la Provincia de la BD.'
             ])
-            ->add('paisBD', ModelType::class, [
-                'label' => 'País (desde BD)',
-                'property' => 'nombre',
-                'required' => false,
-            ])
+            ->add('paisBD')
             ->add('pais', TextType::class, [
                 'label' => 'País (texto)',
                 'help' => 'Se rellena automáticamente al seleccionar el País de la BD.'

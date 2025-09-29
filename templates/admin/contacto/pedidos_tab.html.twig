@@ -1,0 +1,88 @@
+{# templates/admin/contacto/pedidos_tab.html.twig #}
+{# Esta plantilla renderiza la tabla con los pedidos del cliente #}
+
+{% if contacto and contacto.pedidos is not empty and contacto.pedidos|length > 0 %}
+    <table class="table table-bordered table-striped" id="pedidos-table-{{ contacto.id }}">
+        <thead>
+        <tr>
+            <th>Número Pedido</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th style="text-align: right;">Total</th>
+            <th style="text-align: center;">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        {# Se ordenan los pedidos por fecha descendente #}
+        {% for pedido in contacto.pedidos|sort((a, b) => b.fecha <=> a.fecha) %}
+            <tr>
+                <td>{{ pedido.nombre }}</td>
+                <td>{{ pedido.fecha|date('d/m/Y H:i') }}</td>
+                <td>
+                    {% if pedido.estado %}
+                        <span class="label
+                                {% if pedido.estado.id == 1 %} label-danger
+                                {% elseif pedido.estado.id == 2 or pedido.estado.id == 6 %} label-warning
+                                {% elseif pedido.estado.id == 3 %} label-info
+                                {% elseif pedido.estado.id == 11 %} label-success
+                                {% else %} label-primary
+                                {% endif %}
+                            ">
+                                {{ pedido.estado.nombre }}
+                            </span>
+                    {% endif %}
+                </td>
+                <td style="text-align: right;">{{ pedido.total|number_format(2, ',', '.') }} €</td>
+                <td style="text-align: center;">
+                    {# Se genera un enlace a la página de edición del pedido #}
+                    <a href="{{ pedidos_admin.generateObjectUrl('edit', pedido) }}" class="btn btn-sm btn-primary" title="Ver / Editar Pedido">
+                        <i class="fa fa-pencil"></i>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {# --- INICIO DE LA MEJORA --- #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Se usa un ID único para la tabla para evitar conflictos si hay varios admins en la misma página
+            const table = document.getElementById('pedidos-table-{{ contacto.id }}');
+            if (!table) return;
+
+            // Se busca el input de texto que Sonata ha renderizado justo antes de esta tabla
+            const searchInput = table.closest('.form-group').querySelector('input[type="text"]');
+
+            if (searchInput) {
+                // Se mejora la apariencia del input para que parezca un filtro
+                searchInput.placeholder = 'Buscar por número de pedido...';
+                searchInput.style.marginBottom = '15px';
+
+                searchInput.addEventListener('keyup', function() {
+                    const filter = this.value.toLowerCase();
+                    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+                    for (let i = 0; i < rows.length; i++) {
+                        const orderNumberCell = rows[i].getElementsByTagName('td')[0];
+                        if (orderNumberCell) {
+                            const orderNumber = orderNumberCell.textContent || orderNumberCell.innerText;
+                            if (orderNumber.toLowerCase().indexOf(filter) > -1) {
+                                rows[i].style.display = '';
+                            } else {
+                                rows[i].style.display = 'none';
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+    {# --- FIN DE LA MEJORA --- #}
+
+{% else %}
+    <div class="alert alert-info">
+        Este cliente no tiene ningún pedido asociado.
+    </div>
+{% endif %}
+
