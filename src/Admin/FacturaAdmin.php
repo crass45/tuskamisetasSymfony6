@@ -7,6 +7,7 @@ use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
+use Sonata\AdminBundle\Datagrid\ProxyQueryInterface;
 use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Form\Type\AdminType;
 use Sonata\AdminBundle\Route\RouteCollectionInterface;
@@ -17,6 +18,24 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 final class FacturaAdmin extends AbstractAdmin
 {
+
+    // --- INICIO DE LA CORRECCIÓN ---
+    /**
+     * Este método modifica directamente la consulta de la lista para asegurar
+     * que siempre se ordene por fecha descendente por defecto.
+     */
+    protected function configureQuery(ProxyQueryInterface $query): ProxyQueryInterface
+    {
+//        $sortBy = $this->getDatagrid()->getValue('_sort_by');
+
+        // Si el usuario no ha hecho clic en ninguna columna para ordenar,
+        // aplicamos nuestro orden por defecto.
+//        if (!$sortBy) {
+        $query->addOrderBy($query->getRootAliases()[0] . '.fecha', 'DESC');
+//        }
+
+        return $query;
+    }
     protected function configureFormFields(FormMapper $form): void
     {
         $form
@@ -45,6 +64,18 @@ final class FacturaAdmin extends AbstractAdmin
             ->end();
     }
 
+    // --- INICIO DE LA MEJORA ---
+    /**
+     * Establece los valores por defecto para la vista de lista.
+     * Ordena las facturas por el campo 'fecha' en orden descendente.
+     */
+    protected array $datagridValues = [
+        '_page' => 1,
+        '_sort_order' => 'DESC',
+        '_sort_by' => 'fecha',
+    ];
+    // --- FIN DE LA MEJORA ---
+
     protected function configureDatagridFilters(DatagridMapper $datagrid): void
     {
         $datagrid
@@ -70,9 +101,6 @@ final class FacturaAdmin extends AbstractAdmin
             ])
             ->add(ListMapper::NAME_ACTIONS, null, [
                 'actions' => [
-                    'show' => [],
-                    'edit' => [],
-                    'delete' => [],
                     'showFacturaFactura' => [
                         // NOTA: La ruta a la plantilla ha cambiado
                         'template' => 'admin/CRUD/list_action_show_factura.html.twig'

@@ -2,7 +2,10 @@
 sonata_admin:
   title: 'TusKamisetas'
   title_logo: 'icon.png' # Asegúrate de que este fichero está en tu carpeta public/
-
+  options:
+    # Esta línea establece 'edit' como la acción por defecto
+    # para los enlaces de la vista de lista en todos los Admin.
+    default_admin_route: edit
   dashboard:
     groups:
       # NOTA: Los IDs de grupo ahora son simples claves de texto.
@@ -78,8 +81,8 @@ sonata_admin:
       - { type: sonata.admin.block.stats, position: top, class: 'col-lg-3 col-xs-6', settings: { code: App\Admin\PedidoAdmin, icon: 'fas fa-shopping-cart', text: 'Pedidos Nuevos Sin Revisar', color: 'bg-aqua', filters: { estado: { value: 1 } } } }
 
       # El resto de tus bloques de estadísticas
+      - { type: sonata.admin.block.stats, position: top, class: 'col-lg-3 col-xs-6', settings: { code: App\Admin\PedidoAdmin, icon: 'fas fa-money-bill-alt', text: 'Revisados Sin Pagar', color: 'bg-red', filters: { estado: { value: 3 }, cantidadPagada: { type: '<=', value: 0 } } } }
       - { type: sonata.admin.block.stats, position: top, class: 'col-lg-3 col-xs-6', settings: { code: App\Admin\PedidoAdmin, icon: 'fas fa-handshake', text: 'Pedir a Proveedor', color: 'bg-green', filters: { pedidoAProveedor: { value: 0 } } } }
-      - { type: sonata.admin.block.stats, position: top, class: 'col-lg-3 col-xs-6', settings: { code: App\Admin\PedidoAdmin, icon: 'fas fa-money-bill-alt', text: 'Revisados Sin Pagar', color: 'bg-red', filters: { estado: { value: 3 }, cantidadPagada: { type: '=', value: 0 } } } }
       - { type: sonata.admin.block.stats, position: top, class: 'col-lg-3 col-xs-6', settings: { code: sonata.user.admin.user, icon: 'fas fa-user', text: 'Total de Usuarios', color: 'bg-yellow', filters: { enabled: { value: 1 } } } }
       # ... etc
 

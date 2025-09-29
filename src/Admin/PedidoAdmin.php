@@ -9,10 +9,13 @@ use Knp\Snappy\Pdf;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
+use Sonata\AdminBundle\Datagrid\ProxyQueryInterface;
+use Sonata\AdminBundle\Filter\Model\FilterData;
 use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Form\Type\ModelListType;
 use Sonata\AdminBundle\Form\Type\ModelType;
 use Sonata\AdminBundle\Route\RouteCollectionInterface;
+use Sonata\DoctrineORMAdminBundle\Filter\CallbackFilter;
 use Sonata\DoctrineORMAdminBundle\Filter\DateTimeRangeFilter;
 use Sonata\Form\Type\CollectionType;
 use Sonata\Form\Type\DateTimePickerType;
@@ -40,21 +43,34 @@ final class PedidoAdmin extends AbstractAdmin
         parent::__construct();
     }
 
-    protected array $datagridValues = [
-        '_page' => 1,
-        '_sort_order' => 'DESC',
-        '_sort_by' => 'fecha',
-    ];
+//    protected function configure(): void
+//    {
+//        // Corregido: idUsuario -> contacto
+//        $this->parentAssociationMapping = 'contacto';
+////        $this->setDatagridValues([
+////            '_page' => 1,
+////            '_sort_order' => 'DESC',
+////            '_sort_by' => 'fecha',
+////        ]);
+//    }
 
-    protected function configure(): void
+
+    // --- INICIO DE LA CORRECCIÓN ---
+    /**
+     * Este método modifica directamente la consulta de la lista para asegurar
+     * que siempre se ordene por fecha descendente por defecto.
+     */
+    protected function configureQuery(ProxyQueryInterface $query): ProxyQueryInterface
     {
-        // Corregido: idUsuario -> contacto
-        $this->parentAssociationMapping = 'contacto';
-//        $this->setDatagridValues([
-//            '_page' => 1,
-//            '_sort_order' => 'DESC',
-//            '_sort_by' => 'fecha',
-//        ]);
+//        $sortBy = $this->getDatagrid()->getValue('_sort_by');
+
+        // Si el usuario no ha hecho clic en ninguna columna para ordenar,
+        // aplicamos nuestro orden por defecto.
+//        if (!$sortBy) {
+            $query->addOrderBy($query->getRootAliases()[0] . '.fecha', 'DESC');
+//        }
+
+        return $query;
     }
 
     protected function configureFormFields(FormMapper $form): void
@@ -64,7 +80,7 @@ final class PedidoAdmin extends AbstractAdmin
 
         $form
             ->tab("Pedido");
-            if ($pedido && $pedido->getContacto() && $pedido->getContacto()->getUsuario()) {
+        if ($pedido && $pedido->getContacto() && $pedido->getContacto()->getUsuario()) {
 //                $form->with("General") // Volvemos a abrir el mismo grupo de campos
 //                ->add('contacto.groups', ModelType::class, [
 //                    'label' => "Grupos del Usuario (solo lectura)",
@@ -75,8 +91,8 @@ final class PedidoAdmin extends AbstractAdmin
 //                    'choice_label' => 'name',
 //                ])
 //                    ->end();
-            }
-            $form->with("General", ["class" => "col-md-9"])
+        }
+        $form->with("General", ["class" => "col-md-9"])
             // Corregido: idUsuario -> contacto
 //            ->add('contacto.usuario.groups', ModelType::class, [
 //                'label' => "Grupos",
@@ -186,18 +202,36 @@ final class PedidoAdmin extends AbstractAdmin
             ->add('fechaEntrega', DateTimeRangeFilter::class)
             ->add('fecha', DateTimeRangeFilter::class)
             ->add('codigoSermepa');
+        // --- INICIO DE LA MEJORA ---
+        // Se añade el filtro personalizado que llama a un método de callback
+        if (!$this->isChild()) {
+            $datagrid->add('pedidoAProveedor', CallbackFilter::class, [
+                'label' => 'Pedido a Proveedor',
+                'callback' => [$this, 'isPedidoAProveedor'],
+                'field_type' => ChoiceType::class,
+                'field_options' => [
+                    'choices' => [
+                        'No' => 0,
+                        'Sí' => 1,
+                    ],
+                    'placeholder' => 'Ambos',
+                ],
+            ]);
+        }
+        // --- FIN DE LA MEJORA ---
+
     }
 
     protected function configureListFields(ListMapper $list): void
     {
         $list
-            ->addIdentifier('fecha', 'datetime', ['format' => 'd-m-Y'])
-            ->add('nombre')
+            ->add('fecha', 'datetime', ['format' => 'd-m-Y'])
+            ->addIdentifier('nombre')
             ->add('fechaEntrega', 'datetime', ['format' => 'd-m-Y', 'template' => 'admin/CRUD/list_fecha_pedido.html.twig'])
             ->add('contacto') // Corregido
             ->add('estado', null, ['template' => 'admin/CRUD/list_estado_pedido.html.twig'])
             ->add('total', 'currency', ['currency' => 'EUR'])
-            ->add('referenciaInterna')
+            ->add('referenciaInterna', null, ['label' => 'Nombre del Montaje'])
             ->add(ListMapper::NAME_ACTIONS, null, [
                 'actions' => [
                     'show' => [],
@@ -222,10 +256,11 @@ final class PedidoAdmin extends AbstractAdmin
 
         // ALMACENAMOS EN EL LOG
         if ($estadoAnt !== $object->getEstado()) {
-            $pedidoLog = new PedidosLog();
-            $pedidoLog->setEstado($object->getEstado());
-            $pedidoLog->setUsuario($object->getContacto());
-            $this->entityManager->persist($pedidoLog);
+            //DE MOMENTO NO TENEMOS LOGS.
+//            $pedidoLog = new PedidosLog();
+//            $pedidoLog->setEstado($object->getEstado());
+//            $pedidoLog->setUsuario($object->getContacto());
+//            $this->entityManager->persist($pedidoLog);
             // No hacemos flush aquí, se hará al final de la operación.
         }
 
@@ -314,5 +349,27 @@ final class PedidoAdmin extends AbstractAdmin
         }
 
         return $buttonList;
+    }
+
+    public function isPedidoAProveedor(ProxyQueryInterface $queryBuilder, string $alias, string $field, FilterData $value): bool
+    {
+        // Si no se ha seleccionado ninguna opción en el filtro, no hacemos nada
+        if (!$value->hasValue()) {
+            return false;
+        }
+
+        // Si el usuario selecciona "No", se aplica la lógica de filtrado
+        if ($value->getValue() == '0') {
+            $queryBuilder
+                ->andWhere(sprintf('%s.estado IN (:estados_proveedor)', $alias))
+                ->andWhere(sprintf('%s.cantidadPagada > 0', $alias))
+                ->andWhere(sprintf('%s.fechaEntrega IS NOT NULL', $alias))
+                ->setParameter('estados_proveedor', [3, 4, 10]);
+
+            // Se devuelve 'true' para indicar que el filtro se ha aplicado
+            return true;
+        }
+
+        return false;
     }
 }

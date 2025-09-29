@@ -1,0 +1,15 @@
+{# templates/admin/CRUD/list_action_show_factura.html.twig #}
+{% extends '@SonataAdmin/CRUD/base_list_field.html.twig' %}
+
+{% block field %}
+    {#
+    Este botón solo se mostrará si la factura tiene un pedido asociado
+    y ese pedido tiene, a su vez, una factura (una doble comprobación de seguridad).
+    #}
+    {% if object.pedido and object.pedido.factura %}
+        <a href="{{ admin.generateObjectUrl('showFacturaFactura', object) }}" class="btn btn-sm btn-default" title="Ver Factura" target="_blank">
+            <i class="fa fa-file-pdf-o" aria-hidden="true"></i>
+            Ver Factura
+        </a>
+    {% endif %}
+{% endblock %}
