@@ -19,6 +19,9 @@ final class PedidoLineaHasTrabajoAdmin extends AbstractAdmin
             ->add('pedidoTrabajo', ModelListType::class, [
                 'label' => 'Trabajo Realizado',
                 'btn_delete' => false,
+                'btn_add' => false,
+                'btn_edit' => false,
+                'btn_list' => false,
             ])
             ->add('cantidad', IntegerType::class)
             ->add('ubicacion', TextType::class, ['required' => false])

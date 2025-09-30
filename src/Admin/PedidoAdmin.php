@@ -138,14 +138,18 @@ final class PedidoAdmin extends AbstractAdmin
             ->add('observaciones', CKEditorType::class, ['label' => 'Observaciones introducidas por el cliente', 'required' => false])
             ->end()
             ->end()
-            ->tab("Detalle Pedido")
-            ->with("Lineas de Pedido")
-//            ->add('lineas', ModelListType::class, [ // Corregido: pedidoHasLineas -> lineas
-//                'by_reference' => false,
-//            ], [
-//                'edit' => 'inline',
-//                'inline' => 'table',
-//            ])
+            ->tab('Detalle Pedido')
+            ->with('Líneas del Pedido', ['class' => 'col-md-12'])
+            ->add('lineas', CollectionType::class, [
+                'label' => false,
+                'by_reference' => false,
+//                'allow_add' => true,
+//                'allow_delete' => true,
+            ], [
+                'edit' => 'inline',
+                'inline' => 'table',
+                'admin_code' => PedidoLineaAdmin::class,
+            ])
             ->end()
             ->end();
 
@@ -190,6 +194,19 @@ final class PedidoAdmin extends AbstractAdmin
         }
     }
 
+    // --- INICIO DE LA MEJORA ---
+    /**
+     * Sobrescribe la plantilla por defecto de la página de edición.
+     */
+    public function getTemplate(string $name): ?string
+    {
+        if ($name === 'edit') {
+            return 'admin/pedido/edit.html.twig';
+        }
+
+        return parent::getTemplate($name);
+    }
+    // --- FIN DE LA MEJORA ---
     protected function configureDatagridFilters(DatagridMapper $datagrid): void
     {
         $datagrid

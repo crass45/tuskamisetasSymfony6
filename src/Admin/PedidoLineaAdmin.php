@@ -6,9 +6,11 @@ use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\ListMapper;
 use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Form\Type\ModelListType;
+use Sonata\AdminBundle\Form\Type\ModelType;
 use Sonata\Form\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 final class PedidoLineaAdmin extends AbstractAdmin
 {
@@ -22,9 +24,10 @@ final class PedidoLineaAdmin extends AbstractAdmin
     {
         $form
             // Corregido: idProducto -> producto
-            ->add('producto', ModelListType::class, [
-                'btn_add' => false,
-                'btn_delete' => false,
+            ->add('producto', TextType::class, [
+                'disabled' => true,
+//                'btn_add' => false,
+//                'btn_delete' => false,
                 'label' => 'Producto'
             ])
             ->add('cantidad', IntegerType::class)
