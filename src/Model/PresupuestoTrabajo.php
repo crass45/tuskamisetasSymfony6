@@ -146,8 +146,9 @@ class PresupuestoTrabajo
         return $this->observaciones;
     }
 
-    public function setObservaciones(string $observaciones): self
+    public function setObservaciones(?string $observaciones): self
     {
+        if($observaciones != null)
         $this->observaciones = $observaciones;
         return $this;
     }

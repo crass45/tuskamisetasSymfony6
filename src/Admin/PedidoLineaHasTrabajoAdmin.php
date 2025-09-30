@@ -23,10 +23,10 @@ final class PedidoLineaHasTrabajoAdmin extends AbstractAdmin
                 'btn_edit' => false,
                 'btn_list' => false,
             ])
-            ->add('cantidad', IntegerType::class)
+//            ->add('cantidad', IntegerType::class)
             ->add('ubicacion', TextType::class, ['required' => false])
-            ->add('observaciones', TextareaType::class, ['required' => false])
-            ->add('repeticion', CheckboxType::class, ['required' => false]);
+            ->add('observaciones', TextareaType::class, ['required' => false]);
+//            ->add('repeticion', CheckboxType::class, ['required' => false]);
     }
 
     protected function configureListFields(ListMapper $list): void

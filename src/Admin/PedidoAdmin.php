@@ -43,17 +43,6 @@ final class PedidoAdmin extends AbstractAdmin
         parent::__construct();
     }
 
-//    protected function configure(): void
-//    {
-//        // Corregido: idUsuario -> contacto
-//        $this->parentAssociationMapping = 'contacto';
-////        $this->setDatagridValues([
-////            '_page' => 1,
-////            '_sort_order' => 'DESC',
-////            '_sort_by' => 'fecha',
-////        ]);
-//    }
-
 
     // --- INICIO DE LA CORRECCIÓN ---
     /**
@@ -109,7 +98,7 @@ final class PedidoAdmin extends AbstractAdmin
             ->add('referenciaInterna', TextType::class, ['label' => 'Nombre del montaje', 'required' => false])
             ->add('montaje', TextType::class, ['label' => 'Enlace al montaje (WeTransfer)', 'required' => false])
             ->add('enviaMail', CheckboxType::class, ['required' => false, 'label' => 'Enviar e-mail al cambiar estado'])
-            ->add('estado', ModelType::class)
+            ->add('estado')
             ->add('incidencias', CKEditorType::class, ['required' => false])
             ->end()
             ->with("Subtotales", ["class" => "col-md-3"])
@@ -194,18 +183,6 @@ final class PedidoAdmin extends AbstractAdmin
         }
     }
 
-    // --- INICIO DE LA MEJORA ---
-    /**
-     * Sobrescribe la plantilla por defecto de la página de edición.
-     */
-    public function getTemplate(string $name): ?string
-    {
-        if ($name === 'edit') {
-            return 'admin/pedido/edit.html.twig';
-        }
-
-        return parent::getTemplate($name);
-    }
     // --- FIN DE LA MEJORA ---
     protected function configureDatagridFilters(DatagridMapper $datagrid): void
     {
@@ -311,7 +288,7 @@ final class PedidoAdmin extends AbstractAdmin
         foreach ($object->getLineas() as $linea) {
             $subtotal += (float)$linea->getPrecio() * $linea->getCantidad();
         }
-        foreach ($object->getLineasLibre() as $linea) {
+        foreach ($object->getLineasLibres() as $linea) {
             $subtotal += (float)$linea->getPrecio() * $linea->getCantidad();
         }
 

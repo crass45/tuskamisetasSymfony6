@@ -141,6 +141,9 @@ services:
         - '@request_stack'
       tags:
         - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Pedido, group: "Tienda", label: "Pedidos", controller: App\Controller\Admin\PedidoCRUDController }
+#      calls:
+#        # 1. Se llama a setTemplate() para establecer la plantilla de edición personalizada.
+#        - [ setTemplate, [ 'edit', 'admin/pedido/edit.html.twig' ] ]
 
     App\Admin\DescuentoAdmin:
       tags:

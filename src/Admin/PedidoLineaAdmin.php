@@ -10,6 +10,7 @@ use Sonata\AdminBundle\Form\Type\ModelType;
 use Sonata\Form\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 final class PedidoLineaAdmin extends AbstractAdmin
@@ -24,7 +25,7 @@ final class PedidoLineaAdmin extends AbstractAdmin
     {
         $form
             // Corregido: idProducto -> producto
-            ->add('producto', TextType::class, [
+            ->add('producto', TextareaType::class, [
                 'disabled' => true,
 //                'btn_add' => false,
 //                'btn_delete' => false,
