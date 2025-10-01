@@ -104,6 +104,8 @@ class MrwApiService
                 $numeroEnvio = $response->TransmEnvioResult->NumeroEnvio;
                 $urlSeguimiento = "https://www.mrw.es/seguimiento_envios/MRW_historico_nacional.asp?enviament=" . $numeroEnvio;
 
+                $pedido->setAgenciaEnvio("mrw");
+                $pedido->setBultos($bultos);
                 $pedido->setSeguimientoEnvio($urlSeguimiento);
                 $this->em->flush();
 

@@ -53,6 +53,17 @@
                     url = "{{ admin.generateUrl('documentarEnvioMrw', {'id': object.id, 'bultos': 'BULTOS_PLACEHOLDER', 'servicio': 'SERVICIO_PLACEHOLDER'}) }}";
                     url = url.replace('BULTOS_PLACEHOLDER', bultos).replace('SERVICIO_PLACEHOLDER', servicio);
                 }
+                if (agencia === '1') { // MRW
+                    const servicio = document.querySelector('.servicio-mrw-select').value;
+                    if (!servicio) {
+                        alert('Por favor, selecciona un tipo de servicio para MRW.');
+                        return;
+                    }
+                    // Se construye la URL para la acción de MRW
+                    url = "{{ admin.generateUrl('documentarEnvioNACEX', {'id': object.id, 'bultos': 'BULTOS_PLACEHOLDER', 'servicio': 'SERVICIO_PLACEHOLDER'}) }}";
+                    url = url.replace('BULTOS_PLACEHOLDER', bultos).replace('SERVICIO_PLACEHOLDER', servicio);
+                    console.warn(url);
+                }
                 // Aquí iría la lógica para las otras agencias (Nacex, etc.)
                 // else if (agencia === '1') { ... }
 

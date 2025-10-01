@@ -11,6 +11,7 @@ use App\Model\PresupuestoProducto;
 use App\Model\PresupuestoTrabajo;
 use App\Service\GoogleAnalyticsService;
 use App\Service\MrwApiService;
+use App\Service\NacexApiService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
 use Sonata\AdminBundle\Controller\CRUDController;
@@ -24,11 +25,13 @@ final class PedidoCRUDController extends CRUDController
 {
     // Symfony inyectará los servicios que necesites aquí
     public function __construct(
-        private Pdf $snappy,
+        private Pdf                    $snappy,
         private GoogleAnalyticsService $googleAnalyticsService,
         private EntityManagerInterface $em,
-        private MrwApiService $mrwApiService // Se inyecta el servicio de MRW
-    ) {
+        private MrwApiService          $mrwApiService, // Se inyecta el servicio de MRW
+        private NacexApiService        $nacexApiService
+    )
+    {
     }
 
     // A continuación, el esqueleto para todas tus acciones personalizadas.
@@ -113,11 +116,61 @@ final class PedidoCRUDController extends CRUDController
         );
     }
 
-    public function documentarEnvioNacexAction(Request $request, string $agencia, int $bultos, string $servicio): Response
+// REEMPLAZA la acción documentarNacexAction existente con esta
+    #[Route(path: '/{id}/documentar-nacex', name: 'admin_app_pedido_documentar_nacex')]
+    public function documentaEnviorNacexAction(Request $request, int $bultos, string $servicio): Response
     {
         $pedido = $this->admin->getSubject();
-        // TODO: Tu lógica para conectar con la API de Nacex/Enviália.
-        return new Response(sprintf('Documentando envío para %s con %s', $pedido->getNombre(), $agencia));
+        if (!$pedido) {
+            throw new NotFoundHttpException('Pedido no encontrado');
+        }
+
+        // Ahora guardaremos el CÓDIGO DE EXPEDICIÓN en lugar de la URL de seguimiento
+        if ($pedido->getSeguimientoEnvio()) {
+            $this->addFlash('sonata_flash_error', 'Este envío ya ha sido documentado. Código: ' . $pedido->getSeguimientoEnvio());
+            return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+        }
+
+//        $bultos = $request->query->getInt('bultos', 1);
+        $resultado = $this->nacexApiService->documentarEnvio($pedido, $bultos);
+
+        if ($resultado['error']) {
+            $this->addFlash('sonata_flash_error', $resultado['message']);
+        } else {
+            // Guardamos el código de expedición para usarlo después para imprimir etiquetas
+            $pedido->setSeguimientoEnvio($resultado['codExp']);
+            $pedido->setBultos($bultos); // Guardamos el número de bultos
+            $this->admin->update($pedido);
+            $this->addFlash('sonata_flash_success', $resultado['message']);
+        }
+
+        return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+    }
+
+    // AÑADE esta nueva acción para ver las etiquetas
+    #[Route(path: '/{id}/ver-etiquetas-nacex', name: 'admin_app_pedido_ver_etiquetas_nacex')]
+    public function verEtiquetasNacexAction(Request $request): Response
+    {
+        $pedido = $this->admin->getSubject();
+        if (!$pedido || !$pedido->getSeguimientoEnvio()) {
+            $this->addFlash('sonata_flash_error', 'El pedido no ha sido documentado con Nacex todavía.');
+            return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+        }
+
+        $codExp = $pedido->getSeguimientoEnvio();
+        $bultos = $pedido->getBultos() > 0 ? $pedido->getBultos() : 1;
+
+        $resultado = $this->nacexApiService->getEtiquetas($codExp, $bultos);
+
+        if ($resultado['error']) {
+            $this->addFlash('sonata_flash_error', $resultado['message']);
+            return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+        }
+
+        // Renderizamos una plantilla que mostrará las imágenes
+        return $this->render('admin/nacex_etiquetas.html.twig', [
+            'etiquetas' => $resultado['etiquetas']
+        ]);
     }
 
 
@@ -280,12 +333,32 @@ final class PedidoCRUDController extends CRUDController
         }
 
         // Llama al servicio para gestionar la lógica de la API
-        $urlSeguimiento = $this->mrwApiService->documentarEnvio($pedido,$bultos, $servicio);
+        $urlSeguimiento = $this->mrwApiService->documentarEnvio($pedido, $bultos, $servicio);
 
         if ($urlSeguimiento) {
             $this->addFlash('sonata_flash_success', 'Envío documentado correctamente con MRW. Seguimiento: ' . $urlSeguimiento);
         } else {
             $this->addFlash('sonata_flash_error', 'Ha ocurrido un error al documentar el envío con MRW.');
+        }
+
+        return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+    }
+
+
+    public function documentarEnvioNacexAction(Request $request, int $bultos, string $servicio): Response
+    {
+        $pedido = $this->assertObjectExists($request, true);
+        $this->admin->checkAccess('edit', $pedido);
+
+        if ($pedido->getSeguimientoEnvio()) {
+            $this->addFlash('sonata_flash_error', 'Este envío ya ha sido documentado.');
+            return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+        }
+        $resultado = $this->nacexApiService->documentarEnvio($pedido, $bultos);
+        if ($resultado['error']) {
+            $this->addFlash('sonata_flash_error', $resultado['message']);
+        } else {
+            $this->addFlash('sonata_flash_success', $resultado['message']);
         }
 
         return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
@@ -306,7 +379,7 @@ final class PedidoCRUDController extends CRUDController
             return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
         }
 
-        if (str_contains($urlSeguimiento, 'mrw.es')) {
+        if ($pedido->getAgenciaEnvio() === 'mrw' || str_contains($urlSeguimiento, 'mrw.es')) {
             // Es un envío de MRW
             parse_str(parse_url($urlSeguimiento, PHP_URL_QUERY), $queryParams);
             $numeroEnvio = $queryParams['enviament'] ?? null;
@@ -328,6 +401,16 @@ final class PedidoCRUDController extends CRUDController
                 $this->addFlash('sonata_flash_error', 'No se pudo obtener la etiqueta de MRW.');
                 return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
             }
+        }
+
+        if ($pedido->getAgenciaEnvio() === 'nacex') {
+            // Es un envío de NACEX
+            $resultado = $this->nacexApiService->getEtiquetas($pedido);
+            if ($resultado['error']) {
+                $this->addFlash('sonata_flash_error', $resultado['message']);
+                return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+            }
+            return $this->render('admin/nacex_etiquetas.html.twig', ['etiquetas' => $resultado['etiquetas']]);
         }
 
         // Aquí iría la lógica para las otras agencias (Nacex, Envialia, etc.)

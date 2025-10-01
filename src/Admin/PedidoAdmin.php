@@ -334,12 +334,12 @@ final class PedidoAdmin extends AbstractAdmin
         $collection->add('showPDF', $this->getRouterIdParameter() . '/show-pdf');
         $collection->add('showOrdenPedido', $this->getRouterIdParameter() . '/show-orden-pedido');
         $collection->add('showProforma', $this->getRouterIdParameter() . '/show-proforma');
-        $collection->add('documentarEnvioNACEX', $this->getRouterIdParameter() . '/documentar-envio-nacex/{agencia}/{bultos}/{servicio}');
         $collection->add('verEtiquetas', $this->getRouterIdParameter().'/ver-etiquetas');
         $collection->add('editarPedido', $this->getRouterIdParameter() . '/editar-pedido');
         $collection->add('facturar', $this->getRouterIdParameter() . '/facturar');
         $collection->add('showFactura', $this->getRouterIdParameter() . '/show-factura');
         $collection->add('recalcular', $this->getRouterIdParameter() . '/recalcular');
+        $collection->add('documentarEnvioNACEX', $this->getRouterIdParameter() . '/documentar-envio-nacex/{bultos}/{servicio}');
         $collection->add('documentarEnvioMrw', $this->getRouterIdParameter().'/documentar-envio-mrw/{bultos}/{servicio}');
         $collection->add('reloadEnvio', 'reload-envio');
         $collection->remove('create');

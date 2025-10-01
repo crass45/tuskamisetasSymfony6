@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Etiquetas Nacex</title>
+    <style>
+        body { margin: 0; padding: 10px; text-align: center; }
+        img { max-width: 100%; height: auto; margin-bottom: 20px; page-break-after: always; }
+        @media print {
+            body { padding: 0; }
+            img { margin-bottom: 0; }
+        }
+    </style>
+</head>
+<body>
+{% for etiquetaBase64 in etiquetas %}
+    {# El servicio devuelve la imagen en Base64, la mostramos directamente #}
+    <img src="data:image/png;base64,{{ etiquetaBase64 }}" alt="Etiqueta">
+{% else %}
+    <p>No se encontraron etiquetas para mostrar.</p>
+{% endfor %}
+</body>
+</html>

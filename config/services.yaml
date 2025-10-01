@@ -43,6 +43,15 @@ services:
         $usuario: '%mrw.usuario%'
         $password: '%mrw.password%'
 
+        # ... (al final del archivo)
+    App\Service\NacexApiService:
+      arguments:
+        $nacexUser: '%env(NACEX_USER)%'
+        $nacexPass: '%env(NACEX_PASS)%'
+        $nacexUrl: '%env(NACEX_URL)%' # <-- URL CORREGIDA
+        $nacexDelCli: '%env(NACEX_DEL_CLI)%'
+        $nacexNumCli: '%env(NACEX_NUM_CLI)%'
+
   # Le decimos a Symfony cómo construir el GoogleAnalyticsService.
   # Cuando pida los argumentos '$measurementId' y '$apiSecret' en su constructor,
   # Symfony le pasará los valores de los parámetros que hemos definido arriba.

@@ -24,6 +24,12 @@ class Pedido
     private ?string $googleClientId = null;
     // --- FIN DE LA MEJORA ---
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $agenciaEnvio = null;
+
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $bultos = 1;
+
     #[ORM\Column]
     private ?int $fiscalYear = null;
 
@@ -778,6 +784,38 @@ class Pedido
     public function setSubTotal(?string $subTotal): void
     {
         $this->subTotal = $subTotal;
+    }
+
+    /**
+     * @param string|null $agenciaEnvio
+     */
+    public function setAgenciaEnvio(?string $agenciaEnvio): void
+    {
+        $this->agenciaEnvio = $agenciaEnvio;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getAgenciaEnvio(): ?string
+    {
+        return $this->agenciaEnvio;
+    }
+
+    /**
+     * @param int|null $bultos
+     */
+    public function setBultos(?int $bultos): void
+    {
+        $this->bultos = $bultos;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getBultos(): ?int
+    {
+        return $this->bultos;
     }
 
     /**
