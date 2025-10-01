@@ -1,0 +1,65 @@
+{# templates/admin/button_documentar_envio.html.twig #}
+<li>
+    <a id="btn-documentar-envio" href="#">
+        <i class="fa fa-truck"></i> Documentar Envío
+    </a>
+</li>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- GESTIÓN DE LA VISIBILIDAD DEL SELECT DE SERVICIOS ---
+        const agenciaSelect = document.querySelector('select[id$="_agencia"]');
+        const servicioMrwSelect = document.querySelector('.servicio-mrw-select').closest('.form-group');
+
+        // function toggleServicioVisibility() {
+        //     if (agenciaSelect && servicioMrwSelect) {
+        //         // Solo se muestra el desplegable de servicios si se selecciona MRW (valor '2')
+        //         if (agenciaSelect.value === '2') {
+        //             servicioMrwSelect.style.display = 'block';
+        //         } else {
+        //             servicioMrwSelect.style.display = 'none';
+        //         }
+        //     }
+        // }
+        //
+        // if (agenciaSelect) {
+        //     agenciaSelect.addEventListener('change', toggleServicioVisibility);
+        //     toggleServicioVisibility(); // Se llama una vez para el estado inicial
+        // }
+
+        // --- LÓGICA DEL BOTÓN ---
+        const documentarBtn = document.getElementById('btn-documentar-envio');
+        if (documentarBtn) {
+            documentarBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const bultos = document.querySelector('input[id$="_bultos"]').value;
+                const agencia = agenciaSelect ? agenciaSelect.value : null;
+
+                if (!agencia) {
+                    alert('Por favor, selecciona una agencia de transporte.');
+                    return;
+                }
+
+                let url = '';
+
+                if (agencia === '2') { // MRW
+                    const servicio = document.querySelector('.servicio-mrw-select').value;
+                    if (!servicio) {
+                        alert('Por favor, selecciona un tipo de servicio para MRW.');
+                        return;
+                    }
+                    // Se construye la URL para la acción de MRW
+                    url = "{{ admin.generateUrl('documentarEnvioMrw', {'id': object.id, 'bultos': 'BULTOS_PLACEHOLDER', 'servicio': 'SERVICIO_PLACEHOLDER'}) }}";
+                    url = url.replace('BULTOS_PLACEHOLDER', bultos).replace('SERVICIO_PLACEHOLDER', servicio);
+                }
+                // Aquí iría la lógica para las otras agencias (Nacex, etc.)
+                // else if (agencia === '1') { ... }
+
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+        }
+    });
+</script>

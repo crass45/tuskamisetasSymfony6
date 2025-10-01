@@ -31,6 +31,8 @@ use Twig\Environment;
 
 final class PedidoAdmin extends AbstractAdmin
 {
+
+//https://www.mrw.es/seguimiento_envios/MRW_historico_nacional.asp?enviament=02804F056109
     // Inyección de todos los servicios necesarios
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -45,6 +47,7 @@ final class PedidoAdmin extends AbstractAdmin
 
 
     // --- INICIO DE LA CORRECCIÓN ---
+
     /**
      * Este método modifica directamente la consulta de la lista para asegurar
      * que siempre se ordene por fecha descendente por defecto.
@@ -56,7 +59,7 @@ final class PedidoAdmin extends AbstractAdmin
         // Si el usuario no ha hecho clic en ninguna columna para ordenar,
         // aplicamos nuestro orden por defecto.
 //        if (!$sortBy) {
-            $query->addOrderBy($query->getRootAliases()[0] . '.fecha', 'DESC');
+        $query->addOrderBy($query->getRootAliases()[0] . '.fecha', 'DESC');
 //        }
 
         return $query;
@@ -145,16 +148,20 @@ final class PedidoAdmin extends AbstractAdmin
         if ($pedido?->getContacto()) {
             $form
                 ->tab('Datos Facturación')
-                ->with('Datos del Cliente')
+                ->with('Datos del Cliente', ['class' => 'col-md-12'])
+                ->add('contacto', ModelListType::class)
                 ->add('contacto.nombre', TextType::class, ['label' => 'Nombre', 'disabled' => true])
                 ->add('contacto.apellidos', TextType::class, ['label' => 'Apellidos', 'disabled' => true])
-                ->add('contacto.direccionFacturacion.dir', TextType::class, ['label' => 'Dirección', 'disabled' => true])
-                // ... y así sucesivamente para los otros campos de solo lectura ...
+                ->add('contacto.cif', TextType::class, ['label' => 'DNI/CIF', 'disabled' => true])
+                ->add('contacto.telefonoOtro', TextType::class, ['label' => 'Teléfono', 'attr' => ['readonly' => true]])
+                ->add('contacto.telefonoMovil', TextType::class, ['label' => 'Teléfono Móvil', 'attr' => ['readonly' => true]])
                 ->end()
                 ->end();
             if (!$pedido->getRecogerEnTienda()) {
-                $form->tab('Dirección Envio')
-                    ->with('Datos de Envío')
+                $form
+                    ->tab('Dirección Envio')
+                    ->with('Datos de Envío', ['class' => 'col-md-12'])
+                    // --- INICIO DE LA MEJORA ---
                     ->add('agencia', ChoiceType::class, [
                         'mapped' => false,
                         'label' => 'Selecciona la Agencia de envío',
@@ -163,10 +170,29 @@ final class PedidoAdmin extends AbstractAdmin
                             'MRW' => '2',
                             'ViaXpress' => '3'
                         ],
-                        'required' => false
+                        'required' => false,
+                        'placeholder' => 'Elige una agencia...'
                     ])
-                    // ... resto de campos de envío no mapeados ...
-                    ->add('direccion', ModelListType::class) // Corregido: idDireccion -> direccion
+                    ->add('bultos', IntegerType::class, [
+                        'mapped' => false,
+                        'label' => 'Nº de Bultos',
+                        'data' => 1,
+                        'attr' => ['min' => 1]
+                    ])
+                    ->add('servicio', ChoiceType::class, [
+                        'mapped' => false,
+                        'label' => 'Tipo de Servicio (MRW)',
+                        'choices' => [
+                            'Normal' => '0205',
+                            '24h Aseguradas' => '0115',
+                            'Entrega Sabados' => '0015',
+                            'Baleares Maritimo' => '0370',
+                        ],
+                        'required' => false,
+                        'attr' => ['class' => 'servicio-mrw-select'] // Clase para el JS
+                    ])
+                    ->add('direccion', ModelListType::class)
+                    // --- FIN DE LA MEJORA ---
                     ->end()
                     ->end();
             }
@@ -183,8 +209,9 @@ final class PedidoAdmin extends AbstractAdmin
         }
     }
 
-    // --- FIN DE LA MEJORA ---
-    protected function configureDatagridFilters(DatagridMapper $datagrid): void
+// --- FIN DE LA MEJORA ---
+    protected
+    function configureDatagridFilters(DatagridMapper $datagrid): void
     {
         $datagrid
             ->add('nombre', null, ['label' => 'Código Presupuesto'])
@@ -216,7 +243,8 @@ final class PedidoAdmin extends AbstractAdmin
 
     }
 
-    protected function configureListFields(ListMapper $list): void
+    protected
+    function configureListFields(ListMapper $list): void
     {
         $list
             ->add('fecha', 'datetime', ['format' => 'd-m-Y'])
@@ -235,9 +263,10 @@ final class PedidoAdmin extends AbstractAdmin
             ]);
     }
 
-    // El método configureShowFields se migra de forma similar, corrigiendo rutas de propiedades...
+// El método configureShowFields se migra de forma similar, corrigiendo rutas de propiedades...
 
-    public function preUpdate(object $object): void
+    public
+    function preUpdate(object $object): void
     {
         if (!$object instanceof Pedido) {
             return;
@@ -277,7 +306,8 @@ final class PedidoAdmin extends AbstractAdmin
         }
     }
 
-    public function postUpdate(object $object): void
+    public
+    function postUpdate(object $object): void
     {
         if (!$object instanceof Pedido) {
             return;
@@ -298,17 +328,19 @@ final class PedidoAdmin extends AbstractAdmin
         $this->entityManager->flush();
     }
 
-    protected function configureRoutes(RouteCollectionInterface $collection): void
+    protected
+    function configureRoutes(RouteCollectionInterface $collection): void
     {
         $collection->add('showPDF', $this->getRouterIdParameter() . '/show-pdf');
         $collection->add('showOrdenPedido', $this->getRouterIdParameter() . '/show-orden-pedido');
         $collection->add('showProforma', $this->getRouterIdParameter() . '/show-proforma');
         $collection->add('documentarEnvioNACEX', $this->getRouterIdParameter() . '/documentar-envio-nacex/{agencia}/{bultos}/{servicio}');
-        $collection->add('verEtiquetas', $this->getRouterIdParameter() . '/ver-etiquetas');
-        $collection->add('editarPedido', $this->getRouterIdParameter().'/editar-pedido');
+        $collection->add('verEtiquetas', $this->getRouterIdParameter().'/ver-etiquetas');
+        $collection->add('editarPedido', $this->getRouterIdParameter() . '/editar-pedido');
         $collection->add('facturar', $this->getRouterIdParameter() . '/facturar');
         $collection->add('showFactura', $this->getRouterIdParameter() . '/show-factura');
         $collection->add('recalcular', $this->getRouterIdParameter() . '/recalcular');
+        $collection->add('documentarEnvioMrw', $this->getRouterIdParameter().'/documentar-envio-mrw/{bultos}/{servicio}');
         $collection->add('reloadEnvio', 'reload-envio');
         $collection->remove('create');
     }
@@ -316,7 +348,8 @@ final class PedidoAdmin extends AbstractAdmin
     /**
      * Se añaden los botones a la vista de edición.
      */
-    protected function configureActionButtons(array $buttonList, string $action, ?object $object = null): array
+    protected
+    function configureActionButtons(array $buttonList, string $action, ?object $object = null): array
     {
         if (in_array($action, ['edit', 'show']) && $object) {
             $buttonList['showPDF'] = [
@@ -335,6 +368,21 @@ final class PedidoAdmin extends AbstractAdmin
                 'template' => 'admin/button_edit_as_cart.html.twig',
             ];
 
+            // --- INICIO DE LA MEJORA ---
+            // Se añade lógica condicional para mostrar el botón correcto
+            if ($object->getSeguimientoEnvio()) {
+                // Si el pedido ya ha sido enviado, se muestra el botón para ver la etiqueta
+                $buttonList['verEtiquetas'] = [
+                    'template' => 'admin/button_ver_etiqueta.html.twig',
+                ];
+            } else {
+                // Si no, se muestra el botón para documentar el envío
+                $buttonList['documentarEnvio'] = [
+                    'template' => 'admin/button_documentar_envio.html.twig',
+                ];
+            }
+            // --- FIN DE LA MEJORA ---
+
             if ($object->getFactura()) {
                 $buttonList['showFactura'] = [
                     'template' => 'admin/button_show_factura.html.twig',
@@ -349,7 +397,8 @@ final class PedidoAdmin extends AbstractAdmin
         return $buttonList;
     }
 
-    public function isPedidoAProveedor(ProxyQueryInterface $queryBuilder, string $alias, string $field, FilterData $value): bool
+    public
+    function isPedidoAProveedor(ProxyQueryInterface $queryBuilder, string $alias, string $field, FilterData $value): bool
     {
         // Si no se ha seleccionado ninguna opción en el filtro, no hacemos nada
         if (!$value->hasValue()) {

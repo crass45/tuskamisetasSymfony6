@@ -7,6 +7,11 @@ parameters:
   # Se mapean las variables de entorno de Google a parámetros que Symfony entiende
   ga.measurement_id: '%env(GOOGLE_TAG_MANAGER_ID)%'
   ga.api_secret: '%env(GCP_API_KEY)%'
+  mrw.wsdl_url: '%env(MRW_WSDL_URL)%'
+  mrw.franquicia: '%env(MRW_FRANQUICIA)%'
+  mrw.abonado: '%env(MRW_ABONADO)%'
+  mrw.usuario: '%env(MRW_USUARIO)%'
+  mrw.password: '%env(MRW_PASSWORD)%'
 
 services:
     # default configuration for services in *this* file
@@ -30,7 +35,21 @@ services:
       tags:
         - { name: twig.extension }
 
+    App\Service\MrwApiService:
+      arguments:
+        $wsdlUrl: '%mrw.wsdl_url%'
+        $franquicia: '%mrw.franquicia%'
+        $abonado: '%mrw.abonado%'
+        $usuario: '%mrw.usuario%'
+        $password: '%mrw.password%'
 
+  # Le decimos a Symfony cómo construir el GoogleAnalyticsService.
+  # Cuando pida los argumentos '$measurementId' y '$apiSecret' en su constructor,
+  # Symfony le pasará los valores de los parámetros que hemos definido arriba.
+    App\Service\GoogleAnalyticsService:
+      arguments:
+        $measurementId: '%ga.measurement_id%'
+        $apiSecret: '%ga.api_secret%'
 
   # --- INICIO DE LA CORRECCIÓN ---
   # Le decimos a Symfony que nuestra nueva clase UploadListener existe
@@ -62,13 +81,6 @@ services:
     App\Admin\OfertaAdmin:
       tags:
         - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Oferta, group: "Web", label: "Ofertas" }
-  # Le decimos a Symfony cómo construir el GoogleAnalyticsService.
-  # Cuando pida los argumentos '$measurementId' y '$apiSecret' en su constructor,
-  # Symfony le pasará los valores de los parámetros que hemos definido arriba.
-    App\Service\GoogleAnalyticsService:
-      arguments:
-        $measurementId: '%ga.measurement_id%'
-        $apiSecret: '%ga.api_secret%'
   # ===============================
   # GRUPO: Blog
   # ===============================

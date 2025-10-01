@@ -10,6 +10,7 @@ use App\Model\Presupuesto;
 use App\Model\PresupuestoProducto;
 use App\Model\PresupuestoTrabajo;
 use App\Service\GoogleAnalyticsService;
+use App\Service\MrwApiService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
 use Sonata\AdminBundle\Controller\CRUDController;
@@ -25,7 +26,8 @@ final class PedidoCRUDController extends CRUDController
     public function __construct(
         private Pdf $snappy,
         private GoogleAnalyticsService $googleAnalyticsService,
-        private EntityManagerInterface $em
+        private EntityManagerInterface $em,
+        private MrwApiService $mrwApiService // Se inyecta el servicio de MRW
     ) {
     }
 
@@ -116,13 +118,6 @@ final class PedidoCRUDController extends CRUDController
         $pedido = $this->admin->getSubject();
         // TODO: Tu lógica para conectar con la API de Nacex/Enviália.
         return new Response(sprintf('Documentando envío para %s con %s', $pedido->getNombre(), $agencia));
-    }
-
-    public function verEtiquetasAction(Request $request): Response
-    {
-        $pedido = $this->admin->getSubject();
-        // TODO: Tu lógica para generar las etiquetas de envío en PDF.
-        return new Response(sprintf('Etiquetas para %s', $pedido->getNombre()));
     }
 
 
@@ -269,5 +264,75 @@ final class PedidoCRUDController extends CRUDController
 
         // Redirigimos al carrito del frontend
         return new RedirectResponse($this->generateUrl('app_cart_show'));
+    }
+
+    /**
+     * NUEVA ACCIÓN: Documenta un envío con MRW.
+     */
+    public function documentarEnvioMrwAction(Request $request, int $bultos, string $servicio): RedirectResponse
+    {
+        $pedido = $this->assertObjectExists($request, true);
+        $this->admin->checkAccess('edit', $pedido);
+
+        if ($pedido->getSeguimientoEnvio()) {
+            $this->addFlash('sonata_flash_error', 'Este envío ya ha sido documentado anteriormente.');
+            return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+        }
+
+        // Llama al servicio para gestionar la lógica de la API
+        $urlSeguimiento = $this->mrwApiService->documentarEnvio($pedido,$bultos, $servicio);
+
+        if ($urlSeguimiento) {
+            $this->addFlash('sonata_flash_success', 'Envío documentado correctamente con MRW. Seguimiento: ' . $urlSeguimiento);
+        } else {
+            $this->addFlash('sonata_flash_error', 'Ha ocurrido un error al documentar el envío con MRW.');
+        }
+
+        return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+    }
+
+    /**
+     * NUEVA ACCIÓN: Muestra la etiqueta de envío correspondiente a la agencia.
+     */
+    public function verEtiquetasAction(Request $request): Response
+    {
+        $pedido = $this->assertObjectExists($request, true);
+        $this->admin->checkAccess('show', $pedido);
+
+        $urlSeguimiento = $pedido->getSeguimientoEnvio();
+
+        if (!$urlSeguimiento) {
+            $this->addFlash('sonata_flash_error', 'Este pedido no tiene un envío documentado.');
+            return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+        }
+
+        if (str_contains($urlSeguimiento, 'mrw.es')) {
+            // Es un envío de MRW
+            parse_str(parse_url($urlSeguimiento, PHP_URL_QUERY), $queryParams);
+            $numeroEnvio = $queryParams['enviament'] ?? null;
+
+            if (!$numeroEnvio) {
+                $this->addFlash('sonata_flash_error', 'No se pudo extraer el número de envío de la URL de seguimiento de MRW.');
+                return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+            }
+
+            $pdfData = $this->mrwApiService->getEtiqueta($numeroEnvio);
+
+            if ($pdfData) {
+                return new Response(
+                    $pdfData,
+                    200,
+                    ['Content-Type' => 'application/pdf', 'Content-Disposition' => 'inline; filename="etiqueta_mrw.pdf"']
+                );
+            } else {
+                $this->addFlash('sonata_flash_error', 'No se pudo obtener la etiqueta de MRW.');
+                return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+            }
+        }
+
+        // Aquí iría la lógica para las otras agencias (Nacex, Envialia, etc.)
+
+        $this->addFlash('sonata_flash_warning', 'No se ha implementado la visualización de etiquetas para esta agencia de transporte.');
+        return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
     }
 }
