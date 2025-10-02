@@ -1,0 +1,27 @@
+{% extends "emails/plantillaMail.html.twig" %}
+
+{% block texto %}
+    <h2>¡Nuevo pedido en la web!</h2>
+    <p>
+        Se ha recibido una nueva solicitud de presupuesto en la web con el número <strong>{{ pedido.nombre }}</strong>.
+    </p>
+    <br>
+
+    {# Botón destacado para ir directamente al pedido en el admin #}
+    <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; margin-top: 20px; border-radius: 4px; text-align: center;">
+        <p>Puedes revisar y gestionar el pedido haciendo clic en el siguiente enlace:</p>
+        <p style="text-align: center; margin: 20px 0;">
+            <a href="{{ admin_url }}" style="background-color: #0d6efd; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                Ver Pedido #{{ pedido.nombre }} en el Admin
+            </a>
+        </p>
+    </div>
+    <br>
+
+    {% if pedido.observaciones %}
+        <h3>Observaciones del Cliente:</h3>
+        <blockquote style="border-left: 4px solid #ccc; padding-left: 15px; margin: 15px 0;">
+            {{ pedido.observaciones|nl2br }}
+        </blockquote>
+    {% endif %}
+{% endblock %}

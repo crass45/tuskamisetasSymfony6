@@ -874,7 +874,7 @@ class Pedido
      */
     public function necesitaPagoOnline(): bool
     {
-        return !$this->compruebaTrabajos();
+        return !$this->compruebaTrabajos() && $this->hasStockTodo();
     }
 
     // --- FIN DE LA CORRECCIÓN ---
@@ -910,6 +910,18 @@ class Pedido
 //            $this->lineasString = $this->lineasString . $linea->getCantidad() . ":" . $linea->getIdProducto()->getModelo()->nombre . ", ";
         }
         return $trabajos;
+    }
+
+    public function hasStockTodo(){
+//devuelve true si hay stock de todo y no hay productos con compra minima
+        foreach ($this->lineas as $linea) {
+            if ($linea->getProducto() != null) {
+                if (!$linea->getProducto()->getModelo()->getProveedor()->isControlDeStock() || $linea->getProducto()->getModelo()->getProveedor()->getCompraMinima()){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 }

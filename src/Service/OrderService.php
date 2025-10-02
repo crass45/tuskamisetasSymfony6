@@ -77,7 +77,7 @@ class OrderService
         $this->em->flush();
 
         $empresa = $this->em->getRepository(Empresa::class)->findOneBy([]);
-        $this->sendConfirmationEmails($pedido, $empresa);
+//        $this->sendConfirmationEmails($pedido, $empresa);
         return $pedido;
     }
 
@@ -195,54 +195,6 @@ class OrderService
         $pedido->setIva($iva);
         $pedido->setTotal($total);
     }
-
-    private function sendConfirmationEmails(Pedido $pedido, Empresa $empresa): void
-    {
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Agrupamos las líneas del pedido por un identificador único de sus personalizaciones
-        $groupedLines = [];
-        foreach ($pedido->getLineas() as $linea) {
-            $trabajoIds = [];
-            // Recogemos los IDs de todos los trabajos asociados a esta línea
-            foreach ($linea->getPersonalizaciones() as $pedidoLineaHasTrabajo) {
-                // Usamos el ID del PedidoTrabajo, que es único para cada personalización
-                $trabajoIds[] = $pedidoLineaHasTrabajo->getPedidoTrabajo()->getId();
-            }
-
-            // Si no hay trabajos, la clave es simple
-            if (empty($trabajoIds)) {
-                $key = 'sin-personalizacion';
-            } else {
-                // Ordenamos los IDs para que la clave sea consistente y los unimos
-                sort($trabajoIds);
-                $key = implode('-', $trabajoIds);
-            }
-
-            $groupedLines[$key][] = $linea;
-        }
-        // --- FIN DE LA CORRECCIÓN ---
-
-        // Enviar email al administrador
-        $adminEmail = (new Email())
-            ->from('comercial@tuskamisetas.com')
-            ->to('comercial@tuskamisetas.com')
-            ->subject('Nuevo Pedido Recibido: ' . $pedido)
-            // 2. Pasamos el nuevo array agrupado a la plantilla
-            ->html($this->twig->render('emails/correoPedido.html.twig', array('pedido' => $pedido,'grouped_lines'=>$groupedLines, 'url_pedido' => 'https://tuskamisetas.com/admin/ss/tienda/pedido/' . $pedido->getId() . '/edit', 'metodoPago' => 'Transferencia Bancaría', 'emailTitulo' => '¡Nuevo pedido en la tienda!', 'emailSubtitulo' => 'Se ha realizado un nuevo pedido en la web', 'emailTexto' => 'puedes ver más detalles desde la administración.<br><br><b>Observaciones:</b> ' . $pedido->getObservaciones(), 'empresa' => $empresa)));
-
-        $this->mailer->send($adminEmail);
-
-        // Enviar email al cliente
-        $clientEmail = (new Email())
-            ->from('comercial@tuskamisetas.com')
-            ->to($pedido->getContacto()->getUsuario()->getEmail())
-            ->subject('Confirmación de tu pedido en Tuskamisetas: ' . $pedido)
-            // 3. Pasamos el mismo array agrupado a la plantilla del cliente
-            ->html($this->twig->render('emails/correoPedido.html.twig', array('pedido' => $pedido,'grouped_lines'=>$groupedLines, 'url_pedido' => 'https://tuskamisetas.com/admin/ss/tienda/pedido/' . $pedido->getId() . '/edit', 'metodoPago' => 'Transferencia Bancaría', 'emailTitulo' => '¡Nuevo pedido en la tienda!', 'emailSubtitulo' => 'Se ha realizado un nuevo pedido en la web', 'emailTexto' => 'puedes ver más detalles desde la administración.<br><br><b>Observaciones:</b> ' . $pedido->getObservaciones(), 'empresa' => $empresa)));
-        $this->mailer->send($clientEmail);
-    }
-
-
 
     /**
      * NUEVO MÉTODO: Envía los correos de confirmación cuando un pago es exitoso.

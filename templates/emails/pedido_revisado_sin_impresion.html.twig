@@ -1,22 +1,74 @@
 {% extends "emails/plantillaMail.html.twig" %}
 
 {% block texto %}
-    <h2>¡Tu pedido {{ pedido.nombre }} ha sido revisado!</h2>
-    <p>Hemos confirmado que todos los artículos de tu pedido están correctos y listos para ser preparados. Ahora solo queda realizar el pago para que podamos enviártelo.</p>
+    <h2>¡Tu pedido {{ pedido.nombre }} ha sido revisado y confirmado!</h2>
+    <p>Hemos confirmado que todos los artículos de tu pedido están correctos y listos para ser preparados. A continuación te mostramos el resumen final.</p>
     <br>
 
-    {# Información de plazos #}
+    {# 1. Resumen del pedido en una tabla limpia #}
+    <h3>Resumen del Pedido</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px;">
+        <thead>
+        <tr style="background-color: #f2f2f2; text-align: left;">
+            <th style="padding: 10px; border: 1px solid #ddd;">Producto</th>
+            <th style="padding: 10px; border: 1px solid #ddd;">Precio Ud.</th>
+            <th style="padding: 10px; border: 1px solid #ddd; text-align: center;">Cant.</th>
+            <th style="padding: 10px; border: 1px solid #ddd; text-align: right;">Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        {# Como este pedido no tiene personalización, el bucle será más simple #}
+        {% for group_key, lineas_in_group in grouped_lines %}
+            {% for linea in lineas_in_group %}
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        {{ linea.producto.modelo.nombre | capitalize }}
+                        <br><small style="color: #777;">Talla: {{ linea.producto.talla }} | Color: {{ linea.producto.color | capitalize }}</small>
+                    </td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">{{ linea.precio | number_format(2, ',', '.') }} €</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">{{ linea.cantidad }}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">{{ (linea.precio * linea.cantidad) | number_format(2, ',', '.') }} €</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        {# Sección de totales completa #}
+        <tr>
+            <td colspan="2"></td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;"><strong>Subtotal:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">{{ pedido.subTotal | number_format(2, ',', '.') }} €</td>
+        </tr>
+        <tr>
+            <td colspan="2"></td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;"><strong>Envío:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">{{ pedido.envio | number_format(2, ',', '.') }} €</td>
+        </tr>
+        <tr>
+            <td colspan="2"></td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;"><strong>IVA:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">{{ pedido.iva | number_format(2, ',', '.') }} €</td>
+        </tr>
+        <tr style="font-weight: bold; background-color: #f2f2f2;">
+            <td colspan="2"></td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;"><strong>TOTAL A PAGAR:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">{{ pedido.total | number_format(2, ',', '.') }} €</td>
+        </tr>
+        </tfoot>
+    </table>
+
+    {# 2. Plazos de entrega #}
     <h3>Plazos de Entrega Estimados</h3>
-    <p>Una vez realizado el pago, el plazo de entrega estimado para tus artículos sin impresión es:</p>
+    <p>Una vez realizado el pago, el plazo de entrega estimado para tus artículos es:</p>
     <ul style="line-height: 1.6;">
         <li><b>Servicio Normal:</b> Entre el {{ fechaEntregaNormalMin|format_datetime(locale='es', pattern='d \'de\' MMMM') }} y el {{ fechaEntregaNormalMax|format_datetime(locale='es', pattern='d \'de\' MMMM') }}.</li>
     </ul>
     {% if empresa.isVacacionesActivas() %}
-        <blockquote style="border-left: 4px solid #ccc; padding-left: 15px; margin: 15px 0;"><b>Importante:</b> Del {{ empresa.fechaInicioVacaciones|format_datetime(locale='es', pattern='d \'de\' MMMM') }} al {{ empresa.fechaFinVacaciones|format_datetime(locale='es', pattern='d \'de\' MMMM') }} permaneceremos cerrados por vacaciones. Los plazos de entrega no incluyen este periodo.</blockquote>
+        <blockquote style="border-left: 4px solid #ccc; padding-left: 15px; margin: 15px 0;"><b>Importante:</b> Del {{ empresa.fechaInicioVacaciones|format_datetime(locale='es', pattern='d \'de\' MMMM') }} al {{ empresa.fechaFinVacaciones|format_datetime(locale='es', pattern='d \'de\' MMMM') }} permaneceremos cerrados por vacaciones.</blockquote>
     {% endif %}
     <br>
 
-    {# Opciones de pago claras #}
+    {# 3. Opciones de pago claras #}
     <h3>Realiza el Pago</h3>
     <p>Puedes realizar el pago mediante tarjeta o transferencia:</p>
     <ul style="line-height: 1.6;">

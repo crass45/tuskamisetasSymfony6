@@ -10,7 +10,9 @@ use App\Entity\Pedido;
 use App\Form\Type\ContactoType;
 use App\Form\Type\DireccionEnvioType;
 use App\Model\Carrito;
+use App\Repository\EstadoRepository;
 use App\Service\OrderService;
+use App\Service\PedidoMailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -79,7 +81,7 @@ class CheckoutController extends AbstractController
 
     #[Route('/process', name: 'app_checkout_process', methods: ['POST'])]
     #[IsGranted('ROLE_USER')]
-    public function processAction(Request $request, SessionInterface $session): Response
+    public function processAction(Request $request, SessionInterface $session, PedidoMailerService $mailerService, EstadoRepository $estadoRepository, EntityManagerInterface $em): Response
     {
         $carrito = $session->get('carrito');
         if (!$carrito instanceof Carrito) {
@@ -102,15 +104,6 @@ class CheckoutController extends AbstractController
             var_dump($tipoEnvio);
 
             if ($tipoEnvio === 2) {
-
-//                if ($formEnvio->isSubmitted() && $formEnvio->isValid()) {
-//                    $direccionEnvio = $formEnvio->getData();
-//                    $direccionEnvio->setIdContacto($contacto);
-//                } else {
-//                    $this->addFlash('error', 'Por favor, revisa los datos de la nueva dirección de envío.');
-//                    return $this->render('checkout/address.html.twig', ['contacto' => $contacto, 'formContacto' => $formContacto, 'formEnvio' => $formEnvio, 'carrito' => $carrito]);
-//                }
-
                 ///PONEMOS LA LOGICA QUE TENIAMOS EN NUESTRO ANTERIOR SYMFONY
                 if ($formEnvio->isSubmitted() && $formEnvio->isValid()) {
                     var_dump("ISSUBMITEDDDD");
@@ -177,11 +170,34 @@ class CheckoutController extends AbstractController
             if($tipoEnvio===3){
                 $pedido->setRecogerEnTienda(true);
             }
-            $session->remove('carrito');
+
+            // 3. Notificamos SIEMPRE al admin
+            $mailerService->sendAdminNotificationEmail($pedido);
+
 
             if ($pedido->necesitaPagoOnline()) {
+                // 4. Cambiamos el estado a "Revisado"
+                //    (Asumimos que el estado 'Revisado' tiene ID = 3, ajústalo si es diferente)
+                $revisadoStatus = $estadoRepository->find(3);
+                if ($revisadoStatus) {
+                    $pedido->setEstado($revisadoStatus);
+                    $em->flush(); // Guardamos el nuevo estado
+
+                    // 5. Enviamos el correo de "Pedido Revisado sin Impresión"
+                    //    (El servicio ya sabe qué plantilla usar gracias a la lógica que implementamos)
+                    $mailerService->sendEmailForStatus($pedido);
+                }
+
+                // 6. Limpiamos el carrito y redirigimos DIRECTAMENTE al pago
+                $session->remove('carrito');
+                $this->addFlash('success', 'Tu pedido ha sido confirmado y está listo para el pago.');
+
                 return $this->redirectToRoute('app_payment_start', ['id' => $pedido->getId()]);
             }
+            //ENVIAMOS EL EMAIL AL CIENTE
+            $mailerService->sendNewOrderConfirmationEmail($pedido);
+//            $this->orderService->sendConfirmationEmails($pedido);
+            $session->remove('carrito');
             return $this->redirectToRoute('app_checkout_success', ['id' => $pedido->getId()]);
         }
 
