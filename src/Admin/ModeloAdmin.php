@@ -101,7 +101,11 @@ final class ModeloAdmin extends AbstractAdmin
                 'required' => false,
             ])
             ->add('descripcion', CKEditorType::class, [
-                'label' => 'Descripción Larga',
+                'label' => 'Descripción',
+                'required' => false,
+            ])
+            ->add('descripcionTusKamisetas', CKEditorType::class, [
+                'label' => 'Descripción Tuskamisetas (no se borra cuando actualiza producto)',
                 'required' => false,
             ])
             ->end()

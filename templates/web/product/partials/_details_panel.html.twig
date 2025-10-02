@@ -5,8 +5,8 @@
     <div class="hidden-xs">
         <h1 style="font-size: 28px; margin: 0px;" itemprop="name">{{ modelo.nombre | upper }}</h1>
         <p itemprop="name">
-{#            <a style="color: black; font-size: 18px" href="{{ path('app_catalog_listing', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}">#}
-                <a style="color: black; font-size: 18px" href="#">
+            {#            <a style="color: black; font-size: 18px" href="{{ path('app_catalog_listing', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}"> #}
+            <a style="color: black; font-size: 18px" href="#">
                 {{ modelo.fabricante.nombre }}
             </a>
         </p>
@@ -17,9 +17,12 @@
     </div>
 
     <p itemprop="description"><b>{% trans %}Descripción{% endtrans %}: </b>{{ modelo.descripcion | raw }}</p>
+    <p>{{ modelo.descripcionTuskamisetas | raw }}</p>
     {% if modelo.composicion %}
         <p><b>{% trans %}Composición{% endtrans %}:</b> {{ modelo.composicion | raw }}</p>
     {% endif %}
+
+    <p><b>{% trans %}Observaciones{% endtrans %}:</b>{{ modelo.observaciones | raw }}</p>
 
     {# --- INICIO DE LA CORRECCIÓN --- #}
     {# Volvemos a calcular la condición para saber si estamos en la vista compleja #}
@@ -29,12 +32,55 @@
         <div class="colores">
             <div style="text-align: center; margin-bottom: 30px">
                 {% for productoColor in modelo.getColoresProductos() %}
-                    <div class="colorProducto colorProductoPresupuesto {{ productoColor.color.id }}" data-modelo="{{ modelo.id }}" data-color="{{ productoColor.color.id }}" style="display: inline-block; position: relative;">
-                        <a data-toggle="tooltip" title="{{ productoColor.color.nombre |upper }}">
-                            {% if productoColor.imagen %}
-                                <img src="{{ sonata_path(productoColor.imagen, 'mini') }}" data-imagen-grande="{{ sonata_path(productoColor.imagen, 'wide') }}" alt="{{ productoColor.color.nombre }}">
+
+                    <div class=" colorProductoPresupuesto {{ productoColor.color.id }}"
+                            {% if productoColor.viewsImages!=null %}
+                                data-toggle="modal" data-target="#fotos-detalle-modal" data-imagenes="{{ productoColor.viewsImages }}"
+                            {% endif %}
+                            {% if (productoColor.imagenDescargada) %}
+                                data-imagen="{{ sonata_path(productoColor.imagen, 'mini') }}"
                             {% else %}
-                                <div style="width: 40px; height: 40px; background-color: {{ productoColor.color.codigoRGB }}; border: 1px solid #ccc;" data-imagen-grande="{{ productoColor.modelo.urlImage }}"></div>
+                                data-imagen="{{ productoColor.modelo.urlImage }}"
+                            {% endif %}
+                         data-modelo="{{ productoColor.modelo.id }}"
+                         data-color="{{ productoColor.color.id }}"
+                         style="display: inline-block; position: relative;">
+                        <a data-toggle="tooltip" title="{{ productoColor.color.nombre |upper }}"
+                           style="height: 100%; width: 100%; display: inline-block">
+                            {#                            {% if modelo.isTallaNino(productoColor.color) %} #}
+                            {% if productoColor.isTallaNino() %}
+                                <span style="position: absolute; bottom: 0; right: 0" class="smallCircle">
+                                    <i class="fa fa-child" aria-hidden="true"
+                                       style="height: 16px; width: 16px; color: white"
+                                       title="Tallas infantiles disponibles" name="Tallas infantiles disponibles"></i>
+                                        </span>
+                            {% endif %}
+                            {% if (productoColor.urlImage is defined and productoColor.urlImage != "") or productoColor.imagenDescargada %}
+                                <img
+                                        class="  {{ productoColor.color.id }} lazy"
+                                        src="{{ asset('images/dummy40.png') }}"
+                                        {% if (productoColor.imagenDescargada) %}
+                                            data-src="{{ sonata_path(productoColor.imagen, 'mini') }}"
+                                            data-imagen="{{ sonata_path(productoColor.imagen, 'wide') }}"
+                                        {% else %}
+                                            data-src="{{ productoColor.urlImage }}"
+                                            data-imagen="{{ productoColor.urlImage }}"
+                                        {% endif %}
+
+                                        data-modelo="{{ productoColor.modelo.id }}"
+                                        data-color="{{ productoColor.color.id }}"
+                                        style="width: 40px; height: auto;display: inline-block; border: 1px solid #c8c6c6;"
+                                        alt="{{ modelo.nombre }} {{ productoColor.color.nombre }}"
+                                        title="{{ modelo.nombre }} {{ productoColor.color.nombre }}">
+                            {% else %}
+                                <div class="  {{ productoColor.color.id }}"
+                                     src="{{ productoColor.urlImage }}"
+                                     data-imagen="{{ productoColor.modelo.urlImage }}"
+                                     data-modelo="{{ productoColor.modelo.id }}"
+                                     data-color="{{ productoColor.color.id }}"
+                                     style="width: 40px; height: 40px;display: inline-block; border: 1px solid #c8c6c6;background-color: {{ productoColor.color.codigoRGB }};">
+                                    &nbsp;
+                                </div>
                             {% endif %}
                         </a>
                     </div>
@@ -54,12 +100,75 @@
             <meta itemprop="name" content="TusKamisetas"/>
         </span>
         <meta itemprop="availability" content="InStock"/>
-        <meta itemprop="url" content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
+        <meta itemprop="url"
+              content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
     </p>
 
     <p><b>{% trans %}Tallas{% endtrans %}:</b> {{ modelo.getTallasString() }}</p>
 
+
     {# ... (Lógica para la ficha técnica y 'Ver medidas') ... #}
+    {% if modelo.getUrlFichaTecnica() != null and modelo.getUrlFichatecnica()!= "" %}
+        <div>
+            <a rel="nofollow"
+               href="{{ (modelo.getUrlFichaTecnica()) }}"
+               target="_blank">
+                <div class="btn btn-info btn-sm product-info-bt.pdf" style="display: inline-block; width: 100%">
+                    {% trans %}
+                        Ficha Técnica
+                    {% endtrans %}
+                </div>
+            </a>
+        </div>
+    {% else %}
+            {% if modelo.fichaTecnica != null %}
+                <a rel="nofollow"
+                   href="{{ (path('sonata_media_download', {'id': modelo.fichaTecnica.id})) }}"
+                   target="_blank">
+                    <div class="btn btn-info btn-sm product-info-bt.pdf"
+                         style="display: inline-block; margin-right: 15px;">
+                        {% trans %}
+                            Ficha Técnica
+                        {% endtrans %}
+                    </div>
+                </a>
+                {% if modelo.getDrawing is defined  and modelo.getDrawing != null %}
+                    <div class="btn calculaPresupuesto" style="display: inline-block"
+                         data-toggle="modal" data-target="#medidas-talla-modal">{% trans %}Ver medidas{% endtrans %}
+                    </div>
+                {% endif %}
+            {% else %}
+
+                {# Si es JHK MUESTRA EL PANTONE #}
+                {% if modelo.proveedor.id ==  3239 %}
+                    <a rel="nofollow"
+                       href="{{ ('https://www.jhktshirt.com/es/catalogo/datasheet/document/' ~ modelo.referencia |lower)}}"
+                       download="Ficha-Tecnica{{ modelo.referencia }}" target="_blank">
+                        <div class="btn btn-info btn-sm product-info-bt.pdf" style="display: inline-block">
+                            {% trans %}Ficha Técnica{% endtrans %}
+                        </div>
+                    </a>
+
+                    <a rel="nofollow"
+                       href="{{ asset('images/Pantone%20Digital_Colores%20JHK.PDF') }}"
+                       target="_blank">
+                        <div class="btn btn-info btn-sm product-info-bt.pdf"
+                             style="display: inline-block; margin-left: 15px">
+                            {% trans %}
+                                Equivalencias de Color (Pantone)
+                            {% endtrans %}
+                        </div>
+                    </a>
+                {% else %}
+                    <div class="btn btn-info btn-bg product-info-bt" style="display: inline-block; width: 100%;"
+                         data-toggle="modal" data-target="#medidas-talla-modal">{% trans %}Ver medidas{% endtrans %}
+                    </div>
+                {% endif %}
+        {% endif %}
+    {% endif %}
+
+
+
 
     {% if modelo.getTarif() %}
         <p><b>{% trans %}PRECIO POR CANTIDADES{% endtrans %}</b></p>
@@ -76,7 +185,8 @@
 
         {% if modelo.hasColor or modelo.hasBlanco %}
             <div class="table-responsive">
-                <table class="table-responsive" style="text-align: center; font-size: 12px;width: 100%; margin-top: 0px">
+                <table class="table-responsive"
+                       style="text-align: center; font-size: 12px;width: 100%; margin-top: 0px">
                     {# ... (Tabla de precios para adultos) ... #}
                 </table>
             </div>
