@@ -1,0 +1,30 @@
+{% extends "emails/plantillaMail.html.twig" %}
+
+{% block texto %}
+    {# Título claro y tranquilizador #}
+    <h2>Hemos detectado una incidencia en tu pedido {{ pedido.nombre }}</h2>
+    <p>
+        Nuestro equipo ha revisado tu pedido y ha encontrado una pequeña incidencia que necesitamos resolver contigo para poder continuar.
+    </p>
+    <br>
+
+    {# La incidencia destacada en un cuadro para que sea fácil de leer #}
+    <div style="background-color: #fffbe6; border: 1px solid #ffe58f; padding: 15px; margin-top: 20px; border-radius: 4px;">
+        <h4 style="margin-top: 0;">Detalles de la incidencia:</h4>
+        <div style="font-size: 1.1em; line-height: 1.6;">
+            {{ pedido.incidencias | raw }}
+        </div>
+    </div>
+    <br>
+
+    {# Siguientes pasos claros para el cliente #}
+    <h3>¿Qué puedes hacer?</h3>
+    <p>
+        Para solucionarlo, por favor, <strong>responde a este mismo correo electrónico</strong> y nuestro equipo comercial se pondrá en contacto contigo a la mayor brevedad posible.
+    </p>
+    <p>
+        Lamentamos las molestias que esto pueda ocasionar. Estamos a tu disposición para resolverlo cuanto antes.
+    </p>
+    <br>
+    <p>Un saludo.</p>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "emails/plantillaMail.html.twig" %}
+
+{% block texto %}
+    <h2>¡Hemos revisado tu pedido {{ pedido.nombre }}!</h2>
+    <p>Ya hemos preparado el montaje digital con tus diseños. Por favor, sigue los siguientes pasos para continuar:</p>
+    <br>
+
+    {# Paso 1: Acción más importante destacada #}
+    <div style="background-color: #e7f3fe; border: 1px solid #d1e7fd; padding: 15px; margin-top: 20px; border-radius: 4px;">
+        <h3 style="margin-top: 0;">Paso 1: Revisa y Aprueba tu Diseño</h3>
+        <p>Es muy importante que revises el montaje para asegurar que todo está correcto (diseños, colores, tallas y posiciones). Puedes descargarlo desde este enlace:</p>
+        <p style="text-align: center; margin: 20px 0;">
+            <a href="{{ pedido.montaje }}" style="background-color: #0d6efd; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                Descargar Montaje {{ pedido.referenciaInterna|upper }}
+            </a>
+        </p>
+{#        <p>Si todo es correcto, solo tienes que responder a este correo dándonos tu conformidad para que podamos pasar el pedido a producción.</p>#}
+    </div>
+    <br>
+
+    {# Paso 2: Información clara sobre los plazos #}
+    <h3>Paso 2: Plazos de Entrega Estimados</h3>
+    <p>Una vez tengamos tu confirmación y el pago esté realizado, estos son los plazos de entrega estimados:</p>
+    <ul style="line-height: 1.6;">
+        <li><b>Servicio Normal:</b> Entre el {{ fechaEntregaNormalMin|format_datetime(locale='es', pattern='d \'de\' MMMM') }} y el {{ fechaEntregaNormalMax|format_datetime(locale='es', pattern='d \'de\' MMMM') }}.</li>
+        <li><b>Servicio Exprés:</b> A partir del {{ fechaEntregaExpress|format_datetime(locale='es', pattern='d \'de\' MMMM') }}. <sub>(conlleva un coste adicional)</sub></li>
+    </ul>
+    {% if empresa.isVacacionesActivas() %}
+        <blockquote style="border-left: 4px solid #ccc; padding-left: 15px; margin: 15px 0;"><b>Importante:</b> Del {{ empresa.fechaInicioVacaciones|format_datetime(locale='es', pattern='d \'de\' MMMM') }} al {{ empresa.fechaFinVacaciones|format_datetime(locale='es', pattern='d \'de\' MMMM') }} permaneceremos cerrados por vacaciones. Los plazos de entrega no incluyen este periodo.</blockquote>
+    {% endif %}
+    <br>
+
+    {# Paso 3: Opciones de pago claras #}
+    <h3>Paso 3: Realiza el Pago</h3>
+    <p>Puedes realizar el pago completo o un adelanto mediante tarjeta o transferencia:</p>
+    <ul style="line-height: 1.6;">
+        <li><b>Opción A (Recomendada): Pago con Tarjeta</b><br>
+            <a href="{{ url('app_payment_start', {'_locale': 'es', 'id': pedido.id}) }}">Pagar de forma segura a través de nuestra web.</a>
+        </li>
+        <li><b>Opción B: Pago por Transferencia</b><br>
+            Realiza el pago a la siguiente cuenta y envíanos el justificante respondiendo a este correo:
+            <blockquote style="font-size: 0.9em; border-left: 4px solid #ccc; padding-left: 15px; margin: 10px 0;">
+                {{ empresa.cuentaBancaria | raw }}
+            </blockquote>
+        </li>
+    </ul>
+
+    <br>
+    <p>En espera de noticias, te enviamos un saludo.</p>
+{% endblock %}

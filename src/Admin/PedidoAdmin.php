@@ -100,7 +100,7 @@ final class PedidoAdmin extends AbstractAdmin
             ->add('seguimientoEnvio', TextType::class, ['required' => false])
             ->add('referenciaInterna', TextType::class, ['label' => 'Nombre del montaje', 'required' => false])
             ->add('montaje', TextType::class, ['label' => 'Enlace al montaje (WeTransfer)', 'required' => false])
-            ->add('enviaMail', CheckboxType::class, ['required' => false, 'label' => 'Enviar e-mail al cambiar estado'])
+            ->add('enviaMail', CheckboxType::class, ['required' => false, 'label' => 'Enviar e-mail al cambiar estado','mapped' => true])
             ->add('estado')
             ->add('incidencias', CKEditorType::class, ['required' => false])
             ->end()
@@ -265,46 +265,46 @@ final class PedidoAdmin extends AbstractAdmin
 
 // El método configureShowFields se migra de forma similar, corrigiendo rutas de propiedades...
 
-    public
-    function preUpdate(object $object): void
-    {
-        if (!$object instanceof Pedido) {
-            return;
-        }
-
-        $uow = $this->entityManager->getUnitOfWork();
-        $original = $uow->getOriginalEntityData($object);
-
-        $estadoAnt = $original['estado'] ?? null;
-
-        // ALMACENAMOS EN EL LOG
-        if ($estadoAnt !== $object->getEstado()) {
-            //DE MOMENTO NO TENEMOS LOGS.
-//            $pedidoLog = new PedidosLog();
-//            $pedidoLog->setEstado($object->getEstado());
-//            $pedidoLog->setUsuario($object->getContacto());
-//            $this->entityManager->persist($pedidoLog);
-            // No hacemos flush aquí, se hará al final de la operación.
-        }
-
-        // ENVIAR EMAIL AL CAMBIAR ESTADO
-        if ($object->isEnviaMail() && $object->getEstado()?->isEnviaCorreo()) {
-            // Toda la lógica de Swift_Message se debe reemplazar con Symfony Mailer
-            $email = (new Email())
-                ->from('comercial@tuskamisetas.com')
-                ->to($object->getContacto()?->getUsuario()?->getEmail())
-                ->subject('Actualización de tu pedido ' . $object->getNombre())
-                ->html($this->twig->render('emails/order_status_update.html.twig', [
-                    'pedido' => $object
-                ]));
-
-            $this->mailer->send($email);
-            $object->setEnviaMail(false); // Desmarcar para no reenviar
-
-            $flashBag = $this->requestStack->getSession()->getFlashBag();
-            $flashBag->add('sonata_flash_success', 'Correo de estado enviado correctamente.');
-        }
-    }
+//    public
+//    function preUpdate(object $object): void
+//    {
+//        if (!$object instanceof Pedido) {
+//            return;
+//        }
+//
+//        $uow = $this->entityManager->getUnitOfWork();
+//        $original = $uow->getOriginalEntityData($object);
+//
+//        $estadoAnt = $original['estado'] ?? null;
+//
+//        // ALMACENAMOS EN EL LOG
+//        if ($estadoAnt !== $object->getEstado()) {
+//            //DE MOMENTO NO TENEMOS LOGS.
+////            $pedidoLog = new PedidosLog();
+////            $pedidoLog->setEstado($object->getEstado());
+////            $pedidoLog->setUsuario($object->getContacto());
+////            $this->entityManager->persist($pedidoLog);
+//            // No hacemos flush aquí, se hará al final de la operación.
+//        }
+//
+//        // ENVIAR EMAIL AL CAMBIAR ESTADO
+//        if ($object->isEnviaMail() && $object->getEstado()?->isEnviaCorreo()) {
+//            // Toda la lógica de Swift_Message se debe reemplazar con Symfony Mailer
+//            $email = (new Email())
+//                ->from('comercial@tuskamisetas.com')
+//                ->to($object->getContacto()?->getUsuario()?->getEmail())
+//                ->subject('Actualización de tu pedido ' . $object->getNombre())
+//                ->html($this->twig->render('emails/order_status_update.html.twig', [
+//                    'pedido' => $object
+//                ]));
+//
+//            $this->mailer->send($email);
+//            $object->setEnviaMail(false); // Desmarcar para no reenviar
+//
+//            $flashBag = $this->requestStack->getSession()->getFlashBag();
+//            $flashBag->add('sonata_flash_success', 'Correo de estado enviado correctamente.');
+//        }
+//    }
 
     public
     function postUpdate(object $object): void

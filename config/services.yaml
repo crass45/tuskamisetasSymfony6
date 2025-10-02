@@ -52,6 +52,9 @@ services:
         $nacexDelCli: '%env(NACEX_DEL_CLI)%'
         $nacexNumCli: '%env(NACEX_NUM_CLI)%'
 
+    App\EventSubscriber\PedidoEventSubscriber:
+      tags:
+        - { name: doctrine.event_subscriber }
   # Le decimos a Symfony cómo construir el GoogleAnalyticsService.
   # Cuando pida los argumentos '$measurementId' y '$apiSecret' en su constructor,
   # Symfony le pasará los valores de los parámetros que hemos definido arriba.

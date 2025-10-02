@@ -44,13 +44,13 @@ class PaymentController extends AbstractController
         $redsysFormData = $this->redsysApi->generateRedsysFormData($pedido);
 
         // Usamos el servicio para calcular las fechas de entrega
-        $deliveryDates = $this->fechaEntregaService->getDeliveryDatesForModel($pedido->getLineas()->first()->getProducto()->getModelo());
+        $deliveryDates = $this->fechaEntregaService->getFechasEntregaPedido($pedido, new \DateTime());
 
         return $this->render('payment/start.html.twig', [
             'pedido' => $pedido,
             'redsys_data' => $redsysFormData,
-            'dias1' => $deliveryDates['fechaEntregaSinImprimir']->format('d/M'), // Pasamos las fechas a la plantilla
-            'dias2' => $deliveryDates['fechaEntregaSinImprimir2']->format('d/M'),
+            'dias1' => $deliveryDates['min']->format('d/M'), // Pasamos las fechas a la plantilla
+            'dias2' => $deliveryDates['max']->format('d/M'),
         ]);
     }
 

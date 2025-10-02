@@ -1,0 +1,48 @@
+{% extends "emails/plantillaMail.html.twig" %}
+
+{% block texto %}
+    <h2>¡Tu pedido {{ pedido.nombre }} ya está en camino!</h2>
+    <p>
+        Hemos completado la preparación de tu pedido y ya ha sido recogido por la agencia de transporte.
+    </p>
+    <br>
+
+    {# 1. Botón de seguimiento destacado #}
+    {% if pedido.seguimientoEnvio %}
+        <div style="background-color: #e7f3fe; border: 1px solid #d1e7fd; padding: 15px; margin-top: 20px; border-radius: 4px; text-align: center;">
+            <h3 style="margin-top: 0;">Sigue tu envío en tiempo real</h3>
+            <p>Puedes ver el estado de tu entrega haciendo clic en el siguiente botón:</p>
+            <p style="text-align: center; margin: 20px 0;">
+                <a href="{{ pedido.seguimientoEnvio }}" style="background-color: #0d6efd; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                    Seguimiento del Paquete
+                </a>
+            </p>
+        </div>
+        <br>
+    {% else %}
+        <p>En breve, la agencia de transporte te enviará un correo electrónico o SMS con los detalles para el seguimiento de tu paquete.</p>
+    {% endif %}
+
+    {# 2. Bloque de dirección claro y simplificado #}
+    <h3>Datos de Entrega</h3>
+    <blockquote style="border-left: 4px solid #ccc; padding-left: 15px; margin: 15px 0; line-height: 1.6;">
+        {# Usamos el operador '??' para simplificar: si 'direccionEnvio' no existe, usa la del contacto #}
+        {% set direccion = pedido.direccionEnvio ?? pedido.contacto.direccionFacturacion %}
+        {% set telefono =  pedido.direccionEnvio.telefonoMovil ?? pedido.contacto.direccionFacturacion.telefonoMovil %}
+
+        <strong>{{ direccion.nombre|default(pedido.contacto.nombre ~ ' ' ~ pedido.contacto.apellidos) }}</strong><br>
+        {{ direccion.dir }}<br>
+        {{ direccion.cp }} {{ direccion.poblacion }} ({{ direccion.provincia }})<br>
+        {{ direccion.pais }}<br>
+        Telf: {{ telefono }}
+    </blockquote>
+
+    {# 3. Información sobre la factura #}
+    <h3>Factura</h3>
+    <p>
+        Encontrarás la factura correspondiente a tu pedido adjunta a este correo electrónico en formato PDF.
+    </p>
+    <br>
+
+    <p>Gracias de nuevo por tu confianza.</p>
+{% endblock %}

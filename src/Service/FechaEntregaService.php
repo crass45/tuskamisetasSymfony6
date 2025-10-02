@@ -5,6 +5,7 @@ namespace App\Service;
 
 use App\Entity\Empresa;
 use App\Entity\Pedido;
+use App\Entity\PedidoLinea;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
@@ -19,6 +20,61 @@ class FechaEntregaService
         // Cargamos la configuración de la empresa una vez en el constructor
         $this->empresaConfig = $this->em->getRepository(Empresa::class)->findOneBy([], ['id' => 'DESC']);
     }
+
+    /**
+     * Calcula el rango de fechas de entrega (mínima y máxima) para un pedido completo.
+     * Este es el nuevo método que solicitaste.
+     *
+     * @param Pedido $pedido El pedido para el que se calcula la fecha.
+     * @param \DateTime $fechaInicio La fecha desde la que empezar a contar (ej. hoy).
+     * @return array{min: \DateTime, max: \DateTime, express: \DateTime}|null
+     */
+    public function getFechasEntregaPedido(Pedido $pedido, \DateTime $fechaInicio): ?array
+    {
+        if (!$this->empresaConfig) {
+            return null;
+        }
+
+        // 1. Encontrar el proveedor con el mayor tiempo de envío en el pedido
+        $maxDiasEnvioProveedor = 0;
+        foreach ($pedido->getLineas() as $linea) {
+            /** @var PedidoLinea $linea */
+            $proveedor = $linea->getProducto()?->getModelo()?->getProveedor();
+            if ($proveedor && $proveedor->getDiasEnvio() > $maxDiasEnvioProveedor) {
+                $maxDiasEnvioProveedor = $proveedor->getDiasEnvio();
+            }
+        }
+
+        // 2. Sumar días adicionales del pedido y del proveedor
+        $diasExtra = $maxDiasEnvioProveedor + ($pedido->getDiasAdicionales() ?? 0);
+
+        // 3. Determinar los días de producción (mínimo, máximo y exprés)
+        $diasMinProduccion = 0;
+        $diasMaxProduccion = 0;
+
+        if ($pedido->compruebaTrabajos()) { // Con personalización
+            $diasMinProduccion = $this->empresaConfig->getMinimoDiasConImpresion() ?? 0;
+            $diasMaxProduccion = $this->empresaConfig->getMaximoDiasConImpresion() ?? 0;
+        } else { // Sin personalización
+            $diasMinProduccion = $this->empresaConfig->getMinimoDiasSinImprimir() ?? 0;
+            $diasMaxProduccion = $this->empresaConfig->getMaximoDiasSinImprimir() ?? 0;
+        }
+        // El servicio exprés siempre se calcula sobre el mínimo sin impresión + 3 días
+        $diasExpressProduccion = ($this->empresaConfig->getMinimoDiasSinImprimir() ?? 0) + 3;
+
+        // 4. Calcular los totales de días laborables
+        $totalDiasMin = $diasMinProduccion + $diasExtra;
+        $totalDiasMax = $diasMaxProduccion + $diasExtra;
+        $totalDiasExpress = $diasExpressProduccion + $diasExtra;
+
+        // 5. Calcular las fechas finales usando tu método 'calculateDate' y devolver el array
+        return [
+            'min' => $this->calculateDate($totalDiasMin, clone $fechaInicio),
+            'max' => $this->calculateDate($totalDiasMax, clone $fechaInicio),
+            'express' => $this->calculateDate($totalDiasExpress, clone $fechaInicio),
+        ];
+    }
+
 
     /**
      * Calcula las fechas de entrega para un modelo específico.
@@ -40,39 +96,54 @@ class FechaEntregaService
         $diasExpress = $diasSinImprimir1 + 3; // Lógica para el servicio express
 
         return [
-            'fechaEntregaSinImprimir' => $this->calculateDate($diasSinImprimir1),
-            'fechaEntregaImpreso' => $this->calculateDate($diasImpreso1),
-            'fechaEntregaSinImprimir2' => $this->calculateDate($diasSinImprimir2),
-            'fechaEntregaImpreso2' => $this->calculateDate($diasImpreso2),
-            'fechaEntregaExpress' => $this->calculateDate($diasExpress),
+            'fechaEntregaSinImprimir' => $this->calculateDate($diasSinImprimir1, new \DateTime()),
+            'fechaEntregaImpreso' => $this->calculateDate($diasImpreso1, new \DateTime()),
+            'fechaEntregaSinImprimir2' => $this->calculateDate($diasSinImprimir2, new \DateTime()),
+            'fechaEntregaImpreso2' => $this->calculateDate($diasImpreso2, new \DateTime()),
+            'fechaEntregaExpress' => $this->calculateDate($diasExpress, new \DateTime()),
         ];
     }
 
     /**
-     * MIGRACIÓN: Esta es una implementación más avanzada que tiene en cuenta
-     * los fines de semana y los festivos nacionales de España.
+     * Añade días laborables a una fecha, considerando fines de semana y festivos.
+     * Este es tu método `calculateDate` existente, lo he hecho público para reutilizarlo si es necesario.
      */
-    private function calculateDate(int $businessDays): \DateTime
+    public function calculateDate(int $businessDays, \DateTime $startDate): \DateTime
     {
-        $date = new \DateTime();
+        $date = clone $startDate;
         $daysAdded = 0;
 
-        while ($daysAdded < $businessDays) {
-            $date->add(new \DateInterval('P1D')); // Añadimos un día natural
-
-            // N es la representación numérica del día de la semana (6 = Sábado, 7 = Domingo)
-            $dayOfWeek = (int) $date->format('N');
-
-            // Si es fin de semana o festivo, no lo contamos y seguimos al siguiente día
-            if ($dayOfWeek >= 6 || $this->isHoliday($date)) {
-                continue;
-            }
-
-            // Si es un día laborable, incrementamos el contador
-            $daysAdded++;
+        // Si no hay días que añadir, devolvemos la fecha de inicio
+        if ($businessDays <= 0) {
+            return $date;
         }
 
+        while ($daysAdded < $businessDays) {
+            $date->add(new \DateInterval('P1D'));
+            $dayOfWeek = (int) $date->format('N');
+
+            if ($dayOfWeek >= 6 || $this->isHoliday($date) || $this->isVacation($date)) {
+                continue;
+            }
+            $daysAdded++;
+        }
         return $date;
+    }
+
+    /**
+     * Comprueba si una fecha está dentro del periodo de vacaciones de la empresa.
+     */
+    private function isVacation(\DateTime $date): bool
+    {
+        if (!$this->empresaConfig) return false;
+
+        $fechaInicioVacaciones = $this->empresaConfig->getFechaInicioVacaciones();
+        $fechaFinVacaciones = $this->empresaConfig->getFechaFinVacaciones();
+
+        if ($fechaInicioVacaciones && $fechaFinVacaciones) {
+            return ($date >= $fechaInicioVacaciones && $date <= $fechaFinVacaciones);
+        }
+        return false;
     }
 
     /**
@@ -125,7 +196,7 @@ class FechaEntregaService
 
         $diasTotales = $diasBase + $sumaDiasProveedor + $pedido->getDiasAdicionales();
 
-        return $this->calculateDate($diasTotales);
+        return $this->calculateDate($diasTotales, new \DateTime());
     }
 }
 

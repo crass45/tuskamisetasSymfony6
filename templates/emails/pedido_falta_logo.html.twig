@@ -1,0 +1,33 @@
+{% extends "emails/plantillaMail.html.twig" %}
+
+{% block texto %}
+    <h2>Necesitamos tus diseños para continuar con el pedido {{ pedido.nombre }}</h2>
+    <p>
+        ¡Hola! Ya hemos comenzado a revisar tu pedido. El siguiente paso es preparar el montaje digital para que puedas ver cómo quedarán tus artículos personalizados.
+    </p>
+    <p>
+        Para poder crearlo, necesitamos que nos envíes los archivos de tus diseños o logotipos.
+    </p>
+    <br>
+
+    {# Cuadro destacado con las instrucciones claras y la llamada a la acción #}
+    <div style="background-color: #e7f3fe; border: 1px solid #d1e7fd; padding: 15px; margin-top: 20px; border-radius: 4px;">
+        <h3 style="margin-top: 0;">¿Cómo enviar tus archivos?</h3>
+        <p>
+            Es muy sencillo: <strong>responde a este mismo correo electrónico</strong> adjuntando los diseños que quieres que utilicemos.
+        </p>
+        <h4 style="margin-top: 20px;">Formatos de archivo recomendados:</h4>
+        <ul style="line-height: 1.6;">
+            <li><strong>Formato preferido:</strong> Vectorial (archivos .ai, .eps, .svg, o .pdf editable).</li>
+            <li><strong>Alternativa:</strong> Imagen de alta resolución (JPG o PNG a 300 ppp al tamaño de impresión).</li>
+        </ul>
+        <p>
+            Una vez recibamos los archivos, te enviaremos el montaje digital para tu aprobación. Tras tu visto bueno, podrás proceder con el pago y pasaremos el pedido a producción.
+        </p>
+    </div>
+    <br>
+
+    <p>Si tienes alguna duda sobre los formatos o el proceso, no dudes en responder a este correo y nuestro equipo te ayudará.</p>
+    <br>
+    <p>Un saludo.</p>
+{% endblock %}

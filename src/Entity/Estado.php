@@ -21,7 +21,7 @@ class Estado
     private string $codigoRGB = '#FFFFFF';
 
     #[ORM\Column(name: 'envia_correo')]
-    private bool $enviaCorreo = false;
+    private int $enviaCorreo = 0;
 
     public function __toString(): string
     {
@@ -69,7 +69,10 @@ class Estado
         return $this;
     }
 
-    public function isEnviaCorreo(): bool
+    /**
+     * @return int
+     */
+    public function getEnviaCorreo(): int
     {
         return $this->enviaCorreo;
     }
