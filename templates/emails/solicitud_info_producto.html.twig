@@ -1,0 +1,69 @@
+{% extends "emails/plantillaMail.html.twig" %}
+
+{% block texto %}
+    <h2>Nueva Solicitud de Información</h2>
+    <p>Se ha recibido una nueva solicitud de información desde la ficha del siguiente producto:</p>
+
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <tr style="background-color: #f2f2f2;">
+            <td style="padding: 8px; border: 1px solid #ddd; width: 30%;"><strong>Producto:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">{{ data.modelo.nombre }}
+                (REF: {{ data.modelo.referencia }})
+            </td>
+        </tr>
+    </table>
+
+    <h3>Datos del Solicitante:</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <tr>
+            <td style="padding: 8px; border: 1px solid #ddd; width: 30%;"><strong>Nombre:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">{{ data.nombre|default('No especificado') }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">{{ data.email }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Teléfono:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">{{ data.telefono|default('No especificado') }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Ciudad:</strong></td>
+            <td style="padding: 8px; border: 1px solid #ddd;">{{ data.ciudad|default('No especificada') }}</td>
+        </tr>
+    </table>
+
+    <h3>Detalles de la Solicitud:</h3>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        {% if data.cantidad %}
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd; width: 30%;"><strong>Cantidad Aprox:</strong></td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ data.cantidad }}</td>
+            </tr>
+        {% endif %}
+        {% if data.fecha_limite %}
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ddd;"><strong>Fecha Límite:</strong></td>
+                <td style="padding: 8px; border: 1px solid #ddd;">{{ data.fecha_limite|date('d/m/Y') }}</td>
+            </tr>
+        {% endif %}
+    </table>
+
+    {% if data.colores_tallas %}
+        <h4>Colores y Tallas solicitadas:</h4>
+        <blockquote style="border-left: 4px solid #ccc; padding-left: 15px; margin: 15px 0;">
+            {{ data.colores_tallas|nl2br }}
+        </blockquote>
+    {% endif %}
+
+    {% if data.observaciones %}
+        <h4>Observaciones Adicionales:</h4>
+        <blockquote style="border-left: 4px solid #ccc; padding-left: 15px; margin: 15px 0;">
+            {{ data.observaciones|nl2br }}
+        </blockquote>
+    {% endif %}
+
+    {% if data.googleClientId %}
+        <p style="font-size: 0.8em; color: #777;">GA Client ID: {{ data.googleClientId }}</p>
+    {% endif %}
+{% endblock %}

@@ -18,11 +18,21 @@
 
     <p itemprop="description"><b>{% trans %}Descripción{% endtrans %}: </b>{{ modelo.descripcion | raw }}</p>
     <p>{{ modelo.descripcionTuskamisetas | raw }}</p>
-    {% if modelo.composicion %}
-        <p><b>{% trans %}Composición{% endtrans %}:</b> {{ modelo.composicion | raw }}</p>
-    {% endif %}
 
-    <p><b>{% trans %}Observaciones{% endtrans %}:</b>{{ modelo.observaciones | raw }}</p>
+    <p itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"><b>{% trans %}Precio{% endtrans %}
+            :</b> {% trans %}Desde{% endtrans %} <span
+                itemprop="lowPrice"
+                content="{{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }}"> {{ modelo.getPrecioUnidad(app.user) | number_format(2, ',', '.') }}</span>
+        <span itemprop="highPrice"
+              content="{{ modelo.getPrecioCantidadColor(1, app.user) | number_format(2, '.', ',') }}"></span>€
+        <meta itemprop="priceCurrency" content="EUR"/>
+        <span itemprop="seller" itemscope itemtype="http://schema.org/Organization">
+            <meta itemprop="name" content="TusKamisetas"/>
+        </span>
+        <meta itemprop="availability" content="InStock"/>
+        <meta itemprop="url"
+              content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
+    </p>
 
     {# --- INICIO DE LA CORRECCIÓN --- #}
     {# Volvemos a calcular la condición para saber si estamos en la vista compleja #}
@@ -89,6 +99,12 @@
         </div>
     {% endif %}
 
+
+    {% if modelo.composicion %}
+        <p><b>{% trans %}Composición{% endtrans %}:</b> {{ modelo.composicion | raw }}</p>
+    {% endif %}
+
+    <p><b>{% trans %}Observaciones{% endtrans %}:</b>{{ modelo.observaciones | raw }}</p>
     <p itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"><b>{% trans %}Precio{% endtrans %}
             :</b> {% trans %}Desde{% endtrans %} <span
                 itemprop="lowPrice"
@@ -171,7 +187,7 @@
 
 
     {% if modelo.getTarif() %}
-        <p><b>{% trans %}PRECIO POR CANTIDADES{% endtrans %}</b></p>
+        <p style="padding-top: 10px"><b>{% trans %}PRECIO POR CANTIDADES{% endtrans %}</b></p>
         {% set incrementos = modelo.getTarif().precios %}
         {% if app.user %}
             {% for grupo in app.user.groups %}
@@ -185,9 +201,95 @@
 
         {% if modelo.hasColor or modelo.hasBlanco %}
             <div class="table-responsive">
-                <table class="table-responsive"
-                       style="text-align: center; font-size: 12px;width: 100%; margin-top: 0px">
-                    {# ... (Tabla de precios para adultos) ... #}
+                <table class="table-responsive" style="text-align: center; font-size: 12px;width: 100%; margin-top: 0px">
+
+                    <tr>
+                        <td style="border: 1px solid darkgray; background-color: lightgrey;">
+                            <b>{% trans %}Adulto{% endtrans %}</b>
+                        </td>
+                        {% for incremento in incrementos %}
+
+                            <td style="border: 1px solid darkgray; background-color: lightgrey;">
+                                <b>
+                                    {% if incremento.getCantidadString(modelo) < modelo.pack %}
+                                        {{ modelo.pack }}
+                                    {% else %}
+                                        {{ incremento.getCantidadString(modelo) }}
+                                    {% endif %}
+                                </b>
+                            </td>
+
+                        {% endfor %}
+                        {% if modelo.pack > 1 %}
+                            <td style="border: 1px solid darkgray; background-color: lightgrey;">
+                                <b>1</b>
+                            </td>
+                        {% endif %}
+                    </tr>
+                    {% if  modelo.hasBlanco %}
+                        <tr>
+                            <td style="border: 1px solid darkgray">
+                                {% trans %}Blanco{% endtrans %}
+                            </td>
+
+                            {% for incremento in incrementos %}
+                                <td style="border: 1px solid darkgray; font-size: 10px;">
+                                    {% if modelo.proveedor.nombre == "Makito" or modelo.proveedor.nombre == "Cifra" %}
+                                        {% if incremento.cantidad < modelo.pack %}
+                                            {{ modelo.getPrecioCantidadBlancas(modelo.pack, app.user) | number_format(3, ',', '.') }}
+                                        {% else %}
+                                            {{ modelo.getPrecioCantidadBlancas(incremento.cantidad, app.user) | number_format(3, ',', '.') }}
+                                        {% endif %}
+                                    {% else %}
+                                        {% if incremento.cantidad < modelo.pack %}
+                                            {{ modelo.getPrecioCantidadBlancas(modelo.pack, app.user) | number_format(2, ',', '.') }}
+                                        {% else %}
+                                            {{ modelo.getPrecioCantidadBlancas(incremento.cantidad, app.user) | number_format(2, ',', '.') }}
+                                        {% endif %}
+                                    {% endif %}
+                                    €
+                                </td>
+                            {% endfor %}
+                            {% if modelo.pack > 1 %}
+                                <td style="border: 1px solid darkgray; font-size: 10px;">{{ modelo.getPrecioCantidadBlancas(1,app.user) | number_format(2, ',', '.') }}
+                                    €
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endif %}
+
+                    {% if  modelo.hasColor %}
+                        <tr>
+                            <td style="border: 1px solid darkgray">
+                                {% trans %}Color{% endtrans %}
+                            </td>
+
+                            {% for incremento in incrementos %}
+
+                                <td style="border: 1px solid darkgray; font-size: 10px;">
+                                    {% if modelo.proveedor.nombre == "Makito" or modelo.proveedor.nombre == "Cifra" %}
+                                        {% if incremento.cantidad < modelo.pack %}
+                                            {{ modelo.getPrecioCantidadColor(modelo.pack, app.user) | number_format(3, ',', '.') }}
+                                        {% else %}
+                                            {{ modelo.getPrecioCantidadColor(incremento.cantidad, app.user) | number_format(3, ',', '.') }}
+                                        {% endif %}
+                                    {% else %}
+                                        {% if incremento.cantidad < modelo.pack %}
+                                            {{ modelo.getPrecioCantidadColor(modelo.pack, app.user) | number_format(2, ',', '.') }}
+                                        {% else %}
+                                            {{ modelo.getPrecioCantidadColor(incremento.cantidad, app.user) | number_format(2, ',', '.') }}
+                                        {% endif %}
+                                    {% endif %}€
+                                </td>
+
+                            {% endfor %}
+                            {% if modelo.pack > 1 %}
+                                <td style="border: 1px solid darkgray; font-size: 10px;">{{ modelo.getPrecioCantidadColor(1, app.user) | number_format(2, ',', '.') }}
+                                    €
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endif %}
                 </table>
             </div>
         {% endif %}
@@ -195,7 +297,101 @@
         {% if modelo.hasBlancoNino or modelo.hasColorNino %}
             <div class="table-responsive">
                 <table class="table-responsive" style="text-align: center; font-size: 12px; width: 100%">
-                    {# ... (Tabla de precios para niños) ... #}
+
+                    <tr>
+                        <td style="border: 1px solid darkgray; background-color: lightgrey;">
+                            <b>{% trans %}Niños{% endtrans %}</b>
+                        </td>
+                        {% for incremento in incrementos %}
+
+                            <td style="border: 1px solid darkgray; background-color: lightgrey;">
+                                <b>
+                                    {% if incremento.getCantidadString(modelo) < modelo.pack %}
+                                        {{ modelo.pack }}
+                                    {% else %}
+                                        {{ incremento.getCantidadString(modelo) }}
+                                    {% endif %}
+                                </b>
+                            </td>
+
+                        {% endfor %}
+                        {% if modelo.pack > 1 %}
+                            <td style="border: 1px solid darkgray; background-color: lightgrey;">
+                                <b>1</b>
+                            </td>
+                        {% endif %}
+                    </tr>
+                    {% if modelo.hasBlancoNino > 0 %}
+                        <tr>
+                            <td style="border: 1px solid darkgray">
+                                {% trans %}Blanco{% endtrans %}
+                            </td>
+
+                            {% for incremento in incrementos %}
+
+                                <td style="border: 1px solid darkgray; font-size: 10px;">
+                                    {% if modelo.proveedor.nombre == "Makito" or modelo.proveedor.nombre == "Cifra" %}
+                                        {% if incremento.cantidad < modelo.pack %}
+                                            {{ modelo.getPrecioCantidadBlancasNino(modelo.pack, app.user) | number_format(3, ',', '.') }}
+                                        {% else %}
+                                            {{ modelo.getPrecioCantidadBlancasNino(incremento.cantidad, app.user) | number_format(3, ',', '.') }}
+                                        {% endif %}
+                                    {% else %}
+                                        {% if incremento.cantidad < modelo.pack %}
+                                            {{ modelo.getPrecioCantidadBlancasNino(modelo.pack, app.user) | number_format(2, ',', '.') }}
+                                        {% else %}
+                                            {{ modelo.getPrecioCantidadBlancasNino(incremento.cantidad, app.user) | number_format(2, ',', '.') }}
+                                        {% endif %}
+                                    {% endif %}
+                                    €
+                                </td>
+
+                            {% endfor %}
+                            {% if modelo.pack > 1 %}
+                                <td style="border: 1px solid darkgray; font-size: 10px;">{{ modelo.getPrecioCantidadBlancasNino(1, app.user) | number_format(2, ',', '.') }}
+                                    €
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endif %}
+
+                    {% if modelo.hasColorNino > 0 %}
+                        <tr>
+                            <td style="border: 1px solid darkgray">
+                                {% trans %}Color{% endtrans %}
+                            </td>
+
+                            {% for incremento in incrementos %}
+
+                                <td style="border: 1px solid darkgray; font-size: 10px;">
+                                    {% if modelo.proveedor.nombre == "Makito" or modelo.proveedor.nombre == "Cifra" %}
+                                        {% if incremento.cantidad < modelo.pack %}
+                                            {{ modelo.getPrecioCantidadColorNino(modelo.pack, app.user) | number_format(3, ',', '.') }}
+                                        {% else %}
+                                            {{ modelo.getPrecioCantidadColorNino(incremento.cantidad, app.user) | number_format(3, ',', '.') }}
+                                        {% endif %}
+                                    {% else %}
+                                        {% if incremento.cantidad < modelo.pack %}
+                                            {{ modelo.getPrecioCantidadColorNino(modelo.pack, app.user) | number_format(2, ',', '.') }}
+                                        {% else %}
+                                            {{ modelo.getPrecioCantidadColorNino(incremento.cantidad, app.user) | number_format(2, ',', '.') }}
+                                        {% endif %}
+                                    {% endif %}
+                                    €
+                                </td>
+                            {% endfor %}
+                            {% if modelo.pack > 1 %}
+                                <td style="border: 1px solid darkgray; font-size: 10px;">{{ modelo.getPrecioCantidadColorNino(1, app.user) | number_format(2, ',', '.') }}
+                                    €
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endif %}
+                    {# <tr> #}
+                    {# <td style="border: 1px solid darkgray" colspan="8"> #}
+                    {# <p style="font-size: 12px">Los precios pueden variar entre tallas.</p> #}
+                    {# </td> #}
+                    {# </tr> #}
                 </table>
             </div>
         {% endif %}

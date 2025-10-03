@@ -1,0 +1,69 @@
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Detalles del Producto</h4>
+        </div>
+        <div class="modal-body">
+            <p>
+                Estás solicitando información para el modelo <strong>{{ modelo.nombre|upper }}</strong>.
+                Rellena los siguientes campos y nuestro equipo comercial se pondrá en contacto contigo a la mayor brevedad.
+            </p>
+
+            <div style="background-color: #f2f2f2; padding: 20px; border-radius: 5px; margin-top: 20px;">
+                <form id="solicitud-contacto-form" action="{{ path("app_product_presupuesto_rapido_submit") }}" method="post">
+                    <input type="hidden" name="modeloId" value="{{ modelo.id }}">
+
+                    {# --- CAMPOS DE CONTACTO --- #}
+                    <h5>Tus Datos de Contacto</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="form_nombre" class="form-label">Nombre *</label>
+                            <input type="text" id="form_nombre" name="nombre" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="form_email" class="form-label">E-mail *</label>
+                            <input type="email" id="form_email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="form_telefono" class="form-label">Teléfono</label>
+                            <input type="tel" id="form_telefono" name="telefono" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="form_ciudad" class="form-label">Ciudad</label>
+                            <input type="text" id="form_ciudad" name="ciudad" class="form-control">
+                        </div>
+                    </div>
+
+                    {# --- CAMPOS DEL PRESUPUESTO (NUEVOS) --- #}
+                    <h5>Solicitud de información</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="form_cantidad" class="form-label">Cantidad aproximada</label>
+                            <input type="number" id="form_cantidad" name="cantidad" class="form-control" placeholder="Ej: 100">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="form_fecha_limite" class="form-label">¿Tienes una fecha límite?</label>
+                            <input type="date" id="form_fecha_limite" name="fecha_limite" class="form-control">
+                        </div>
+                        <div class="col-lg-12">
+                            <label for="form_colores_tallas" class="form-label">Colores y Tallas</label>
+                            <textarea id="form_colores_tallas" name="colores_tallas" class="form-control" rows="3" placeholder="Ej: 50 camisetas rojas (20 L, 30 M) y 50 camisetas negras (tallas variadas)"></textarea>
+                        </div>
+                        <div class="col-lg-12">
+                            <label for="form_observaciones" class="form-label">Observaciones Adicionales</label>
+                            <textarea name="observaciones" id="form_observaciones" class="form-control" rows="3" placeholder="Describe aquí tu idea de personalización, si necesitas un logo, etc."></textarea>
+                        </div>
+                        <br>
+                        {# Botón de envío con el estilo naranja de tu marca #}
+                        <button type="submit" class="btn" style="background-color: #ff9000; color: white; font-weight: bold;">
+                            Enviar Solicitud
+                        </button>
+                    </div>
+
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

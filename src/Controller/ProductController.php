@@ -15,11 +15,14 @@ use App\Model\PresupuestoTrabajo;
 use App\Repository\ModeloRepository;
 use App\Service\FechaEntregaService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+
 
 class ProductController extends AbstractController
 {
@@ -91,6 +94,59 @@ class ProductController extends AbstractController
             'nPersonalizaciones' => $nPersonalizaciones,
             'personalizacionesCarrito' => $personalizacionesCarrito,
         ]);
+    }
+
+    #[Route('/{_locale}/product/{id}/presupuesto-rapido-modal', name: 'app_product_presupuesto_rapido_modal')]
+    public function presupuestoRapidoModal(Modelo $modelo): Response
+    {
+        // Gracias al ParamConverter, Symfony busca automáticamente el objeto Modelo
+        // cuyo 'id' coincide con el de la URL. ¡No necesitamos buscarlo manualmente!
+
+        // Renderizamos la plantilla que contendrá el HTML del modal.
+        return $this->render('web/product/_contacto_producto_modal.html.twig', [
+            'modelo' => $modelo,
+        ]);
+    }
+
+    // src/Controller/ProductController.php
+// ...
+
+    #[Route('/product/presupuesto-rapido-submit', name: 'app_product_presupuesto_rapido_submit', methods: ['POST'])]
+    public function presupuestoRapidoSubmit(
+        Request $request,
+        ModeloRepository $modeloRepository,
+        MailerInterface $mailer
+    ): Response {
+        $modeloId = $request->request->get('modeloId');
+        $modelo = $modeloRepository->find($modeloId);
+        if (!$modelo) { /* ... manejo de error ... */ }
+
+        // Recogemos todos los datos del formulario, incluyendo los nuevos
+        $formData = [
+            'nombre' => $request->request->get('nombre'),
+            'email' => $request->request->get('email'),
+            'telefono' => $request->request->get('telefono'),
+            'ciudad' => $request->request->get('ciudad'),
+            'cantidad' => $request->request->get('cantidad'), // Nuevo
+            'fecha_limite' => $request->request->get('fecha_limite'), // Nuevo
+            'colores_tallas' => $request->request->get('colores_tallas'), // Nuevo
+            'observaciones' => $request->request->get('observaciones'),
+            'googleClientId' => $request->request->get('googleClientId'),
+            'modelo' => $modelo,
+        ];
+
+        $email = (new TemplatedEmail())
+            ->from('noreply@tuskamisetas.com')
+            ->to('comercial@tuskamisetas.com')
+            ->replyTo($formData['email'])
+            ->subject('Solicitud de Información Rápida para: ' . $modelo->getNombre())
+            ->htmlTemplate('emails/solicitud_info_producto.html.twig')
+            ->context(['data' => $formData, 'emailTitulo'=>'Solicitud de presupuesto rapido','emailSubtitulo'=>'']);
+
+        $mailer->send($email);
+
+        $this->addFlash('success', '¡Gracias! Hemos recibido tu solicitud. Nos pondremos en contacto contigo en breve.');
+        return $this->redirectToRoute('app_product_detail', ['slug' => $modelo->getNombreUrl()]);
     }
 
     /**

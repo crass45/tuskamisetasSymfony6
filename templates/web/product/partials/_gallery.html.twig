@@ -5,6 +5,7 @@
     {# Condición: si hay imágenes extra (de niño, otras o de detalle), mostramos la galería compleja #}
     {% set hasExtraImages = modelo.childImage or (modelo.otherImages and modelo.otherImages|split(',')|filter(img => img is not empty)|length > 0) or (modelo.detailsImages and modelo.detailsImages|split(',')|filter(img => img is not empty)|length > 0) %}
 
+    {% set hasExtraImages = true %}
     {% if hasExtraImages %}
         {# Vista Compleja (tu antigua alternativa2 y 3) #}
         {# Esta vista no muestra los selectores de color aquí #}

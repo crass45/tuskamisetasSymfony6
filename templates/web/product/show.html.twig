@@ -3,6 +3,135 @@
 {% block title %}{{ modelo.tituloSEO|default(modelo.nombre) }} | Tuskamisetas.com{% endblock %}
 {% block metaDescription %}{{ modelo.descripcionSEO|default(modelo.descripcion)|striptags|slice(0, 155) }}{% endblock %}
 
+{% block aditionalHead %}
+    {# Añade este bloque de estilos en la cabecera, por ejemplo, al final del bloque {% block meta %} #}
+    <style>
+        {# Añade este bloque de estilos en la cabecera, por ejemplo, al final del bloque {% block meta %} #}
+
+        /* El contenedor principal para la fila de certificados */
+        .certificados-container {
+            display: flex; /* ¡La magia de Flexbox! Pone los elementos en fila. */
+            flex-wrap: wrap; /* Permite que los elementos pasen a la siguiente línea si no caben. */
+            justify-content: center; /* Centra horizontalmente toda la fila de imágenes. */
+            align-items: center; /* Centra verticalmente las imágenes si tienen alturas distintas. */
+            gap: 20px; /* Un espacio agradable entre cada imagen. */
+            padding: 15px 0; /* Un poco de espacio vertical. */
+            margin-top: 20px;
+            border-top: 1px solid #eee; /* Una línea sutil para separar la sección. */
+        }
+
+        /* Estilo para cada imagen de certificado individual */
+        .certificado-imagen {
+            max-height: 40px; /* <<< TU ALTO MÁXIMO: Ajústalo a tu gusto (ej. 60px, 100px). */
+            width: auto; /* El ancho se ajustará automáticamente para mantener la proporción. */
+            height: auto; /* Importante para que 'max-height' funcione bien. */
+        }
+
+
+        /* Contenedor principal de la galería dentro del modal */
+        .modal-gallery {
+            display: flex;
+            flex-direction: column;
+            height: 75vh; /* La galería ocupará el 75% de la altura de la pantalla */
+        }
+
+        /* Área de la imagen principal */
+        .gallery-main-view {
+            positon: relative;
+            flex-grow: 1; /* Ocupa todo el espacio vertical disponible */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            margin-bottom: 15px;
+            background-color: #f8f8f8;
+            border-radius: 4px;
+        }
+
+        /* Estilo para los botones de navegación (flechas) */
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: none;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+            z-index: 10;
+            opacity: 0; /* Ocultos por defecto */
+        }
+
+        /* Mostramos los botones al pasar el ratón sobre la galería (para escritorio)
+       o de forma permanente en pantallas táctiles (lo controlaremos con JS) */
+        .gallery-main-view:hover .gallery-nav {
+            opacity: 1;
+        }
+
+        .gallery-nav:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        /* Posición específica para cada botón */
+        #gallery-prev {
+            left: 15px;
+        }
+
+        #gallery-next {
+            right: 15px;
+        }
+
+        /* La imagen principal, adaptable y centrada */
+        .gallery-main-view img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Asegura que la imagen se vea completa sin deformarse */
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-main-view img:hover {
+            transform: scale(1.05); /* Un pequeño zoom al pasar el ratón */
+        }
+
+        /* Contenedor de las miniaturas con scroll horizontal */
+        .gallery-thumbnails {
+            display: flex;
+            overflow-x: auto; /* Permite el scroll horizontal si hay muchas imágenes */
+            overflow-y: hidden;
+            padding-bottom: 10px; /* Espacio para la barra de scroll */
+            gap: 10px; /* Espacio entre miniaturas */
+        }
+
+        /* Estilo de cada miniatura */
+        .gallery-thumbnails img {
+            width: 100px; /* Ancho fijo para las miniaturas */
+            height: 100px; /* Altura fija */
+            object-fit: cover; /* Recorta la imagen para que llene el espacio sin deformarse */
+            cursor: pointer;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            transition: border-color 0.2s ease, opacity 0.2s ease;
+            opacity: 0.7;
+        }
+
+        /* Estilo al pasar el ratón sobre una miniatura */
+        .gallery-thumbnails img:hover {
+            border-color: #FF9933; /* Color naranja de tu marca */
+            opacity: 1;
+        }
+
+        /* Estilo para la miniatura activa (la que se está viendo en grande) */
+        .gallery-thumbnails img.active {
+            border-color: #044266; /* Color azul de tu marca */
+            opacity: 1;
+        }
+    </style>
+{% endblock %}
+
 {% block javascripts %}
     {# 1. Se cargan los scripts de la plantilla base (jQuery, Bootstrap, etc.) #}
     {{ parent() }}
@@ -21,7 +150,8 @@
     <meta property="og:type" content="product"/>
     <meta property="og:title" content="{{ modelo.nombre|title }}"/>
     <meta property="og:description" content="{{ modelo.descripcion|striptags|slice(0, 200) }}"/>
-    <meta property="og:url" content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
+    <meta property="og:url"
+          content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
     {% if modelo.imagen %}
         <meta property="og:image" content="{{ sonata_path(modelo.imagen, 'big') }}"/>
     {% elseif modelo.urlImage %}
@@ -31,7 +161,8 @@
     {# ... resto de tus metadatos product:category ... #}
     <meta property="product:availability" content="instock"/>
     <meta property="product:condition" content="new">
-    <meta property="product:price:amount" content="{{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }}"/>
+    <meta property="product:price:amount"
+          content="{{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }}"/>
     <meta property="product:price:currency" content="EUR"/>
     <meta property="product:retailer_item_id" content="{{ modelo.referencia }}">
 {% endblock %}
@@ -44,6 +175,123 @@
 
 {% block modals %}
     {# ... Tus modales (360, medidas y presupuesto rápido) irán aquí ... #}
+    <div id="presupuestoRapidoModal" class="modal fade" role="dialog">
+
+    </div>
+
+    <div id="360Modal" class="modal fade" role="dialog">
+
+    </div>
+
+    <div id="fotos-detalle-modal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Detalles del Producto</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-gallery" id="galeria-producto-detalle">
+                        <div class="gallery-main-view">
+                            <button id="gallery-prev" class="gallery-nav">&#10094;</button>
+                            <img id="gallery-main-image" src="" alt="Vista principal de la galería">
+                            <button id="gallery-next" class="gallery-nav">&#10095;</button>
+                        </div>
+                        <div class="gallery-thumbnails">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="medidas-talla-modal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{% trans %}MEDIDAS POR TALLA{% endtrans %}</h4>
+                </div>
+                <div class="modal-body">
+
+                    {% if modelo.getDrawing is defined  and modelo.getDrawing != null %}
+                        <div>
+                            <img class="img-responsive"
+                                 src="{{ sonata_path(modelo.getDrawing, 'wide') }}"
+                                 alt="ficha técnica del producto"/>
+                        </div>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table-responsive" style="text-align: center; font-size: 12px; width: 100%">
+                                <tr>
+                                    <td style="border: 1px solid darkgray; background-color: lightgrey;">
+                                        <b>{% trans %}Talla{% endtrans %}</b>
+                                    </td>
+                                    <td style="border: 1px solid darkgray; background-color: lightgrey;">
+                                        <b>{% trans %}Medidas{% endtrans %}</b>
+                                    </td>
+                                </tr>
+                                {% for talla  in modelo.getTallasP %}
+                                    <tr>
+                                        <td style="border: 1px solid darkgray;">
+                                            <b>{{ talla.talla }}</b>
+                                        </td>
+
+                                        <td style="border: 1px solid darkgray;">
+                                            <b>{{ talla.medidas }}</b>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+
+                                <tr>
+                                    <td style="border: 1px solid darkgray" colspan="2">
+                                        <p style="font-size: 12px">Las medidas son aproximadas.</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div class="row" style="margin-top: 15px;">
+                                <div class="col-xs-3" style="text-align: center">
+                                    <img src="{{ asset('images/medir-camiseta.jpg') }}"
+                                         style="max-width:130px;width: 100%; height: auto"
+                                         alt="Patron para medir camisetas"/>
+                                </div>
+                                <div class="col-xs-3" style="text-align: center">
+                                    <img src="{{ asset('images/medir-sudadera.jpg') }}"
+                                         style="max-width:130px;width: 100%; height: auto"
+                                         alt="Patron para medir sudaderas"/>
+                                </div>
+                                <div class="col-xs-3" style="text-align: center">
+                                    <img src="{{ asset('images/medir-pantalon.jpg') }}"
+                                         style="max-width:130px;width: 100%; height: auto"
+                                         alt="Patron para medir pantalones"/>
+                                </div>
+                                <div class="col-xs-3" style="text-align: center">
+                                    <img src="{{ asset('images/medir-bolsa.jpg') }}"
+                                         style="max-width:130px;width: 100%; height: auto"
+                                         alt="Patron para medir bolsas y regalos"/>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editor-talla-modal" class="modal fade" role="dialog">
+        <div class="modal-dialog" style="width: 80%;">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{% trans %}MEDIAS POR TALLA{% endtrans %}</h4>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block baseBody %}
@@ -53,12 +301,165 @@
                 <div class="col-sm-6 col-md-7">
                     {# Incluimos el parcial de la galería. Lo crearemos en el siguiente paso. #}
                     {% include 'web/product/partials/_gallery.html.twig' %}
+                    <div class="col-lg-12">
+                        <div class="redesReceta hidden-xl hidden-lg hidden-md hidden-sm"
+                             style="text-align: center; margin-top: 12px">
+                            {# <a class="solomovil" href="whatsapp://send" data-text="Mira lo que acabo de encontrar en TusKamisetas" data-href="https://tuskamisetasoriginal.com/es/producto/roly-camisetas-atomic-150" target="blank"><img src="{{ asset('images/whatsapp-logo.svg')}}" style="max-width: 20px;" alt="whatsapp"/></a> #}
+                            <a href="whatsapp://send?text=Mira lo que acabo de encontrar en TusKamisetas%20{{ app.request.uri }}?utm_source=whatsapp"
+                               target="_blank"><img
+                                        src="{{ asset('images/whatsapp-logo.svg') }}" style="max-width: 18px;"
+                                        alt="compartir en whatsapp"/></a>
+                            <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img
+                                        src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;"
+                                        alt="facebook"/></a>
+                            <a href="https://twitter.com/intent/tweet?url={{ app.request.uri }}" target="blank"><img
+                                        src="{{ asset('images/twitter.svg') }}" style="max-width: 20px;"
+                                        alt="twitter"/></a>
+                            <a href="https://plus.google.com/share?url={{ app.request.uri }}" target="blank"><img
+                                        src="{{ asset('images/google+.svg') }}" style="max-width: 20px;"
+                                        alt="google plus"/></a>
+                            {% if modelo.imagen != null %}
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}"
+                                   target="_blank">
+                                    <img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;"
+                                         alt="pinterest"/>
+                                </a>
+                            {% else %}
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}&media={{ modelo.urlImage }}&description={{ modelo.familia }} {{ modelo.nombre }}"
+                                   target="_blank">
+                                    <img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;"
+                                         alt="pinterest"/>
+                                </a>
+                            {% endif %}
+                            <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}">
+                                <img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;"
+                                     alt="mail"/>
+                            </a>
+                        </div>
+                        <div class="redesReceta hidden-xs" style="text-align: center; margin-top: 12px">
+                            <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img
+                                        src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;"
+                                        alt="facebook"/></a>
+                            <a href="https://twitter.com/intent/tweet?url={{ app.request.uri }}" target="blank"><img
+                                        src="{{ asset('images/twitter.svg') }}" style="max-width: 20px;"
+                                        alt="twitter"/></a>
+                            <a href="https://plus.google.com/share?url={{ app.request.uri }}" target="blank"><img
+                                        src="{{ asset('images/google+.svg') }}" style="max-width: 20px;"
+                                        alt="google plus"/></a>
+                            {% if modelo.imagen != null %}
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}"
+                                   target="_blank">
+                                    <img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;"
+                                         alt="pinterest"/>
+                                </a>
+                            {% else %}
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}&media={{ modelo.urlImage }}&description={{ modelo.familia }} {{ modelo.nombre }}"
+                                   target="_blank">
+                                    <img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;"
+                                         alt="pinterest"/>
+                                </a>
+                            {% endif %}
+                            <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}">
+                                <img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;"
+                                     alt="mail"/>
+                            </a>
+                        </div>
+
+                        {% if is_granted('ROLE_ALLOWED_TO_SWITCH') %}
+                            <div class="clear-fix"></div>
+                            <div>
+                                <div class="col-xs-6">
+
+                                    {#                <a href="{{ path('ss_tienda_producto_inventario',{'modelo': modelo.id, 'operacion':1 }) }}" #}
+                                    <a href="#"
+                                       style="background-color: green; font-size: 24px; padding: 5px; color: white">Entradas</a>
+                                </div>
+                                <div class="col-xs-6" style="text-align: right">
+                                    {#                <a href="{{ path('ss_tienda_producto_inventario',{'modelo': modelo.id, 'operacion':2 }) }}" #}
+                                    <a href="#"
+                                       style="background-color: red; font-size: 24px; padding: 5px; color: white">Salidas</a>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
 
-                <div class="col-sm-6 col-md-5" style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">
+
+                <div class="col-sm-6 col-md-5"
+                     style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">
                     {# Incluimos el panel derecho. Lo crearemos en el siguiente paso. #}
                     {% include 'web/product/partials/_details_panel.html.twig' %}
-                </div>
+
+                    <div class="clearfix"></div>
+                    <div style="background: #ececec; padding: 20px; margin-top: 15px;">
+                        {# <legend><b>{% trans %}LO RECIBIRAS{% endtrans %}</b> #}
+                        {# </legend> #}
+                        <p style="
+                font-family: Roboto, sans-serif;
+                font-size: 16px;
+                font-weight: bold;
+                text-align: center;">PIDELO HOY Y RECIBELO: </p>
+                        <div style="text-align: left">
+                            {# <h5><b>Realiza hoy tu pedido hoy y recibelo entre:</b></h5> #}
+                            {# <h5>Si lo pides hoy lo recibiras entre:</h5> #}
+
+                            <p><span style="color: #044266">SIN PERSONALIZAR:</span><BR>
+
+                                {# {{ fechaSinImprimir|localizeddate('none', 'none', app.request.locale, "Europe/Paris", "d MM ") }} #}
+                                &nbsp;Envío normal:
+                                <b>{{ deliveryDates['fechaEntregaSinImprimir']|format_datetime(locale='es', pattern="d 'de' MMM") }}
+                                    - {{ deliveryDates['fechaEntregaSinImprimir2']|format_datetime(locale='es', pattern="d 'de' MMM") }}</b>
+                            </p>
+
+
+                            <p><span style="color: #044266">PERSONALIZADO:</span><br>
+                                &nbsp;Servicio normal:
+                                <b>{{ deliveryDates['fechaEntregaImpreso']|format_datetime(locale='es', pattern="d 'de' MMM")}}
+                                    - {{ deliveryDates['fechaEntregaImpreso2']|format_datetime(locale='es', pattern="d 'de' MMM") }}</b><br>
+                                &nbsp;Servicio express:
+                                <b>{{ deliveryDates['fechaEntregaExpress']|format_datetime(locale='es', pattern="d 'de' MMM") }}</b>
+                            </p>
+
+
+                            {% if empresa.vacacionesActivas %}
+                                <p><b style="color: #044266">Estaremos cerrados por vacaciones desde
+                                        el {{ empresa.fechaInicioVacaciones|format_datetime(locale='es', pattern="d 'de' MMM") }}
+                                        hasta
+                                        el {{ empresa.fechaFinVacaciones|format_datetime(locale='es', pattern="d 'de' MMM") }}</b>
+                                </p>
+                            {% endif %}
+                        </div>
+                        {# {% include 'SSTiendaBundle:Web:detalleProductoPresupuestoRapidoBlock.html.twig' %} #}
+
+                    </div>
+
+                    <div style="background: white; padding: 20px;">
+                        <p style="
+                font-family: Roboto, sans-serif;
+                font-size: 16px;
+                font-weight: bold;
+                text-align: center;">MONTAJE PREVIO GRATUITO</p>
+                        Te enviaremos un <b>montaje con tu diseño</b>
+                        para que valides que todo está donde y cómo te gusta
+                    </div>
+                    <div style="background: #f9f9f9; padding: 20px;">
+
+                        <p style="
+                font-family: Roboto, sans-serif;
+                font-size: 16px;
+                font-weight: bold;
+                text-align: center;">¿TIENES ALGUNA DUDA?</p>
+                        <button class="button calculaPresupuesto" data-toggle="modal"
+                                data-target="#presupuestoRapidoModal"
+                                style="background-color:#5bc0de; width: 100%; padding: 10px"
+                                title="Si deseas más información sobre este producto">
+                            <b>{% trans %}CONTACTA{% endtrans %}</b></i>
+                        </button>
+                    </div>
+
+                </div><!--/product-information-->
+
+
             </div>
         </div>
 
@@ -71,11 +472,30 @@
     </div>
 
     {# ... Tus secciones de "Modelos Relacionados" y "Últimos Vistos" ... #}
+
+    {% if modelo.modelosRelacionados|length > 0 %}
+        <div class="recommended_items mt-5"><h2 class="title text-center">{% trans %}MODELOS RELACIONADOS{% endtrans %}</h2>
+
+        <div class="row">
+            {% for producto in modelo.modelosRelacionados %}
+                {# Solo mostramos el producto si está activo #}
+                {% if producto.activo == true %}
+                    <div>
+                        {#
+                        CORRECCIÓN: Usamos el parcial estándar de tu nuevo proyecto
+                        para asegurar un estilo visual consistente.
+                        #}
+                        {% include 'web/catalog/_productoElementoGrid.html.twig' with {'producto': producto} %}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        </div>{% endif %}
 {% endblock %}
 
-{#{% block javascripts %}#}
-{#    {{ parent() }}#}
+{# {% block javascripts %} #}
+{#    {{ parent() }} #}
 {#    #}{# Incluimos un fichero JS dedicado. Lo crearemos en el siguiente paso. #}
-{#    {% include 'web/product/partials/_product_page_javascript.html.twig' %}#}
-{#{% endblock %}#}
+{#    {% include 'web/product/partials/_product_page_javascript.html.twig' %} #}
+{# {% endblock %} #}
 

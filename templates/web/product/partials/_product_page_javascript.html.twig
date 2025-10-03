@@ -8,18 +8,84 @@
         get_sizes: "{{ path('app_product_get_sizes', { '_locale': app.request.locale, 'modeloId': modelo.id, 'colorId': 'SLUG_COLOR' }) }}",
         update_price: "{{ path('app_product_update_price', {'_locale': app.request.locale}) }}",
         // Ruta para el plugin de subida de ficheros. Necesitarás un controlador para esto.
-        file_upload: "{{ oneup_uploader_endpoint('gallery') }}"
+        file_upload: "{{ oneup_uploader_endpoint('gallery') }}",
+         presupuesto_rapido_modal: "{{ path('app_product_presupuesto_rapido_modal', {'id': modelo.id}) }}"
     };
 
     // 2. Envolvemos toda nuestra lógica en un listener para asegurar que la página está lista.
-    document.addEventListener('DOMContentLoaded', function() {
-        (function($) { // Usamos una clausura de jQuery para seguridad y compatibilidad
+    document.addEventListener('DOMContentLoaded', function () {
+        (function ($) { // Usamos una clausura de jQuery para seguridad y compatibilidad
+
+            // 1. Mantenemos la función para obtener el Client ID en un lugar accesible
+            function getGoogleAnalyticsClientId() {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    let cookie = cookies[i].trim();
+                    if (cookie.startsWith('_ga=')) {
+                        const value = cookie.substring(4);
+                        const parts = value.split('.');
+                        if (parts.length >= 4) {
+                            return parts[2] + '.' + parts[3];
+                        }
+                    }
+                }
+                return null;
+            }
+
+            // --- CÓDIGO DE SEGUIMIENTO (TRACKING) ---
+            // Lo ejecutamos dentro de un timeout para asegurar que cualquier otro script de tracking se haya cargado.
+            setTimeout(function () {
+                // Google Analytics Event
+                if (typeof gtag === 'function') {
+                    gtag("event", "view_item", {
+                        currency: "EUR",
+                        value: {{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }},
+                        items: [{
+                            item_id: "{{ modelo.getReferencia() }}",
+                            item_name: "{{ modelo.getNombre() }}",
+                            item_brand: "{{ modelo.getFabricante().getNombre() }}",
+                            {% for categoriaObj in modelo.category %}
+                            {% if categoriaObj is defined and categoriaObj is not null and categoriaObj.parent is defined %}
+                            {% if categoriaObj.parent is not null and categoriaObj.parent.name != "Home" %}
+                            {% if categoriaObj.parent.parent is not null and categoriaObj.parent.parent.name != "Home" %}
+                            {% if categoriaObj.parent.parent.parent is not null and categoriaObj.parent.parent.parent.name != "Home" %}
+                            item_category: "{{ categoriaObj.parent.parent.parent.name }}",
+                            item_list_id: "{{ categoriaObj.parent.parent.parent.name }}",
+                            item_list_name: "{{ categoriaObj.parent.parent.parent.name }}",
+
+                            {% endif %}
+                            item_category: "{{ categoriaObj.parent.parent.name }}",
+                            item_list_id: "{{ categoriaObj.parent.parent.name }}",
+                            item_list_name: "{{ categoriaObj.parent.parent.name }}",
+                            {% endif %}
+                            item_category: "{{ categoriaObj.parent.name }}",
+                            item_list_id: "{{ categoriaObj.parent.name }}",
+                            item_list_name: "{{ categoriaObj.parent.name }}",
+                            {% endif %}
+                            item_category: "{{ categoriaObj.name }}",
+                            item_list_id: "{{ categoriaObj.name }}",
+                            item_list_name: "{{ categoriaObj.name }}",
+                            {% endif %}
+
+                            {% endfor %}
+                        }]
+                    });
+                }
+                // Facebook Pixel Event
+                if (typeof fbq === 'function') {
+                    fbq('track', 'ViewContent', {
+                        content_ids: "['{{ modelo.referencia }}']",
+                        content_type: 'product'
+                    });
+                }
+            }, 1500);
+
 
             // --- FUNCIÓN DE UTILIDAD: DEBOUNCE ---
             // Evita que una función se ejecute demasiadas veces seguidas (ej. al teclear).
             function debounce(callback, wait) {
                 let timeout;
-                return function(...args) {
+                return function (...args) {
                     const context = this;
                     clearTimeout(timeout);
                     timeout = setTimeout(() => callback.apply(context, args), wait);
@@ -27,7 +93,7 @@
             }
 
             // --- LÓGICA DE CÁLCULO DE PRECIOS ---
-            const calculatePrice = debounce(function() {
+            const calculatePrice = debounce(function () {
                 const data = {
                     productos: [],
                     trabajos: [],
@@ -35,7 +101,7 @@
                 };
 
                 // Recoger las cantidades de cada talla
-                $('#tallas input[type=number]').each(function() {
+                $('#tallas input[type=number]').each(function () {
                     const quantity = parseInt($(this).val(), 10) || 0;
                     if (quantity > 0) {
                         data.productos.push({
@@ -45,7 +111,7 @@
                     }
                 });
 
-                $('#estampacionLugar .personalization-row').each(function() {
+                $('#estampacionLugar .personalization-row').each(function () {
                     const $row = $(this);
                     const selectedOption = $row.find('.personalizacion-selector').val();
 
@@ -75,12 +141,12 @@
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(data),
-                    success: function(html) {
+                    success: function (html) {
                         $('#div_precio').html(html);
                         const precioUnidadText = $(html).find('.precio-unidad-valor').text();
                         $('#circuloPrecioUnidad > div').html(`<p style="font-size: 24px; margin-top: 15px;"><b>${precioUnidadText}</b></p>`);
                     },
-                    error: function() {
+                    error: function () {
                         $('#div_precio').html('<p class="alert alert-danger">Error al calcular el precio.</p>');
                     }
                 });
@@ -89,7 +155,7 @@
             // --- FUNCIÓN PARA MOSTRAR/OCULTAR PANELES ---
             function checkQuantitiesAndTogglePanels() {
                 let totalQuantity = 0;
-                $('#tallas input[type=number]').each(function() {
+                $('#tallas input[type=number]').each(function () {
                     totalQuantity += parseInt($(this).val(), 10) || 0;
                 });
 
@@ -118,7 +184,7 @@
                             const fileWithError = data.result.files[0];
                             let errorMessage = fileWithError.error;
 
-                            switch(errorMessage) {
+                            switch (errorMessage) {
                                 case 'error.maxsize':
                                     errorMessage = 'El fichero es demasiado grande.';
                                     break;
@@ -146,7 +212,7 @@
                     },
 
                     // Se mejora el manejador de errores 'fail' para que entienda múltiples formatos de respuesta
-                    fail: function(e, data) {
+                    fail: function (e, data) {
                         console.log("ERROR");
                         const container = $(this).closest('.personalization-row');
                         let errorMessage = 'Error al subir el archivo.';
@@ -158,7 +224,7 @@
                             // Caso 1: El error viene en el formato {files: [{error: "..."}]}
                             if (response.files && Array.isArray(response.files) && response.files.length > 0 && response.files[0].error) {
                                 // Mapeamos los códigos de error a mensajes más amigables
-                                switch(response.files[0].error) {
+                                switch (response.files[0].error) {
                                     case 'error.maxsize':
                                         errorMessage = 'El fichero es demasiado grande.';
                                         break;
@@ -183,7 +249,7 @@
 
             // --- LÓGICA DE PERSONALIZACIÓN ---
             let nPersonalizaciones = 0;
-            $('body').on('click', '#addPersonalizacion, .addPersonalizacion', function() {
+            $('body').on('click', '#addPersonalizacion, .addPersonalizacion', function () {
                 nPersonalizaciones++;
                 const url = TUSKAM_ROUTES.add_customization.replace('N_PERS', nPersonalizaciones);
 
@@ -193,7 +259,7 @@
 
                 $.ajax({
                     url: url,
-                    success: function(html) {
+                    success: function (html) {
 
                         // loadingDiv.replaceWith(html);
                         // // IMPORTANTE: Se inicializa el plugin de subida para la nueva fila
@@ -254,7 +320,7 @@
 
                 // Se construye el HTML de las nuevas opciones
                 let optionsHtml = '';
-                $.each(areasToShow, function(index, area) {
+                $.each(areasToShow, function (index, area) {
                     optionsHtml += `<option value="${area}">${area}</option>`;
                 });
 
@@ -266,7 +332,7 @@
             }
 
             // Lógica para el botón de eliminar personalización
-            $('body').on('click', '.remove-personalization-row', function() {
+            $('body').on('click', '.remove-personalization-row', function () {
                 $(this).closest('.personalization-row').remove();
                 calculatePrice(); // Recalculamos el precio
             });
@@ -284,7 +350,7 @@
                     if (container.find(`#${divId}`).length === 0) {
                         const div = $(`<div id="${divId}" style="text-align:center;"><img src="{{ asset('images/loading.gif') }}" alt="cargando"></div>`);
                         container.append(div);
-                        div.load(url, function(response, status, xhr) {
+                        div.load(url, function (response, status, xhr) {
                             if (status == "error") {
                                 console.error('Error al cargar las tallas para', colorSlug, ':', xhr.status, xhr.statusText);
                                 div.html("<p class='alert alert-danger'>Error al cargar las tallas.</p>");
@@ -295,7 +361,7 @@
             }
 
             // --- NUEVA LÓGICA PARA LOS RADIO BUTTONS ---
-            $('body').on('change', '.personalizacionCarritoRadio', function() {
+            $('body').on('change', '.personalizacionCarritoRadio', function () {
                 const $row = $(this).closest('.personalization-row');
                 if (this.value === 'Si') {
                     $row.find('.nuevaPersonalizacionContainer').hide();
@@ -317,14 +383,15 @@
                     $tintasContainer.hide();
                 }
             }
-            $('body').on('change', '.personalizacionTipo', function() {
+
+            $('body').on('change', '.personalizacionTipo', function () {
                 toggleTintasVisibility(this);
                 calculatePrice();
             });
 
 
             // --- NUEVA LÓGICA PARA EL DESPLEGABLE UNIFICADO ---
-            $('body').on('change', '.personalizacion-selector', function() {
+            $('body').on('change', '.personalizacion-selector', function () {
                 const $row = $(this).closest('.personalization-row');
                 if ($(this).val() === '-1') {
                     $row.find('.nuevaPersonalizacionContainer').slideDown();
@@ -343,182 +410,183 @@
             $('body').on('change keyup', '#tallas input[type=number]', checkQuantitiesAndTogglePanels);
             $('body').on('change', '#estampacionLugar select, #doblembol', calculatePrice);
             $('body').on('keyup', '#estampacionLugar input, #estampacionLugar textarea', calculatePrice);
-            $('body').on('change', '.personalizacionTipo', function() {
+            $('body').on('change', '.personalizacionTipo', function () {
                 updateCustomizationPanel(this);
                 calculatePrice();
             });
 
             // Galería de imágenes (si existe la vista simple)
+            // const mainImage = $('#imagen-producto-main');
+            // if (mainImage.length) {
+            //     const originalImageSrc = mainImage.data('imagen-original');
+            //     $('.colorProducto a').on('mouseover', function () {
+            //         const newImageSrc = $(this).children().data('imagen-grande');
+            //         if (newImageSrc) {
+            //             mainImage.attr('src', newImageSrc);
+            //         }
+            //     }).on('mouseout', function () {
+            //         mainImage.attr('src', originalImageSrc);
+            //     });
+            // }
+
+
+            // ====================================================================
+            // --- INICIO DE LA CORRECCIÓN: LÓGICA DEL MODAL DE GALERÍA RESTAURADA ---
+            // ====================================================================
+            $('#fotos-detalle-modal').on('show.bs.modal', function (event) {
+                // 1. Obtener el botón (el 'div' del color) que abrió el modal
+                var button = $(event.relatedTarget);
+
+                // 2. Leer el string de imágenes del atributo data-imagenes
+                var imageString = button.data('imagenes');
+                var modal = $(this);
+
+                var mainImageView = modal.find('#gallery-main-image');
+                var thumbnailsContainer = modal.find('.gallery-thumbnails');
+                var prevButton = modal.find('#gallery-prev');
+                var nextButton = modal.find('#gallery-next');
+
+                // Limpiar contenido previo para evitar que se mezclen galerías
+                thumbnailsContainer.html('');
+                mainImageView.attr('src', '');
+
+                var imageArray = [];
+                var currentIndex = 0;
+
+                // Función interna para mostrar una imagen específica
+                function showImageByIndex(index) {
+                    if (!imageArray[index]) return;
+                    mainImageView.attr('src', imageArray[index]);
+                    thumbnailsContainer.find('.gallery-thumbnail').removeClass('active');
+                    $(thumbnailsContainer.find('.gallery-thumbnail')[index]).addClass('active');
+                    currentIndex = index;
+                }
+
+                // 3. Procesar el string de URLs y construir la galería
+                if (imageString) {
+                    // Convertimos el string "url1,url2,url3" en un array
+                    imageArray = imageString.split(",").filter(Boolean);
+                    var thumbnailsHtml = "";
+
+                    if (imageArray.length > 0) {
+                        imageArray.forEach(function (imageUrl, index) {
+                            // Creamos una miniatura por cada URL
+                            thumbnailsHtml += `<img src="${imageUrl}" class="gallery-thumbnail" data-index="${index}" alt="Miniatura ${index + 1}">`;
+                        });
+                        thumbnailsContainer.html(thumbnailsHtml);
+                        showImageByIndex(0); // Mostramos la primera imagen por defecto
+                    }
+                }
+
+                // 4. Asignar eventos a los botones de navegación (con .off() para evitar duplicados)
+                nextButton.off('click').on('click', function() {
+                    var nextIndex = (currentIndex + 1) % imageArray.length;
+                    showImageByIndex(nextIndex);
+                });
+
+                prevButton.off('click').on('click', function() {
+                    var prevIndex = (currentIndex - 1 + imageArray.length) % imageArray.length;
+                    showImageByIndex(prevIndex);
+                });
+
+                thumbnailsContainer.off('click', '.gallery-thumbnail').on('click', '.gallery-thumbnail', function() {
+                    showImageByIndex($(this).data('index'));
+                });
+            });
+            // ==================================================================
+            // --- FIN DE LA CORRECCIÓN: LÓGICA DEL MODAL DE GALERÍA RESTAURADA ---
+            // ==================================================================
+
+
+            // --- FUNCIONALIDADES AÑADIDAS DESDE TU PROYECTO ANTERIOR ---
+
+            // 2. Efecto Hover para cambiar la imagen principal
             const mainImage = $('#imagen-producto-main');
             if (mainImage.length) {
-                const originalImageSrc = mainImage.data('imagen-original');
-                $('.colorProducto a').on('mouseover', function() {
-                    const newImageSrc = $(this).children().data('imagen-grande');
+                const originalImageSrc = mainImage.attr('src');
+                // Usamos 'body' para delegar el evento, ya que los selectores de color se cargan dinámicamente
+                $('body').on('mouseover', '.color-swatch-wrapper', function() {
+                    const newImageSrc = $(this).find('[data-imagen-grande]').data('imagen-grande');
                     if (newImageSrc) { mainImage.attr('src', newImageSrc); }
-                }).on('mouseout', function() {
+                }).on('mouseout', '.color-swatch-wrapper', function() {
                     mainImage.attr('src', originalImageSrc);
                 });
             }
+
+            // 3. Scroll suave al hacer clic en un color para ver sus tallas
+            $('body').on('click', '.color-swatch-wrapper', function() {
+                const colorId = $(this).data('color');
+                const tallasContainer = $(`#tallas-para-${colorId}`);
+                if (tallasContainer.length) {
+                    $('html, body').animate({
+                        scrollTop: tallasContainer.offset().top - 150 // -150 para dejar un margen superior
+                    }, 800);
+                }
+            });
+
+            // 4. Carga del contenido del modal "Presupuesto Rápido"
+            // 2. Modificamos el listener del modal "Presupuesto Rápido"
+            $("#presupuestoRapidoModal").on("show.bs.modal", function (e) {
+                const modal = $(this);
+                const loadingDiv = $('<div class="modal-dialog"><div class="modal-content" style="text-align:center;"><img src="{{ asset('images/loading.gif') }}" style="width:100px; margin: 40px;" alt="cargando"></div></div>');
+                modal.html(loadingDiv);
+
+                $.ajax({
+                    url: TUSKAM_ROUTES.presupuesto_rapido_modal,
+                    success: function (result) {
+                        // Primero, cargamos el HTML del formulario en el modal
+                        modal.html(result);
+
+                        // AHORA que el formulario existe, vinculamos el script de GA
+                        const contactForm = modal.find('#solicitud-contacto-form')[0]; // Usamos find() y obtenemos el elemento DOM
+                        if (contactForm) {
+                            contactForm.addEventListener('submit', function() {
+                                const clientId = getGoogleAnalyticsClientId();
+                                if (clientId) {
+                                    // Eliminamos campos previos para evitar duplicados
+                                    let existingField = this.querySelector('input[name="googleClientId"]');
+                                    if(existingField) {
+                                        existingField.remove();
+                                    }
+
+                                    // Creamos y añadimos el campo oculto
+                                    const hiddenInput = document.createElement('input');
+                                    hiddenInput.type = 'hidden';
+                                    hiddenInput.name = 'googleClientId';
+                                    hiddenInput.value = clientId;
+                                    this.appendChild(hiddenInput);
+                                }
+                            });
+                        }
+                    },
+                    error: function() {
+                        modal.find('.modal-content').html('<div class="modal-body"><p class="alert alert-danger">Error al cargar.</p></div>');
+                    }
+                });
+            });
+
+            // 5. Scroll suave para el botón "Ver Resumen"
+            $(".scrollResumen").on("click", function () {
+                const scrollTo = $("#div_precio");
+                if (scrollTo.length) {
+                    $('html, body').animate({
+                        scrollTop: scrollTo.offset().top - 100
+                    }, 1000);
+                }
+            });
+
+            // 6. Lógica del círculo de precio flotante
+            $(window).on('scroll', function () {
+                const priceDiv = $('#div_precio');
+                if (priceDiv.length && priceDiv.is(':visible')) {
+                    if ($(this).scrollTop() >= priceDiv.position().top - priceDiv.height()) {
+                        $('#circuloPrecioUnidad').fadeOut();
+                    } else {
+                        $('#circuloPrecioUnidad').fadeIn();
+                    }
+                }
+            });
         })(jQuery);
     });
 </script>
-
-
-
-
-
-{# templates/web/product/partials/_product_page_javascript.html.twig #}
-{# Contiene TODO el JavaScript específico para la ficha de producto #}
-{#<script>#}
-{#    // 1. Definimos las rutas que nuestro script necesita, aquí mismo.#}
-{#    var TUSKAM_ROUTES = {#}
-{#        add_customization: "{{ path('app_product_add_customization', { '_locale': app.request.locale, 'id': modelo.id, 'nPersonalizaciones': 'N_PERS' }) }}",#}
-{#        get_sizes: "{{ path('app_product_get_sizes', { '_locale': app.request.locale, 'modeloId': modelo.id, 'colorId': 'SLUG_COLOR' }) }}",#}
-{#        update_price: "{{ path('app_product_update_price', {'_locale': app.request.locale}) }}"#}
-{#    };#}
-
-{#    // 2. Envolvemos toda nuestra lógica en un listener para asegurar que la página está lista.#}
-{#    document.addEventListener('DOMContentLoaded', function() {#}
-{#        (function($) { // Usamos una clausura de jQuery para seguridad y compatibilidad#}
-
-{#            // --- FUNCIÓN DE UTILIDAD: DEBOUNCE ---#}
-{#            // Evita que una función se ejecute demasiadas veces seguidas (ej. al teclear).#}
-{#            function debounce(callback, wait) {#}
-{#                let timeout;#}
-{#                return function(...args) {#}
-{#                    const context = this;#}
-{#                    clearTimeout(timeout);#}
-{#                    timeout = setTimeout(() => callback.apply(context, args), wait);#}
-{#                };#}
-{#            }#}
-
-{#            // --- LÓGICA DE CÁLCULO DE PRECIOS ---#}
-{#            const calculatePrice = debounce(function() {#}
-{#                const data = {#}
-{#                    productos: [],#}
-{#                    trabajos: [],#}
-{#                    doblado: $('#doblembol').is(':checked')#}
-{#                };#}
-
-{#                // Recoger las cantidades de cada talla#}
-{#                $('#tallas input[type=number]').each(function() {#}
-{#                    const quantity = parseInt($(this).val(), 10) || 0;#}
-{#                    if (quantity > 0) {#}
-{#                        data.productos.push({#}
-{#                            referencia: $(this).data('ref'),#}
-{#                            cantidad: quantity#}
-{#                        });#}
-{#                    }#}
-{#                });#}
-
-{#                // Recoger los datos de cada personalización#}
-{#                $('#estampacionLugar .personalization-row').each(function() {#}
-{#                    const row = $(this);#}
-{#                    const trabajo = {#}
-{#                        codigo: row.find('.personalizacionTipo').val(),#}
-{#                        cantidad: row.find('.tintas').val(),#}
-{#                        ubicacion: row.find('.ubicacion').val(),#}
-{#                        observaciones: row.find('.observaciones').val(),#}
-{#                        archivo: row.find('.file-subido').text() || ''#}
-{#                    };#}
-{#                    if (trabajo.codigo) { data.trabajos.push(trabajo); }#}
-{#                });#}
-
-{#                // Hacer la llamada AJAX#}
-{#                $.ajax({#}
-{#                    url: TUSKAM_ROUTES.update_price,#}
-{#                    type: 'POST',#}
-{#                    contentType: 'application/json',#}
-{#                    data: JSON.stringify(data),#}
-{#                    success: function(html) {#}
-{#                        const priceContainer = $('#div_precio');#}
-{#                        priceContainer.html(html);#}
-
-{#                        const precioUnidadText = $(html).find('.precio-unidad-valor').text();#}
-{#                        $('#circuloPrecioUnidad > div').html(`<p style="font-size: 24px; margin-top: 15px;"><b>${precioUnidadText}</b></p>`);#}
-{#                    },#}
-{#                    error: function() {#}
-{#                        $('#div_precio').html('<p class="alert alert-danger">Error al calcular el precio.</p>');#}
-{#                    }#}
-{#                });#}
-{#            }, 500); // 500ms de retardo#}
-
-{#            // --- FUNCIÓN PARA MOSTRAR/OCULTAR PANELES ---#}
-{#            function checkQuantitiesAndTogglePanels() {#}
-{#                let totalQuantity = 0;#}
-{#                $('#tallas input[type=number]').each(function() {#}
-{#                    totalQuantity += parseInt($(this).val(), 10) || 0;#}
-{#                });#}
-
-{#                if (totalQuantity > 0) {#}
-{#                    $('#div_serigrafia').slideDown();#}
-{#                    $('#div_precio').slideDown();#}
-{#                    $('#circuloPrecioUnidad').fadeIn();#}
-{#                    calculatePrice(); // Calcular el precio solo si hay cantidades#}
-{#                } else {#}
-{#                    $('#div_serigrafia').slideUp();#}
-{#                    $('#div_precio').slideUp();#}
-{#                    $('#circuloPrecioUnidad').fadeOut();#}
-{#                }#}
-{#            }#}
-
-{#            // --- LÓGICA PARA CARGAR LAS TALLAS POR AJAX ---#}
-{#            function loadTallas() {#}
-{#                $(".colorProductoPresupuesto").each(function () {#}
-{#                    const button = $(this);#}
-{#                    const colorSlug = button.data('color');#}
-{#                    const url = TUSKAM_ROUTES.get_sizes.replace('SLUG_COLOR', colorSlug);#}
-
-{#                    const divId = `tallas-para-${colorSlug}`;#}
-{#                    const container = $('#tallas');#}
-
-{#                    if (container.find(`#${divId}`).length === 0) {#}
-{#                        const div = $(`<div id="${divId}" style="text-align:center;"><img src="{{ asset('images/loading.gif') }}" alt="cargando"></div>`);#}
-{#                        container.append(div);#}
-{#                        div.load(url, function(response, status, xhr) {#}
-{#                            if (status == "error") {#}
-{#                                console.error('Error al cargar las tallas para', colorSlug, ':', xhr.status, xhr.statusText);#}
-{#                                div.html("<p class='alert alert-danger'>Error al cargar las tallas.</p>");#}
-{#                            }#}
-{#                        });#}
-{#                    }#}
-{#                });#}
-{#            }#}
-
-{#            // --- LISTENERS DE EVENTOS ---#}
-{#            checkQuantitiesAndTogglePanels(); // Comprobación inicial al cargar la página#}
-{#            $(window).on('load', loadTallas);#}
-
-{#            $('body').on('change keyup', '#tallas input[type=number]', checkQuantitiesAndTogglePanels);#}
-{#            $('body').on('change', '#estampacionLugar select, #doblembol', calculatePrice);#}
-{#            $('body').on('keyup', '#estampacionLugar input, #estampacionLugar textarea', calculatePrice);#}
-
-{#            // --- LÓGICA DE LA GALERÍA DE IMÁGENES ---#}
-{#            const mainImage = $('#imagen-producto-main');#}
-{#            if (mainImage.length) {#}
-{#                const originalImageSrc = mainImage.data('imagen-original');#}
-{#                $('.colorProducto a').on('mouseover', function() {#}
-{#                    const newImageSrc = $(this).children().data('imagen-grande');#}
-{#                    if (newImageSrc) { mainImage.attr('src', newImageSrc); }#}
-{#                }).on('mouseout', function() {#}
-{#                    mainImage.attr('src', originalImageSrc);#}
-{#                });#}
-{#            }#}
-
-{#            // --- LÓGICA DE PERSONALIZACIÓN ---#}
-{#            let nPersonalizaciones = 0;#}
-{#            $('body').on('click', '#addPersonalizacion, .addPersonalizacion', function() {#}
-{#                nPersonalizaciones++;#}
-{#                const url = TUSKAM_ROUTES.add_customization.replace('N_PERS', nPersonalizaciones);#}
-
-{#                const container = $('#estampacionLugar');#}
-{#                const loadingDiv = $('<div style="text-align:center;"><img src="{{ asset('images/loading.gif') }}" alt="cargando"></div>');#}
-{#                container.append(loadingDiv);#}
-
-{#                $.ajax({ url: url, success: function(html) { loadingDiv.html(html); }});#}
-{#            });#}
-
-{#        })(jQuery);#}
-{#    });#}
-{#</script>#}
 
