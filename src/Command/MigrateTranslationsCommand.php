@@ -13,7 +13,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'app:migrate-translations',
-    description: 'Importa las traducciones desde old_translations.csv a la tabla ext_translations.',
+    description: 'Importa las traducciones desde old_translations.csv de forma optimizada.',
 )]
 class MigrateTranslationsCommand extends Command
 {
@@ -26,12 +26,15 @@ class MigrateTranslationsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
-        $io->title('Iniciando importación de traducciones desde CSV (modo optimizado)');
+        // Pide a PHP que no imponga un límite de memoria para este script
+        ini_set('memory_limit', '-1');
 
-        // Desactivamos el logger de SQL para que no consuma memoria
+        $io = new SymfonyStyle($input, $output);
+        $io->title('Iniciando importación de traducciones desde CSV');
+
+        // Desactivamos herramientas de depuración que consumen memoria
         $this->connection->getConfiguration()->setSQLLogger(null);
-        gc_disable(); // Desactivamos el garbage collector para gestionarlo manualmente
+        gc_disable();
 
         $csvFilePath = $this->getApplication()->getKernel()->getProjectDir() . '/old_translations.csv';
         if (!file_exists($csvFilePath)) {
@@ -40,42 +43,62 @@ class MigrateTranslationsCommand extends Command
         }
 
         try {
-            $io->text("Abriendo el archivo CSV: " . $csvFilePath);
             $handle = fopen($csvFilePath, 'r');
+            $this->connection->beginTransaction();
 
-            // Contamos el total de líneas para la barra de progreso
-            $totalRows = count(file($csvFilePath)) - 1; // -1 para no contar la cabecera
-            if ($totalRows <= 0) {
-                $io->warning('El archivo CSV está vacío o solo contiene la cabecera.');
+            $headers = fgetcsv($handle);
+            if ($headers === false) {
+                $io->warning('El archivo CSV está vacío.');
                 return Command::SUCCESS;
             }
 
-            $this->connection->beginTransaction();
-            $insertCount = 0;
-            $rowCount = 0;
-
-            $headers = fgetcsv($handle);
             $columnMap = array_flip($headers);
-            // ... (verificación de columnas que ya teníamos)
 
-            // --- INICIO DE LA CORRECCIÓN ---
-            // 1. Iniciamos la barra de progreso con el total de filas.
-            $io->progressStart($totalRows);
-            // --- FIN DE LA CORRECCIÓN ---
+            // --- INICIO DE LA CORRECCIÓN DE LÓGICA ---
+            // Columnas obligatorias para que una fila sea válida
+            if (!isset($columnMap['translatable_id']) || !isset($columnMap['locale'])) {
+                $io->error('El CSV debe contener al menos las columnas "translatable_id" y "locale".');
+                return Command::FAILURE;
+            }
+
+            // Detectamos qué campos de traducción están realmente presentes en el CSV
+            $availableFields = [];
+            $potentialFields = ['titulo_seo', 'descripcion_seo', 'descripcion'];
+            foreach ($potentialFields as $field) {
+                if (isset($columnMap[$field])) {
+                    $availableFields[] = $field;
+                }
+            }
+
+            if (empty($availableFields)) {
+                $io->warning('No se ha encontrado ninguna columna de traducción (titulo_seo, descripcion_seo, descripcion) en el CSV.');
+                return Command::SUCCESS;
+            }
+            $io->info('Se importarán los siguientes campos: ' . implode(', ', $availableFields));
+            // --- FIN DE LA CORRECCIÓN DE LÓGICA ---
+
+            $io->progressStart();
+            $rowCount = 0;
+            $insertCount = 0;
 
             while (($data = fgetcsv($handle)) !== FALSE) {
                 $rowCount++;
                 if (count($data) !== count($headers)) {
-                    $io->warning("Saltando línea #{$rowCount} por tener un número incorrecto de columnas.");
+                    // Este aviso es correcto, lo mantenemos
+                    $io->warning(" Saltando línea #{$rowCount} por tener un número incorrecto de columnas.");
+                    $io->progressAdvance();
                     continue;
                 }
 
                 $modeloId = $data[$columnMap['translatable_id']];
                 $locale = $data[$columnMap['locale']];
-                if (empty($modeloId) || empty($locale)) continue;
+                if (empty($modeloId) || empty($locale)) {
+                    $io->progressAdvance();
+                    continue;
+                }
 
-                $fieldsToMigrate = ['titulo_seo', 'descripcion_seo', 'descripcion'];
-                foreach ($fieldsToMigrate as $fieldName) {
+                // Iteramos solo sobre los campos que hemos detectado que existen
+                foreach ($availableFields as $fieldName) {
                     $content = $data[$columnMap[$fieldName]];
                     if (!empty($content)) {
                         $this->connection->insert('ext_translations', [
@@ -87,16 +110,12 @@ class MigrateTranslationsCommand extends Command
                     }
                 }
 
-                // Limpiamos la memoria cada 500 filas
                 if ($rowCount % 500 === 0) {
                     $this->em->clear();
                     gc_collect_cycles();
                 }
 
-                // --- INICIO DE LA CORRECCIÓN ---
-                // 2. Avanzamos la barra de progreso en cada iteración.
                 $io->progressAdvance();
-                // --- FIN DE LA CORRECCIÓN ---
             }
             fclose($handle);
 
@@ -109,7 +128,7 @@ class MigrateTranslationsCommand extends Command
             $io->error('Ha ocurrido un error: ' . $e->getMessage());
             return Command::FAILURE;
         } finally {
-            gc_enable(); // Reactivamos el recolector de basura
+            gc_enable();
         }
 
         return Command::SUCCESS;

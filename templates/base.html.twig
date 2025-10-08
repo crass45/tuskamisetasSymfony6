@@ -547,7 +547,7 @@
                                                 <li class="nav-link">
                                                     <a id="navItemContacta" class="nav-link"
                                                             {#                                                       href="{{ path('ss_tienda_contacto') }}" #}
-                                                       href="{{ path('app_contact') }}"
+                                                       href="{{ path('app_contact', {'_locale': app.request.locale}) }}"
                                                        rel="nofollow">
                                                         {% trans %}Contacta{% endtrans %}
                                                     </a>
