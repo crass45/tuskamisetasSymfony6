@@ -2,11 +2,8 @@
 {# Este parcial decide qué tipo de galería mostrar basándose en las propiedades del 'modelo' #}
 
 <div class="row">
-    {# Condición: si hay imágenes extra (de niño, otras o de detalle), mostramos la galería compleja #}
-    {% set hasExtraImages = modelo.childImage or (modelo.otherImages and modelo.otherImages|split(',')|filter(img => img is not empty)|length > 0) or (modelo.detailsImages and modelo.detailsImages|split(',')|filter(img => img is not empty)|length > 0) %}
 
-    {% set hasExtraImages = true %}
-    {% if hasExtraImages %}
+
         {# Vista Compleja (tu antigua alternativa2 y 3) #}
         {# Esta vista no muestra los selectores de color aquí #}
         <div class="col-lg-12">
@@ -23,34 +20,34 @@
         {% for imagen in modelo.detailsImages|split(',')|filter(img => img is not empty) %}
             <div class="col-sm-4 hidden-xs"><div class="row" style="padding: 5px"><img class="imagenProducto" style="width: 100%; height: auto;" src="{{ imagen }}" alt="{{ modelo.nombre }}"></div></div>
         {% endfor %}
-    {% else %}
-        {# Vista Simple (tu antigua alternativa 1) #}
-        <div class="col-sm-12">
-            <div class="view-product" id="contenedor-imagen-producto">
-                {% if modelo.imagen %}
-                    <img src="{{ sonata_path(modelo.imagen, 'wide') }}" itemprop="image" id="imagen-producto-main" alt="{{ modelo.nombre }}" data-imagen-original="{{ sonata_path(modelo.imagen, 'wide') }}">
-                {% else %}
-                    <img src="{{ modelo.urlImage }}" itemprop="image" id="imagen-producto-main" alt="{{ modelo.nombre }}" data-imagen-original="{{ modelo.urlImage }}">
-                {% endif %}
-                {% if modelo.isNovelty %}<img src="{{ asset('template/images/new.png') }}" alt="novedad" class="novelty-badge"/>{% endif %}
-                {% if modelo.url360 %}<a class="btn btn-info btn-sm 360-button" data-toggle="modal" data-target="#360Modal">360º</a>{% endif %}
-            </div>
-            {# CORRECCIÓN: Los selectores de color solo se muestran en la vista simple #}
-            <div class="colores">
-                <div style="text-align: center; margin-bottom: 30px">
-                    {% for productoColor in modelo.getColoresProductos() %}
-                        <div class="colorProducto colorProductoPresupuesto {{ productoColor.color.id }}" data-modelo="{{ modelo.id }}" data-color="{{ productoColor.color.nombreUrl }}" style="display: inline-block; position: relative;">
-                            <a data-toggle="tooltip" title="{{ productoColor.color.nombre |upper }}">
-                                {% if productoColor.imagen %}
-                                    <img src="{{ sonata_path(productoColor.imagen, 'mini') }}" data-imagen-grande="{{ sonata_path(productoColor.imagen, 'wide') }}" alt="{{ productoColor.color.nombre }}">
-                                {% else %}
-                                    <div style="width: 40px; height: 40px; background-color: {{ productoColor.color.codigoRGB }}; border: 1px solid #ccc;" data-imagen-grande="{{ productoColor.modelo.urlImage }}"></div>
-                                {% endif %}
-                            </a>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    {% endif %}
+{#    {% else %}#}
+{#        #}{# Vista Simple (tu antigua alternativa 1) #}
+{#        <div class="col-sm-12">#}
+{#            <div class="view-product" id="contenedor-imagen-producto">#}
+{#                {% if modelo.imagen %}#}
+{#                    <img src="{{ sonata_path(modelo.imagen, 'wide') }}" itemprop="image" id="imagen-producto-main" alt="{{ modelo.nombre }}" data-imagen-original="{{ sonata_path(modelo.imagen, 'wide') }}">#}
+{#                {% else %}#}
+{#                    <img src="{{ modelo.urlImage }}" itemprop="image" id="imagen-producto-main" alt="{{ modelo.nombre }}" data-imagen-original="{{ modelo.urlImage }}">#}
+{#                {% endif %}#}
+{#                {% if modelo.isNovelty %}<img src="{{ asset('template/images/new.png') }}" alt="novedad" class="novelty-badge"/>{% endif %}#}
+{#                {% if modelo.url360 %}<a class="btn btn-info btn-sm 360-button" data-toggle="modal" data-target="#360Modal">360º</a>{% endif %}#}
+{#            </div>#}
+{#            #}{# CORRECCIÓN: Los selectores de color solo se muestran en la vista simple #}
+{#            <div class="colores">#}
+{#                <div style="text-align: center; margin-bottom: 30px">#}
+{#                    {% for productoColor in modelo.getColoresProductos() %}#}
+{#                        <div class="colorProducto colorProductoPresupuesto {{ productoColor.color.id }}" data-modelo="{{ modelo.id }}" data-color="{{ productoColor.color.nombreUrl }}" style="display: inline-block; position: relative;">#}
+{#                            <a data-toggle="tooltip" title="{{ productoColor.color.nombre |upper }}">#}
+{#                                {% if productoColor.imagen %}#}
+{#                                    <img src="{{ sonata_path(productoColor.imagen, 'mini') }}" data-imagen-grande="{{ sonata_path(productoColor.imagen, 'wide') }}" alt="{{ productoColor.color.nombre }}">#}
+{#                                {% else %}#}
+{#                                    <div style="width: 40px; height: 40px; background-color: {{ productoColor.color.codigoRGB }}; border: 1px solid #ccc;" data-imagen-grande="{{ productoColor.modelo.urlImage }}"></div>#}
+{#                                {% endif %}#}
+{#                            </a>#}
+{#                        </div>#}
+{#                    {% endfor %}#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    {% endif %}#}
 </div>

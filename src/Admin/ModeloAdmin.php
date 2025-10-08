@@ -19,6 +19,7 @@ use Sonata\Form\Type\CollectionType;
 use Sonata\MediaBundle\Twig\Extension\MediaExtension;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -79,6 +80,7 @@ final class ModeloAdmin extends AbstractAdmin
             ->add('destacado', CheckboxType::class, ['required' => false])
             ->end()
             ->with('Media', ['class' => 'col-md-4'])
+            ->add('urlImage')
             ->add('imagen', ModelListType::class, [
                 'required' => false,
                 'help' => $imagen,

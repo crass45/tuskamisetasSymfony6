@@ -53,6 +53,9 @@ class Modelo implements Translatable
     #[ORM\Column(name: 'url_image', length: 200, nullable: true)]
     private ?string $urlImage = null;
 
+    #[ORM\Column(name: 'certificados', type: Types::TEXT, nullable: true)]
+    private $certificados;
+
     #[ORM\Column(name: 'is_for_children', nullable: true)]
     private ?bool $isForChildren = null;
 
@@ -829,6 +832,22 @@ class Modelo implements Translatable
             }
         }
         return $tallas;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCertificados()
+    {
+        return $this->certificados;
+    }
+
+    /**
+     * @param mixed $certificados
+     */
+    public function setCertificados($certificados): void
+    {
+        $this->certificados = $certificados;
     }
 
 

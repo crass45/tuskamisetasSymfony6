@@ -34,11 +34,11 @@
               content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
     </p>
 
-    {# --- INICIO DE LA CORRECCIÓN --- #}
-    {# Volvemos a calcular la condición para saber si estamos en la vista compleja #}
-    {% set hasExtraImages = modelo.childImage or (modelo.otherImages and modelo.otherImages|split(',')|filter(img => img is not empty)|length > 0) or (modelo.detailsImages and modelo.detailsImages|split(',')|filter(img => img is not empty)|length > 0) %}
+{#    #}{# --- INICIO DE LA CORRECCIÓN --- #}
+{#    #}{# Volvemos a calcular la condición para saber si estamos en la vista compleja #}
+{#    {% set hasExtraImages = modelo.childImage or (modelo.otherImages and modelo.otherImages|split(',')|filter(img => img is not empty)|length > 0) or (modelo.detailsImages and modelo.detailsImages|split(',')|filter(img => img is not empty)|length > 0) %}#}
 
-    {% if hasExtraImages %}
+{#    {% if hasExtraImages %}#}
         <div class="colores">
             <div style="text-align: center; margin-bottom: 30px">
                 {% for productoColor in modelo.getColoresProductos() %}
@@ -97,7 +97,7 @@
                 {% endfor %}
             </div>
         </div>
-    {% endif %}
+{#    {% endif %}#}
 
 
     {% if modelo.composicion %}
@@ -119,6 +119,30 @@
         <meta itemprop="url"
               content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
     </p>
+
+
+    {% if modelo.getCertificados() %} {# Una forma más corta y limpia de comprobar si no es nulo/vacío #}
+
+        {# Creamos un único contenedor con nuestra nueva clase de Flexbox #}
+        <div class="certificados-container">
+
+            {% set certificados = modelo.getCertificados() | split(',') %}
+            {% for imagen in certificados %}
+                {% if imagen is not empty %} {# Buena práctica: asegurarse de que no hay elementos vacíos #}
+
+                    {# Para cada imagen, creamos un enlace a la propia imagen y le aplicamos la nueva clase #}
+                    {#                <a href="{{ imagen }}" target="_blank" title="Ver certificado">#}
+                    <img class="certificado-imagen"
+                         src="{{ imagen }}"
+                         alt="Certificado del producto {{ modelo.nombre }}"/>
+                    {#                </a>#}
+
+                {% endif %}
+            {% endfor %}
+
+        </div>
+    {% endif %}
+
 
     <p><b>{% trans %}Tallas{% endtrans %}:</b> {{ modelo.getTallasString() }}</p>
 
