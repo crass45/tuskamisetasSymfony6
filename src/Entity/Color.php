@@ -100,4 +100,34 @@ class Color
     public function getProductos(): Collection { return $this->productos; }
     public function addProducto(Producto $producto): self { if (!$this->productos->contains($producto)) { $this->productos->add($producto); $producto->setColor($this); } return $this; }
     public function removeProducto(Producto $producto): self { if ($this->productos->removeElement($producto)) { if ($producto->getColor() === $this) { $producto->setColor(null); } } return $this; }
+
+    /**
+     * Comprueba si el color es una tonalidad de blanco o natural.
+     * La comprobación es insensible a mayúsculas/minúsculas y busca sinónimos.
+     *
+     * @return bool
+     */
+    public function isBlanco(): bool
+    {
+        // Lista de sinónimos para "blanco" en minúsculas.
+        // Puedes añadir más si los necesitas (ej. 'off-white', 'crudo', etc.).
+        $sinonimosBlanco = [
+            'blanco',
+            'white',
+            'natural',
+        ];
+
+        // Convertimos el nombre del color a minúsculas para una comparación segura.
+        $nombreColor = mb_strtolower($this->getNombre());
+
+        // Recorremos la lista de sinónimos.
+        foreach ($sinonimosBlanco as $sinonimo) {
+            // str_contains() comprueba si el nombre del color contiene el sinónimo.
+            if (str_contains($nombreColor, $sinonimo)) {
+                return true; // Si encuentra una coincidencia, es blanco.
+            }
+        }
+
+        return false; // Si termina el bucle sin encontrar coincidencias, no es blanco.
+    }
 }
