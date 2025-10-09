@@ -199,6 +199,8 @@ class ProductController extends AbstractController
             $cantidadSiendoAnadida += (int)($prodData['cantidad'] ?? 0);
         }
 
+        $dobladoEmbolsado = $data['doblado'];
+
         // 3. Calculamos la cantidad total combinada para el cálculo de precios.
         $cantidadTotalParaPrecio = $cantidadEnCarrito + $cantidadSiendoAnadida;
 
@@ -246,6 +248,16 @@ class ProductController extends AbstractController
                     $presupuestoTrabajo->setUrlImage($trabajoData['archivo'] ?? '');
                     $presupuesto->addTrabajo($presupuestoTrabajo);
                 }
+            }
+        }
+        if ($dobladoEmbolsado) {
+            $presupuestoTrabajo = new PresupuestoTrabajo();
+            $trabajo = $this->em->getRepository(Personalizacion::class)->findOneBy(array('codigo' => 'DB'));
+            if ($trabajo != null) {
+                $presupuestoTrabajo->setTrabajo($trabajo);
+                $presupuestoTrabajo->setCantidad($cantidadTotal);
+                $presupuestoTrabajo->setUbicacion("");
+                $presupuesto->addTrabajo($presupuestoTrabajo);
             }
         }
         $empresa = $this->em->getRepository(Empresa::class)->findOneBy([], ['id' => 'DESC']);
