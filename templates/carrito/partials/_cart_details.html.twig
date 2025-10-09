@@ -49,8 +49,8 @@
                             <p>Ref: {{ productoPresupuesto.producto.referencia }} | Color: {{ productoPresupuesto.producto.color.nombre }} | Talla: {{ productoPresupuesto.producto.talla }}</p>
                         </td>
                         <td class="cart_price">
-                            {# Muestra el precio unitario del producto base (sin personalización) #}
-                            <p>{{ item.getPrecioUnidad(app.user) | number_format(2, ',', '.') }} €</p>
+
+                            <p>{{ item.getPrecioFinalPorProducto(productoPresupuesto, app.user) | number_format(2, ',', '.') }} €</p>
                         </td>
                         <td class="cart_quantity">
                             <div class="cart_quantity_button" style="display: flex; justify-content: center; align-items: center; flex-wrap: nowrap;">

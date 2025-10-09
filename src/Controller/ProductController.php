@@ -249,13 +249,15 @@ class ProductController extends AbstractController
             }
         }
         $empresa = $this->em->getRepository(Empresa::class)->findOneBy([], ['id' => 'DESC']);
-        $ivaGeneral = $empresa->getIvaGeneral() / 100;
+        $ivaGeneral = $empresa->getIvaGeneral();
         $productosGTag = $producto->getModelo()->getReferencia();
         $productosGTagNombre = $producto->getModelo()->getNombre();
         $productosGTagBrand = $producto->getModelo()->getFabricante();
 
         // Guardamos el presupuesto calculado en la sesión para el siguiente paso (añadir al carrito)
         $session->set('presupuesto', $presupuesto);
+
+//        $precioSerigrafia = $presupuesto->getPrecioSerigrafiaPorUnidad();
 
         // Renderizamos el fragmento de HTML con el resumen del precio
         return $this->render('web/product/partials/_price_summary.html.twig', [

@@ -97,6 +97,7 @@ class Presupuesto
      */
     public function getPrecioUnidad(?User $user): float
     {
+
         $cantidad = $this->getCantidadProductos();
         return ($cantidad > 0) ? round($this->getPrecioTotal($user) / $cantidad, 2) : 0.0;
     }
@@ -267,15 +268,6 @@ class Presupuesto
         }
         return $totalTrabajo;
     }
-
-//    public function getPrecioUnidad(?User $user): float
-//    {
-//        $cantidad = $this->getCantidadProductos();
-//        if ($cantidad === 0) {
-//            return 0.0;
-//        }
-//        return round($this->getPrecioTotal($user) / $cantidad, 2);
-//    }
 
     // --- Métodos de Ayuda ---
 
@@ -496,4 +488,69 @@ class Presupuesto
             $productoPresupuesto->setCantidad($quantity);
         }
     }
+
+
+    public function getPrecioSerigrafiaPorUnidad()
+    {
+        $totalTrabajo = 0;
+        $totalBlancas = $this->getCantidadProductosPorColor('BLANCO');
+        $totalColor = $this->getCantidadProductosPorColor('COLOR');
+
+        foreach ($this->trabajos as $trabajo) {
+            $personalizacion = $trabajo->getTrabajo();
+            if ($personalizacion != null) {
+                //calculamos el total del precio
+                $totalTrabajo += $personalizacion->getPrecio($totalBlancas, $totalColor, $trabajo->getCantidad());
+            }
+        }
+        return $totalTrabajo;
+    }
+
+    /**
+     * Calcula el coste total de todas las personalizaciones (trabajos)
+     * para la cantidad total de productos en este presupuesto.
+     *
+     * @param \App\Entity\Sonata\User|null $user
+     * @return float
+     */
+    public function getCosteTotalPersonalizaciones(?\App\Entity\Sonata\User $user = null): float
+    {
+        $precioTotalTrabajos = 0;
+        $cantidadTotalProductos = $this->getCantidadProductos();
+
+        $totalBlancas = $this->getCantidadProductosPorColor('BLANCO');
+        $totalColor = $this->getCantidadProductosPorColor('COLOR');
+
+        if ($cantidadTotalProductos > 0) {
+            foreach ($this->trabajos as $trabajo) {
+                $personalizacion = $trabajo->getTrabajo();
+                if ($personalizacion != null) {
+                    //calculamos el total del precio
+                    $precioTotalTrabajos += $personalizacion->getPrecio($totalBlancas, $totalColor, $trabajo->getCantidad());
+                }
+            }
+        }
+        return $precioTotalTrabajos;
+    }
+
+    /**
+     * Devuelve el precio final de una línea de producto específica (PresupuestoProducto),
+     * incluyendo su precio base más el coste unitario de la personalización.
+     *
+     * @param PresupuestoProducto $presupuestoProducto La línea de producto específica.
+     * @param \App\Entity\Sonata\User|null $user El usuario para calcular descuentos.
+     * @return float El precio final por unidad para ese producto.
+     */
+    public function getPrecioFinalPorProducto(PresupuestoProducto $presupuestoProducto, ?\App\Entity\Sonata\User $user = null): float
+    {
+        // 1. Obtenemos el precio base del producto, que depende de la cantidad total del presupuesto.
+        $precioBase = $presupuestoProducto->getProducto()->getprecio($presupuestoProducto->getCantidad(),$this->getCantidadProductos(), $user);
+
+        // 2. Obtenemos el coste de la personalización por cada unidad.
+        $costePersonalizacionUnitario = $this->getPrecioSerigrafiaPorUnidad($user);
+
+        // 3. Sumamos ambos para obtener el precio final.
+        return $precioBase + $costePersonalizacionUnitario;
+    }
+
 }
