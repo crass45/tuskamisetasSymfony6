@@ -3,6 +3,7 @@
 
 namespace App\Model;
 
+use App\Entity\Proveedor;
 use App\Entity\Sonata\User;
 use App\Model\PresupuestoProducto;
 use App\Model\PresupuestoTrabajo;
@@ -28,6 +29,7 @@ class Presupuesto
     public function getTrabajos(): array { return $this->trabajos; }
     public function addTrabajo(PresupuestoTrabajo $trabajo): void { $this->trabajos[] = $trabajo; }
     public function getCantidadProductos(): int { return array_reduce($this->productos, fn($carry, $p) => $carry + $p->getCantidad(), 0); }
+    public function getTotalProductos(): int { return array_reduce($this->productos, fn($carry, $p) => $carry + $p->getCantidad(), 0); }
 
     public function getCantidadProductosConCarrito(int $cantidadCarrito): int {
 

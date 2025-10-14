@@ -5,6 +5,7 @@ namespace App\Model;
 
 use App\Entity\Personalizacion;
 use App\Entity\Producto;
+use App\Entity\Proveedor;
 use App\Entity\Sonata\User;
 use App\Entity\ZonaEnvio;
 
@@ -306,6 +307,26 @@ class Carrito
                 $this->items = array_values($this->items);
             }
         }
+    }
+
+    /**
+     * Calcula el número total de unidades de productos que pertenecen a un proveedor específico.
+     * Este método es esencial para la lógica de 'acumulaTotal'.
+     *
+     * @param Proveedor $proveedor El proveedor por el que filtrar.
+     * @return int
+     */
+    public function getUnidadesByProveedor(Proveedor $proveedor): int
+    {
+        $total = 0;
+        foreach ($this->items as $presupuesto) {
+            foreach ($presupuesto->getProductos() as $productoItem) {
+                if ($productoItem->getProducto()->getModelo()->getProveedor()->getId() === $proveedor->getId()) {
+                    $total += $productoItem->getCantidad();
+                }
+            }
+        }
+        return $total;
     }
 
 }

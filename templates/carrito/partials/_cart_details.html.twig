@@ -1,108 +1,95 @@
 {# templates/carrito/partials/_cart_details.html.twig #}
-{# Muestra la tabla con los items del carrito, ahora agrupados por personalización. #}
-
+{% if carrito is not null and carrito.items is not empty and resultados is not null %}
 <div class="table-responsive cart_info">
     <table class="table table-condensed">
         <thead>
         <tr class="cart_menu">
             <td class="image">Artículo</td>
             <td class="description"></td>
-            <td class="price">Precio Ud.</td>
+            <td class="price">Precio Ud. (pers. incl.)</td>
             <td class="quantity" style="text-align: center;">Cantidad</td>
             <td class="total">Total Línea</td>
             <td></td>
         </tr>
         </thead>
         <tbody>
-        {% if carrito is not null and carrito.items is not empty %}
-            {% for item in carrito.items %}
-                {# 'item' es un objeto Presupuesto #}
-                {% set itemIndex = loop.index0 %}
+        {# Bucle principal por GRUPOS calculados desde el servicio #}
+        {% for grupo_calculado in resultados.desglose_grupos %}
+            {# Usamos el índice del bucle para acceder al 'item' (Presupuesto) original del carrito, que tiene la estructura de datos que necesitamos para los enlaces y personalizaciones #}
+            {% set item = carrito.items[loop.index0] %}
+            {% set itemIndex = loop.index0 %}
 
-                {# Fila para las personalizaciones de este grupo de productos #}
-                <tr style="background-color: #f0f0f0;">
-                    <td colspan="6" style="padding-left: 15px; border-top: 2px solid #ff9000;">
-                        <strong>Personalizaciones para este grupo:</strong>
-                        {% for trabajo in item.trabajos %}
-                            <span>{{ trabajo }}</span>{% if not loop.last %}, {% endif %}
-                        {% else %}
-                            <span>Sin personalización</span>
-                        {% endfor %}
+            {# Fila para las personalizaciones, usando el 'item' original para mostrar los nombres #}
+            <tr style="background-color: #f0f0f0;">
+                <td colspan="6" style="padding-left: 15px; border-top: 2px solid #ff9000;">
+                    <strong>Personalizaciones para este grupo:</strong>
+                    {% for trabajo in item.trabajos %}
+                        <span>{{ trabajo.trabajo }}</span>{% if not loop.last %}, {% endif %}
+                    {% else %}
+                        <span>Sin personalización</span>
+                    {% endfor %}
+                </td>
+            </tr>
+
+            {# Bucle para los productos dentro del grupo calculado #}
+            {% for linea_producto in grupo_calculado.desglose_productos %}
+                {# De nuevo, usamos el índice para acceder al 'productoPresupuesto' original correspondiente #}
+                {% set productIndex = loop.index0 %}
+                {% set productoPresupuesto = item.productos[productIndex] %}
+                <tr>
+                    <td class="cart_product">
+                        {# Esto se mantiene igual, ya que usa el objeto original #}
+                        <a href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': productoPresupuesto.producto.modelo.nombreUrl}) }}">
+                            {% if productoPresupuesto.producto.imagen %}
+                                <img src="{{ sonata_path(productoPresupuesto.producto.imagen, 'mini') }}" alt="{{ productoPresupuesto.producto.modelo.nombre }}" width="80">
+                            {% else %}
+                                <img src="{{ productoPresupuesto.producto.urlImage|default(asset('images/placeholder.png')) }}" alt="{{ productoPresupuesto.producto.modelo.nombre }}" width="80">
+                            {% endif %}
+                        </a>
                     </td>
-                </tr>
-
-                {# Bucle para los productos dentro de este grupo #}
-                {% for productoPresupuesto in item.productos %}
-                    {% set productIndex = loop.index0 %}
-                    <tr>
-                        <td class="cart_product">
-                            <a href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': productoPresupuesto.producto.modelo.nombreUrl}) }}">
-                                {% if productoPresupuesto.producto.imagen %}
-                                    <img src="{{ sonata_path(productoPresupuesto.producto.imagen, 'mini') }}" alt="{{ productoPresupuesto.producto.modelo.nombre }}" width="80">
-                                {% else %}
-                                    <img src="{{ productoPresupuesto.producto.urlImage|default(asset('images/placeholder.png')) }}" alt="{{ productoPresupuesto.producto.modelo.nombre }}" width="80">
-                                {% endif %}
+                    <td class="cart_description">
+                        {# Esto se mantiene igual #}
+                        <h4><a href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': productoPresupuesto.producto.modelo.nombreUrl}) }}">{{ productoPresupuesto.producto.modelo.nombre }}</a></h4>
+                        <p>Ref: {{ productoPresupuesto.producto.referencia }} | Color: {{ productoPresupuesto.producto.color.nombre }} | Talla: {{ productoPresupuesto.producto.talla }}</p>
+                    </td>
+                    <td class="cart_price">
+                        {# ¡CAMBIO! Usamos el precio unitario FINAL calculado por el servicio #}
+                        <p>{{ linea_producto.precio_unitario_final_sin_iva|number_format(2, ',', '.') }} €</p>
+                    </td>
+                    <td class="cart_quantity">
+                        {# Todo este bloque de botones y el input se mantiene exactamente igual #}
+                        <div class="cart_quantity_button" style="display: flex; justify-content: center; align-items: center; flex-wrap: nowrap;">
+                            <a class="cart_quantity_down btn btn-default btn-xs" style="margin-right: 5px;" href="{{ path('app_cart_decrease_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> - </a>
+                            <input class="cart_quantity_input form-control" type="number" name="quantity" value="{{ productoPresupuesto.cantidad }}" autocomplete="off" style="width: 60px; text-align: center; height: 22px; padding: 1px 6px;" data-item-index="{{ itemIndex }}" data-product-index="{{ productIndex }}">
+                            <a class="cart_quantity_up btn btn-default btn-xs" style="margin-left: 5px;" href="{{ path('app_cart_increase_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> + </a>
+                            <a class="btn btn-primary btn-xs update-quantity-btn" style="margin-left: 10px; margin-top: auto;" href="#">
+                                <i class="fa fa-refresh"></i>
                             </a>
-                        </td>
-                        <td class="cart_description">
-                            <h4><a href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': productoPresupuesto.producto.modelo.nombreUrl}) }}">{{ productoPresupuesto.producto.modelo.nombre }}</a></h4>
-                            <p>Ref: {{ productoPresupuesto.producto.referencia }} | Color: {{ productoPresupuesto.producto.color.nombre }} | Talla: {{ productoPresupuesto.producto.talla }}</p>
-                        </td>
-                        <td class="cart_price">
-
-                            <p>{{ item.getPrecioFinalPorProducto(productoPresupuesto, app.user) | number_format(2, ',', '.') }} €</p>
-                        </td>
-                        <td class="cart_quantity">
-                            <div class="cart_quantity_button" style="display: flex; justify-content: center; align-items: center; flex-wrap: nowrap;">
-                                {#                                <a class="cart_quantity_up" href="{{ path('app_cart_increase_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> + </a>#}
-                                {#                                <input class="cart_quantity_input" type="text" name="quantity" value="{{ productoPresupuesto.cantidad }}" readonly autocomplete="off" size="2">#}
-                                {#                                <a class="cart_quantity_down" href="{{ path('app_cart_decrease_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> - </a>#}
-
-                                <a class="cart_quantity_down btn btn-default btn-xs" style="margin-right: 5px;" href="{{ path('app_cart_decrease_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> - </a>
-
-                                <input class="cart_quantity_input form-control"
-                                       type="number"
-                                       name="quantity"
-                                       value="{{ productoPresupuesto.cantidad }}"
-                                       autocomplete="off"
-                                        {# CORRECCIÓN: Se ajusta la altura y el padding para alinear con los botones btn-xs #}
-                                       style="width: 60px; text-align: center; height: 22px; padding: 1px 6px;"
-                                       data-item-index="{{ itemIndex }}"
-                                       data-product-index="{{ productIndex }}">
-
-                                <a class="cart_quantity_up btn btn-default btn-xs" style="margin-left: 5px;" href="{{ path('app_cart_increase_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> + </a>
-
-                                <a class="btn btn-primary btn-xs update-quantity-btn" style="margin-left: 10px; margin-top: auto;"
-                                   href="#">
-                                    <i class="fa fa-refresh"></i>
-                                </a>
-                            </div>
-                        </td>
-                        <td class="cart_total">
-                            {# Muestra el total de esta línea de producto (sin personalización) #}
-                            <p class="cart_total_price">{{ (item.getPrecioUnidad(app.user) * productoPresupuesto.cantidad)|number_format(2, ',', '.') }} €</p>
-                        </td>
-                        <td class="cart_delete">
-                            {# --- INICIO DE LA CORRECCIÓN --- #}
-                            {# El enlace ahora pasa el índice del grupo Y el índice del producto dentro del grupo #}
-                            <a class="cart_quantity_delete" title="Eliminar este producto"
-                               href="{{ path('app_cart_remove_product', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}">
-                                <i class="fa fa-times"></i>
-                            </a>
-                            {# --- FIN DE LA CORRECCIÓN --- #}
-                        </td>
-                    </tr>
-                {% endfor %}
-
-                {# Fila para mostrar el TOTAL de este grupo de productos (incluyendo personalizaciones) #}
-                <tr style="border-bottom: 2px solid #ff9000;">
-                    <td colspan="4" class="text-right"><strong>Total para este grupo:</strong></td>
+                        </div>
+                    </td>
                     <td class="cart_total">
-                        <p class="cart_total_price"><strong>{{ item.getPrecioTotal(app.user, carrito)|number_format(2, ',', '.') }} €</strong></p>
+                        {# ¡CAMBIO! Usamos el total de línea FINAL calculado por el servicio #}
+                        <p class="cart_total_price">{{ linea_producto.total_linea_sin_iva|number_format(2, ',', '.') }} €</p>
                     </td>
-                    <td></td>
+                    <td class="cart_delete">
+                        {# Esto se mantiene igual #}
+                        <a class="cart_quantity_delete" title="Eliminar este producto" href="{{ path('app_cart_remove_product', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}">
+                            <i class="fa fa-times"></i>
+                        </a>
+                    </td>
                 </tr>
             {% endfor %}
+
+            {# Fila para mostrar el TOTAL de este grupo #}
+            <tr style="border-bottom: 2px solid #ff9000;">
+                <td colspan="4" class="text-right"><strong>Total para este grupo:</strong></td>
+                <td class="cart_total">
+                    {# ¡CAMBIO! Usamos el subtotal del grupo calculado por el servicio #}
+                    <p class="cart_total_price"><strong>{{ grupo_calculado.subtotal_grupo_sin_iva|number_format(2, ',', '.') }} €</strong></p>
+                </td>
+                <td></td>
+            </tr>
+        {% endfor %}
         {% else %}
             <tr><td colspan="6"><p class="text-center">Tu carrito de la compra está vacío.</p></td></tr>
         {% endif %}
@@ -110,9 +97,7 @@
     </table>
 </div>
 
-
-
-{# --- SCRIPT PARA GESTIONAR LA ACTUALIZACIÓN MANUAL --- #}
+{# El SCRIPT se mantiene igual, no necesita cambios #}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.update-quantity-btn').forEach(button => {
@@ -122,14 +107,10 @@
                 const newQuantity = input.value;
                 const itemIndex = input.dataset.itemIndex;
                 const productIndex = input.dataset.productIndex;
-
-                // CORRECCIÓN: Se construye la URL completamente en JavaScript
                 const locale = '{{ app.request.locale }}';
                 const url = `/${locale}/carrito/update-quantity/${itemIndex}/${productIndex}/${newQuantity}`;
-
                 window.location.href = url;
             });
         });
     });
 </script>
-

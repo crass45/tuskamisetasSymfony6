@@ -4,12 +4,14 @@
 namespace App\Controller;
 
 use App\Entity\Descuento;
+use App\Entity\Empresa;
 use App\Entity\GastosEnvio;
 use App\Entity\ZonaEnvio;
 use App\Model\Carrito;
 use App\Model\Presupuesto;
 use App\Repository\GastosEnvioRepository;
 use App\Service\OrderService;
+use App\Service\PriceCalculatorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -22,7 +24,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/{_locale}/carrito', requirements: ['_locale' => 'es|en|fr'])]
 class CarritoController extends AbstractController
 {
-    public function __construct(private EntityManagerInterface $em)
+    public function __construct(private EntityManagerInterface $em, private PriceCalculatorService $priceCalculator)
     {
     }
 
@@ -52,20 +54,35 @@ class CarritoController extends AbstractController
     public function showAction(SessionInterface $session): Response
     {
         $carrito = $this->getOrCreateCart($session);
-        // --- INICIO DE LA MEJORA ---
-        // Se comprueba si estamos en modo edición y se pasa el ID del pedido a la plantilla
-        $editingOrderId = $session->get('editing_order_id');
-        // --- FIN DE LA MEJORA ---
+        $resultadosPrecios = null;
+        $empresa = $this->em->getRepository(Empresa::class)->find(1); // Para el servicio expres
 
+        // Si el carrito tiene productos, llamamos a nuestro servicio
+        if ($carrito->getCantidadProductosTotales() > 0) {
+            $resultadosPrecios = $this->priceCalculator->calculateFullPresupuesto($carrito);
+        }
+
+        $editingOrderId = $session->get('editing_order_id');
         $zonasEnvio = $this->em->getRepository(ZonaEnvio::class)->findAll();
+
+        // La zona seleccionada la gestionaremos en el summary
+        $zonaSeleccionadaId = $session->get('cart_shipping_zone', 1); // Default a 1 (Península)
+
+        // --- ¡CAMBIO! Usamos un valor fijo para los gastos de envío ---
+        $gastosEnvio = 5.95;
+        // Si el cliente elige "Recoger en Tienda", los gastos son 0
+        if ($carrito->getRecogerTienda()) {
+            $gastosEnvio = 0;
+        }
 
         return $this->render('carrito/show.html.twig', [
             'carrito' => $carrito,
+            'resultados' => $resultadosPrecios, // Pasamos los resultados del cálculo
             'zonasEnvio' => $zonasEnvio,
-            'zonaSeleccionada' => 0, // O el valor que corresponda
-            'precioGastos' => $carrito->getGastosEnvio($this->getUser()),
-            'recogerTienda' => false,
+            'zonaSeleccionada' => $zonaSeleccionadaId,
             'editing_order_id' => $editingOrderId,
+            'empresa' => $empresa,
+            'precioGastos' => $gastosEnvio
         ]);
     }
 
