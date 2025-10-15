@@ -180,4 +180,9 @@ class PresupuestoTrabajo
         $this->setObservaciones($personalizacion->getObservaciones());
         $this->setUbicacion($personalizacion->getUbicacion());
     }
+
+    public function __clone()
+    {
+        // No hay objetos anidados que clonar aquí, pero lo dejamos por coherencia.
+    }
 }

@@ -36,6 +36,7 @@ class Presupuesto
         return $this->getCantidadProductos() + $cantidadCarrito;
     }
 
+
     // ===================================================================
     // INICIO DE LA CORRECCIÓN EN LA LÓGICA DE CÁLCULO
     // ===================================================================
@@ -115,24 +116,9 @@ class Presupuesto
         return $this;
     }
 
-    public function addProducto(PresupuestoProducto $item, ?User $user): self
+    public function addProducto(PresupuestoProducto $producto)
     {
-        if ($item->getCantidad() <= 0) {
-            return $this;
-        }
-
-        foreach ($this->productos as $productoExistente) {
-            if ($productoExistente->getId() === $item->getId()) {
-                $productoExistente->addCantidad($item->getCantidad());
-                $this->updateProductos($user);
-                return $this;
-            }
-        }
-
-        $this->productos[] = $item;
-        $this->updateProductos($user);
-
-        return $this;
+        $this->productos[] = $producto;
     }
 
     public function eliminaProducto(int $idProducto, int $cantidad, string $trabajos, ?User $user): self
@@ -553,6 +539,20 @@ class Presupuesto
 
         // 3. Sumamos ambos para obtener el precio final.
         return $precioBase + $costePersonalizacionUnitario;
+    }
+
+
+    public function __clone()
+    {
+        // Creamos un nuevo array para los productos clonados
+        $this->productos = array_map(function ($producto) {
+            return clone $producto;
+        }, $this->productos);
+
+        // Creamos un nuevo array para los trabajos clonados
+        $this->trabajos = array_map(function ($trabajo) {
+            return clone $trabajo;
+        }, $this->trabajos);
     }
 
 }

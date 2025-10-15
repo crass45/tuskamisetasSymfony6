@@ -14,6 +14,7 @@ use App\Model\PresupuestoProducto;
 use App\Model\PresupuestoTrabajo;
 use App\Repository\ModeloRepository;
 use App\Service\FechaEntregaService;
+use App\Service\PriceCalculatorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -29,7 +30,9 @@ class ProductController extends AbstractController
     private EntityManagerInterface $em;
 
     public function __construct(
-        private FechaEntregaService $deliveryDateService, EntityManagerInterface $entityManager
+        private FechaEntregaService $deliveryDateService,
+        EntityManagerInterface $entityManager,
+        private ?PriceCalculatorService $priceCalculator = null // Hacemos el servicio opcional
     )
     {
         $this->em = $entityManager;
@@ -175,10 +178,9 @@ class ProductController extends AbstractController
         ]);
     }
 
-
     /**
-     * Esta acción se llama por AJAX para calcular el precio del presupuesto.
-     * Reemplaza a tu antiguo 'calculaPresupuestoAction'.
+     * ¡VERSIÓN FINAL Y CORREGIDA!
+     * Se llama por AJAX para calcular el precio del presupuesto sin modificar la sesión.
      */
     #[Route('/{_locale}/ajax/producto/update-price', name: 'app_product_update_price', methods: ['POST'], requirements: ['_locale' => 'es|en|fr'])]
     public function updatePriceAction(Request $request, SessionInterface $session): Response
@@ -188,99 +190,95 @@ class ProductController extends AbstractController
             return new Response('Datos inválidos.', 400);
         }
 
-        // --- INICIO DE LA MEJORA ---
-        // 1. Recuperamos el carrito existente de la sesión.
-        $carrito = $session->get('carrito', new Carrito());
-        $cantidadEnCarrito = $carrito->getCantidadTotalProductos();
+        // 1. Cargamos el carrito REAL de la sesión para obtener el contexto. NO LO MODIFICAREMOS.
+        $carritoReal = clone $session->get('carrito', new Carrito());
+        $cantidadEnCarrito = $carritoReal->getCantidadTotalProductos();
 
-        // 2. Calculamos la cantidad de los nuevos productos que se están añadiendo.
-        $cantidadSiendoAnadida = 0;
-        foreach ($data['productos'] ?? [] as $prodData) {
-            $cantidadSiendoAnadida += (int)($prodData['cantidad'] ?? 0);
-        }
-
-        $dobladoEmbolsado = $data['doblado'];
-
-        // 3. Calculamos la cantidad total combinada para el cálculo de precios.
-        $cantidadTotalParaPrecio = $cantidadEnCarrito + $cantidadSiendoAnadida;
-
-//        FALTARIA VER Y COMPROBAR QUE SOLO SE ACTUALICEN LAS CANTIDADES DE PRODUCTOS QUE LO PERMITAN... SEAN DEL MISMO FABRICANTE Y TENGAN ACUMLA_TOTAL A TRUE
-        // --- FIN DE LA MEJORA ---
-
-        $presupuesto = new Presupuesto();
+        // 2. Creamos un Presupuesto NUEVO y LIMPIO que representará los items de la página.
+        $presupuestoActual = new Presupuesto();
         $cantidadTotal = 0;
+        $ultimoProducto = null; // Para GTag
 
-        // 1. Calcular cantidad total
-        foreach ($data['productos'] ?? [] as $prodData) {
-            $cantidadTotal += (int)($prodData['cantidad'] ?? 0);
-        }
-
-        // 2. Añadir productos al presupuesto
+        // 2a. Añadimos los productos al nuevo presupuesto.
         foreach ($data['productos'] ?? [] as $prodData) {
             if (!empty($prodData['referencia']) && !empty($prodData['cantidad'])) {
                 $producto = $this->em->getRepository(Producto::class)->findOneBy(['referencia' => $prodData['referencia']]);
                 if ($producto) {
+                    $ultimoProducto = $producto;
+                    $cantidadTotal += (int)$prodData['cantidad'];
                     $presupuestoProducto = new PresupuestoProducto();
+                    $presupuestoProducto->setProducto($producto);
                     $presupuestoProducto->setCantidad((int)$prodData['cantidad']);
-                    $presupuestoProducto->setProducto($producto, $cantidadTotalParaPrecio, $this->getUser());
-                    $presupuesto->addProducto($presupuestoProducto, $this->getUser());
+                    $presupuestoActual->addProducto($presupuestoProducto);
                 }
             }
         }
 
-        // 3. Añadir trabajos de personalización
-        foreach ($data['trabajos'] ?? [] as $trabajoData) {
-            if ($trabajoData['reutilizado']) {
-//                $carrito = $session->get('carrito');
-                $presupuestoTrabajo = $carrito->getTrabajoPorIentificador($trabajoData['identificador']);
-                $presupuesto->addTrabajo($presupuestoTrabajo);
+        if ($cantidadTotal === 0) {
+            return new Response('No hay productos disponibles.', 400);
+        }
 
+        // 2b. Añadimos los trabajos de personalización al nuevo presupuesto.
+        foreach ($data['trabajos'] ?? [] as $trabajoData) {
+            $presupuestoTrabajo = new PresupuestoTrabajo();
+
+
+            if (!empty($trabajoData['reutilizado'])) {
+                $trabajoOriginal = clone $carritoReal->getTrabajoPorIdentificador($trabajoData['identificador']);
+                if ($trabajoOriginal) {
+                    $presupuestoTrabajo = $trabajoOriginal;
+
+                }
             } else {
                 $trabajo = $this->em->getRepository(Personalizacion::class)->findOneBy(['codigo' => $trabajoData['codigo']]);
-
                 if ($trabajo) {
-                    $presupuestoTrabajo = new PresupuestoTrabajo();
+                    $identificadorTrabajo = 'personalizacion_'.uniqid();
                     $presupuestoTrabajo->setTrabajo($trabajo);
-                    $presupuestoTrabajo->setCantidad((int)($trabajoData['cantidad'] ?? 0));
-                    // Se añaden las líneas que faltaban para guardar la ubicación y las observaciones
+                    $presupuestoTrabajo->setIdentificadorTrabajo($identificadorTrabajo);
+                    $presupuestoTrabajo->setCantidad((int)($trabajoData['cantidad'] ?? 1));
                     $presupuestoTrabajo->setUbicacion($trabajoData['ubicacion'] ?? '');
                     $presupuestoTrabajo->setObservaciones($trabajoData['observaciones'] ?? '');
                     $presupuestoTrabajo->setUrlImage($trabajoData['archivo'] ?? '');
-                    $presupuesto->addTrabajo($presupuestoTrabajo);
                 }
             }
+            $presupuestoActual->addTrabajo($presupuestoTrabajo);
         }
-        if ($dobladoEmbolsado) {
-            $presupuestoTrabajo = new PresupuestoTrabajo();
-            $trabajo = $this->em->getRepository(Personalizacion::class)->findOneBy(array('codigo' => 'DB'));
-            if ($trabajo != null) {
-                $presupuestoTrabajo->setTrabajo($trabajo);
+
+        // 2c. Añadimos Doblado y Embolsado
+        if (!empty($data['doblado'])) {
+            $trabajoDB = $this->em->getRepository(Personalizacion::class)->findOneBy(['codigo' => 'DB']);
+            if ($trabajoDB) {
+                $presupuestoTrabajo = new PresupuestoTrabajo();
+                $presupuestoTrabajo->setTrabajo($trabajoDB);
+                $presupuestoTrabajo->setIdentificadorTrabajo('doblado-embolsado');
                 $presupuestoTrabajo->setCantidad($cantidadTotal);
-                $presupuestoTrabajo->setUbicacion("");
-                $presupuesto->addTrabajo($presupuestoTrabajo);
+                $presupuestoActual->addTrabajo($presupuestoTrabajo);
             }
         }
-        $empresa = $this->em->getRepository(Empresa::class)->findOneBy([], ['id' => 'DESC']);
-        $ivaGeneral = $empresa->getIvaGeneral();
-        $productosGTag = $producto->getModelo()->getReferencia();
-        $productosGTagNombre = $producto->getModelo()->getNombre();
-        $productosGTagBrand = $producto->getModelo()->getFabricante();
 
-        // Guardamos el presupuesto calculado en la sesión para el siguiente paso (añadir al carrito)
-        $session->set('presupuesto', $presupuesto);
+        // 3. Guardamos el presupuesto limpio en sesión.
+        $session->set('presupuesto', $presupuestoActual);
 
-//        $precioSerigrafia = $presupuesto->getPrecioSerigrafiaPorUnidad();
+        // 4. Creamos un Carrito TEMPORAL para el cálculo (SIN CLONE).
+        $carritoParaCalculo = clone $carritoReal;
 
-        // Renderizamos el fragmento de HTML con el resumen del precio
+        $carritoParaCalculo->addItem($presupuestoActual, $this->getUser());
+
+        // 5. Llamamos al servicio con el contexto completo y seguro.
+        $resultados = $this->priceCalculator->calculateFullPresupuesto($carritoParaCalculo);
+
+        // 6. Extraemos el desglose del último grupo (el que estamos calculando).
+        $resultadoGrupoActual = end($resultados['desglose_grupos']);
+
+        // 7. Renderizamos la plantilla con los datos del servicio.
         return $this->render('web/product/partials/_price_summary.html.twig', [
-            'presupuesto' => $presupuesto,
-            'ivaGeneral' => $ivaGeneral,
-            'productosGTAG_ref' => $productosGTag,
-            'productosGTagNombre' => $productosGTagNombre,
-            'productosGTAG_brand' => $productosGTagBrand,
-            'producto' => $producto,
+            'resultados_grupo' => $resultadoGrupoActual,
+            'ivaGeneral' => $resultados['iva_aplicado'],
             'cantidadEnCarrito' => $cantidadEnCarrito,
-            'carrito' => $carrito,
+            'presupuesto' => $presupuestoActual,
+            'productosGTAG_ref' => $ultimoProducto ? $ultimoProducto->getModelo()->getReferencia() : '',
+            'productosGTAGNombre' => $ultimoProducto ? $ultimoProducto->getModelo()->getNombre() : '',
+            'productosGTAGBrand' => $ultimoProducto && $ultimoProducto->getModelo()->getFabricante() ? $ultimoProducto->getModelo()->getFabricante()->getNombre() : '',
         ]);
     }
 }

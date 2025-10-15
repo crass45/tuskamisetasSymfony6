@@ -89,17 +89,12 @@ class PresupuestoProducto
     }
 
     // NOTA: Revisa que el tipo del argumento $user sea el correcto para tu aplicación
-    public function setProducto(Producto $prod, int $cantidadTotal, ?User $user): self
+    public function setProducto(Producto $prod): self
     {
-        $this->cantidadTotal = $cantidadTotal;
+        // Ya no necesita calcular nada, solo guardar la información.
         $this->setId($prod->getId());
         $this->producto = $prod;
 
-        if ($prod->getColor()) {
-            $this->color = $prod->getColor()->getNombre();
-        }
-
-        $this->precioProducto = $prod->getPrecio($cantidadTotal, $cantidadTotal, $user);
         return $this;
     }
 
@@ -158,5 +153,12 @@ class PresupuestoProducto
         // Se establece el producto. El precio se recalculará dinámicamente en el carrito
         // cuando se llame al método setProducto.
         $this->setProducto($linea->getProducto(), $linea->getCantidad(), null);
+    }
+
+    public function __clone()
+    {
+        // El objeto Producto es una entidad de Doctrine, NO debemos clonarlo.
+        // La referencia al producto original es lo correcto.
+        // Por tanto, el __clone por defecto es suficiente aquí.
     }
 }

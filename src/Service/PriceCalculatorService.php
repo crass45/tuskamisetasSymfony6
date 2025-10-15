@@ -64,7 +64,7 @@ class PriceCalculatorService
             }
         }
 
-        // --- FASE 3: DISTRIBUIR Y CONSTRUIR RESULTADO ---
+        // --- FASE 3: DISTRIBUIR Y CONSTRUIR RESULTADO (¡CON LA MEJORA!) ---
         $desgloseGrupos = [];
         $subtotalGeneralSinIva = 0;
 
@@ -92,6 +92,9 @@ class PriceCalculatorService
                     'unidades' => $itemProducto->getCantidad(),
                     'precio_unitario_final_sin_iva' => round($precioUnitarioFinal, 2),
                     'total_linea_sin_iva' => round($totalLinea, 2),
+                    // ¡¡LA MEJORA CLAVE!! Desglosamos los costes para la plantilla
+                    'precio_base_producto_sin_iva' => round($precioBaseProducto, 4),
+                    'coste_personalizacion_por_unidad' => round($costeTotalPersonalizacionUnidad, 4),
                 ];
             }
 
@@ -103,7 +106,7 @@ class PriceCalculatorService
             $subtotalGeneralSinIva += $subtotalGrupo;
         }
 
-        // ... El resto de la función para calcular IVA y totales no cambia ...
+        // ... El resto de la función (cálculo de IVA y totales) se mantiene igual ...
         $totalIva = $subtotalGeneralSinIva * ($this->getIva() / 100);
         $granTotal = $subtotalGeneralSinIva + $totalIva;
 
@@ -154,37 +157,6 @@ class PriceCalculatorService
 
         return $subtotalAntesDeIncremento * (1 + ($incremento / 100));
     }
-//    private function calculateSingleTrabajoGlobalCost(PresupuestoTrabajo $itemTrabajo, int $cantidadGlobal, array $productosAfectados): float
-//    {
-//        $personalizacion = $itemTrabajo->getTrabajo();
-//        $rangoPrecios = $this->personalizacionPrecioRepository->findPriceByQuantity($personalizacion, $cantidadGlobal);
-//
-//        // --- INICIO DE LA CORRECCIÓN CLAVE ---
-//        $costeFijoTotal = 0;
-//        if ($personalizacion->getNumeroMaximoColores() > 0) {
-//            // Para trabajos con colores, el coste fijo es el de la pantalla multiplicado por el número de colores.
-//            if ($rangoPrecios) {
-//                $numColores = $itemTrabajo->getCantidad();
-//                $costePantalla = (float)($rangoPrecios->getPantalla() ?? 0.0);
-//                $costeFijoTotal = $numColores * $costePantalla;
-//            }
-//        } else {
-//            // Para trabajos sin colores (ej. bordado), usamos el sobrecoste general.
-//            $costeFijoTotal = (float)($personalizacion->getTrabajoMinimoPorColor() ?? 0.0);
-//        }
-//        // --- FIN DE LA CORRECCIÓN CLAVE ---
-//
-//        $costeVariableTotal = 0;
-//        foreach ($productosAfectados as $itemProducto) {
-//            $precioUnitarioVariable = $this->getPrecioUnitarioTrabajoParaProducto($personalizacion, $rangoPrecios, $itemTrabajo, $itemProducto->getProducto());
-//            $costeVariableTotal += $precioUnitarioVariable * $itemProducto->getCantidad();
-//        }
-//
-//        $incremento = (float)($personalizacion->getIncrementoPrecio() ?? 0.0);
-//        $subtotalSinIncremento = $costeFijoTotal + $costeVariableTotal;
-//
-//        return $subtotalSinIncremento * (1 + ($incremento / 100));
-//    }
 
     /**
      * Calcula el precio de venta de un producto (coste + margen de tarifa), sin personalización.

@@ -31,6 +31,14 @@ class Carrito
     /** @var Presupuesto[] */
     private array $items = [];
 
+//    public function __clone(): void
+//    {
+//        $this->direccionEnvio = clone $this->direccionEnvio;
+//        $this->codigoPostal = clone $this->codigoPostal;
+//        $this->poblacion = clone $this->poblacion;
+//        $this->provincia = clone $this->provincia;
+//    }
+
     // --- Serialización (sin cambios) ---
     public function __serialize(): array
     {
@@ -78,12 +86,12 @@ class Carrito
     }
 
 //    NOS DEVUELVE UN TRABAJO A PARTIR DE SU IDENTIFICADOR UNICO CREADO EN CARRITO
-    public function getTrabajoPorIentificador($identificador): ?PresupuestoTrabajo
+    public function getTrabajoPorIdentificador($identificador): ?PresupuestoTrabajo
     {
         foreach ($this->items as $item){
             foreach ($item->getTrabajos() as $trabajo){
                 if ($trabajo->getIdentificadorTrabajo() == $identificador){
-                    return $trabajo;
+                    return clone $trabajo;
                 }
             }
         }
@@ -327,6 +335,14 @@ class Carrito
             }
         }
         return $total;
+    }
+
+    public function __clone()
+    {
+        // Al clonar el Carrito, nos aseguramos de clonar también cada 'item' (Presupuesto)
+        $this->items = array_map(function ($item) {
+            return clone $item;
+        }, $this->items);
     }
 
 }
