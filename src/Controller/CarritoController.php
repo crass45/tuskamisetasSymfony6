@@ -12,6 +12,7 @@ use App\Model\Presupuesto;
 use App\Repository\GastosEnvioRepository;
 use App\Service\OrderService;
 use App\Service\PriceCalculatorService;
+use App\Service\ShippingCalculatorService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,7 +25,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/{_locale}/carrito', requirements: ['_locale' => 'es|en|fr'])]
 class CarritoController extends AbstractController
 {
-    public function __construct(private EntityManagerInterface $em, private PriceCalculatorService $priceCalculator)
+    public function __construct(
+        private EntityManagerInterface $em,
+        private PriceCalculatorService $priceCalculator,
+        private ShippingCalculatorService $shippingCalculator
+    )
     {
     }
 
@@ -56,20 +61,26 @@ class CarritoController extends AbstractController
         $carrito = $this->getOrCreateCart($session);
         $resultadosPrecios = null;
         $empresa = $this->em->getRepository(Empresa::class)->find(1); // Para el servicio expres
+        $gastosEnvio = 0;
 
-        // Si el carrito tiene productos, llamamos a nuestro servicio
-        if ($carrito->getCantidadProductosTotales() > 0) {
-            $resultadosPrecios = $this->priceCalculator->calculateFullPresupuesto($carrito);
-        }
 
         $editingOrderId = $session->get('editing_order_id');
         $zonasEnvio = $this->em->getRepository(ZonaEnvio::class)->findAll();
 
         // La zona seleccionada la gestionaremos en el summary
         $zonaSeleccionadaId = $session->get('cart_shipping_zone', 1); // Default a 1 (Península)
+        $zonaEnvio = $this->em->getRepository(ZonaEnvio::class)->find($zonaSeleccionadaId);
+        // Si el carrito tiene productos, llamamos a nuestro servicio
+        if ($carrito->getCantidadProductosTotales() > 0) {
+            $resultadosPrecios = $this->priceCalculator->calculateFullPresupuesto($carrito);
+            // --- ¡CAMBIO! Usamos un valor fijo para los gastos de envío ---
+            $gastosEnvio = $this->shippingCalculator->calculateShippingCost(
+                $carrito,
+                $zonaEnvio,
+                $resultadosPrecios['subtotal_sin_iva']
+            );
+        }
 
-        // --- ¡CAMBIO! Usamos un valor fijo para los gastos de envío ---
-        $gastosEnvio = 5.95;
         // Si el cliente elige "Recoger en Tienda", los gastos son 0
         if ($carrito->getRecogerTienda()) {
             $gastosEnvio = 0;
@@ -171,24 +182,31 @@ class CarritoController extends AbstractController
     public function updateSummaryAction(Request $request, SessionInterface $session): Response
     {
         $carrito = $this->getOrCreateCart($session);
+        $carrito->setServicioExpres($request->request->getBoolean('servicioExpres', false));
+//        $carrito->setRecogerTienda($request->request->getBoolean('tienda', false));
+        $session->set('carrito', $carrito);
 
-        $servicioExpres = $request->request->getBoolean('servicioExpres', false);
-        $recogerTienda = $request->request->getBoolean('tienda', false);
         $zonaEnvioId = $request->request->getInt('zonaEnvio', 1);
+        $session->set('cart_shipping_zone', $zonaEnvioId);
+        $zonaEnvio = $this->em->getRepository(ZonaEnvio::class)->find($zonaEnvioId);
 
+        $resultadosPrecios = $this->priceCalculator->calculateFullPresupuesto($carrito);
+        $empresa = $this->em->getRepository(Empresa::class)->find(1);
 
-        $carrito->setServicioExpres($servicioExpres);
-        $carrito->setTipoEnvio($recogerTienda ? 3 : 1);
+        // ¡CAMBIO! Usamos el nuevo servicio también en la llamada AJAX
+        $gastosEnvio = $this->shippingCalculator->calculateShippingCost(
+            $carrito,
+            $zonaEnvio,
+            $resultadosPrecios['subtotal_sin_iva']
+        );
 
-        $zonaEnvioSeleccionada = $this->em->getRepository(ZonaEnvio::class)->find($zonaEnvioId);
-//        $ivaAplicar = $this->em->getRepository(Empresa::class)->findOneBy([], ['id' => 'DESC'])->getIva();
-
-        // Renderizamos solo el fragmento de la plantilla con el resumen actualizado.
-        return $this->render('carrito/_cart_summary.html.twig', [
+        return $this->render('carrito/partials/_cart_summary.html.twig', [
             'carrito' => $carrito,
-            'zonaEnvioSeleccionada' => $zonaEnvioSeleccionada,
-            'precioGastos' => $carrito->getGastosEnvio($this->getUser(), $zonaEnvioSeleccionada),
-//            'ivaAplicar' => $ivaAplicar,
+            'resultados' => $resultadosPrecios,
+            'zonasEnvio' => $this->em->getRepository(ZonaEnvio::class)->findAll(),
+            'zonaSeleccionada' => $zonaEnvioId,
+            'precioGastos' => $gastosEnvio,
+            'empresa' => $empresa,
         ]);
     }
 

@@ -32,7 +32,8 @@ class OrderService
         private TwigEnvironment        $twig,
         private Security               $security,
         private FechaEntregaService    $deliveryDateService,
-        private PriceCalculatorService $priceCalculator // Inyectado
+        private PriceCalculatorService $priceCalculator,
+        private ShippingCalculatorService $shippingCalculator
     )
     {
     }
@@ -196,8 +197,31 @@ class OrderService
             $itemIndex++;
         }
 
-        // 3. ASIGNAMOS LOS TOTALES FINALES DESDE EL SERVICIO
-        $gastosEnvio = $pedido->getRecogerEnTienda() ? 0 : 5.95; // Lógica temporal de envío
+        // --- 3. ¡NUEVA LÓGICA DE GASTOS DE ENVÍO! ---
+        //establecemos los gastos de envío a una zona no encontrada de momento 55€
+        $gastosEnvio = 55;
+        // Obtenemos la dirección de envío del pedido
+        $direccionEnvio = $pedido->getDireccion();
+
+        if ($direccionEnvio && $direccionEnvio->getProvinciaBD()) {
+            // A través de la provincia, obtenemos la Zona de Envío
+            $zonaEnvio = $direccionEnvio->getProvinciaBD()->getZonasEnvio()[0];
+//            var_dump($zonaEnvio);
+
+            // Llamamos a nuestro ShippingCalculatorService para obtener el coste
+            $gastosEnvio = $this->shippingCalculator->calculateShippingCost(
+                $carrito,
+                $zonaEnvio,
+                $resultados['subtotal_sin_iva']
+            );
+        }
+
+        // Si es recoger en tienda, forzamos los gastos a 0, independientemente de la dirección
+        if ($pedido->getRecogerEnTienda()) {
+            $gastosEnvio = 0;
+        }
+
+        // 4. ASIGNAMOS LOS TOTALES FINALES DESDE EL SERVICIO
         $subtotal = $resultados['subtotal_sin_iva'];
         $baseImponible = $subtotal + $gastosEnvio;
         $iva = $baseImponible * ($resultados['iva_aplicado'] / 100);

@@ -197,6 +197,7 @@ class Carrito
     public function setDescuento(float $descuento): self { $this->descuento = $descuento; return $this; }
     public function getRecogerTienda(): bool { return $this->tipoEnvio === 3; }
 
+
     public function getCantidadProductosTotales()
     {
         $cantidad = 0;
