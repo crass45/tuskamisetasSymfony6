@@ -1,12 +1,12 @@
 {# templates/carrito/partials/_cart_summary.html.twig #}
-{# Este parcial muestra el resumen de costes y las opciones de envío. #}
+{# Este parcial ahora usa la variable 'resultados' del PriceCalculatorService #}
 
 <div class="total_area">
+    {# Las opciones de envío se mantienen igual, ya que su lógica está en el controlador y JS #}
     <ul>
         <li style="background-color: #edc898">
             <div class="row">
                 <div class="col-lg-4" style="text-align: left">
-                    {# El ID y name ahora son más claros #}
                     <input id="ch_envio_expres" name="ch_envio_expres" type="checkbox"
                            class="cart-summary-updater"
                            {% if carrito.servicioExpres %}checked{% endif %}
@@ -27,44 +27,48 @@
                 </div>
             </div>
         </li>
-
-        <li>Sub Total <span>{{ carrito.getSubtotal(app.user) | number_format(2, ',', '.') }}€</span></li>
-
-        {% if not carrito.recogerTienda %}
-            <li>
-                {% if zonasEnvio is defined %}
-                    <select class="form-control chosen-select cart-summary-updater" name="zonaEnvio" id="zonaEnvio"
-                            style="width: 50%; display: inline">
-                        {% for zona in zonasEnvio %}
-                            <option value="{{ zona.id }}"
-                                    {% if zonaEnvioSeleccionada is defined and zonaEnvioSeleccionada == zona.id %}selected{% endif %}>{{ zona }}</option>
-                        {% endfor %}
-                    </select>
-                {% endif %}
-
-                {# La variable precioGastos la pasa el controlador #}
-                <span>{{ precioGastos|default(0) | number_format(2, ',', '.') }}€</span>
-            </li>
-        {% endif %}
-
-        {% if carrito.servicioExpres %}
-            <li>Servicio Expres<span>{{ empresa.precioServicioExpres | number_format(2, ',', '.') }}€</span></li>
-        {% endif %}
-
-        {% if carrito.servicioExpres == true %}
-            {% set ivaAAPlicar = (carrito.getSubtotal(app.user)+empresa.precioServicioExpres+precioGastos)*empresa.ivaGeneral/100 %}
-            {% set total = carrito.getSubtotal(app.user)+empresa.precioServicioExpres+precioGastos %}
-            <li>Servicio Expres<span>{{ empresa.precioServicioExpres | number_format(2, ',', '.') }}€</span></li>
-        {% else %}
-            {% set ivaAAPlicar = (carrito.getSubtotal(app.user)+precioGastos)*empresa.ivaGeneral/100 %}
-            {% set total = carrito.getSubtotal(app.user)+precioGastos %}
-        {% endif %}
-
-        <li>IVA a aplicar <span>{{ ivaAAPlicar  | number_format(2, ',', '.') }} €</span></li>
-        <li>Total <span
-                    style="font-size: 16px"><b>{{ (carrito.getSubtotal(app.user, precioGastos|default(0)) + ivaAAPlicar)| number_format(2, ',', '.') }}€</b></span>
-        </li>
     </ul>
+
+    {# ¡INICIO DE LA CORRECCIÓN! Usamos la variable 'resultados' si existe #}
+    {% if resultados is not null %}
+        {# 1. Definimos los costes adicionales (ya vienen del controlador) #}
+        {% set coste_envio = precioGastos|default(0) %}
+        {% set coste_expres = carrito.servicioExpres ? empresa.precioServicioExpres : 0 %}
+
+        {# 2. Calculamos los totales a partir de los datos del servicio #}
+        {% set base_imponible = resultados.subtotal_sin_iva + coste_envio + coste_expres %}
+        {% set iva_a_aplicar = base_imponible * (resultados.iva_aplicado / 100) %}
+        {% set total_final = base_imponible + iva_a_aplicar %}
+
+        <ul>
+            {# Mostramos el subtotal de productos + personalizaciones #}
+            <li>Sub Total <span>{{ resultados.subtotal_sin_iva|number_format(2, ',', '.') }}€</span></li>
+
+            {% if not carrito.recogerTienda %}
+                <li>
+                    {% if zonasEnvio is defined %}
+                        <select class="form-control chosen-select cart-summary-updater" name="zonaEnvio" id="zonaEnvio"
+                                style="width: 50%; display: inline">
+                            {% for zona in zonasEnvio %}
+                                <option value="{{ zona.id }}"
+                                        {% if zonaEnvioSeleccionada is defined and zonaEnvioSeleccionada == zona.id %}selected{% endif %}>{{ zona }}</option>
+                            {% endfor %}
+                        </select>
+                    {% endif %}
+                    <span>{{ coste_envio|number_format(2, ',', '.') }}€</span>
+                </li>
+            {% endif %}
+
+            {% if carrito.servicioExpres %}
+                <li>Servicio Expres<span>{{ coste_expres|number_format(2, ',', '.') }}€</span></li>
+            {% endif %}
+
+            <li>IVA a aplicar ({{ resultados.iva_aplicado }}%)<span>{{ iva_a_aplicar|number_format(2, ',', '.') }} €</span></li>
+
+            <li>Total <span style="font-size: 16px"><b>{{ total_final|number_format(2, ',', '.') }}€</b></span></li>
+        </ul>
+    {% endif %}
+    {# --- FIN DE LA CORRECCIÓN --- #}
 
     <div style="text-align: right">
         {# MIGRACIÓN: Se actualizan todas las rutas #}

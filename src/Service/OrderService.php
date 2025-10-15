@@ -28,24 +28,27 @@ class OrderService
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private MailerInterface $mailer,
-        private TwigEnvironment $twig,
-        private Security $security,
-        private FechaEntregaService $deliveryDateService
-    ) {
+        private MailerInterface        $mailer,
+        private TwigEnvironment        $twig,
+        private Security               $security,
+        private FechaEntregaService    $deliveryDateService,
+        private PriceCalculatorService $priceCalculator // Inyectado
+    )
+    {
     }
 
     /**
      * Decide si crear un nuevo pedido o actualizar uno existente.
      */
     public function createOrUpdateOrderFromCart(
-        Carrito $carrito,
-        Contacto $contacto,
+        Carrito    $carrito,
+        Contacto   $contacto,
         ?Direccion $direccionEnvio = null,
-        ?string $googleClientId = null,
-        ?int $editingOrderId = null,
-        ?int $tipoEnvio = null
-    ): Pedido {
+        ?string    $googleClientId = null,
+        ?int       $editingOrderId = null,
+        ?int       $tipoEnvio = null
+    ): Pedido
+    {
         if ($editingOrderId) {
             return $this->updateOrderFromCart($carrito, $editingOrderId, $tipoEnvio);
         }
@@ -54,12 +57,13 @@ class OrderService
     }
 
     public function createOrderFromCart(
-        Carrito $carrito,
-        Contacto $contacto,
+        Carrito    $carrito,
+        Contacto   $contacto,
         ?Direccion $direccionEnvio,
-        ?string $googleClientId,
-        ?int $tipoEnvio
-    ): Pedido {
+        ?string    $googleClientId,
+        ?int       $tipoEnvio
+    ): Pedido
+    {
         $fecha = new \DateTime();
         $fiscalYear = (int)$fecha->format('y');
         $ultimoPedido = $this->em->getRepository(Pedido::class)->findOneBy(['fiscalYear' => $fiscalYear], ['numeroPedido' => 'DESC']);
@@ -92,11 +96,11 @@ class OrderService
         }
 
         // 1. Borramos las líneas y trabajos antiguos para evitar inconsistencias
-        foreach($pedido->getLineas() as $linea) {
+        foreach ($pedido->getLineas() as $linea) {
             $this->em->remove($linea);
         }
         // También borramos las líneas libres que pudieran existir
-        foreach($pedido->getLineasLibres() as $lineaLibre){
+        foreach ($pedido->getLineasLibres() as $lineaLibre) {
             $this->em->remove($lineaLibre);
         }
 
@@ -115,80 +119,89 @@ class OrderService
      */
     private function fillPedidoFromCarrito(Pedido $pedido, Carrito $carrito, ?int $tipoEnvio): void
     {
-        $user = $this->security->getUser();
+        // 1. LLAMAMOS AL SERVICIO PARA OBTENER TODOS LOS CÁLCULOS
+        $resultados = $this->priceCalculator->calculateFullPresupuesto($carrito);
         $contacto = $pedido->getContacto();
 
-        // 1. Asignar estado inicial si es un pedido nuevo
         if (!$pedido->getId()) {
-            $estadoInicial = $this->em->getRepository(Estado::class)->find(1); // 'Pendiente'
-            if ($estadoInicial) {
-                $pedido->setEstado($estadoInicial);
-            }
+            $estadoInicial = $this->em->getRepository(Estado::class)->find(1);
+            if ($estadoInicial) { $pedido->setEstado($estadoInicial); }
         }
 
-        // 2. Asignar observaciones y opciones de envío
         $pedido->setObservaciones($carrito->getObservaciones());
         $pedido->setPedidoExpres($carrito->isServicioExpres());
         $pedido->setRecogerEnTienda($tipoEnvio === 3);
 
-        // 3. Crear las líneas del pedido y los trabajos de personalización
+        // 2. CREAMOS LAS LÍNEAS Y TRABAJOS USANDO LOS DATOS DEL SERVICIO
         $trabajosCreados = [];
+        $itemIndex = 0;
         foreach ($carrito->getItems() as $presupuesto) {
+            $grupoCalculado = $resultados['desglose_grupos'][$itemIndex];
             $arrayTrabajosParaLinea = [];
 
             foreach ($presupuesto->getTrabajos() as $trabajoPresupuesto) {
-                $personalizacionEntity = $this->em->getRepository(Personalizacion::class)->findOneBy(['codigo' => $trabajoPresupuesto->getTrabajo()->getCodigo()]);
-                if ($personalizacionEntity) {
-                    $codigoUnico = $trabajoPresupuesto->getIdentificadorTrabajo();
-                    if (!isset($trabajosCreados[$codigoUnico])) {
+                $unmanagedPersonalizacion = $trabajoPresupuesto->getTrabajo();
+                if (!$unmanagedPersonalizacion) continue;
+
+                $codigoUnico = $trabajoPresupuesto->getIdentificadorTrabajo();
+                if (!isset($trabajosCreados[$codigoUnico])) {
+                    // ¡CORRECCIÓN CLAVE! Buscamos si el PedidoTrabajo ya existe por su código.
+                    $trabajoBD = $this->em->getRepository(PedidoTrabajo::class)->findOneBy(['codigo' => $codigoUnico]);
+
+                    if (!$trabajoBD) {
+                        // Si no existe, lo creamos.
                         $trabajoBD = new PedidoTrabajo();
                         $trabajoBD->setCodigo($codigoUnico);
-                        $trabajoBD->setPersonalizacion($personalizacionEntity);
-                        $trabajoBD->setNColores($trabajoPresupuesto->getCantidad());
-                        $trabajoBD->setUrlImagen($trabajoPresupuesto->getUrlImage());
-                        $trabajoBD->setContacto($contacto);
-                        $this->em->persist($trabajoBD);
-                        $trabajosCreados[$codigoUnico] = $trabajoBD;
-                    }
-                    $arrayTrabajosParaLinea[] = ['trabajoBD' => $trabajosCreados[$codigoUnico], 'presupuestoTrabajo' => $trabajoPresupuesto];
-                }
-            }
 
-            foreach ($presupuesto->getProductos() as $productoPresupuesto) {
-                if ($productoPresupuesto->getCantidad() > 0) {
-                    $productoEntity = $this->em->getRepository(Producto::class)->find($productoPresupuesto->getProducto()->getId());
-                    if ($productoEntity) {
-                        $pedidoLinea = new PedidoLinea();
-                        $pedidoLinea->setCantidad($productoPresupuesto->getCantidad());
-                        $pedidoLinea->setProducto($productoEntity);
-                        $pedidoLinea->setPrecio($productoEntity->getPrecioUnidad());
+                        // Obtenemos la versión "gestionada" por Doctrine de la Personalizacion.
+                        $personalizacionEntity = $this->em->find(Personalizacion::class, $unmanagedPersonalizacion->getCodigo());
 
-                        $personalizacionCadena = "";
-                        foreach ($arrayTrabajosParaLinea as $trabajoData) {
-                            $pedidoLineaTrabajo = new PedidoLineaHasTrabajo();
-                            $pedidoLineaTrabajo->setPedidoLinea($pedidoLinea);
-                            $pedidoLineaTrabajo->setPedidoTrabajo($trabajoData['trabajoBD']);
-                            $pedidoLineaTrabajo->setUbicacion($trabajoData['presupuestoTrabajo']->getUbicacion());
-                            $pedidoLineaTrabajo->setObservaciones($trabajoData['presupuestoTrabajo']->getObservaciones());
-                            $pedidoLineaTrabajo->setCantidad($trabajoData['presupuestoTrabajo']->getCantidad());
-                            $pedidoLinea->addPersonalizacione($pedidoLineaTrabajo);
-                            $trabajo = $trabajoData['presupuestoTrabajo'];
-                            $personalizacionCadena .= (string) $trabajo . "\n";
+                        if ($personalizacionEntity) {
+                            $trabajoBD->setPersonalizacion($personalizacionEntity);
+                            $trabajoBD->setNColores($trabajoPresupuesto->getCantidad());
+                            $trabajoBD->setUrlImagen($trabajoPresupuesto->getUrlImage());
+                            $trabajoBD->setContacto($contacto);
+                            $this->em->persist($trabajoBD);
                         }
-                        $pedidoLinea->setPersonalizacion(trim($personalizacionCadena));
-                        $pedido->addLinea($pedidoLinea);
                     }
+                    $trabajosCreados[$codigoUnico] = $trabajoBD;
+                }
+                $arrayTrabajosParaLinea[] = ['trabajoBD' => $trabajosCreados[$codigoUnico], 'presupuestoTrabajo' => $trabajoPresupuesto];
+            }
+
+            foreach ($grupoCalculado['desglose_productos'] as $lineaCalculada) {
+                // Obtenemos la versión gestionada del Producto.
+                $productoEntity = $this->em->find(Producto::class, $lineaCalculada['producto']->getId());
+                if ($productoEntity) {
+                    $pedidoLinea = new PedidoLinea();
+                    $pedidoLinea->setCantidad($lineaCalculada['unidades']);
+                    $pedidoLinea->setProducto($productoEntity);
+                    $pedidoLinea->setPrecio((string)$lineaCalculada['precio_unitario_final_sin_iva']);
+
+                    $personalizacionCadena = "";
+                    foreach ($arrayTrabajosParaLinea as $trabajoData) {
+                        $pedidoLineaTrabajo = new PedidoLineaHasTrabajo();
+                        $pedidoLineaTrabajo->setPedidoLinea($pedidoLinea);
+                        $pedidoLineaTrabajo->setPedidoTrabajo($trabajoData['trabajoBD']);
+                        $pedidoLineaTrabajo->setUbicacion($trabajoData['presupuestoTrabajo']->getUbicacion());
+                        $pedidoLineaTrabajo->setObservaciones($trabajoData['presupuestoTrabajo']->getObservaciones());
+                        $pedidoLineaTrabajo->setCantidad($trabajoData['presupuestoTrabajo']->getCantidad());
+                        $pedidoLinea->addPersonalizacione($pedidoLineaTrabajo);
+                        $personalizacionCadena .= (string) $trabajoData['presupuestoTrabajo'] . "\n";
+                    }
+                    $pedidoLinea->setPersonalizacion(trim($personalizacionCadena));
+                    $pedido->addLinea($pedidoLinea);
                 }
             }
+            $itemIndex++;
         }
 
-        // 4. Calcular y asignar totales
-        $subtotal = $carrito->getSubTotal($user);
-        $gastosEnvio = $carrito->getGastosEnvio($user);
-        $empresa = $this->em->getRepository(Empresa::class)->findOneBy([]);
-        $ivaGeneral = $empresa ? $empresa->getIvaGeneral() / 100 : 0.21;
-        $iva = ($subtotal + $gastosEnvio) * $ivaGeneral;
-        $total = $subtotal + $gastosEnvio + $iva;
+        // 3. ASIGNAMOS LOS TOTALES FINALES DESDE EL SERVICIO
+        $gastosEnvio = $pedido->getRecogerEnTienda() ? 0 : 5.95; // Lógica temporal de envío
+        $subtotal = $resultados['subtotal_sin_iva'];
+        $baseImponible = $subtotal + $gastosEnvio;
+        $iva = $baseImponible * ($resultados['iva_aplicado'] / 100);
+        $total = $baseImponible + $iva;
 
         $pedido->setSubTotal($subtotal);
         $pedido->setEnvio($gastosEnvio);
