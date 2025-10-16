@@ -1,5 +1,5 @@
 <?php
-// src/Service/DeliveryDateService.php
+// src/Service/FechaEntregaService.php
 
 namespace App\Service;
 
@@ -45,8 +45,14 @@ class FechaEntregaService
             }
         }
 
-        // 2. Sumar días adicionales del pedido y del proveedor
-        $diasExtra = $maxDiasEnvioProveedor + ($pedido->getDiasAdicionales() ?? 0);
+        // 2. Sumar días adicionales del pedido, del proveedor y del envío
+        // Obtenemos los días extra de la zona de envío del pedido
+        $diasIncrementoZona = 0;
+        $direccionEnvio = $pedido->getDireccion();
+        if ($direccionEnvio && $direccionEnvio->getProvinciaBD() && $direccionEnvio->getProvinciaBD()->getZonasEnvio()[0]) {
+            $diasIncrementoZona = $direccionEnvio->getProvinciaBD()->getZonasEnvio()[0]->getIncrementoTiempoPedido() ?? 0;
+        }
+        $diasExtra = $maxDiasEnvioProveedor + ($pedido->getDiasAdicionales() ?? 0) + $diasIncrementoZona;
 
         // 3. Determinar los días de producción (mínimo, máximo y exprés)
         $diasMinProduccion = 0;

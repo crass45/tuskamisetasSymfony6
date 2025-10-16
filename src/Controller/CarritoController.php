@@ -187,7 +187,8 @@ class CarritoController extends AbstractController
         $session->set('carrito', $carrito);
 
         $zonaEnvioId = $request->request->getInt('zonaEnvio', 1);
-        $session->set('cart_shipping_zone', $zonaEnvioId);
+
+//        $session->set('cart_shipping_zone', $zonaEnvioId);
         $zonaEnvio = $this->em->getRepository(ZonaEnvio::class)->find($zonaEnvioId);
 
         $resultadosPrecios = $this->priceCalculator->calculateFullPresupuesto($carrito);
@@ -204,7 +205,7 @@ class CarritoController extends AbstractController
             'carrito' => $carrito,
             'resultados' => $resultadosPrecios,
             'zonasEnvio' => $this->em->getRepository(ZonaEnvio::class)->findAll(),
-            'zonaSeleccionada' => $zonaEnvioId,
+            'zonaEnvioSeleccionada' => $zonaEnvioId,
             'precioGastos' => $gastosEnvio,
             'empresa' => $empresa,
         ]);

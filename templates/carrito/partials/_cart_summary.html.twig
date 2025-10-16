@@ -55,7 +55,11 @@
                             {% endfor %}
                         </select>
                     {% endif %}
-                    <span>{{ coste_envio|number_format(2, ',', '.') }}€</span>
+                    {% if coste_envio == 0 and zonaEnvioSeleccionada is defined and zonaEnvioSeleccionada != "1" %}
+                        <span>Consultar</span>
+                    {% else %}
+                        <span>{{ coste_envio|number_format(2, ',', '.') }}€</span>
+                    {% endif %}
                 </li>
             {% endif %}
 
@@ -63,7 +67,8 @@
                 <li>Servicio Expres<span>{{ coste_expres|number_format(2, ',', '.') }}€</span></li>
             {% endif %}
 
-            <li>IVA a aplicar ({{ resultados.iva_aplicado }}%)<span>{{ iva_a_aplicar|number_format(2, ',', '.') }} €</span></li>
+            <li>IVA a aplicar ({{ resultados.iva_aplicado }}
+                %)<span>{{ iva_a_aplicar|number_format(2, ',', '.') }} €</span></li>
 
             <li>Total <span style="font-size: 16px"><b>{{ total_final|number_format(2, ',', '.') }}€</b></span></li>
         </ul>
