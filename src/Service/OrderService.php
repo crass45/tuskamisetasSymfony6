@@ -223,8 +223,8 @@ class OrderService
 
         // ¡AQUÍ ESTÁ LA LÓGICA! Obtenemos el coste del servicio exprés si está activado
         $costeExpres = 0;
+        $empresa = $this->em->getRepository(Empresa::class)->find(1);
         if ($pedido->getPedidoExpres()) {
-            $empresa = $this->em->getRepository(Empresa::class)->find(1);
             if ($empresa) {
                 $costeExpres = (float)$empresa->getPrecioServicioExpres();
             }
@@ -234,6 +234,18 @@ class OrderService
         $subtotal = $resultados['subtotal_sin_iva'];
         $baseImponible = $subtotal + $gastosEnvio + $costeExpres;
         $iva = $baseImponible * ($resultados['iva_aplicado'] / 100);
+        $total = $baseImponible + $iva;
+
+        //5, AÑADIMOS LOGICA PARA USUARIOS INTRACOMUNITARIOS Y/O CON RECARGO DE EQUIVALENCIA
+        $recargoEquivalencia = 0;
+        if ($pedido->getContacto()->isRecargoEquivalencia()) {
+            $recargoEquivalenciaGeneral = $empresa->getRecargoEquivalencia() / 100;
+            $recargoEquivalencia = ($baseImponible) * $recargoEquivalenciaGeneral;
+            $baseImponible = $baseImponible + $recargoEquivalencia;
+        }
+        if ($pedido->getContacto()->isIntracomunitario()) {
+            $iva = 0;
+        }
         $total = $baseImponible + $iva;
 
         $pedido->setSubTotal($subtotal);

@@ -320,7 +320,7 @@
                 <td class="total">{{ pedido.iva | number_format(2, ',', '.') }}€</td>
             {% endif %}
         </tr>
-        {% if pedido.idUsuario.recargoEquivalencia is defined and pedido.idUsuario.recargoEquivalencia %}
+        {% if pedido.contacto.recargoEquivalencia is defined and pedido.contacto.recargoEquivalencia %}
             <tr>
                 <td colspan="4">RE 5,20%</td>
                 <td class="total">{{ pedido.recargoEquivalencia | number_format(2, ',', '.') }}€</td>
