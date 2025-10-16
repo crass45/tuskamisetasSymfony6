@@ -1,0 +1,41 @@
+{# templates/block/resumen_financiero.html.twig #}
+<div class="row">
+    {# Ventas de Hoy #}
+    <div class="col-lg-4 col-xs-12">
+        <div class="small-box bg-green">
+            <div class="inner">
+                <h3>{{ ventas_hoy|number_format(2, ',', '.') }}<sup style="font-size: 20px">€</sup></h3>
+                <p>Ventas de Hoy</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-calendar-day"></i>
+            </div>
+        </div>
+    </div>
+
+    {# Ventas del Mes #}
+    <div class="col-lg-4 col-xs-12">
+        <div class="small-box bg-aqua">
+            <div class="inner">
+                <h3>{{ ventas_mes|number_format(2, ',', '.') }}<sup style="font-size: 20px">€</sup></h3>
+                <p>Ventas del Mes Actual</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-chart-bar"></i>
+            </div>
+        </div>
+    </div>
+
+    {# Ticket Medio #}
+    <div class="col-lg-4 col-xs-12">
+        <div class="small-box bg-yellow">
+            <div class="inner">
+                <h3>{{ ticket_medio|number_format(2, ',', '.') }}<sup style="font-size: 20px">€</sup></h3>
+                <p>Ticket Medio del Mes</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+        </div>
+    </div>
+</div>
