@@ -221,9 +221,18 @@ class OrderService
             $gastosEnvio = 0;
         }
 
+        // ¡AQUÍ ESTÁ LA LÓGICA! Obtenemos el coste del servicio exprés si está activado
+        $costeExpres = 0;
+        if ($pedido->getPedidoExpres()) {
+            $empresa = $this->em->getRepository(Empresa::class)->find(1);
+            if ($empresa) {
+                $costeExpres = (float)$empresa->getPrecioServicioExpres();
+            }
+        }
+
         // 4. ASIGNAMOS LOS TOTALES FINALES DESDE EL SERVICIO
         $subtotal = $resultados['subtotal_sin_iva'];
-        $baseImponible = $subtotal + $gastosEnvio;
+        $baseImponible = $subtotal + $gastosEnvio + $costeExpres;
         $iva = $baseImponible * ($resultados['iva_aplicado'] / 100);
         $total = $baseImponible + $iva;
 
