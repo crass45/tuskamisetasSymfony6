@@ -366,8 +366,7 @@
                     <div>
                         <img src="http://www.tuskamisetas.com/images/tarjetas1.jpg" style="width: 90px; height: auto"
                              alt="tarjetas">
-                        <h5><a href="https://www.tuskamisetas.com/es/pedido/pago/{{ pedido.id }}"
-                               style="cursor: pointer; margin-bottom: 15px;">
+                        <h5><a href="{{ url('app_payment_start', {'_locale': app.request.locale, 'id': pedido.id}) }}" style="cursor: pointer; margin-bottom: 15px;">
                                 PARA PAGAR CON TARJETA PULSE AQUÍ
                             </a></h5>
                     </div>
