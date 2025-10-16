@@ -1,0 +1,76 @@
+{# templates/block/pedidos_pendientes.html.twig #}
+<div class="box box-primary">
+    <div class="sonata-order-block-recent-order panel panel-default">
+        {% if settings.title %}
+            <div class="box-header with-border">
+                <h3 class="box-title"><i class="fas fa-barcode"></i> {{ settings.title }}</h3>
+            </div>
+        {% endif %}
+
+        {% if orders|length > 0 %}
+            <div class="box-body table-responsive no-padding">
+                <table class="table table-hover">
+                    <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>
+                                {# ANTES (Incorrecto): <a href="{{ path(pedido_admin.generateObjectUrl('edit', order)) }}"> #}
+                                {# AHORA (Correcto): Simplemente llamamos a la función que genera la URL #}
+                                <a href="{{ pedido_admin.generateObjectUrl('edit', order) }}">{{ order }}</a>
+                            </td>
+                            <td>
+                                {{ order.referenciaInterna }}
+                            </td>
+                            <td class="number text-right">{{ order.totalAPagar | number_format(2, ',', '.') }} €</td>
+                            <td>
+                                <span class="label
+                                    {% if order.estado.id == 1 %} label-danger
+                                    {% elseif order.estado.id == 2 or order.estado.id == 6 %} label-warning
+                                    {% elseif order.estado.id == 3 %} label-info
+                                    {% elseif order.estado.id == 11 %} label-success
+                                    {% else %} label-primary
+                                    {% endif %} ">{{ order.estado }}</span>
+                                {% if order.cantidadPagada > 0 and (order.totalAPagar - order.cantidadPagada) < 1 %}
+                                    <span class="label label-success">PAGADO 100%</span>
+                                {% elseif order.cantidadPagada > 0 %}
+                                    <span class="label label-success">PAGADO {{ order.cantidadPagada | round(2, 'ceil')}} €</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {# ANTES (Incorrecto): {% set difference = now.diff(order.fechaEntrega) %} #}
+                                {# AHORA (Correcto): Usamos la función date() como en la plantilla original #}
+                                {% set difference = date().diff(order.fechaEntrega) %}
+                                {% set leftDays = difference.invert == 0 ? difference.days : 0 %}
+
+                                <span class="label
+                                    {% if leftDays <= 3 and order.estado.id != 11 %} label-danger
+                                    {% elseif leftDays <= 5 and order.estado.id != 11 %} label-warning
+                                    {% else %} label-info
+                                    {% endif %}">
+                                    {{ order.fechaEntrega |date("d-m-Y") }}
+                                    {% if difference.invert == 0 %}
+                                        | Faltan {{ leftDays }} días
+                                    {% else %}
+                                        | Retrasado
+                                    {% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                {# ANTES (Incorrecto): <a href="{{ path(pedido_admin.generateUrl('list')) }}"> #}
+                {# AHORA (Correcto): #}
+                <a href="{{ pedido_admin.generateUrl('list') }}" class="btn btn-primary btn-block">
+                    <i class="fas fa-list"></i>&nbsp;Ver todos los pedidos
+                </a>
+            </div>
+        {% else %}
+            <div class="box-body">
+                <p>{{ 'no_order_found'|trans({}, 'SonataOrderBundle') }}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>

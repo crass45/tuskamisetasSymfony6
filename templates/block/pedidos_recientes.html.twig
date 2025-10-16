@@ -1,0 +1,53 @@
+{# templates/block/pedidos_recientes.html.twig #}
+<div class="box box-primary">
+    <div class="sonata-order-block-recent-order panel panel-default">
+        {% if settings.title %}
+            <div class="box-header with-border">
+                <h3 class="box-title"><i class="fas fa-barcode"></i> {{ settings.title }}</h3>
+            </div>
+        {% endif %}
+
+        {% if orders|length > 0 %}
+            <div class="box-body table-responsive no-padding">
+                <table class="table table-hover">
+                    <tbody>
+                    {% for order in orders %}
+                        <tr>
+                            <td>
+                                {# AHORA: URL de edición generada por el servicio Admin #}
+                                <a href="{{ pedido_admin.generateObjectUrl('edit', order) }}">{{ order }}</a>
+                            </td>
+                            <td class="number text-right">{{ order.totalAPagar | number_format(2, ',', '.') }} €</td>
+                            <td>
+                                    <span class="label
+                                        {% if order.estado.id == 1 %} label-danger
+                                        {% elseif order.estado.id == 2 or order.estado.id == 6 %} label-warning
+                                        {% elseif order.estado.id == 3 %} label-info
+                                        {% elseif order.estado.id == 11 %} label-warning
+                                        {% else %} label-primary
+                                        {% endif %} ">{{ order.estado }}</span>
+                                {% if order.cantidadPagada > 0 and (order.totalAPagar - order.cantidadPagada) < 1 %}
+                                    <span class="label label-success">PAGADO 100%</span>
+                                {% elseif order.cantidadPagada > 0 %}
+                                    <span class="label label-success">PAGADO {{ order.cantidadPagada | round(2, 'ceil')}} €</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ order.fecha|date('d-m-Y') }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="box-footer">
+                {# AHORA: URL del listado generada por el servicio Admin #}
+                <a href="{{ pedido_admin.generateUrl('list') }}" class="btn btn-primary btn-block">
+                    <i class="fas fa-list"></i>&nbsp;Ver todos los pedidos
+                </a>
+            </div>
+        {% else %}
+            <div class="box-body">
+                <p>{{ 'no_order_found'|trans({}, 'SonataOrderBundle') }}</p>
+            </div>
+        {% endif %}
+    </div>
+</div>

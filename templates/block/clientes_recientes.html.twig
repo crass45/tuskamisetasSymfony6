@@ -1,0 +1,35 @@
+{# templates/block/clientes_recientes.html.twig #}
+<div class="box box-primary">
+    <div class="sonata-customer-block-recent-customer">
+        {% if settings.title %}
+            <div class="box-header with-border">
+                <h3 class="box-title"><i class="fas fa-user"></i> {{ settings.title }}</h3>
+            </div>
+        {% endif %}
+        <div class="box-body table-responsive no-padding">
+            {% if customers|length > 0 %}
+                <table class="table table-hover">
+                    <tbody>
+                    {% for customer in customers %}
+                        <tr>
+                            <td>
+                                {# AHORA: URL de edición generada por el servicio ContactoAdmin #}
+                                <a href="{{ contacto_admin.generateObjectUrl('edit', customer) }}">{{ customer }}</a>
+                            </td>
+                            <td>{{ customer.nombre }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="p-3">No hay clientes recientes.</p> {# Un poco más de estilo para el mensaje vacío #}
+            {% endif %}
+        </div>
+        <div class="box-footer">
+            {# AHORA: URL del listado generada por el servicio ContactoAdmin #}
+            <a href="{{ contacto_admin.generateUrl('list') }}" class="btn btn-primary btn-block">
+                <i class="fas fa-list"></i>&nbsp;Ver todos los clientes
+            </a>
+        </div>
+    </div>
+</div>

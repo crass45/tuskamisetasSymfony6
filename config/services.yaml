@@ -43,7 +43,11 @@ services:
         $usuario: '%mrw.usuario%'
         $password: '%mrw.password%'
 
-        # ... (al final del archivo)
+  # Añade esta sección para registrar tus bloques de Sonata
+    App\Block\:
+      resource: '../src/Block/*'
+      tags: ['sonata.block']
+
     App\Service\NacexApiService:
       arguments:
         $nacexUser: '%env(NACEX_USER)%'
