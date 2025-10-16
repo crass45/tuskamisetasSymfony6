@@ -1,32 +1,35 @@
 {# templates/admin/layout.html.twig #}
 
-{# 1. La nueva plantilla base de la que heredamos #}
+{# 1. Herencia (sin cambios) #}
 {% extends '@SonataAdmin/standard_layout.html.twig' %}
 
-{# 2. El bloque de estilos. La hoja de estilos de 'SonataTranslationBundle' ya не es necesaria. #}
+{# 2. Estilos (sin cambios) #}
 {% block stylesheets %}
     {{ parent() }}
-
-    {# Si tienes alguna hoja de estilos personalizada para tu admin, añádela aquí.
-       Ejemplo: <link rel="stylesheet" href="{{ asset('css/custom_admin.css') }}"> #}
 {% endblock %}
 
-{# 3. El nuevo bloque para añadir contenido en la barra lateral #}
-{% block sonata_side_bar_nav %}
-    {# ¡Muy importante! Esto dibuja el menú normal de Sonata #}
-    {{ parent() }}
-
-    {# Ahora, justo después, añadimos nuestros enlaces personalizados #}
-    <div class="sidebar-custom-links" style="padding: 10px 15px; color: #b8c7ce;">
-        <hr style="border-color: #444;">
-        <a href="https://www.tuskamisetas.com" rel="noreferrer" target="_blank">
-            <i class="fa fa-globe"></i> Visitar TusKamisetas.com
-        </a>
-        <br>
-        {% if is_granted('ROLE_SUPER_ADMIN') %}
-            <a href="https://www.tuskamisetas.com/es/usuario/pedir_a_proveedor" rel="noreferrer">
-                <i class="fa fa-truck"></i> Pedir a proveedor
+{# 3. Bloque de contenido de la barra lateral con la ruta final corregida #}
+{% block side_bar_after_nav_content %}
+    <div style="text-align: left; padding-left: 5px;">
+        <p>
+            <a href="{{ path('app_home') }}" rel="noreferrer" target="_blank" style="color: #b8c7ce;">
+                <i class="fas fa-globe fa-fw"></i> Visitar TusKamisetas.com
             </a>
+        </p>
+
+        {% if is_granted('ROLE_SUPER_ADMIN') %}
+            <p>
+                {# AHORA: Usamos la ruta correcta que me has indicado #}
+                <a href="{{ path('app_admin_supplier_order_request') }}" style="color: #b8c7ce;">
+                    <i class="fas fa-truck fa-fw"></i> Pedir a proveedor
+                </a>
+            </p>
         {% endif %}
     </div>
+{% endblock %}
+
+{# 4. Javascripts (sin cambios) #}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}

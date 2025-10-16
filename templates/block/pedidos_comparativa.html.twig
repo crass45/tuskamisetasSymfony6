@@ -1,0 +1,51 @@
+{# templates/block/pedidos_comparativa.html.twig #}
+<div class="box box-primary">
+    <div class="box-header with-border">
+        <h3 class="box-title">
+            <i class="fas fa-chart-line"></i> {{ settings.title }}
+        </h3>
+    </div>
+    <div class="box-body">
+        <div style="height: 300px;"> {# Damos una altura fija al contenedor #}
+            <canvas id="pedidosChart"></canvas>
+        </div>
+    </div>
+</div>
+
+{# Script para inicializar la gráfica #}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const ctx = document.getElementById('pedidosChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar', // Tipo de gráfica: barras
+            data: {
+                labels: {{ labels|raw }}, // Etiquetas (meses)
+                datasets: [{
+                    label: 'Pedidos Creados',
+                    data: {{ datos_creados|raw }}, // Datos de pedidos creados
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)', // Azul
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Pedidos Pagados',
+                    data: {{ datos_pagados|raw }}, // Datos de pedidos pagados
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)', // Verde
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false, // Para que la gráfica ocupe todo el contenedor
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            // Asegura que en el eje Y solo haya números enteros
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
