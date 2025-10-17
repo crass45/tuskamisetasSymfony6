@@ -98,7 +98,7 @@ sonata_admin:
     # ... (el resto de tus plantillas)
 
   assets:
-    extra_javascripts:
-      - bundles/fosckeditor/ckeditor.js
+#    extra_javascripts:
+#      - bundles/fosckeditor/ckeditor.js
     extra_stylesheets:
       - bundles/sonatatranslation/css/sonata-translation.css

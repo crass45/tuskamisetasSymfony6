@@ -4,7 +4,6 @@ namespace App\Admin;
 
 use App\Entity\Pedido;
 use Doctrine\ORM\EntityManagerInterface;
-use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use Knp\Snappy\Pdf;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
@@ -23,6 +22,7 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Mailer\MailerInterface;
@@ -102,7 +102,7 @@ final class PedidoAdmin extends AbstractAdmin
             ->add('montaje', TextType::class, ['label' => 'Enlace al montaje (WeTransfer)', 'required' => false])
             ->add('enviaMail', CheckboxType::class, ['required' => false, 'label' => 'Enviar e-mail al cambiar estado','mapped' => true])
             ->add('estado')
-            ->add('incidencias', CKEditorType::class, ['required' => false])
+            ->add('incidencias', TextareaType::class, ['required' => false, 'attr' => ['class' => 'tinymce']])
             ->end()
             ->with("Subtotales", ["class" => "col-md-3"])
             ->add('diasAdicionales', IntegerType::class, ['label' => 'Días adicionales para el envío', 'required' => false])
@@ -126,8 +126,8 @@ final class PedidoAdmin extends AbstractAdmin
             ->end()
             ->tab('Observaciones')
             ->with('Observaciones')
-            ->add('observacionesInternas', CKEditorType::class, ['required' => false])
-            ->add('observaciones', CKEditorType::class, ['label' => 'Observaciones introducidas por el cliente', 'required' => false])
+            ->add('observacionesInternas', TextareaType::class, ['required' => false, 'attr' => ['class' => 'tinymce']])
+            ->add('observaciones', TextareaType::class, ['label' => 'Observaciones introducidas por el cliente', 'required' => false, 'attr' => ['class' => 'tinymce']])
             ->end()
             ->end()
             ->tab('Detalle Pedido')

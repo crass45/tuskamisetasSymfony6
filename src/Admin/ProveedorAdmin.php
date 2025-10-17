@@ -2,18 +2,18 @@
 
 namespace App\Admin;
 
-use FOS\CKEditorBundle\Form\Type\CKEditorType;
+// --> CAMBIO 1: Importamos el nuevo tipo de TinyMCE
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
 use Sonata\AdminBundle\Form\FormMapper;
-use Sonata\AdminBundle\Form\Type\ModelType;
 use Sonata\DoctrineORMAdminBundle\Filter\ModelFilter;
 use Sonata\DoctrineORMAdminBundle\Filter\StringFilter;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\PercentType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 final class ProveedorAdmin extends AbstractAdmin
@@ -54,7 +54,8 @@ final class ProveedorAdmin extends AbstractAdmin
             ->add('latitud', NumberType::class, ['required' => false])
             ->end()
             ->with('Observaciones')
-            ->add('observaciones', CKEditorType::class, ['required' => false])
+            // --> CAMBIO 2: Reemplazamos CKEditorType por TinyMCEType
+            ->add('observaciones', TextareaType::class, ['required' => false,'attr' => ['class' => 'tinymce']])
             ->end()
             ->end()
             ->tab('Datos Financieros y Sociales')

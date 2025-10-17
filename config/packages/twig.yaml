@@ -3,9 +3,9 @@ twig:
       google_tag_manager_id: '%env(GOOGLE_TAG_MANAGER_ID)%'
       gcp_api_key: '%env(GCP_API_KEY)%'
     file_name_pattern: '*.twig'
-    form_themes:
-      - '@FOSCKEditor/Form/ckeditor_widget.html.twig'
-      - '@SonataFormatter/Form/formatter.html.twig'
+#    form_themes:
+#      - '@FOSCKEditor/Form/ckeditor_widget.html.twig'
+#      - '@SonataFormatter/Form/formatter.html.twig'
 
 when@test:
     twig:

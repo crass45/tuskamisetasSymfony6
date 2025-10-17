@@ -32,4 +32,27 @@
 {% block javascripts %}
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+    {# 1. Cargamos el script de TinyMCE desde su CDN oficial con TU API KEY #}
+    <script src="https://cdn.tiny.cloud/1/lnph1kzh6dl773aimwpg1q0rcwyuxu4oau7fsupn3745i6ut/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    {# 2. Inicializamos el editor en cualquier textarea con la clase "tinymce" #}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Añadimos un pequeño retraso para asegurar que Sonata ha renderizado el formulario
+            setTimeout(function() {
+                tinymce.init({
+                    selector: 'textarea.tinymce', // Elige todos los textareas con la clase "tinymce"
+                    language: 'es',
+                    height: 500,
+                    plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
+                    toolbar: 'undo redo | blocks | bold italic forecolor backcolor | ' +
+                        'alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | ' +
+                        'link image media table | removeformat | code fullscreen preview | help',
+                    menubar: 'file edit view insert format tools table help',
+                });
+            }, 150); // Un retraso de 150ms es muy seguro
+        });
+    </script>
+
 {% endblock %}

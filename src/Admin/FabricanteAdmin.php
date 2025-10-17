@@ -3,7 +3,7 @@
 
 namespace App\Admin;
 
-use FOS\CKEditorBundle\Form\Type\CKEditorType;
+// --> CAMBIO 1: Importamos el nuevo tipo de TinyMCE
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
@@ -17,11 +17,8 @@ final class FabricanteAdmin extends AbstractAdmin
 {
     protected function configureFormFields(FormMapper $form): void
     {
-        // NOTA: Ya no necesitamos el bucle manual ni TranslationsType.
-        // SonataTranslationBundle creará las pestañas de idiomas automáticamente.
-
         $form
-            ->with('Datos Generales', ['class' => 'col-md-6'])
+            ->with('Datos Generales', ['class' => 'col-md-12'])
             ->add('nombre', TextType::class, [
                 'help' => 'El nombre principal del fabricante. Este campo NO es traducible.'
             ])
@@ -34,8 +31,7 @@ final class FabricanteAdmin extends AbstractAdmin
                 'required' => false,
             ])
             ->end()
-            ->with('Contenido Traducible', ['class' => 'col-md-6'])
-            // Simplemente añadimos los campos que marcamos como @Gedmo\Translatable
+            ->with('Contenido Traducible', ['class' => 'col-md-12'])
             ->add('descripcion', TextareaType::class, [
                 'label' => 'Descripción (Traducible)',
                 'required' => false
@@ -44,13 +40,17 @@ final class FabricanteAdmin extends AbstractAdmin
                 'label' => 'Título SEO (Traducible)',
                 'required' => false
             ])
-            ->add('textoArriba', CKEditorType::class, [
+            // --> CAMBIO 2: Reemplazamos CKEditorType por TinyMCEType
+            ->add('textoArriba', TextareaType::class, [
                 'label' => 'Texto Parte Superior (Traducible)',
                 'required' => false,
+                'attr' => ['class' => 'tinymce']
             ])
-            ->add('textoAbajo', CKEditorType::class, [
+            // --> CAMBIO 3: Reemplazamos CKEditorType por TinyMCEType
+            ->add('textoAbajo', TextareaType::class, [
                 'label' => 'Texto Parte Inferior (Traducible)',
                 'required' => false,
+                'attr' => ['class' => 'tinymce']
             ])
             ->end()
         ;

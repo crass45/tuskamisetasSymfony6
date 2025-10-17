@@ -2,7 +2,7 @@
 
 namespace App\Admin;
 
-use FOS\CKEditorBundle\Form\Type\CKEditorType;
+
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
@@ -12,6 +12,7 @@ use Sonata\DoctrineORMAdminBundle\Filter\StringFilter;
 use Sonata\Form\Type\DateTimeRangePickerType;
 use Sonata\Form\Type\DateTimePickerType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 final class PublicacionAdmin extends AbstractAdmin
@@ -27,7 +28,7 @@ final class PublicacionAdmin extends AbstractAdmin
                 'required' => false,
             ])
             ->add('metadescripcion', TextType::class)
-            ->add('textoPortada', CKEditorType::class)
+            ->add('textoPortada', TextareaType::class, ['attr' => ['class' => 'tinymce']])
             ->add('fecha', DateTimePickerType::class, [
                 'format' => 'dd-MM-yyyy',
                 'required' => false,
@@ -35,7 +36,7 @@ final class PublicacionAdmin extends AbstractAdmin
             ->add('url_imagen_portada', TextType::class, [ // Asumo que es una propiedad de la entidad
                 'label' => 'URL Imagen de Portada'
             ])
-            ->add('contenido', CKEditorType::class);
+            ->add('contenido', TextareaType::class,['attr' => ['class' => 'tinymce']]);
     }
 
     protected function configureDatagridFilters(DatagridMapper $datagrid): void

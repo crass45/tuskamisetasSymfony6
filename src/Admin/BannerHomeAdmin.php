@@ -2,7 +2,6 @@
 
 namespace App\Admin;
 
-use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
@@ -36,8 +35,9 @@ final class BannerHomeAdmin extends AbstractAdmin
             ->add('orden', IntegerType::class)
             ->add('titulo', TextType::class)
             ->add('subtitulo', TextType::class)
-            ->add('texto', CKEditorType::class, [
+            ->add('texto', TextareaType::class, [
                 'required' => false,
+                'attr' => ['class' => 'tinymce']
             ])
             ->add('url', UrlType::class)
             ->add('activo', CheckboxType::class, [
@@ -67,6 +67,9 @@ final class BannerHomeAdmin extends AbstractAdmin
                 'editable' => true,
             ])
             ->addIdentifier('titulo')
+            ->add('texto', null, [
+                'safe' => true,
+            ])
             ->add('activo', null, [
                 'editable' => true,
             ]);

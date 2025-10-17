@@ -6,7 +6,6 @@ namespace App\Admin;
 use App\Entity\Modelo;
 use App\Entity\Sonata\ClassificationCategory;
 use Doctrine\ORM\EntityRepository;
-use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use Knp\Menu\ItemInterface as MenuItemInterface;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Admin\AdminInterface;
@@ -19,7 +18,6 @@ use Sonata\Form\Type\CollectionType;
 use Sonata\MediaBundle\Twig\Extension\MediaExtension;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -42,9 +40,8 @@ final class ModeloAdmin extends AbstractAdmin
         $modelo = $this->getSubject();
         $imagen = '';
 
-        // Lógica para mostrar la vista previa de la imagen
         if ($modelo && $modelo->getImagen()) {
-            $format = 'big'; // O el formato que prefieras de tu sonata_media.yaml
+            $format = 'big';
             $webPath = $this->mediaExtension->path($modelo->getImagen(), $format);
             $imagen = '<img src="' . $webPath . '" class="admin-preview" style="max-width: 300px;"/>';
         }
@@ -92,23 +89,26 @@ final class ModeloAdmin extends AbstractAdmin
             ->end()
             ->tab('Traducciones y SEO')
             ->with('Contenidos por Idioma')
-            // Ya no usamos TranslationsType. Añadimos los campos directamente.
-            // SonataTranslationBundle creará las pestañas de idioma automáticamente.
-            ->add('tituloSEO', CKEditorType::class, [
+            // --> CAMBIO 2: Reemplazamos todos los CKEditorType
+            ->add('tituloSEO', TextareaType::class, [
                 'label' => 'Título SEO',
                 'required' => false,
+                'attr' => ['class' => 'tinymce']
             ])
-            ->add('descripcionSEO', CKEditorType::class, [
+            ->add('descripcionSEO', TextareaType::class, [
                 'label' => 'Descripción SEO',
                 'required' => false,
+                'attr' => ['class' => 'tinymce']
             ])
-            ->add('descripcion', CKEditorType::class, [
+            ->add('descripcion', TextareaType::class, [
                 'label' => 'Descripción',
                 'required' => false,
+                'attr' => ['class' => 'tinymce']
             ])
-            ->add('descripcionTusKamisetas', CKEditorType::class, [
+            ->add('descripcionTusKamisetas', TextareaType::class, [
                 'label' => 'Descripción Tuskamisetas (no se borra cuando actualiza producto)',
                 'required' => false,
+                'attr' => ['class' => 'tinymce']
             ])
             ->end()
             ->end()
@@ -116,17 +116,11 @@ final class ModeloAdmin extends AbstractAdmin
             ->with('Atributos')
             ->add('atributos', ModelType::class, [
                 'multiple' => true,
-                'expanded' => false, // Renderiza como checkboxes
+                'expanded' => false,
                 'by_reference' => false,
             ])
             ->end()
             ->with('Modelos Relacionados')
-//            ->add('modelosRelacionados', ModelType::class, [
-//                'multiple' => true,
-//                'by_reference' => false,
-//                'required' => false,
-//                // Aquí podrías añadir una consulta personalizada si la lista es muy grande
-//            ])
             ->end()
             ->end()
             ->tab('Técnicas y Tarifas')
@@ -176,44 +170,19 @@ final class ModeloAdmin extends AbstractAdmin
             return;
         }
 
-        // Lógica para actualizar las medidas de las tallas dinámicamente
         $slugger = new AsciiSlugger();
         $tallas = $object->getTallas();
         foreach ($tallas as $talla) {
             $fieldName = (string) $slugger->slug($talla)->lower();
             if ($this->getForm()->has($fieldName)) {
                 $fieldData = $this->getForm()->get($fieldName)->getData();
-                // Aquí necesitarías una lógica para encontrar el producto específico y actualizarlo
-                // $producto = findProductByTalla($talla);
-                // $producto->setMedidas($fieldData);
             }
         }
-
-        // ... (resto de la lógica preUpdate)
     }
 
 
     protected function configureTabMenu(MenuItemInterface $menu, string $action, ?AdminInterface $childAdmin = null): void
     {
-//        if ('edit' !== $action) {
-//            return;
-//        }
-//
-//        $admin = $this->isChild() ? $this->getParent() : $this;
-//        $id = $admin->getRequest()->get('id');
-//
-//        if (!$id) {
-//            return;
-//        }
-//
-//        // Obtenemos el Admin de Productos para generar la URL
-//        $productoAdmin = $this->getConfigurationPool()->getAdminByAdminCode('App\Admin\ProductoAdmin');
-//
-//        $menu->addChild('Variaciones (Productos)', [
-//            'uri' => $productoAdmin->generateUrl('list', ['filter' => ['modelo' => ['value' => $id]]])
-//        ]);
-
-
         if (!$childAdmin && !in_array($action, ['edit', 'show'])) {
             return;
         }
@@ -221,8 +190,6 @@ final class ModeloAdmin extends AbstractAdmin
         $admin = $this->isChild() ? $this->getParent() : $this;
         $id = $admin->getRequest()->get('id');
 
-//        $menu->addChild('View Playlist', $admin->generateMenuUrl('show', ['id' => $id]));
-//
         if ($this->isGranted('EDIT')) {
             $menu->addChild('Modelo', $admin->generateMenuUrl('edit', ['id' => $id]));
         }

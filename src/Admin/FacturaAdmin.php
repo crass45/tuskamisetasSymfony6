@@ -3,7 +3,6 @@
 namespace App\Admin;
 
 use App\Entity\Factura;
-use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
@@ -14,28 +13,17 @@ use Sonata\AdminBundle\Route\RouteCollectionInterface;
 use Sonata\DoctrineORMAdminBundle\Filter\DateTimeFilter;
 use Sonata\DoctrineORMAdminBundle\Filter\StringFilter;
 use Sonata\Form\Type\DateTimePickerType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 final class FacturaAdmin extends AbstractAdmin
 {
-
-    // --- INICIO DE LA CORRECCIÓN ---
-    /**
-     * Este método modifica directamente la consulta de la lista para asegurar
-     * que siempre se ordene por fecha descendente por defecto.
-     */
     protected function configureQuery(ProxyQueryInterface $query): ProxyQueryInterface
     {
-//        $sortBy = $this->getDatagrid()->getValue('_sort_by');
-
-        // Si el usuario no ha hecho clic en ninguna columna para ordenar,
-        // aplicamos nuestro orden por defecto.
-//        if (!$sortBy) {
         $query->addOrderBy($query->getRootAliases()[0] . '.fecha', 'DESC');
-//        }
-
         return $query;
     }
+
     protected function configureFormFields(FormMapper $form): void
     {
         $form
@@ -49,32 +37,29 @@ final class FacturaAdmin extends AbstractAdmin
             ->add('poblacion', TextType::class, ['label' => 'Población'])
             ->add('provincia', TextType::class, ['label' => 'Provincia'])
             ->add('pais', TextType::class, ['label' => 'País'])
-            ->add('comentarios', CKEditorType::class, ['label' => 'Observaciones para la factura'])
-            // Corregido: idUsuario -> contacto
+            // --> CAMBIO 2: Reemplazamos CKEditorType por TinyMCEType
+            ->add('comentarios', TextareaType::class, [
+                'label' => 'Observaciones para la factura',
+                'required' => false, // Es buena práctica añadirlo si puede estar vacío
+                'attr' => ['class' => 'tinymce']
+            ])
             ->add('pedido.contacto', TextType::class, [
                 "disabled" => true,
                 'label' => 'Usuario (Contacto)',
-                'mapped' => false, // No se mapea directamente, es solo para mostrar
+                'mapped' => false,
                 'data' => $this->getSubject()?->getPedido()?->getContacto()?->__toString(),
             ])
             ->end()
             ->with('Pedido Asociado')
-            // Incrustamos el PedidoAdmin para verlo/editarlo
             ->add('pedido', AdminType::class, ['label' => false])
             ->end();
     }
 
-    // --- INICIO DE LA MEJORA ---
-    /**
-     * Establece los valores por defecto para la vista de lista.
-     * Ordena las facturas por el campo 'fecha' en orden descendente.
-     */
     protected array $datagridValues = [
         '_page' => 1,
         '_sort_order' => 'DESC',
         '_sort_by' => 'fecha',
     ];
-    // --- FIN DE LA MEJORA ---
 
     protected function configureDatagridFilters(DatagridMapper $datagrid): void
     {
@@ -82,7 +67,6 @@ final class FacturaAdmin extends AbstractAdmin
             ->add('nombre')
             ->add('fecha', DateTimeFilter::class)
             ->add('cif')
-            // Corregido: idUsuario -> contacto y la ruta profunda
             ->add('pedido.contacto.usuario.email', StringFilter::class, ['label' => 'Email']);
     }
 
@@ -94,15 +78,12 @@ final class FacturaAdmin extends AbstractAdmin
             ->add('pedido', null, [
                 'associated_property' => 'nombre',
             ])
-            // Corregido: idUsuario -> contacto
             ->add('pedido.contacto', null, [
                 'label' => 'Cliente',
-//                'associated_property' => '__toString',
             ])
             ->add(ListMapper::NAME_ACTIONS, null, [
                 'actions' => [
                     'showFacturaFactura' => [
-                        // NOTA: La ruta a la plantilla ha cambiado
                         'template' => 'admin/CRUD/list_action_show_factura.html.twig'
                     ]
                 ]
@@ -111,11 +92,8 @@ final class FacturaAdmin extends AbstractAdmin
 
     protected function configureRoutes(RouteCollectionInterface $collection): void
     {
-        // Se conservan las rutas personalizadas
         $collection->add('showFacturaFactura', $this->getRouterIdParameter() . '/show-factura');
         $collection->add('creaRectificativa', $this->getRouterIdParameter() . '/crea-rectificativa');
-
-        // Se elimina la acción de crear, ya que las facturas se generan desde los pedidos
         $collection->remove('create');
     }
 }

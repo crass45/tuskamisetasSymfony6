@@ -3,19 +3,17 @@
 namespace App\Admin;
 
 use App\Entity\Empresa;
-use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
 use Sonata\AdminBundle\Datagrid\ListMapper;
 use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Form\Type\ModelListType;
 use Sonata\DoctrineORMAdminBundle\Filter\StringFilter;
-use Sonata\Form\Type\CollectionType;
 use Sonata\Form\Type\DateTimePickerType;
-use Sonata\FormatterBundle\Form\Type\SimpleFormatterType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 final class EmpresaAdmin extends AbstractAdmin
@@ -30,20 +28,14 @@ final class EmpresaAdmin extends AbstractAdmin
             ->add('email', TextType::class)
             ->add('telefonoMovil', TextType::class, ['required' => false])
             ->add('telefonoOtro', TextType::class, ['required' => false])
-            ->add('descripcion', SimpleFormatterType::class, ['format'=>'richhtml','required' => false])
+            // --> CAMBIO 2: Reemplazamos SimpleFormatterType
+            ->add('descripcion', TextareaType::class, ['required' => false, 'attr' => ['class' => 'tinymce']])
             ->add('descripcionContacto', TextType::class, ['required' => false])
             ->add('direccion', ModelListType::class, ['label' => 'Dirección Facturación'])
             ->add('direccionEnvio', ModelListType::class, ['label' => 'Dirección Envío'])
             ->end()
             ->with('Logo y Galería', ['class' => 'col-md-4'])
             ->add('logo', ModelListType::class, ['required' => false])
-//            ->add('galleryHasMedias', CollectionType::class, [
-//                'by_reference' => false,
-//                'label' => 'Imágenes de Galería',
-//            ], [
-//                'edit' => 'inline',
-//                'inline' => 'table',
-//            ])
             ->end()
             ->with('Geolocalización', ['class' => 'col-md-4'])
             ->add('longitud', NumberType::class, ['required' => false])
@@ -52,7 +44,8 @@ final class EmpresaAdmin extends AbstractAdmin
             ->end()
             ->tab('Pagos')
             ->with('Pago por Transferencia')
-            ->add('cuentaBancaria', CKEditorType::class, ['required' => false])
+            // --> CAMBIO 3: Reemplazamos CKEditorType
+            ->add('cuentaBancaria', TextareaType::class, ['required' => false,'attr' => ['class' => 'tinymce']])
             ->end()
             ->with('Pago por PayPal')
             ->add('cuentaPaypal', TextType::class, ['required' => false])
@@ -72,9 +65,10 @@ final class EmpresaAdmin extends AbstractAdmin
             ->end()
             ->tab('Textos Legales')
             ->with('Legal')
-            ->add('textoLegal', CKEditorType::class, ['label' => 'Términos de Uso'])
-            ->add('textoPrivacidad', CKEditorType::class, ['label' => 'Política Privacidad'])
-            ->add('politicaCookies', CKEditorType::class, ['label' => 'Política de Cookies'])
+            // --> CAMBIO 4: Reemplazamos todos los CKEditorType
+            ->add('textoLegal', TextareaType::class, ['label' => 'Términos de Uso','attr' => ['class' => 'tinymce']])
+            ->add('textoPrivacidad', TextareaType::class, ['label' => 'Política Privacidad', 'attr' => ['class' => 'tinymce']])
+            ->add('politicaCookies', TextareaType::class, ['label' => 'Política de Cookies','attr' => ['class' => 'tinymce']])
             ->end()
             ->end()
             ->tab('Configuración')
@@ -122,12 +116,6 @@ final class EmpresaAdmin extends AbstractAdmin
             ->addIdentifier('nombre');
     }
 
-    /**
-     * NOTA DE MIGRACIÓN: Estos métodos a menudo eran un "apaño" para forzar
-     * la actualización de colecciones. Con Doctrine moderno y las relaciones
-     * bidireccionales bien definidas en la entidad, a menudo ya no son necesarios.
-     * Los he conservado por seguridad.
-     */
     protected function prePersist(object $object): void
     {
         if (!$object instanceof Empresa) {

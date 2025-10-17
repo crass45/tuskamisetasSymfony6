@@ -35,18 +35,6 @@
             "migrations/.gitignore"
         ]
     },
-    "friendsofsymfony/ckeditor-bundle": {
-        "version": "2.6",
-        "recipe": {
-            "repo": "github.com/symfony/recipes-contrib",
-            "branch": "main",
-            "version": "2.0",
-            "ref": "f5ad42002183a6881962683e6d84bbb25cdfce5d"
-        },
-        "files": [
-            "config/packages/fos_ckeditor.yaml"
-        ]
-    },
     "knplabs/knp-menu-bundle": {
         "version": "v3.6.0"
     },
@@ -176,9 +164,6 @@
         "files": [
             "config/packages/sonata_form.yaml"
         ]
-    },
-    "sonata-project/formatter-bundle": {
-        "version": "5.4.2"
     },
     "sonata-project/media-bundle": {
         "version": "4.16",
