@@ -4,7 +4,9 @@ namespace App\EventSubscriber;
 
 use App\Entity\Empresa;
 use App\Entity\Pedido;
+use App\Service\FechaEntregaService;
 use App\Service\PedidoMailerService;
+use App\Service\ShippingCalculatorService;
 use Doctrine\Bundle\DoctrineBundle\EventSubscriber\EventSubscriberInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Events;
@@ -12,10 +14,12 @@ use Doctrine\Persistence\Event\LifecycleEventArgs;
 
 class PedidoEventSubscriber implements EventSubscriberInterface
 {
-    private array $originalStates = [];
     private EntityManagerInterface $em;
 
+
     public function __construct(private PedidoMailerService $mailerService,
+                                private FechaEntregaService $fechaEntregaService,
+                                private ShippingCalculatorService $shippingCalculator,
                                 EntityManagerInterface $em)
     {
         $this->em = $em;
@@ -36,20 +40,53 @@ class PedidoEventSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // Guardamos el estado original antes de que se actualice
         $entityManager = $args->getObjectManager();
         $uow = $entityManager->getUnitOfWork();
-        $originalData = $uow->getOriginalEntityData($entity);
 
-        $this->originalStates[$entity->getId()] = $originalData['estado'] ?? null;
+        // La forma correcta y robusta: preguntamos a Doctrine por los cambios exactos
+        $changeSet = $uow->getEntityChangeSet($entity);
 
-        // --- INICIO DE LA NUEVA LÓGICA DE RECÁLCULO DE TOTALES ---
+        // Comprobamos si el campo 'recogidaEnTienda' ha cambiado
+        if (isset($changeSet['recogerEnTienda'])) {
+            $esRecogidaEnTienda = $changeSet['recogerEnTienda'][1]; // [1] es el valor NUEVO
+
+            if ($esRecogidaEnTienda) {
+                // Si se marca "Recoger en tienda", el envío es 0.
+                $entity->setEnvio(0);
+            } else {
+                // Si se desmarca, recalculamos el envío.
+                $costeEnvio = $this->shippingCalculator->calculateForPedido($entity);
+                $entity->setEnvio($costeEnvio ?? 0);
+            }
+        }
+        // --- FIN DE LA LÓGICA DE ENVÍOS ---
+
+        // Comprobamos si el campo 'cantidadPagada' ha cambiado
+        if (isset($changeSet['cantidadPagada'])) {
+            $originalCantidadPagada = (float)($changeSet['cantidadPagada'][0] ?? 0.0); // Valor ANTIGUO
+            $newCantidadPagada = (float)($changeSet['cantidadPagada'][1] ?? 0.0);      // Valor NUEVO
+
+            if ($originalCantidadPagada <= 0 && $newCantidadPagada > 0) {
+                $fechas = $this->fechaEntregaService->getFechasEntregaPedido($entity, new \DateTime());
+                if ($fechas) {
+                    $fechaSeleccionada = $entity->getPedidoExpres() ? $fechas['express'] : $fechas['min'];
+                    if ($fechaSeleccionada instanceof \DateTimeInterface) {
+                        $entity->setFechaEntrega($fechaSeleccionada);
+                    }
+                }
+            }
+            //ponemos la fecha de entrega anull para que no aparezca en los pedidos pendientes
+            if($newCantidadPagada==0){
+                $entity->setFechaEntrega(null);
+            }
+        }
+        // Recalculamos los totales DESPUÉS de nuestra lógica
         $this->recalculateTotals($entity);
 
-        // Forzamos a Doctrine a recalcular los cambios de la entidad
+
+        // Forzamos a Doctrine a registrar TODOS los cambios (fecha y totales)
         $meta = $entityManager->getClassMetadata(get_class($entity));
         $uow->recomputeSingleEntityChangeSet($meta, $entity);
-        // --- FIN DE LA NUEVA LÓGICA ---
     }
 
     /**
@@ -113,16 +150,11 @@ class PedidoEventSubscriber implements EventSubscriberInterface
         if (!$entity instanceof Pedido) {
             return;
         }
-//YA NO TENEMOS EN CUENTA EL ESTADO ANTERIOR NI NADA. SIMPLEMENTE ENVIAMOS EL MAIL SI SE MARCA EL CHECK
-//        $originalState = $this->originalStates[$entity->getId()] ?? null;
-//        $newState = $entity->getEstado();
 
         // Comprobamos si el estado ha cambiado, si el nuevo estado es diferente Y si el checkbox está marcado
-        if ($entity->isEnviaMail() /*&& $newState && $newState !== $originalState*/) {
+        if ($entity->isEnviaMail()) {
             $this->mailerService->sendEmailForStatus($entity);
         }
 
-        // Limpiamos el estado guardado
-        unset($this->originalStates[$entity->getId()]);
     }
 }

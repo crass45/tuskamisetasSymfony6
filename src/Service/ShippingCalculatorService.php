@@ -3,6 +3,7 @@
 
 namespace App\Service;
 
+use App\Entity\Pedido;
 use App\Entity\ZonaEnvio;
 use App\Model\Carrito;
 use App\Repository\ZonaEnvioPrecioCantidadRepository;
@@ -68,6 +69,64 @@ class ShippingCalculatorService
         }
 
         // Si hay productos, devolvemos siempre como mínimo 1 bulto.
+        return $totalBultosFraccional > 0 ? (int)ceil($totalBultosFraccional) : 0;
+    }
+
+    /**
+     * ¡NUEVO MÉTODO!
+     * Calcula el coste de envío para una entidad Pedido ya existente.
+     * Ideal para usar en el backend (Admin, EventSubscribers, etc.).
+     */
+    public function calculateForPedido(Pedido $pedido): float
+    {
+        $direccionEnvio = $pedido->getDireccion();
+
+        // Si no hay dirección de envío o código postal, el coste es 0.
+        if (!$direccionEnvio) {
+            return 0.0;
+        }
+
+        // Buscamos la zona de envío correspondiente
+        $zonaEnvio = $direccionEnvio->getProvinciaBD()->getZonasEnvio()[0];
+
+        // Si no se encuentra una zona, el coste es 55.
+        if (!$zonaEnvio) {
+            return 55;
+        }
+
+        // Comprobamos si se aplica el envío gratuito por superar el importe.
+        $umbralEnvioGratis = (float)$zonaEnvio->getEnvioGratis();
+        if ($umbralEnvioGratis > 0 && $pedido->getSubTotal() >= $umbralEnvioGratis) {
+            return 0.0;
+        }
+
+        // Calculamos el número de bultos a partir de las líneas del pedido.
+        $numeroBultos = $this->calculateTotalBultosForPedido($pedido);
+
+        if ($numeroBultos === 0) {
+            return 0.0;
+        }
+
+        // Buscamos el precio por bulto en la base de datos.
+        return $this->zonaEnvioPrecioRepository->findPriceByBultos($zonaEnvio, $numeroBultos);
+    }
+
+    /**
+     * Calcula el número de bultos para una entidad Pedido.
+     */
+    private function calculateTotalBultosForPedido(Pedido $pedido): int
+    {
+        $totalBultosFraccional = 0.0;
+
+        foreach ($pedido->getLineas() as $linea) {
+            $producto = $linea->getProducto();
+            $cantidadPorCaja = $producto?->getModelo()?->getBox();
+
+            if ($cantidadPorCaja > 0) {
+                $totalBultosFraccional += $linea->getCantidad() / $cantidadPorCaja;
+            }
+        }
+
         return $totalBultosFraccional > 0 ? (int)ceil($totalBultosFraccional) : 0;
     }
 }
