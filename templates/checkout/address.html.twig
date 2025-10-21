@@ -149,7 +149,7 @@
             function updateShippingFormState() {
                 const isOtraDireccionActive = $('#nuevadireccion').hasClass('active');
                 const $shippingFormFields = $shippingFormContainer.find('input, select, textarea');
-                console.warn($shippingFormFields);
+                console.warn("amparo");
 
                 if (isOtraDireccionActive) {
                     $shippingFormFields.prop('disabled', false); // Activa los campos para validación y envío
@@ -166,7 +166,6 @@
                 $shippingFormFields.prop('disabled', true); // Desactiva los campos
                 console.warn($shippingFormFields);
                 $('#tipoEnvio').val(tipoEnvio);
-                console.warn(tipoEnvio);
                 if(tipoEnvio==2){
                     $shippingFormContainer.show();
                     updateShippingFormState();

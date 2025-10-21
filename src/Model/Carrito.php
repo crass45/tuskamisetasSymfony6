@@ -197,6 +197,17 @@ class Carrito
     public function setDescuento(float $descuento): self { $this->descuento = $descuento; return $this; }
     public function getRecogerTienda(): bool { return $this->tipoEnvio === 3; }
 
+    public function setRecogerTienda(bool $recoger):void
+    {
+        if($recoger) {
+            $this->tipoEnvio = 3;
+        }else{
+            $this->tipoEnvio = 1;
+        }
+    }
+
+
+
 
     public function getCantidadProductosTotales()
     {
@@ -336,6 +347,23 @@ class Carrito
             }
         }
         return $total;
+    }
+
+    /**
+     * Comprueba si alguno de los presupuestos en el carrito tiene trabajos de personalización.
+     *
+     * @return bool True si hay al menos una personalización, false en caso contrario.
+     */
+    public function hasPersonalizaciones(): bool
+    {
+        foreach ($this->items as $presupuesto) {
+            foreach ($presupuesto->getTrabajos() as $trabajo) {
+                if ($trabajo->getTrabajo()->getCodigo()!="DB"){
+                    return true;
+                }
+            }
+        }
+        return false; // No se encontraron trabajos en ningún presupuesto
     }
 
     public function __clone()

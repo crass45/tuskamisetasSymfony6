@@ -76,7 +76,8 @@ class PaymentController extends AbstractController
         }
 
         // 1. Verificar la firma
-        $key = $this->getParameter('redsys.secret_key'); // Asumiendo que la clave está en services.yaml
+//        $key = $this->getParameter('redsys.secret_key'); // Asumiendo que la clave está en services.yaml
+        $key = $this->redsysApi->getSecretKey();
         $calculatedSignature = $this->redsysApi->createMerchantSignatureNotif($key, $parameters);
 
         if ($calculatedSignature !== $receivedSignature) {

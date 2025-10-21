@@ -53,6 +53,10 @@ final class EmpresaAdmin extends AbstractAdmin
             ->with('Pasarela de Pago')
             ->add('merchantCode', TextType::class, ['required' => false])
             ->add('merchantId', TextType::class, ['required' => false])
+            ->add('modoPruebas', null, [
+                'label' => 'Activar modo de pruebas (Sandbox)',
+                'help' => 'Si está marcado, se usará la URL de pruebas de Redsys (sis-t.redsys.es). Desmácalo SÓLO en producción.'
+            ])
             ->end()
             ->end()
             ->tab('Redes Sociales')

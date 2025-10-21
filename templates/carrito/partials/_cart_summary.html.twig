@@ -10,7 +10,7 @@
                     <input id="ch_envio_expres" name="ch_envio_expres" type="checkbox"
                            class="cart-summary-updater"
                            {% if carrito.servicioExpres %}checked{% endif %}
-                            {% if not empresa.servicioExpresActivo %}disabled{% endif %}>
+                            {% if not empresa.servicioExpresActivo or not carrito.hasPersonalizaciones() %}disabled{% endif %}>
                     <label for="ch_envio_expres" title="Entrega en 7 días laborables.">Servicio Expres</label>
                 </div>
                 <div class="col-lg-4" style="text-align: left">

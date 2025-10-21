@@ -27,6 +27,9 @@ class Empresa
     #[ORM\Column(length: 45)]
     private ?string $nombre = '';
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $modoPruebas = true;
+
     #[ORM\ManyToOne(targetEntity: Media::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'logo', onDelete: 'CASCADE')]
     private ?Media $logo = null;
@@ -218,6 +221,22 @@ class Empresa
     public function setIvaReducido(?int $ivaReducido): self { $this->ivaReducido = $ivaReducido; return $this; }
     public function getIvaGeneral(): ?int { return $this->ivaGeneral; }
     public function setIvaGeneral(?int $ivaGeneral): self { $this->ivaGeneral = $ivaGeneral; return $this; }
+
+    /**
+     * @return bool|null
+     */
+    public function getModoPruebas(): ?bool
+    {
+        return $this->modoPruebas;
+    }
+
+    /**
+     * @param bool|null $modoPruebas
+     */
+    public function setModoPruebas(?bool $modoPruebas): void
+    {
+        $this->modoPruebas = $modoPruebas;
+    }
 
     /** @return Collection<int, EmpresaHasMedia> */
     public function getGalleryHasMedias(): Collection { return $this->galleryHasMedias; }

@@ -183,7 +183,7 @@ class CarritoController extends AbstractController
     {
         $carrito = $this->getOrCreateCart($session);
         $carrito->setServicioExpres($request->request->getBoolean('servicioExpres', false));
-//        $carrito->setRecogerTienda($request->request->getBoolean('tienda', false));
+        $carrito->setRecogerTienda($request->request->getBoolean('tienda', false));
         $session->set('carrito', $carrito);
 
         $zonaEnvioId = $request->request->getInt('zonaEnvio', 1);

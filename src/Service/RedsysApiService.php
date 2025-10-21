@@ -1,5 +1,6 @@
 <?php
 // src/Service/RedsysApiService.php
+// --- ESTE ES EL CÓDIGO CORREGIDO Y COMPLETO ---
 
 namespace App\Service;
 
@@ -10,18 +11,44 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 /**
  * Servicio para gestionar la comunicación con la pasarela de pago Redsys.
- * Migración fiel de la antigua clase de utilidad RedsysAPI.
  */
 class RedsysApiService
 {
-    private ?Empresa $empresaConfig;
+    private ?Empresa $empresaConfig = null; // Inicializado a null
     private array $vars_pay = [];
 
     public function __construct(
         private EntityManagerInterface $em,
         private UrlGeneratorInterface $router
     ) {
+        // ¡NO HACEMOS NINGUNA CONSULTA AQUÍ!
+        // El constructor se deja vacío para evitar errores en comandos de consola.
+    }
+
+    /**
+     * Carga la configuración de la BBDD de forma perezosa (lazy-load)
+     * solo cuando se necesita, y NUNCA desde la consola.
+     */
+    private function getConfig(): ?Empresa
+    {
+        // --- INICIO DEL "CORTAFUEGOS" PARA LA CONSOLA ---
+        // Si el código se está ejecutando desde un comando de consola (cli)
+        if (php_sapi_name() === 'cli') {
+            // No ejecutes ninguna consulta y devuelve null.
+            // Esto evita el error "Unknown column" durante las migraciones.
+            return null;
+        }
+        // --- FIN DEL CORTAFUEGOS ---
+
+        // Si ya la hemos cargado antes, la devolvemos.
+        if ($this->empresaConfig !== null) {
+            return $this->empresaConfig;
+        }
+
+        // Si no, esta es la PRIMERA VEZ que la pedimos (desde la web).
+        // Hacemos la consulta de la BBDD aquí.
         $this->empresaConfig = $this->em->getRepository(Empresa::class)->findOneBy([], ['id' => 'DESC']);
+        return $this->empresaConfig;
     }
 
     /**
@@ -29,7 +56,11 @@ class RedsysApiService
      */
     public function generateRedsysFormData(Pedido $pedido): array
     {
-        if (!$this->empresaConfig || !$pedido->getTotal() || !$this->empresaConfig->getMerchantCode() || !$this->empresaConfig->getMerchantId()) {
+        // Usamos el getter en lugar de la propiedad directamente
+        $config = $this->getConfig();
+
+        // Comprobamos si la configuración se pudo cargar (no será null si no estamos en 'cli')
+        if (!$config || !$pedido->getTotal() || !$config->getMerchantCode() || !$config->getMerchantId()) {
             return [];
         }
 
@@ -45,28 +76,46 @@ class RedsysApiService
 
         $this->setParameter("DS_MERCHANT_AMOUNT", (int)(($pedido->getTotal() - $pedido->getCantidadPagada()) * 100));
         $this->setParameter("DS_MERCHANT_ORDER", $idPedidoSermepa);
-        $this->setParameter("DS_MERCHANT_MERCHANTCODE", $this->empresaConfig->getMerchantCode());
+        $this->setParameter("DS_MERCHANT_MERCHANTCODE", $config->getMerchantCode());
         $this->setParameter("DS_MERCHANT_CURRENCY", "978"); // EUR
+
+        // --- INICIO DE LA CORRECCIÓN ---
         $this->setParameter("DS_MERCHANT_TRANSACTIONTYPE", "0");
         $this->setParameter("DS_MERCHANT_TERMINAL", "001");
         $this->setParameter("DS_MERCHANT_MERCHANTURL", $urlNotificacion);
         $this->setParameter("DS_MERCHANT_URLOK", $urlOK);
         $this->setParameter("DS_MERCHANT_URLKO", $urlKO);
+        // --- FIN DE LA CORRECCIÓN ---
 
         $version = "HMAC_SHA256_V1";
-        $params = $this->createMerchantParameters();
-        $signature = $this->createMerchantSignature($this->empresaConfig->getMerchantId());
+        $params = $this->createMerchantParameters(); // Corregido aquí también
+        $signature = $this->createMerchantSignature($config->getMerchantId()); // Corregido aquí también
+
+        // Decidimos la URL basándonos en el nuevo campo de la BBDD
+        $redsysUrl = $config->getModoPruebas()
+            ? 'https://sis-t.redsys.es/sis/realizarPago'  // URL de PRUEBAS
+            : 'https://sis.redsys.es/sis/realizarPago'; // URL de PRODUCCIÓN
 
         return [
             'Ds_SignatureVersion' => $version,
             'Ds_MerchantParameters' => $params,
             'Ds_Signature' => $signature,
-            'redsys_url' => 'https://sis.redsys.es/sis/realizarPago'
+            'redsys_url' => $redsysUrl
         ];
     }
 
+    /**
+     * Devuelve la clave secreta (MerchantId) cargada desde la entidad Empresa.
+     * (Lo necesitará el PaymentController)
+     */
+    public function getSecretKey(): ?string
+    {
+        // Usamos el getter aquí también
+        return $this->getConfig()?->getMerchantId();
+    }
+
     // ===================================================================
-    // MÉTODOS MIGRADOS FIELMENTE DE TU CLASE RedsysAPI
+    // RESTO DE MÉTODOS (sin cambios)
     // ===================================================================
 
     private function setParameter($key, $value): void
@@ -126,7 +175,7 @@ class RedsysApiService
         return base64_decode($data);
     }
 
-    // --- Métodos para notificaciones (los migramos para tenerlos listos) ---
+    // --- Métodos para notificaciones ---
 
     public function decodeMerchantParameters(string $data): ?array
     {
@@ -152,4 +201,3 @@ class RedsysApiService
         return strtr(base64_encode($res), '+/', '-_');
     }
 }
-
