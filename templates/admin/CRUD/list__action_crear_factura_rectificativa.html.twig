@@ -1,2 +1,22 @@
-{# templates/admin/CRUD/list_action_showFactura.html.twig #}
-<li><a class="sonata-action-element" href="{{ admin.generateObjectUrl('creaRectificativa', object) }}"><i class="fa fa-files-o" aria-hidden="true"></i>Crear Rectificativa</a></li>
+{# templates/admin/CRUD/list__action_crear_factura_rectificativa.html.twig #}
+
+{# Solo muestra el botón si la factura NO tiene ya una rectificativa #}
+{% if object.facturaRectificativa is null %}
+
+    <li>
+        <a title="Crear Factura Rectificativa"
+           href="{{ admin.generateObjectUrl('createRectificativa', object) }}" target="_blank">
+            <i class="fa fa-undo" aria-hidden="true"></i>
+            Crear Rectificativa
+        </a>
+    </li>
+{% else %}
+    {# Si ya tiene una, muestra un enlace para verla #}
+    <li>
+        <a title="Ver Factura Rectificativa"
+           href="{{ path('admin_app_factura_showFacturaRectificativa', {'id': object.facturaRectificativa.id}) }}" target="_blank">
+            <i class="fa fa-eye" aria-hidden="true"></i>
+            Ver Rectificativa
+        </a>
+    </li>
+{% endif %}

@@ -19,6 +19,14 @@ services:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
+        bind:
+          $verifactuNif: '%env(VERIFACTU_NIF)%'
+          $verifactuSoftware: '%env(VERIFACTU_SOFTWARE)%'
+          $verifactuVersion: '%env(VERIFACTU_VERSION)%'
+          verifactuIsProduction: '%env(bool:VERIFACTU_IS_PRODUCTION)%'
+          $verifactuAeatCertPath: '%env(VERIFACTU_AEAT_CERT_PATH)%'
+          $verifactuAeatCertPass: '%env(VERIFACTU_AEAT_CERT_PASS)%'
+
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     App\:
@@ -34,6 +42,19 @@ services:
     App\Twig\Extension\TiendaExtension:
       tags:
         - { name: twig.extension }
+
+
+      # --- AÑADE ESTA SECCIÓN ---
+      # Configuración explícita para AeatClientService para resolver la ambigüedad del autowiring
+    App\Service\AeatClientService:
+      arguments:
+        $verifactuNif: '%env(VERIFACTU_NIF)%'
+        $verifactuSoftware: '%env(VERIFACTU_SOFTWARE)%'
+        $verifactuVersion: '%env(VERIFACTU_VERSION)%'
+        $verifactuAeatCertPath: '%kernel.project_dir%%env(VERIFACTU_AEAT_CERT_PATH)%'
+        $verifactuAeatCertPass: '%env(VERIFACTU_AEAT_CERT_PASS)%'
+        $verifactuIsProduction: '%env(bool:VERIFACTU_IS_PRODUCTION)%'
+      # --- FIN DE LA SECCIÓN AÑADIDA ---
 
     App\Service\MrwApiService:
       arguments:
@@ -159,6 +180,16 @@ services:
     App\Admin\FacturaAdmin:
       tags:
         - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Factura, group: "Tienda", label: "Facturas", controller: App\Controller\Admin\FacturaCRUDController }
+
+    App\Admin\FacturaRectificativaAdmin:
+      tags:
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\FacturaRectificativa, group: "Tienda", label: "Facturas Rectificativas", controller: App\Controller\Admin\FacturaCRUDController }
+
+    admin.factura_rectificativa_linea:
+      class: App\Admin\FacturaRectificativaLineaAdmin
+      arguments: [ ~, App\Entity\FacturaRectificativaLinea, ~ ]
+      tags:
+        - { name: sonata.admin, manager_type: orm, show_in_dashboard: false }
 
     App\Admin\PedidoAdmin:
       arguments:

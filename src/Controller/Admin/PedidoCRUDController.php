@@ -9,9 +9,11 @@ use App\Model\Carrito;
 use App\Model\Presupuesto;
 use App\Model\PresupuestoProducto;
 use App\Model\PresupuestoTrabajo;
+use App\Repository\FacturaRepository;
 use App\Service\GoogleAnalyticsService;
 use App\Service\MrwApiService;
 use App\Service\NacexApiService;
+use App\Service\VerifactuService;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Snappy\Pdf;
 use Sonata\AdminBundle\Controller\CRUDController;
@@ -29,7 +31,9 @@ final class PedidoCRUDController extends CRUDController
         private GoogleAnalyticsService $googleAnalyticsService,
         private EntityManagerInterface $em,
         private MrwApiService          $mrwApiService, // Se inyecta el servicio de MRW
-        private NacexApiService        $nacexApiService
+        private NacexApiService        $nacexApiService,
+        private VerifactuService       $verifactuService, // <-- Inyectamos el servicio
+        private FacturaRepository      $facturaRepository // <-- Inyectamos el repositorio
     )
     {
     }
@@ -48,8 +52,8 @@ final class PedidoCRUDController extends CRUDController
         $filename = 'Presupuesto - ' . $pedido;
         $html = $this->renderView('plantilla_pdf/presupuesto.html.twig', ['pedido' => $pedido]);
 
-        // NOTA: Deberás migrar tu plantilla de footer si la necesitas.
-        // $this->snappy->setOption('footer-html', $this->renderView('plantilla_pdf/footer.html.twig'));
+
+        $this->snappy->setOption('footer-html', $this->renderView('plantilla_pdf/footer.html.twig'));
 
         return new Response(
             $this->snappy->getOutputFromHtml($html),
@@ -74,6 +78,17 @@ final class PedidoCRUDController extends CRUDController
 
         if ($urlToEncode) {
             QRcode::png($urlToEncode, $outputPngFile, 'H', 8, 4);
+            // 2. Comprueba si el archivo existe
+            if (file_exists($outputPngFile)) {
+                // 3. Lee el contenido binario del archivo
+                $fileContent = file_get_contents($outputPngFile);
+
+                // 4. Codifica en Base64 y crea el Data URI
+                $qrCodeDataUri = 'data:image/png;base64,' . base64_encode($fileContent);
+
+                // 5. (Opcional) Borra el archivo temporal, ya no lo necesitas
+                unlink($outputPngFile);
+            }
         } else {
             // Manejar el caso de que no haya URL de montaje (opcional)
             $outputPngFile = null;
@@ -81,7 +96,7 @@ final class PedidoCRUDController extends CRUDController
 
         $html = $this->renderView('plantilla_pdf/ordenPedido.html.twig', [
             'pedido' => $pedido,
-            'qrCodeFile' => $outputPngFile
+            'qrCodeFile' => $qrCodeDataUri
         ]);
 
         $pdfContent = $this->snappy->getOutputFromHtml($html);
@@ -222,8 +237,30 @@ final class PedidoCRUDController extends CRUDController
             return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
         }
 
+        $urlToEncode = $pedido->getFactura()->getVerifactuQr();
+        $outputPngFile = sys_get_temp_dir() . '/qr_' . $pedido->getId() . '.png'; // Se guarda en un directorio temporal
+
+        $qrCodeDataUri = null;
+        if ($urlToEncode) {
+            QRcode::png($urlToEncode, $outputPngFile, 'H', 8, 4);
+            if (file_exists($outputPngFile)) {
+                // 3. Lee el contenido binario del archivo
+                $fileContent = file_get_contents($outputPngFile);
+
+                // 4. Codifica en Base64 y crea el Data URI
+                $qrCodeDataUri = 'data:image/png;base64,' . base64_encode($fileContent);
+
+                // 5. (Opcional) Borra el archivo temporal, ya no lo necesitas
+                unlink($outputPngFile);
+            }
+        } else {
+            // Manejar el caso de que no haya URL de montaje (opcional)
+            $outputPngFile = null;
+        }
+
         $filename = str_replace('/', '_', 'Factura - ' . $pedido->getFactura());
-        $html = $this->renderView('plantilla_pdf/factura.html.twig', ['pedido' => $pedido]);
+        $html = $this->renderView('plantilla_pdf/factura.html.twig', ['pedido' => $pedido, 'qrCodeFile' => $qrCodeDataUri]);
+        $this->snappy->setOption('footer-html', $this->renderView('plantilla_pdf/footer.html.twig'));
 
         return new Response(
             $this->snappy->getOutputFromHtml($html),

@@ -67,6 +67,7 @@ sonata_admin:
           - App\Admin\TarifaAdmin
           - App\Admin\OfertaAdmin
           - App\Admin\FacturaAdmin
+          - App\Admin\FacturaRectificativaAdmin
 
       Blog:
         label: Blog

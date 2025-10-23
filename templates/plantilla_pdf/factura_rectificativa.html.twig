@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>FACTURA RECTIFICATIVA {{ rectificativa.numeroFactura }}</title>
+
+    <style>
+        .clearfix:after { content: ""; display: table; clear: both; }
+        a { color: #5D6975; text-decoration: underline; }
+        body { position: relative; width: 21cm; height: 29.7cm; margin: 0 auto; color: #001028; background: #FFFFFF; font-family: Arial, sans-serif; font-size: 12px; }
+        header { padding: 10px 0; margin-bottom: 30px; }
+        #logo { text-align: center; margin-bottom: 10px; }
+        #logo img { width: 90px; }
+        h1 { border-top: 1px solid #5D6975; border-bottom: 1px solid #5D6975; color: #5D6975; font-size: 2.4em; line-height: 1.4em; font-weight: normal; text-align: center; margin: 0 0 20px 0; background: #F5F5F5; }
+        #project span { color: #5D6975; text-align: right; width: 52px; margin-right: 10px; display: inline-block; font-size: 0.8em; }
+        #company { float: right; text-align: right; }
+        #project div, #company div { white-space: nowrap; }
+        table { width: 100%; border-collapse: collapse; border-spacing: 0; margin-bottom: 20px; }
+        table tr:nth-child(2n-1) td { background: #F5F5F5; }
+        table th, table td { text-align: center; }
+        table th { padding: 5px 20px; color: #5D6975; border-bottom: 1px solid #C1CED9; white-space: nowrap; font-weight: normal; }
+        table .service, table .desc { text-align: left; }
+        table td { padding: 10px; text-align: right; }
+        table td.service, table td.desc { vertical-align: top; }
+        table td.unit, table td.qty, table td.total { font-size: 1.2em; }
+        table td.grand { border-top: 1px solid #5D6975;; }
+        #notices .notice { color: #5D6975; font-size: 1.2em; }
+        footer { color: #5D6975; width: 100%; height: 30px; position: absolute; bottom: 0; border-top: 1px solid #C1CED9; padding: 8px 0; text-align: center; }
+    </style>
+</head>
+<body>
+<header class="clearfix">
+    <div id="logo" style="text-align: left">
+        {# Asumimos que la información de la empresa se puede obtener de la factura original #}
+        {% if empresa.logo %}
+            <img src="http://www.tuskamisetas.com/uploads/media/default/0001/01/pollo_admin.jpeg"
+                 alt="{{ empresa.nombre }}">
+        {% endif %}
+        <div style="display: inline-block; margin-left: 15px">
+            <div><h2 style="margin-bottom: 0;">{{ empresa.nombre }}</h2></div>
+            <div>{{ empresa.direccion.dir }}
+                <br>{{ empresa.direccion.cp }} {{ empresa.direccion.poblacion }} {{ empresa.direccion.provincia }}
+            </div>
+            <div>{{ empresa.telefonoOtro }}</div>
+            <div><a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a></div>
+            <div>{% if rectificativa.facturaPadre.pedido.contacto.intracomunitario %}ES{% endif %}{{ empresa.cif }}</div>
+        </div>
+        {% if qrCodeFile is defined and qrCodeFile is not null %}
+            <div style="text-align: center">
+                <div>VERI*FACTU</div>
+                <img src="{{ qrCodeFile }}" title="QR Code" style="height: 200px; width: auto"/>
+                <div>Factura verificable en la sede electrónica de la AEAT</div>
+
+            </div>
+        {% endif %}
+    </div>
+
+    <h1>FACTURA RECTIFICATIVA: {{ rectificativa.numeroFactura }}</h1>
+    <div id="project" style="float: left; font-size: 1.1em;">
+        <div><strong>Factura Rectificada:</strong> {{ rectificativa.facturaPadre.nombre }}</div>
+        <div><strong>Fecha Factura Original:</strong> {{ rectificativa.facturaPadre.fecha|date('d/m/Y') }}</div>
+        <div><strong>Motivo Rectificación:</strong> {{ rectificativa.motivo }}</div>
+    </div>
+    <div id="company" style="float: right; text-align: right;">
+        <div><strong>Cliente:</strong> {{ rectificativa.facturaPadre.razonSocial }}</div>
+        <div>{{ rectificativa.facturaPadre.direccion }}<br/>{{ rectificativa.facturaPadre.cp }} {{ rectificativa.facturaPadre.poblacion }}</div>
+        <div>{{ rectificativa.facturaPadre.cif }}</div>
+        <div><strong>Fecha Expedición:</strong> {{ rectificativa.fecha|date('d/m/Y') }}</div>
+    </div>
+</header>
+<main>
+    <table>
+        <thead>
+        <tr>
+            <th class="desc">DESCRIPCIÓN</th>
+            <th>CANTIDAD</th>
+            <th>PRECIO UNITARIO</th>
+            <th>TOTAL</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% set subtotal = 0 %}
+        {% for linea in rectificativa.lineas %}
+            <tr>
+                <td class="desc">{{ linea.descripcion }}</td>
+                <td class="qty">{{ linea.cantidad }}</td>
+                <td class="unit">{{ linea.precio|number_format(3, ',', '.') }}€</td>
+                <td class="total">{{ linea.getTotal()|number_format(2, ',', '.') }}€</td>
+            </tr>
+            {% set subtotal = subtotal + linea.getTotal() %}
+        {% endfor %}
+
+        {% set iva = subtotal * (rectificativa.facturaPadre.pedido.iva / 100) %}
+        {% set total = subtotal + iva %}
+
+        <tr>
+            <td colspan="3">SUBTOTAL</td>
+            <td class="total">{{ subtotal|number_format(2, ',', '.') }}€</td>
+        </tr>
+        <tr>
+            <td colspan="3">IVA ({{ rectificativa.facturaPadre.pedido.iva }}%)</td>
+            <td class="total">{{ iva|number_format(2, ',', '.') }}€</td>
+        </tr>
+        <tr class="grand-total">
+            <td colspan="3" class="grand total">TOTAL (Abono)</td>
+            <td class="grand total">{{ total|number_format(2, ',', '.') }}€</td>
+        </tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

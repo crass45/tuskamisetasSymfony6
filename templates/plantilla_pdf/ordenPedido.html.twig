@@ -147,76 +147,78 @@
             {% if pedido.pedidoExpres == true %}
                 <H3 style="margin-bottom: 0px">PEDIDO EXPRES</H3>
             {% endif %}
-            <img src="https://www.tuskamisetas.com/qr{{ pedido }}.png" title="Link to Google.com"/>
+            {% if qrCodeFile is not null %}
+                <img src="{{ qrCodeFile }}" title="QR Code"/>
+            {% endif %}
             {#           <p>https://www.tuskamisetas.com/qr{{ pedido }}.png</p> #}
             {% if pedido.fechaEntrega is not null %}<h4 style="margin-top: 0px">Fecha
                 entrega: {{ pedido.fechaEntrega | date('d-m-Y') }}</h4>{% endif %}
         </div>
     </div>
 
-    {% if pedido.idDireccion is defined  and pedido.idDireccion != null %}
+    {% if pedido.direccion is defined  and pedido.direccion != null %}
         <div id="project"
              style="text-align: right;float: right; border: 1px solid white; padding: 15px; padding-left: 0;">
             <div style="border-bottom: 1px solid grey;">DATOS DE ENVÍO</div>
             <br>
             {% if pedido.recogerEnTienda %}
                 <h3>RECOGE EN TIENDA</h3>
-                <p>{{ pedido.idUsuario.nombre }}</p>
-                <p>{{ pedido.idUsuario.appellidos }}</p>
+                <p>{{ pedido.contacto.nombre }}</p>
+                <p>{{ pedido.contacto.appellidos }}</p>
             {% else %}
                 {# <div><span>PROJECT</span> Website development</div> #}
-                {% if (pedido.idDireccion.nombre != "") %}
-                    <div>{{ pedido.idDireccion.nombre }}</div>
+                {% if (pedido.direccion.nombre != "") %}
+                    <div>{{ pedido.direccion.nombre }}</div>
                 {% else %}
-                    {% if pedido.idUsuario is defined and pedido.idUsuario != null %}
-                        <div>{{ pedido.idUsuario.nombre }}</div>
-                        <div>{{ pedido.idUsuario.apellidos }}</div>
+                    {% if pedido.contacto is defined and pedido.contacto != null %}
+                        <div>{{ pedido.contacto.nombre }}</div>
+                        <div>{{ pedido.contacto.apellidos }}</div>
                     {% endif %}
                 {% endif %}
-                <div>{% if pedido.idDireccion is not null %}{{ pedido.idDireccion.dir }}
-                        <br> {{ pedido.idDireccion.cp }}
-                        <br> {{ pedido.idDireccion.poblacion }}<br> {{ pedido.idDireccion.provincia }}
-                        <br> {{ pedido.idDireccion.pais }}<br>{% endif %}
+                <div>{% if pedido.direccion is not null %}{{ pedido.direccion.dir }}
+                        <br> {{ pedido.direccion.cp }}
+                        <br> {{ pedido.direccion.poblacion }}<br> {{ pedido.direccion.provincia }}
+                        <br> {{ pedido.direccion.pais }}<br>{% endif %}
                 </div>
                 {# <div><span>DUE DATE</span> September 17, 2015</div> #}
 
-                {% if pedido.idDireccion.telefonoMovil is defined and pedido.idDireccion.telefonoMovil != "" %}
-                    <div>Telf: {{ pedido.idDireccion.telefonoMovil }}</div>
+                {% if pedido.direccion.telefonoMovil is defined and pedido.direccion.telefonoMovil != "" %}
+                    <div>Telf: {{ pedido.direccion.telefonoMovil }}</div>
                 {% else %}
-                    {% if pedido.idUsuario.telefonoMovil is defined and pedido.idUsuario.telefonoMovil != "" %}
-                        <div>Telf: {{ pedido.idUsuario.telefonoMovil }}</div>{% endif %}
-                    {% if pedido.idUsuario.telefonoOtro is defined and pedido.idUsuario.telefonoOtro != "" %}
-                        <div>Movil: {{ pedido.idUsuario.telefonoOtro }}</div>{% endif %}
-                    <div><a href="mailto:{{ pedido.idUsuario.usuario.email }}">{{ pedido.idUsuario.usuario.email }}</a>
+                    {% if pedido.contacto.telefonoMovil is defined and pedido.contacto.telefonoMovil != "" %}
+                        <div>Telf: {{ pedido.contacto.telefonoMovil }}</div>{% endif %}
+                    {% if pedido.contacto.telefonoOtro is defined and pedido.contacto.telefonoOtro != "" %}
+                        <div>Movil: {{ pedido.contacto.telefonoOtro }}</div>{% endif %}
+                    <div><a href="mailto:{{ pedido.contacto.usuario.email }}">{{ pedido.contacto.usuario.email }}</a>
                     </div>
                 {% endif %}
                 {# <div><span>DUE DATE</span> September 17, 2015</div> #}
             {% endif %}
         </div>
     {% else %}
-        {% if pedido.idUsuario is defined and pedido.idUsuario != null %}
+        {% if pedido.contacto is defined and pedido.contacto != null %}
             <div id="project"
                  style="text-align: right;float: right; border: 1px solid white; padding: 15px; padding-left: 0;">
                 <div style="border-bottom: 1px solid grey;">DATOS DE ENVÍO</div>
                 <br>
                 {# <div><span>PROJECT</span> Website development</div> #}
-                <div>{{ pedido.idUsuario.nombre }}</div>
-                <div>{{ pedido.idUsuario.apellidos }}</div>
-                <div>{{ pedido.idUsuario.cif }}</div>
-                <div>{% if pedido.idUsuario.direccion is not null %}{{ pedido.idUsuario.direccion.dir }}
-                        <br> {{ pedido.idUsuario.direccion.cp }}<br> {{ pedido.idUsuario.direccion.poblacion }}
-                        <br> {{ pedido.idUsuario.direccion.provincia }}
-                        <br> {{ pedido.idUsuario.direccion.pais }}{% endif %}
+                <div>{{ pedido.contacto.nombre }}</div>
+                <div>{{ pedido.contacto.apellidos }}</div>
+                <div>{{ pedido.contacto.cif }}</div>
+                <div>{% if pedido.contacto.direccionFacturacion is not null %}{{ pedido.contacto.direccionFacturacion.dir }}
+                        <br> {{ pedido.contacto.direccionFacturacion.cp }}<br> {{ pedido.contacto.direccionFacturacion.poblacion }}
+                        <br> {{ pedido.contacto.direccionFacturacion.provincia }}
+                        <br> {{ pedido.contacto.direccionFacturacion.pais }}{% endif %}
                 </div>
                 {# {% if pedido.idDireccion.telefonoMovil is defined and pedido.idDireccion.telefonoMovil != "" %} #}
                 {# <div>Telf: {{ pedido.idDireccion.telefonoMovil }}</div> #}
                 {# {% else %} #}
-                {% if pedido.idUsuario.telefonoMovil is defined and pedido.idUsuario.telefonoMovil != "" %}
-                    <div>Telf: {{ pedido.idUsuario.telefonoMovil }}</div>{% endif %}
-                {% if pedido.idUsuario.telefonoOtro is defined and pedido.idUsuario.telefonoOtro != "" %}
-                    <div>Movil: {{ pedido.idUsuario.telefonoOtro }}</div>{% endif %}
+                {% if pedido.contacto.telefonoMovil is defined and pedido.contacto.telefonoMovil != "" %}
+                    <div>Telf: {{ pedido.contacto.telefonoMovil }}</div>{% endif %}
+                {% if pedido.contacto.telefonoOtro is defined and pedido.contacto.telefonoOtro != "" %}
+                    <div>Movil: {{ pedido.contacto.telefonoOtro }}</div>{% endif %}
                 {# {% endif %} #}
-                <div><a href="mailto:{{ pedido.idUsuario.usuario.email }}">{{ pedido.idUsuario.usuario.email }}</a>
+                <div><a href="mailto:{{ pedido.contacto.usuario.email }}">{{ pedido.contacto.usuario.email }}</a>
                 </div>
                 {# <div><span>DUE DATE</span> September 17, 2015</div> #}
             </div>

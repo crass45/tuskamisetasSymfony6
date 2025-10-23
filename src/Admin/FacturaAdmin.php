@@ -87,13 +87,33 @@ final class FacturaAdmin extends AbstractAdmin
                         'template' => 'admin/CRUD/list_action_show_factura.html.twig'
                     ]
                 ]
+
             ]);
     }
+
+    protected function configureActionButtons(array $buttonList, string $action, ?object $object = null): array
+    {
+
+        // AÑADIMOS LA NUEVA ACCIÓN
+        if (in_array($action, ['edit', 'show']) && $object) {
+            $buttonList['createRectificativa'] = [
+                'template' => 'admin/CRUD/list__action_crear_factura_rectificativa.html.twig',
+            ];
+            $buttonList['showFacturaFactura'] = [
+                'template' => 'admin/CRUD/button_show_factura_factura.html.twig',
+            ];
+        }
+
+        return $buttonList;
+    }
+
+
 
     protected function configureRoutes(RouteCollectionInterface $collection): void
     {
         $collection->add('showFacturaFactura', $this->getRouterIdParameter() . '/show-factura');
-        $collection->add('creaRectificativa', $this->getRouterIdParameter() . '/crea-rectificativa');
+        $collection->add('showFacturaRectificativa', $this->getRouterIdParameter() . '/show-rectificativa');
+        $collection->add('createRectificativa', $this->getRouterIdParameter() . '/crea-rectificativa');
         $collection->remove('create');
     }
 }

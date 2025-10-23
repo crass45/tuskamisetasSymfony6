@@ -57,6 +57,7 @@
         "symfonycasts/reset-password-bundle": "^1.23",
         "twig/extra-bundle": "^3.21",
         "twig/intl-extra": "^3.21",
+        "josemmo/verifactu-php": "dev-main",
         "twig/twig": "^2.12|^3.0"
     },
     "config": {
@@ -67,6 +68,12 @@
         },
         "sort-packages": true
     },
+    "repositories": [
+      {
+        "type": "vcs",
+        "url": "https://github.com/crass45/Verifactu-PHP"
+      }
+    ],
     "autoload": {
         "psr-4": {
             "App\\": "src/"

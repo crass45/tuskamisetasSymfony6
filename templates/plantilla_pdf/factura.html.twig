@@ -153,45 +153,55 @@
             <div>{% if pedido.contacto.intracomunitario %}ES{% endif %}{{ empresa.cif }}</div>
         </div>
 
-        <div style="float: right;text-align: right;/*border: 1px solid black;*/padding: 10px">
+        <div style="float: right;text-align: center;/*border: 1px solid black;*/padding: 10px">
             <h2>FACTURA {{ pedido.factura }}</h2>
+            {% if qrCodeFile is defined and qrCodeFile is not null %}
+                <div style="text-align: center">
+                    <div>VERI*FACTU</div>
+                    <img src="{{ qrCodeFile }}" title="QR Code" style="height: 200px; width: auto"/>
+                    <div>Factura verificable en la sede electrónica de la AEAT</div>
+
+                </div>
+            {% endif %}
         </div>
     </div>
     <div id="company" class="clearfix">
     </div>
     <div style="float: left">
         <div>Expedición: {{ pedido.factura.fecha |date("d/m/Y") }}</div>
-        {#<div>Vencimiento: {{ pedido.factura.fecha |date("d/m/Y") }}</div>#}
-    </div>
-    {% if pedido.factura.razonSocial is defined and pedido.factura.razonSocial != "" %}
-        <div id="project" style="text-align: right; float: right">
-            <div>{{ "CL%06d"|format(pedido.contacto.id) }}</div>
-            {#<div><span>PROJECT</span> Website development</div>#}
-            <div>{{ pedido.factura.razonSocial }}</div>
-            <div>{{ pedido.factura.direccion }}
+        <br>
+        <br>
+        {% if pedido.factura.razonSocial is defined and pedido.factura.razonSocial != "" %}
+            <div id="project" >
+                <div>{{ "CL%06d"|format(pedido.contacto.id) }}</div>
+                {# <div><span>PROJECT</span> Website development</div> #}
+                <div>{{ pedido.factura.razonSocial }}</div>
+                <div>{{ pedido.factura.direccion }}
                     <br> {{ pedido.factura.cp }} {{ pedido.factura.poblacion |capitalize }}
                     - {{ pedido.factura.provincia |capitalize }}
                     <br> {{ pedido.factura.pais |capitalize }}
-            </div>
-            <div>{{ pedido.factura.cif }}</div>
+                </div>
+                <div>{{ pedido.factura.cif }}</div>
 
-            <br>
-        </div>
-    {% elseif  pedido.contacto is defined and pedido.contacto != null %}
-        <div id="project" style="text-align: right; float: right">
-            <div>{{ "CL%06d"|format(pedido.contacto.id) }}</div>
-            {#<div><span>PROJECT</span> Website development</div>#}
-            <div>{{ pedido.contacto.nombre }} {{ pedido.contacto.apellidos }}</div>
-            <div>{% if pedido.contacto.direccionFacturacion is not null %}{{ pedido.contacto.direccionFacturacion.dir }}
-                    <br> {{ pedido.contacto.direccionFacturacion.cp }} {{ pedido.contacto.direccionFacturacion.poblacion |capitalize }}
-                    - {{ pedido.contacto.direccionFacturacion.provincia |capitalize }}
-                    <br> {{ pedido.contacto.direccionFacturacion.pais |capitalize }}{% endif %}
+                <br>
             </div>
-            <div>{{ pedido.contacto.cif }}</div>
+        {% elseif  pedido.contacto is defined and pedido.contacto != null %}
+            <div id="project" >
+                <div>{{ "CL%06d"|format(pedido.contacto.id) }}</div>
+                {# <div><span>PROJECT</span> Website development</div> #}
+                <div>{{ pedido.contacto.nombre }} {{ pedido.contacto.apellidos }}</div>
+                <div>{% if pedido.contacto.direccionFacturacion is not null %}{{ pedido.contacto.direccionFacturacion.dir }}
+                        <br> {{ pedido.contacto.direccionFacturacion.cp }} {{ pedido.contacto.direccionFacturacion.poblacion |capitalize }}
+                        - {{ pedido.contacto.direccionFacturacion.provincia |capitalize }}
+                        <br> {{ pedido.contacto.direccionFacturacion.pais |capitalize }}{% endif %}
+                </div>
+                <div>{{ pedido.contacto.cif }}</div>
 
-            <br>
-        </div>
-    {% endif %}
+                <br>
+            </div>
+        {% endif %}
+        {# <div>Vencimiento: {{ pedido.factura.fecha |date("d/m/Y") }}</div> #}
+    </div>
     <br>
 </header>
 <main>
@@ -331,13 +341,13 @@
         </div>
         <br>
     {% endif %}
-    {#<div id="notices">#}
-    {#<div>FORMA DE PAGO:</div>#}
-    {#<div class="notice">{{ empresa.cuentaBancaria | raw }}</div>#}
-    {#</div>#}
-    {#<footer>#}
-    {#Este documento ha sido creado desde el sitio web <a href="http://www.tuskamisetas.com">www.tuskamisetas.com</a> y es válido sin la firma y sin el sello#}
-    {#</footer>#}
+    {# <div id="notices"> #}
+    {# <div>FORMA DE PAGO:</div> #}
+    {# <div class="notice">{{ empresa.cuentaBancaria | raw }}</div> #}
+    {# </div> #}
+    {# <footer> #}
+    {# Este documento ha sido creado desde el sitio web <a href="http://www.tuskamisetas.com">www.tuskamisetas.com</a> y es válido sin la firma y sin el sello #}
+    {# </footer> #}
 </main>
 
 </body>

@@ -15,6 +15,9 @@ class Factura
     #[ORM\Column]
     private ?int $id = null;
 
+
+    #[ORM\OneToOne(mappedBy: 'facturaPadre', cascade: ['persist', 'remove'])]
+    private ?FacturaRectificativa $facturaRectificativa = null;
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
     private ?\DateTimeImmutable $fecha = null;
 
@@ -54,6 +57,15 @@ class Factura
     #[ORM\OneToOne(inversedBy: 'factura', targetEntity: Pedido::class)]
     #[ORM\JoinColumn(name: 'pedido', referencedColumnName: 'id', onDelete: 'RESTRICT')]
     private ?Pedido $pedido = null;
+
+
+    // --- CAMBIO AÑADIDO ---
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $verifactuHash = null;
+    // --- FIN DEL CAMBIO ---
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $verifactuQr = null;
 
     /**
      * El constructor de una entidad debe ser simple y sin argumentos.
@@ -135,4 +147,107 @@ class Factura
     public function setCif(string $cif): self { $this->cif = $cif; return $this; }
     public function getPedido(): ?Pedido { return $this->pedido; }
     public function setPedido(?Pedido $pedido): self { $this->pedido = $pedido; return $this; }
+
+    public function getVerifactuHash(): ?string
+    {
+        return $this->verifactuHash;
+    }
+
+    public function setVerifactuHash(?string $verifactuHash): self
+    {
+        $this->verifactuHash = $verifactuHash;
+        return $this;
+    }
+    public function getVerifactuQr(): ?string
+    {
+        return $this->verifactuQr;
+    }
+
+    public function setVerifactuQr(?string $verifactuQr): self
+    {
+        $this->verifactuQr = $verifactuQr;
+        return $this;
+    }
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $verifactuEnviadoAt = null;
+    // --- FIN NUEVO CAMPO ---
+
+    /**
+     * Calcula la base imponible de la factura.
+     * Lógica extraída de la plantilla factura.html.twig.
+     */
+    public function getBaseImponible(): float
+    {
+
+        if (!$this->pedido) {
+            return 0.0;
+        }
+
+        // Gastos extra (servicio exprés)
+        $precioGastos = $this->pedido->getPedidoExpres() ? $this->pedido->getPrecioPedidoExpres() ?? 0 : 0;
+
+        // Importe del descuento
+        $importeDescuento = ($this->pedido->getSubTotal() * $this->pedido->getDescuento() / 100);
+
+        // La base imponible es la suma de conceptos antes de IVA
+        $base = $this->pedido->getSubTotal() + $this->pedido->getEnvio() + $precioGastos - $importeDescuento;
+
+        var_dump($base);
+        return round($base, 2);
+     }
+
+    /**
+     * @return FacturaRectificativa|null
+     */
+    public function getFacturaRectificativa(): ?FacturaRectificativa
+    {
+        return $this->facturaRectificativa;
+    }
+
+    /**
+     * @param FacturaRectificativa|null $facturaRectificativa
+     */
+    public function setFacturaRectificativa(?FacturaRectificativa $facturaRectificativa): void
+    {
+        $this->facturaRectificativa = $facturaRectificativa;
+    }
+
+    /**
+     * Calcula el importe total del IVA de la factura.
+     * He nombrado el método getImporteIva() para no confundir con getIva() del Pedido, que devuelve el porcentaje.
+     */
+    public function getImporteIva(): float
+    {
+        return round($this->pedido->getIva(), 2);
+    }
+
+    public function getImporteRecargoEquivalencia(): float
+    {
+        return round($this->pedido->getRecargoEquivalencia(), 2);
+    }
+
+    /**
+     * Calcula el importe total final de la factura.
+     */
+    public function getTotal(): float
+    {
+        return round($this->pedido->getTotal(), 2);
+    }
+
+    /**
+     * @return \DateTimeImmutable|null
+     */
+    public function getVerifactuEnviadoAt(): ?\DateTimeImmutable
+    {
+        return $this->verifactuEnviadoAt;
+    }
+
+    /**
+     * @param \DateTimeImmutable|null $verifactuEnviadoAt
+     */
+    public function setVerifactuEnviadoAt(?\DateTimeImmutable $verifactuEnviadoAt): void
+    {
+        $this->verifactuEnviadoAt = $verifactuEnviadoAt;
+    }
 }

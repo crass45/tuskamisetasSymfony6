@@ -1,0 +1,13 @@
+{# templates/admin/CRUD/list__action_generate_verifactu.html.twig #}
+
+{% if object.verifactuHash is null %}
+    <a class="btn btn-sm btn-success" title="Generar Registro VeriFactu" href="{{ admin.generateObjectUrl('generateVerifactu', object) }}">
+        <i class="fa fa-cogs" aria-hidden="true"></i>
+        Generar VeriFactu
+    </a>
+{% else %}
+    <span class="btn btn-sm btn-default disabled" title="El registro VeriFactu ya ha sido generado">
+        <i class="fa fa-check-square-o" aria-hidden="true"></i>
+        Generado
+    </span>
+{% endif %}

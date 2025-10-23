@@ -1,398 +1,212 @@
 <?php
 
-namespace SS\TiendaBundle\Entity;
+namespace App\Entity;
 
-use Application\Sonata\ClassificationBundle\Document\Category;
+use App\Repository\FacturaRectificativaRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints\Length;
 
-/**
- * @ORM\Entity
- * @ORM\Table(name="factura_rectificativa")
- */
+#[ORM\Entity(repositoryClass: FacturaRectificativaRepository::class)]
 class FacturaRectificativa
 {
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="id", type="integer", nullable=false)
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="IDENTITY")
-     */
-    protected $id;
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $numeroFactura = null;
+
+    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    private ?\DateTimeImmutable $fecha = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $motivo = null;
+
+    #[ORM\OneToOne(inversedBy: 'facturaRectificativa', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Factura $facturaPadre = null;
 
     /**
-     * @var \DateTime
-     *
-     * @ORM\Column(name="fecha", type="date", nullable=false)
+     * @var Collection<int, FacturaRectificativaLinea>
      */
-    protected $fecha;
+    #[ORM\OneToMany(mappedBy: 'facturaRectificativa', targetEntity: FacturaRectificativaLinea::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $lineas;
 
+    // --- NUEVOS CAMPOS VERIFACTU ---
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $verifactuHash = null;
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="fiscal_year", type="integer", nullable=false)
-     */
-    protected  $fiscalYear;
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $verifactuQr = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $verifactuEnviadoAt = null;
 
-    /**
-     * @var integer
-     *
-     * @ORM\Column(name="numero_factura", type="integer", nullable=false)
-     */
-    protected $numeroFactura;
+    // --- FIN NUEVOS CAMPOS ---
 
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="nombre", type="string", nullable=false)
-     */
-    private $nombre;
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="comentarios", type="text", nullable=false)
-     */
-    private $comentarios="";
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="razon_social", type="text", nullable=false)
-     */
-    private $razonSocial="";
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="direccion", type="text", nullable=false)
-     */
-    private $direccion="";
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="cp", type="text", nullable=false)
-     */
-    private $cp="";
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="poblacion", type="text", nullable=false)
-     */
-    private $poblacion="";
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="provincia", type="text", nullable=false)
-     */
-    private $provincia="";
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="pais", type="text", nullable=false)
-     */
-    private $pais="";
-
-    /**
-     * @var string
-     *
-     * @ORM\Column(name="cif", type="text", nullable=false)
-     */
-    private $cif="";
-
-
-    /**
-     * @var Pedido
-     *
-     * @ORM\OneToOne(targetEntity="SS\TiendaBundle\Entity\Pedido", inversedBy="factura", fetch="EAGER")
-     *
-     * @ORM\JoinColumn(name="pedido", referencedColumnName="id", onDelete="RESTRICT")
-     *
-     */
-    protected $pedido;
-
-    /**
-     * @var Factura
-     *
-     * @ORM\OneToOne(targetEntity="SS\TiendaBundle\Entity\Factura", fetch="EAGER")
-     *
-     * @ORM\JoinColumn(name="factura", referencedColumnName="id", onDelete="RESTRICT")
-     *
-     */
-    protected $factura;
-
-    function __construct(\DateTime $fecha, Pedido $pedido, $fiscalYear, $numeroFactura,Factura $factura)
+    public function __construct()
     {
-        $this->fecha = $fecha;
-        $this->pedido = $pedido;
-        $this->fiscalYear = $fiscalYear;
-        $this->numeroFactura = $numeroFactura;
-        $this->nombre = "R" . date("y",$this->fecha->getTimestamp())."/" . sprintf('%05d', $this->numeroFactura);
-
-        $this->razonSocial = $factura->getRazonSocial();// $pedido->getIdUsuario()->getNombre()." ".$pedido->getIdUsuario()->getApellidos();
-        $this->direccion = $factura->getDireccion();// $pedido->getIdUsuario()->getDireccion()->getDir();
-        $this->cp = $factura->getCp();//$pedido->getIdUsuario()->getDireccion()->getCp();
-        $this->poblacion = $factura->getPoblacion();//$pedido->getIdUsuario()->getDireccion()->getPoblacion();
-        $this->provincia = $factura->getProvincia();//$pedido->getIdUsuario()->getDireccion()->getProvincia();
-        $this->pais = $factura->getPais();//$pedido->getIdUsuario()->getDireccion()->getPais();
-        $this->cif = $factura->getCif();
-        $this->factura =$factura;
+        $this->fecha = new \DateTimeImmutable();
+        $this->lineas = new ArrayCollection();
     }
 
-    function __toString()
-    {
-        return $this->nombre;
-    }
+    // ... (Getters y Setters para id, numeroFactura, fecha, motivo, facturaPadre) ...
 
     /**
-     * @return \DateTime
+     * @return Collection<int, FacturaRectificativaLinea>
      */
-    public function getFecha()
+    public function getLineas(): Collection
     {
-        return $this->fecha;
+        return $this->lineas;
     }
 
-    /**
-     * @return int
-     */
-    public function getFiscalYear()
+    public function addLinea(FacturaRectificativaLinea $linea): self
     {
-        return $this->fiscalYear;
+        if (!$this->lineas->contains($linea)) {
+            $this->lineas[] = $linea;
+            $linea->setFacturaRectificativa($this);
+        }
+        return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getId()
+    public function removeLinea(FacturaRectificativaLinea $linea): self
+    {
+        if ($this->lineas->removeElement($linea)) {
+            // set the owning side to null (unless already changed)
+            if ($linea->getFacturaRectificativa() === $this) {
+                $linea->setFacturaRectificativa(null);
+            }
+        }
+        return $this;
+    }
+
+    // Getters y Setters
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
-    public function getNombre()
-    {
-        return $this->nombre;
-    }
-
-    /**
-     * @return int
-     */
-    public function getNumeroFactura()
+    public function getNumeroFactura(): ?string
     {
         return $this->numeroFactura;
     }
 
-    /**
-     * @return Pedido
-     */
-    public function getPedido()
-    {
-        return $this->pedido;
-    }
-
-    /**
-     * @return string
-     */
-    public function getComentarios()
-    {
-        return $this->comentarios;
-    }
-
-    /**
-     * @param string $comentarios
-     */
-    public function setComentarios($comentarios)
-    {
-        $this->comentarios = $comentarios;
-    }
-
-    /**
-     * @param Pedido $pedido
-     */
-    public function setPedido($pedido)
-    {
-        $this->pedido = $pedido;
-    }
-
-    /**
-     * @param int $numeroFactura
-     */
-    public function setNumeroFactura($numeroFactura)
+    public function setNumeroFactura(string $numeroFactura): static
     {
         $this->numeroFactura = $numeroFactura;
+
+        return $this;
     }
 
-    /**
-     * @param string $nombre
-     */
-    public function setNombre($nombre)
+    public function getFecha(): ?\DateTimeImmutable
     {
-        $this->nombre = $nombre;
+        return $this->fecha;
     }
 
-    /**
-     * @param int $id
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-    }
-
-    /**
-     * @param \DateTime $fecha
-     */
-    public function setFecha($fecha)
+    public function setFecha(\DateTimeImmutable $fecha): static
     {
         $this->fecha = $fecha;
+
+        return $this;
+    }
+
+    public function getMotivo(): ?string
+    {
+        return $this->motivo;
+    }
+
+    public function setMotivo(string $motivo): static
+    {
+        $this->motivo = $motivo;
+
+        return $this;
+    }
+
+    public function getFacturaPadre(): ?Factura
+    {
+        return $this->facturaPadre;
+    }
+
+    public function setFacturaPadre(Factura $facturaPadre): static
+    {
+        $this->facturaPadre = $facturaPadre;
+
+        return $this;
     }
 
     /**
-     * @param int $fiscalYear
+     * @param string|null $verifactuHash
      */
-    public function setFiscalYear($fiscalYear)
+    public function setVerifactuHash(?string $verifactuHash): void
     {
-        $this->fiscalYear = $fiscalYear;
+        $this->verifactuHash = $verifactuHash;
     }
 
     /**
-     * @return string
+     * @param string|null $verifactuQr
      */
-    public function getPais()
+    public function setVerifactuQr(?string $verifactuQr): void
     {
-        return $this->pais;
+        $this->verifactuQr = $verifactuQr;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getCif()
+    public function getVerifactuHash(): ?string
     {
-        return $this->cif;
+        return $this->verifactuHash;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getCp()
+    public function getVerifactuQr(): ?string
     {
-        return $this->cp;
+        return $this->verifactuQr;
+    }
+
+    // --- NUEVOS MÉTODOS DE CÁLCULO ---
+    public function getBaseImponible(): float
+    {
+        $subtotal = 0.0;
+        foreach ($this->getLineas() as $linea) {
+            $subtotal += $linea->getTotal();
+        }
+        return $subtotal;
+    }
+
+    public function getImporteIva(): float
+    {
+        $pedidoOriginal = $this->getFacturaPadre()->getPedido();
+        if ($pedidoOriginal->getIva() > 0) {
+            return $pedidoOriginal->getIva()*-1;
+        }
+        return 0.0;
+    }
+
+    public function getTotal(): float
+    {
+        return $this->getBaseImponible() + $this->getImporteIva();
     }
 
     /**
-     * @return string
+     * @return \DateTimeImmutable|null
      */
-    public function getDireccion()
+    public function getVerifactuEnviadoAt(): ?\DateTimeImmutable
     {
-        return $this->direccion;
+        return $this->verifactuEnviadoAt;
     }
 
     /**
-     * @return string
+     * @param \DateTimeImmutable|null $verifactuEnviadoAt
      */
-    public function getPoblacion()
+    public function setVerifactuEnviadoAt(?\DateTimeImmutable $verifactuEnviadoAt): void
     {
-        return $this->poblacion;
+        $this->verifactuEnviadoAt = $verifactuEnviadoAt;
     }
-
-    /**
-     * @return string
-     */
-    public function getProvincia()
-    {
-        return $this->provincia;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRazonSocial()
-    {
-        return $this->razonSocial;
-    }
-
-    /**
-     * @param string $pais
-     */
-    public function setPais(string $pais)
-    {
-        $this->pais = $pais;
-    }
-
-    /**
-     * @param string $cif
-     */
-    public function setCif(string $cif)
-    {
-        $this->cif = $cif;
-    }
-
-    /**
-     * @param string $cp
-     */
-    public function setCp(string $cp)
-    {
-        $this->cp = $cp;
-    }
-
-    /**
-     * @param string $direccion
-     */
-    public function setDireccion(string $direccion)
-    {
-        $this->direccion = $direccion;
-    }
-
-    /**
-     * @param string $poblacion
-     */
-    public function setPoblacion(string $poblacion)
-    {
-        $this->poblacion = $poblacion;
-    }
-
-    /**
-     * @param string $provincia
-     */
-    public function setProvincia(string $provincia)
-    {
-        $this->provincia = $provincia;
-    }
-
-    /**
-     * @param string $razonSocial
-     */
-    public function setRazonSocial(string $razonSocial)
-    {
-        $this->razonSocial = $razonSocial;
-    }
-
-    /**
-     * @param Factura $factura
-     */
-    public function setFactura(Factura $factura)
-    {
-        $this->factura = $factura;
-    }
-
-    /**
-     * @return Factura
-     */
-    public function getFactura()
-    {
-        return $this->factura;
-    }
-
-
+    // --- FIN NUEVOS MÉTODOS ---
 }
