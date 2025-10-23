@@ -5,27 +5,133 @@
     <title>FACTURA RECTIFICATIVA {{ rectificativa.numeroFactura }}</title>
 
     <style>
-        .clearfix:after { content: ""; display: table; clear: both; }
-        a { color: #5D6975; text-decoration: underline; }
-        body { position: relative; width: 21cm; height: 29.7cm; margin: 0 auto; color: #001028; background: #FFFFFF; font-family: Arial, sans-serif; font-size: 12px; }
-        header { padding: 10px 0; margin-bottom: 30px; }
-        #logo { text-align: center; margin-bottom: 10px; }
-        #logo img { width: 90px; }
-        h1 { border-top: 1px solid #5D6975; border-bottom: 1px solid #5D6975; color: #5D6975; font-size: 2.4em; line-height: 1.4em; font-weight: normal; text-align: center; margin: 0 0 20px 0; background: #F5F5F5; }
-        #project span { color: #5D6975; text-align: right; width: 52px; margin-right: 10px; display: inline-block; font-size: 0.8em; }
-        #company { float: right; text-align: right; }
-        #project div, #company div { white-space: nowrap; }
-        table { width: 100%; border-collapse: collapse; border-spacing: 0; margin-bottom: 20px; }
-        table tr:nth-child(2n-1) td { background: #F5F5F5; }
-        table th, table td { text-align: center; }
-        table th { padding: 5px 20px; color: #5D6975; border-bottom: 1px solid #C1CED9; white-space: nowrap; font-weight: normal; }
-        table .service, table .desc { text-align: left; }
-        table td { padding: 10px; text-align: right; }
-        table td.service, table td.desc { vertical-align: top; }
-        table td.unit, table td.qty, table td.total { font-size: 1.2em; }
-        table td.grand { border-top: 1px solid #5D6975;; }
-        #notices .notice { color: #5D6975; font-size: 1.2em; }
-        footer { color: #5D6975; width: 100%; height: 30px; position: absolute; bottom: 0; border-top: 1px solid #C1CED9; padding: 8px 0; text-align: center; }
+        .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        a {
+            color: #5D6975;
+            text-decoration: underline;
+        }
+
+        body {
+            position: relative;
+            width: 21cm;
+            height: 29.7cm;
+            margin: 0 auto;
+            color: #001028;
+            background: #FFFFFF;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        header {
+            padding: 10px 0;
+            margin-bottom: 30px;
+        }
+
+        #logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #logo img {
+            width: 90px;
+        }
+
+        h1 {
+            border-top: 1px solid #5D6975;
+            border-bottom: 1px solid #5D6975;
+            color: #5D6975;
+            font-size: 2.4em;
+            line-height: 1.4em;
+            font-weight: normal;
+            text-align: center;
+            margin: 0 0 20px 0;
+            background: #F5F5F5;
+            clear: both; /* <-- ESTA ES LA LÍNEA AÑADIDA */
+            padding-top: 10px; /* <-- ESTO ES OPCIONAL, para darle espacio */
+        }
+
+        #project span {
+            color: #5D6975;
+            text-align: right;
+            width: 52px;
+            margin-right: 10px;
+            display: inline-block;
+            font-size: 0.8em;
+        }
+
+        #company {
+            float: right;
+            text-align: right;
+        }
+
+        #project div, #company div {
+            white-space: nowrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-bottom: 20px;
+        }
+
+        table tr:nth-child(2n-1) td {
+            background: #F5F5F5;
+        }
+
+        table th, table td {
+            text-align: center;
+        }
+
+        table th {
+            padding: 5px 20px;
+            color: #5D6975;
+            border-bottom: 1px solid #C1CED9;
+            white-space: nowrap;
+            font-weight: normal;
+        }
+
+        table .service, table .desc {
+            text-align: left;
+        }
+
+        table td {
+            padding: 10px;
+            text-align: right;
+        }
+
+        table td.service, table td.desc {
+            vertical-align: top;
+        }
+
+        table td.unit, table td.qty, table td.total {
+            font-size: 1.2em;
+        }
+
+        table td.grand {
+            border-top: 1px solid #5D6975;;
+        }
+
+        #notices .notice {
+            color: #5D6975;
+            font-size: 1.2em;
+        }
+
+        footer {
+            color: #5D6975;
+            width: 100%;
+            height: 30px;
+            position: absolute;
+            bottom: 0;
+            border-top: 1px solid #C1CED9;
+            padding: 8px 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -45,14 +151,16 @@
             <div><a href="mailto:{{ empresa.email }}">{{ empresa.email }}</a></div>
             <div>{% if rectificativa.facturaPadre.pedido.contacto.intracomunitario %}ES{% endif %}{{ empresa.cif }}</div>
         </div>
-        {% if qrCodeFile is defined and qrCodeFile is not null %}
-            <div style="text-align: center">
-                <div>VERI*FACTU</div>
-                <img src="{{ qrCodeFile }}" title="QR Code" style="height: 200px; width: auto"/>
-                <div>Factura verificable en la sede electrónica de la AEAT</div>
+        <div style="float: right;text-align: center;/*border: 1px solid black;*/padding: 10px">
+            {% if qrCodeFile is defined and qrCodeFile is not null %}
+                <div style="text-align: center">
+                    <div>VERI*FACTU</div>
+                    <img src="{{ qrCodeFile }}" title="QR Code" style="height: 200px; width: auto"/>
+                    <div>Factura verificable en la sede electrónica de la AEAT</div>
 
-            </div>
-        {% endif %}
+                </div>
+            {% endif %}
+        </div>
     </div>
 
     <h1>FACTURA RECTIFICATIVA: {{ rectificativa.numeroFactura }}</h1>
@@ -61,9 +169,11 @@
         <div><strong>Fecha Factura Original:</strong> {{ rectificativa.facturaPadre.fecha|date('d/m/Y') }}</div>
         <div><strong>Motivo Rectificación:</strong> {{ rectificativa.motivo }}</div>
     </div>
+
     <div id="company" style="float: right; text-align: right;">
         <div><strong>Cliente:</strong> {{ rectificativa.facturaPadre.razonSocial }}</div>
-        <div>{{ rectificativa.facturaPadre.direccion }}<br/>{{ rectificativa.facturaPadre.cp }} {{ rectificativa.facturaPadre.poblacion }}</div>
+        <div>{{ rectificativa.facturaPadre.direccion }}
+            <br/>{{ rectificativa.facturaPadre.cp }} {{ rectificativa.facturaPadre.poblacion }}</div>
         <div>{{ rectificativa.facturaPadre.cif }}</div>
         <div><strong>Fecha Expedición:</strong> {{ rectificativa.fecha|date('d/m/Y') }}</div>
     </div>
