@@ -115,6 +115,7 @@ class PedidoEventSubscriber implements EventSubscriberInterface
                 $costeExpres = (float)$empresa->getPrecioServicioExpres();
             }
         }
+        $pedido->setPrecioPedidoExpres($costeExpres);
 
         // 3. Calculamos la base imponible y el IVA.
         $baseImponible = $subtotal + $gastosEnvio + $costeExpres;

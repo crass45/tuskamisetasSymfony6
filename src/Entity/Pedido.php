@@ -924,4 +924,9 @@ class Pedido
         return true;
     }
 
+    public function getBaseImponible(){
+        $base = $this->getTotal()-$this->getIva();
+        return $base;
+    }
+
 }

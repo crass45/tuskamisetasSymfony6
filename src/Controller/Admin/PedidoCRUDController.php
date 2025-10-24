@@ -70,6 +70,7 @@ final class PedidoCRUDController extends CRUDController
         $pedido = $this->assertObjectExists($request, true);
         $this->admin->checkAccess('show', $pedido);
 
+        $qrCodeDataUri= null;
         $filename = 'Orden de Pedido - ' . $pedido;
 
         // --- Lógica para generar el Código QR ---
@@ -199,6 +200,12 @@ final class PedidoCRUDController extends CRUDController
 
         if ($pedido->getFactura()) {
             return $this->showFacturaAction($request);
+        }
+
+        if ( $pedido->getBaseImponible() > 400 && strlen($pedido->getContacto()->getCif())<9) {
+            $this->addFlash('sonata_flash_error', 'El pedido no se puede facturar porque la base imponible supera 400€ y el contacto no tiene DNI/CIF ');
+//        return new RedirectResponse($this->admin->generateUrl('list'));
+            return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
         }
 
         $fecha = new \DateTime();
@@ -369,6 +376,12 @@ final class PedidoCRUDController extends CRUDController
             return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
         }
 
+        if (!($pedido->cantidadPagada >= $pedido->getTotal() - 1)) {
+            $this->addFlash('sonata_flash_error', 'Este envío NO ESTÁ PAGADO');
+//        return new RedirectResponse($this->admin->generateUrl('list'));
+            return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+        }
+
         // Llama al servicio para gestionar la lógica de la API
         $urlSeguimiento = $this->mrwApiService->documentarEnvio($pedido, $bultos, $servicio);
 
@@ -386,6 +399,17 @@ final class PedidoCRUDController extends CRUDController
     {
         $pedido = $this->assertObjectExists($request, true);
         $this->admin->checkAccess('edit', $pedido);
+
+        if ($pedido->getSeguimientoEnvio()) {
+            $this->addFlash('sonata_flash_error', 'Este envío ya ha sido documentado anteriormente.');
+            return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+        }
+
+        if (!($pedido->cantidadPagada >= $pedido->getTotal() - 1)) {
+            $this->addFlash('sonata_flash_error', 'Este envío NO ESTÁ PAGADO');
+//        return new RedirectResponse($this->admin->generateUrl('list'));
+            return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+        }
 
         if ($pedido->getSeguimientoEnvio()) {
             $this->addFlash('sonata_flash_error', 'Este envío ya ha sido documentado.');

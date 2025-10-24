@@ -1,0 +1,10 @@
+{# templates/admin/CRUD/list__action_generate_verifactu.html.twig #}
+<li>
+{% if object.verifactuHash is null %}
+    <a title="Generar Registro VeriFactu" href="{{ admin.generateObjectUrl('generateVerifactu', object) }}">
+        <i class="fa fa-cogs" aria-hidden="true"></i>
+        Generar VeriFactu
+    </a>
+{% else %}
+{% endif %}
+</li>

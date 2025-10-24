@@ -197,18 +197,18 @@
                 <td class="unit">{{ linea.precio|number_format(3, ',', '.') }}€</td>
                 <td class="total">{{ linea.getTotal()|number_format(2, ',', '.') }}€</td>
             </tr>
-            {% set subtotal = subtotal + linea.getTotal() %}
         {% endfor %}
 
-        {% set iva = subtotal * (rectificativa.facturaPadre.pedido.iva / 100) %}
-        {% set total = subtotal + iva %}
+        {% set subtotal = rectificativa.baseImponible %}
+        {% set iva = rectificativa.importeIva %}
+        {% set total = rectificativa.total %}
 
         <tr>
             <td colspan="3">SUBTOTAL</td>
             <td class="total">{{ subtotal|number_format(2, ',', '.') }}€</td>
         </tr>
         <tr>
-            <td colspan="3">IVA ({{ rectificativa.facturaPadre.pedido.iva }}%)</td>
+            <td colspan="3">IVA ({{ empresa.ivaGeneral }}%)</td>
             <td class="total">{{ iva|number_format(2, ',', '.') }}€</td>
         </tr>
         <tr class="grand-total">

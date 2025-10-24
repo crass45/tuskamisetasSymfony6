@@ -69,7 +69,7 @@ class VerifactuService
         $cif = $factura->getCif() ? trim($factura->getCif()) : '';
 
         // Si el cliente tiene un NIF/CIF válido de 9 caracteres, es una factura completa.
-        if (strlen($cif) === 9) {
+        if (strlen($cif) >= 9) {
             $record->invoiceType = InvoiceType::Factura;
             $recipient = new FiscalIdentifier($factura->getRazonSocial(), $cif);
             $record->recipients[] = $recipient;
@@ -114,6 +114,7 @@ class VerifactuService
                 $breakdown->taxAmount = sprintf('%.2f', $ivaAmount);
                 if ($contacto && $contacto->isRecargoEquivalencia()) {
                     $breakdown->regimeType= RegimeType::C18;
+
                 }
             }
             $record->breakdown[] = $breakdown;
@@ -154,7 +155,10 @@ class VerifactuService
         // --- Cálculo del Hash ---
         $record->hashedAt = new DateTimeImmutable();
         $record->hash = $record->calculateHash();
-//        $record->validate();
+//        de momento solo validamos si no hay recargo de equivalencia ya que falla la libreria
+        if(!$contacto->isRecargoEquivalencia()) {
+            $record->validate();
+        }
 
         return $record;
     }
@@ -185,7 +189,7 @@ class VerifactuService
 //        );
 //        $record->recipients[] = $recipient;
         // Si el cliente tiene un NIF/CIF válido de 9 caracteres, es una factura completa.
-        if (strlen($facturaOriginal->getCif()) === 9) {
+        if (strlen($facturaOriginal->getCif()) >= 9) {
             $record->invoiceType = InvoiceType::R1;
             $recipient = new FiscalIdentifier($facturaOriginal->getRazonSocial(), $facturaOriginal->getCif());
             $record->recipients[] = $recipient;

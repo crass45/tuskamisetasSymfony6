@@ -73,7 +73,10 @@ final class FacturaAdmin extends AbstractAdmin
     protected function configureListFields(ListMapper $list): void
     {
         $list
-            ->addIdentifier('fecha')
+            ->addIdentifier('fecha', null, [
+                'label' => 'Fecha de Creación',
+                'format' => 'd/m/Y H:i',
+            ])
             ->addIdentifier('nombre')
             ->add('pedido', null, [
                 'associated_property' => 'nombre',

@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Admin\FacturaRectificativaAdmin;
 use App\Entity\Empresa;
 use App\Entity\Factura;
 use App\Entity\FacturaRectificativa;
@@ -12,6 +13,7 @@ use App\Service\VerifactuService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Sonata\AdminBundle\Controller\CRUDController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -26,7 +28,8 @@ class FacturaCRUDController extends CRUDController
                                 private FacturaRectificativaRepository $rectificativaRepo,
                                 private FacturaRepository              $facturaRepo, // <-- Inyección añadida
                                 private VerifactuService               $verifactuService, // <-- Inyección añadida
-                                private LoggerInterface                $logger // <-- Inyección añadida
+                                private LoggerInterface                $logger, // <-- Inyección añadida
+                                private FacturaRectificativaAdmin      $rectificativaAdmin, private readonly FacturaRectificativaAdmin $facturaRectificativaAdmin
     )
     {
     }
@@ -160,20 +163,18 @@ class FacturaCRUDController extends CRUDController
         // 2. Crear el objeto de la factura rectificativa
         $rectificativa = new FacturaRectificativa();
         $rectificativa->setFacturaPadre($facturaOriginal);
-        // --- LÓGICA DE NUMERACIÓN CORREGIDA ---
-        $fecha = new \DateTime();
-        $fiscalYear = (int)$fecha->format('y');
 
-        // Buscamos el último número en la serie de rectificativas usando el repositorio
-        $ultimoNumero = $this->rectificativaRepo->findLastNumberByYear($fiscalYear);
-        $nuevoNumero = $ultimoNumero + 1;
-
-        // Creamos el nuevo número de factura con la serie "R"
-        $numeroFacturaRectificativa = "R" . $fiscalYear . "/" . sprintf('%05d', $nuevoNumero);
-        // --- FIN DE LA LÓGICA DE NUMERACIÓN ---
+        // --- GUARDAMOS TODOS LOS DATOS DE LA FACTURA ---
         $rectificativa->setMotivo('Abono por devolución de mercancía.'); // Motivo por defecto
         $rectificativa->setFacturaPadre($facturaOriginal);
-        $rectificativa->setNumeroFactura($numeroFacturaRectificativa);
+        $rectificativa->setCif($facturaOriginal->getCif());
+        $rectificativa->setRazonSocial($facturaOriginal->getRazonSocial());
+        $rectificativa->setCp($facturaOriginal->getCp());
+        $rectificativa->setPoblacion($facturaOriginal->getPoblacion());
+        $rectificativa->setDireccion($facturaOriginal->getDireccion());
+        $rectificativa->setProvincia($facturaOriginal->getProvincia());
+        $rectificativa->setPais($facturaOriginal->getPais());
+
 
         // 3. Copiar las líneas del pedido original, pero en negativo
         $pedidoOriginal = $facturaOriginal->getPedido();
@@ -182,7 +183,7 @@ class FacturaCRUDController extends CRUDController
         foreach ($pedidoOriginal->getLineas() as $lineaOriginal) {
             $lineaRect = new FacturaRectificativaLinea();
             $lineaRect->setDescripcion(
-                $lineaOriginal->getProducto()->getModelo()->getNombre() . ' T/' . $lineaOriginal->getProducto()->getTalla()
+                "(".$lineaOriginal->getProducto()->getReferencia().")--  ".$lineaOriginal->getProducto()
             );
             $lineaRect->setCantidad(-$lineaOriginal->getCantidad()); // Cantidad en negativo
             $lineaRect->setPrecio($lineaOriginal->getPrecio());
@@ -205,10 +206,9 @@ class FacturaCRUDController extends CRUDController
         $this->addFlash('sonata_flash_success', 'Factura rectificativa creada. Por favor, revise y confirme los detalles.');
 
         // 5. Redirigir a la página de EDICIÓN de la nueva factura rectificativa
-        return $this->muestraFacturaRectificativa($rectificativa);
+        return new RedirectResponse($this->facturaRectificativaAdmin->generateUrl('edit', ['id' => $rectificativa->getId()]));
+//        return $this->muestraFacturaRectificativa($rectificativa);
     }
-
-// --- ACCIÓN MOVIDA AQUÍ ---
 
     /**
      * Acción para generar el VeriFactu de la rectificativa (movida desde el otro controlador)
@@ -228,7 +228,15 @@ class FacturaCRUDController extends CRUDController
         }
 
         try {
-            // --- INICIO DE LA CORRECCIÓN ---
+            // Buscamos el último número en la serie de rectificativas usando el repositorio
+            $fiscalYear = (int)$rectificativa->getFecha()->format('y');
+            $ultimoNumero = $this->rectificativaRepo->findLastNumberByYear($fiscalYear);
+            $nuevoNumero = $ultimoNumero + 1;
+//            Creamos el nuevo número de factura con la serie "R"
+            $numeroFacturaRectificativa = "R" . $fiscalYear . "/" . sprintf('%05d', $nuevoNumero);
+            $rectificativa->setNumeroFactura($numeroFacturaRectificativa);
+            // --- FIN DE LA LÓGICA DE NUMERACIÓN ---
+
             // 1. Buscamos los DATOS COMPLETOS del último registro
             $previousRecordData = $this->facturaRepo->findLastVerifactuRecordData();
 
@@ -248,6 +256,7 @@ class FacturaCRUDController extends CRUDController
             $this->em->flush();
 
             $this->addFlash('sonata_flash_success', 'Registro VeriFactu para la factura rectificativa generado correctamente.');
+
 
         } catch (\Exception $e) {
             $this->addFlash('sonata_flash_error', 'Error al generar el registro VeriFactu: ' . $e->getMessage());

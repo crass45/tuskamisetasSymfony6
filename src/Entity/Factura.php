@@ -18,7 +18,7 @@ class Factura
 
     #[ORM\OneToOne(mappedBy: 'facturaPadre', cascade: ['persist', 'remove'])]
     private ?FacturaRectificativa $facturaRectificativa = null;
-    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $fecha = null;
 
     #[ORM\Column]

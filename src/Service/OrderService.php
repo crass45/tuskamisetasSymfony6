@@ -123,6 +123,7 @@ class OrderService
         // 1. LLAMAMOS AL SERVICIO PARA OBTENER TODOS LOS CÁLCULOS
         $resultados = $this->priceCalculator->calculateFullPresupuesto($carrito);
         $contacto = $pedido->getContacto();
+        $empresa = $this->em->getRepository(Empresa::class)->findOneBy([]);
 
         if (!$pedido->getId()) {
             $estadoInicial = $this->em->getRepository(Estado::class)->find(1);
@@ -131,6 +132,12 @@ class OrderService
 
         $pedido->setObservaciones($carrito->getObservaciones());
         $pedido->setPedidoExpres($carrito->isServicioExpres());
+
+        if ($pedido->getPedidoExpres()){
+           $pedido->setPrecioPedidoExpres($empresa->getPrecioServicioExpres());
+        }else{
+            $pedido->setPrecioPedidoExpres(0);
+        }
         $pedido->setRecogerEnTienda($tipoEnvio === 3);
 
         // 2. CREAMOS LAS LÍNEAS Y TRABAJOS USANDO LOS DATOS DEL SERVICIO

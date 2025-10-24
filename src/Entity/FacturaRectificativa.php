@@ -16,10 +16,10 @@ class FacturaRectificativa
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $numeroFactura = null;
 
-    #[ORM\Column(type: Types::DATE_IMMUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     private ?\DateTimeImmutable $fecha = null;
 
     #[ORM\Column(type: Types::TEXT)]
@@ -28,6 +28,28 @@ class FacturaRectificativa
     #[ORM\OneToOne(inversedBy: 'facturaRectificativa', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?Factura $facturaPadre = null;
+
+
+    #[ORM\Column(name: 'razon_social', type: Types::TEXT)]
+    private ?string $razonSocial = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $direccion = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $cp = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $poblacion = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $provincia = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $pais = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $cif = null;
 
     /**
      * @var Collection<int, FacturaRectificativaLinea>
@@ -169,29 +191,174 @@ class FacturaRectificativa
         return $this->verifactuQr;
     }
 
+    /**
+     * @return string|null
+     */
+    public function getCif(): ?string
+    {
+        return $this->cif;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCp(): ?string
+    {
+        return $this->cp;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDireccion(): ?string
+    {
+        return $this->direccion;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPais(): ?string
+    {
+        return $this->pais;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getPoblacion(): ?string
+    {
+        return $this->poblacion;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getProvincia(): ?string
+    {
+        return $this->provincia;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getRazonSocial(): ?string
+    {
+        return $this->razonSocial;
+    }
+
+    /**
+     * @param string|null $cif
+     */
+    public function setCif(?string $cif): void
+    {
+        $this->cif = $cif;
+    }
+
+    /**
+     * @param string|null $direccion
+     */
+    public function setDireccion(?string $direccion): void
+    {
+        $this->direccion = $direccion;
+    }
+
+    /**
+     * @param string|null $cp
+     */
+    public function setCp(?string $cp): void
+    {
+        $this->cp = $cp;
+    }
+
+    /**
+     * @param string|null $pais
+     */
+    public function setPais(?string $pais): void
+    {
+        $this->pais = $pais;
+    }
+
+    /**
+     * @param string|null $poblacion
+     */
+    public function setPoblacion(?string $poblacion): void
+    {
+        $this->poblacion = $poblacion;
+    }
+
+    /**
+     * @param string|null $provincia
+     */
+    public function setProvincia(?string $provincia): void
+    {
+        $this->provincia = $provincia;
+    }
+
+    /**
+     * @param string|null $razonSocial
+     */
+    public function setRazonSocial(?string $razonSocial): void
+    {
+        $this->razonSocial = $razonSocial;
+    }
+
     // --- NUEVOS MÉTODOS DE CÁLCULO ---
+    /**
+     * Calcula la base imponible sumando el total de sus propias líneas.
+     */
     public function getBaseImponible(): float
     {
         $subtotal = 0.0;
         foreach ($this->getLineas() as $linea) {
             $subtotal += $linea->getTotal();
         }
-        return $subtotal;
+        // Redondeamos al final para precisión
+        return round($subtotal, 2);
     }
 
+    /**
+     * Calcula el importe del IVA basado en su propia base imponible.
+     * El tipo de IVA se toma del pedido original.
+     */
     public function getImporteIva(): float
     {
-        $pedidoOriginal = $this->getFacturaPadre()->getPedido();
-        if ($pedidoOriginal->getIva() > 0) {
-            return $pedidoOriginal->getIva()*-1;
+
+//        $ivaPorcentaje = $this->$this->facturaPadre->getPedido()->getIva();
+        return round($this->getBaseImponible() * (21 / 100), 2);
+    }
+
+    /**
+     * Calcula el importe del Recargo de Equivalencia (si aplica).
+     */
+    public function getImporteRecargoEquivalencia(): float
+    {
+        if (!$this->facturaPadre || !$this->facturaPadre->getPedido() || !$this->facturaPadre->getPedido()->getContacto()) {
+            return 0.0;
         }
+
+        $pedido = $this->facturaPadre->getPedido();
+        $contacto = $pedido->getContacto();
+
+        if ($pedido->getRecargoEquivalencia() > 0 && $contacto->isRecargoEquivalencia()) {
+            $baseImponible = $this->getBaseImponible(); // Ya es negativa
+            $tipoRecargo = 5.2;
+
+            return round($baseImponible * ($tipoRecargo / 100), 2);
+        }
+
         return 0.0;
     }
 
+    /**
+     * Calcula el total final sumando su base, su IVA y su Recargo.
+     */
     public function getTotal(): float
     {
-        return $this->getBaseImponible() + $this->getImporteIva();
+        $total = $this->getBaseImponible() + $this->getImporteIva() + $this->getImporteRecargoEquivalencia();
+        return round($total, 2);
     }
+    // --- FIN DE NUEVOS MÉTODOS ---
 
     /**
      * @return \DateTimeImmutable|null
@@ -207,6 +374,12 @@ class FacturaRectificativa
     public function setVerifactuEnviadoAt(?\DateTimeImmutable $verifactuEnviadoAt): void
     {
         $this->verifactuEnviadoAt = $verifactuEnviadoAt;
+    }
+
+    public function __toString(): string
+    {
+        // TODO: Implement __toString() method.
+        return "Factura Rectificativa".$this->getNumeroFactura();
     }
     // --- FIN NUEVOS MÉTODOS ---
 }
