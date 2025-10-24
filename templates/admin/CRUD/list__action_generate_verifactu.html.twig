@@ -1,7 +1,8 @@
 {# templates/admin/CRUD/list__action_generate_verifactu.html.twig #}
 
 {% if object.verifactuHash is null %}
-    <a class="btn btn-sm btn-success" title="Generar Registro VeriFactu" href="{{ admin.generateObjectUrl('generateVerifactu', object) }}">
+    <a class="btn btn-sm btn-success" title="Generar Registro VeriFactu" href="{{ admin.generateObjectUrl('generateVerifactu', object) }}"
+       onclick="return confirm('ADVERTENCIA: Asegurese que todos los datos de la factura rectificativa están correctos. Si continúa, se generará un registro en Verifactu que no se podrá borrar. ¿Está seguro?');">>
         <i class="fa fa-cogs" aria-hidden="true"></i>
         Generar VeriFactu
     </a>
