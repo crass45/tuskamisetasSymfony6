@@ -1,11 +1,19 @@
-{% extends "base.html.twig" %}
+{# /templates/empresa.html.twig #}
+{% extends "web/estaticoPlantilla.html.twig" %}
+
 {% block meta %}
     <script type="text/javascript"
             src="https://maps.googleapis.com/maps/api/js?key={{ gcp_api_key }}"></script>
 {% endblock %}
-{% block title %}Contacta con nosotros | Tuskamisetas.com{% endblock %}
-{% block metaDescription %}En TusKamisetas tenemos los mejores precios en camisetas y textil para publicidad. Solicita tu presupuesto de camisetas personalizadas o consultanos cualquier duda.{% endblock %}
+
+{# CAMBIADO: El título ahora refleja el nuevo propósito de la página #}
+{% block title %}Nuestra Empresa y Contacto | Tuskamisetas.com{% endblock %}
+
+{# CAMBIADO: La descripción combina la autoridad de la empresa con los datos de contacto #}
+{% block metaDescription %}Somos líderes en personalización textil en España. Conoce nuestra empresa, nuestro taller y contacta con nosotros. Serigrafía, DTF y más.{% endblock %}
+
 {% block datosEstructurado %}
+    {# El schema 'LocalBusiness' sigue siendo 100% correcto para esta página #}
     <script type="application/ld+json">
         {
             "@context": "https://schema.org",
@@ -33,7 +41,9 @@
         }
     </script>
 {% endblock %}
+
 {% block migas %}
+    {# CAMBIADO: Las migas de pan ahora apuntan a "Nuestra Empresa" #}
     <div class="breadcrumbs">
         <ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
             <li itemprop="itemListElement" itemscope
@@ -44,8 +54,9 @@
             </li>
             <li class="active" itemprop="itemListElement" itemscope
                 itemtype="http://schema.org/ListItem">
+                {# CAMBIADO: Actualiza 'app_empresa' al nombre de tu nueva ruta #}
                 <a itemprop="item" href="{{ path('app_contact') }}" class="miActive">
-                    <span itemprop="title">{% trans %}Contacto{% endtrans %}</span>
+                    <span itemprop="title">{% trans %}Nuestra Empresa{% endtrans %}</span>
                 </a>
                 <meta itemprop="position" content="2"/>
             </li>
@@ -54,9 +65,85 @@
 {% endblock %}
 
 {% block baseBody %}
+    {# El schema 'LocalBusiness' es correcto para la sección #}
     <div itemscope itemtype="https://schema.org/LocalBusiness" class="section">
-        <h1>{% trans %}Contacto{% endtrans %}</h1>
-        <div id="map" style="height: 420px"></div>
+
+        {# El H1 que acordamos #}
+        <h1>{% trans %}Tuskamisetas.com: Líderes en Personalización Textil en España{% endtrans %}</h1>
+
+        {# --- INICIO DEL NUEVO CONTENIDO DE EMPRESA --- #}
+        {# He añadido un container para que siga el estilo de tu web #}
+        <div class="tkmContainer" style="margin-top: 30px; margin-bottom: 30px;">
+            <div class="row">
+                <div class="col-xs-12">
+
+                    <p>En Tuskamisetas.com, convertimos tus ideas en realidad tangible. Somos la empresa de referencia en España especializada en la <strong>personalización de camisetas</strong> y todo tipo de <strong>textil publicitario</strong> y regalos promocionales.</p>
+
+                    <p>Desde nuestros talleres, ofrecemos un servicio nacional ágil, profesional y con la mejor relación calidad-precio del mercado. No solo estampamos ropa; creamos soluciones de <em>merchandising</em> y vestuario que hacen destacar a tu marca, evento o grupo.</p>
+
+                    <p>Entendemos que cada proyecto es único. Por eso, combinamos la tecnología de impresión más avanzada con un equipo de expertos apasionados, listos para asesorarte y garantizar que tu pedido sea un éxito rotundo.</p>
+
+                    <hr style="margin-top: 30px; margin-bottom: 30px;">
+
+                    <h2>¿Por Qué Tuskamisetas.com es tu Socio Estratégico en Personalización?</h2>
+
+                    <p>Afirmar ser líderes es fácil, pero en Tuskamisetas.com lo demostramos con hechos. Miles de clientes en toda España nos eligen por cuatro razones fundamentales:</p>
+
+                    <h3>1. Tecnología de Vanguardia: Serigrafía, DTF y Bordado</h3>
+                    <p>No nos limitamos a una sola técnica. Dominamos todos los métodos de marcaje para ofrecerte siempre la mejor solución:</p>
+                    <ul>
+                        <li><strong>Serigrafía Textil:</strong> Perfecta para grandes pedidos (eventos, peñas, promociones). Rentable, increíblemente duradera y con colores vibrantes.</li>
+                        <li><strong>Impresión Digital (DTF):</strong> La revolución del color. Ideal para diseños complejos, fotografías o pedidos pequeños sin límite de color y con un detalle espectacular.</li>
+                        <li><strong>Bordado Profesional:</strong> El acabado más premium y duradero. Perfecto para polos, ropa laboral, gorras y escudos, aportando una imagen de máxima calidad.</li>
+                    </ul>
+
+                    <h3>2. Calidad-Precio Imbatible</h3>
+                    <p>Creemos que la alta calidad no debe ser un lujo. Gracias a la optimización de nuestros talleres y a la compra de grandes volúmenes de material, ofrecemos <strong>camisetas personalizadas baratas</strong> y productos promocionales sin sacrificar ni un ápice la calidad del acabado.</p>
+
+                    <h3>3. Asesoramiento Experto y Personalizado</h3>
+                    <p>¿No sabes qué técnica elegir? ¿Dudas sobre el tipo de tejido? Nuestro equipo te asesora. Somos artesanos digitales y te guiaremos para que tu diseño brille y tu presupuesto se respete. Somos tu socio de confianza, no una simple tienda online.</p>
+
+                    <h3>4. Compromiso Real: De Nuestro Taller a tu Puerta</h3>
+                    <p>Somos un taller real, no un intermediario. Controlamos cada fase de la producción, lo que nos permite garantizar plazos de entrega ágiles y fiables en cualquier punto de España. Tu evento o campaña de marketing está segura con nosotros.</p>
+
+                    <hr style="margin-top: 30px; margin-bottom: 30px;">
+
+                    <h2>Soluciones de Personalización para Cada Necesidad</h2>
+                    <p>Nuestra especialidad es adaptarnos a ti. Damos servicio a una amplia gama de clientes:</p>
+                    <ul>
+                        <li><strong>Empresas y Ropa Laboral:</strong> Potencia tu imagen de marca con uniformes, polos bordados, chalecos y camisetas corporativas. Somos expertos en <em>merchandising</em> para ferias y eventos.</li>
+                        <li><strong>Eventos y Promociones:</strong> Gestionamos grandes volúmenes para carreras populares (camisetas técnicas), festivales, conciertos y campañas de marketing.</li>
+                        <li><strong>Grupos, Peñas y Asociaciones:</strong> La mejor calidad al mejor precio para tus fiestas, viajes de fin de curso, despedidas o equipaciones de club.</li>
+                        <li><strong>Particulares y Diseñadores:</strong> ¿Quieres crear tu propia marca o un regalo original? Con nuestra impresión DTF, puedes hacer pedidos desde pocas unidades con una calidad asombrosa.</li>
+                    </ul>
+
+                    <hr style="margin-top: 30px; margin-bottom: 30px;">
+
+                    <h2>Más Allá de las Camisetas: Un Catálogo Completo</h2>
+                    <p>Aunque las <strong>camisetas personalizadas</strong> son nuestra estrella, nuestro catálogo lo cubre todo:</p>
+                    <ul>
+                        <li>Sudaderas y Polos</li>
+                        <li>Ropa Deportiva (Técnica y Transpirable)</li>
+                        <li>Ropa Laboral y Alta Visibilidad</li>
+                        <li>Gorras y Pañuelos</li>
+                        <li>Bolsas de Tela (<em>Tote bags</em>) y Mochilas</li>
+                        <li>Regalos Promocionales (Tazas, bolígrafos, USB... ¡más de 10.000 referencias!)</li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+        {# --- FIN DEL NUEVO CONTENIDO DE EMPRESA --- #}
+
+        <hr style="margin-top: 30px; margin-bottom: 30px;">
+
+        <div class="container text-center">
+            <h2>{% trans %}Dónde Estamos y Contacto{% endtrans %}</h2>
+            <p>{% trans %}Ven a visitarnos a nuestras instalaciones o contáctanos para cualquier duda.{% endtrans %}</p>
+        </div>
+
+        {# Aquí empieza tu contenido de mapa y contacto original #}
+        <div id="map" style="height: 420px; margin-top: 20px;"></div>
 
         <div class="container" style="margin-top: 60px; margin-bottom: 60px;">
             <div class="row">
@@ -66,7 +153,6 @@
                     <h4>Si quieres unirte a nuestro equipo de profesionales <a
                                 href="{{ path('app_work_with_us') }}">rellena nuestro formulario de
                             empleo</a> y nos pondremos en contacto contigo</h4>
-
                 </div>
 
                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-12" style="text-align: left">
@@ -113,6 +199,7 @@
         </div>
     </div>
 
+    {# Tu script del mapa no necesita cambios #}
     <script>
         // $(function () {
         //     $('.navItem').removeClass('active');

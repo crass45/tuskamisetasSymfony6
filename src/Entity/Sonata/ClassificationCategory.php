@@ -26,6 +26,10 @@ class ClassificationCategory extends BaseCategory implements Translatable
         return $this->id;
     }
 
+
+    #[ORM\ManyToOne(targetEntity: Media::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(name: 'imagen', onDelete: 'SET NULL')]
+    private ?Media $imagen = null;
     #[Gedmo\Locale]
     private ?string $locale = null;
 
@@ -91,6 +95,22 @@ class ClassificationCategory extends BaseCategory implements Translatable
     public function setTextoArriba(?string $textoArriba): self { $this->textoArriba = $textoArriba; return $this; }
     public function getTextoAbajo(): ?string { return $this->textoAbajo; }
     public function setTextoAbajo(?string $textoAbajo): self { $this->textoAbajo = $textoAbajo; return $this; }
+
+    /**
+     * @return Media|null
+     */
+    public function getImagen(): ?Media
+    {
+        return $this->imagen;
+    }
+
+    /**
+     * @param Media|null $imagen
+     */
+    public function setImagen(?Media $imagen): void
+    {
+        $this->imagen = $imagen;
+    }
 
     /** @return Collection<int, Familia> */
     public function getCategoryHasFamilias(): Collection { return $this->categoryHasFamilias; }

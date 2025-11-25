@@ -60,7 +60,7 @@
     {% endblock %}
 
     {# --- Scripts de Tracking y Head (sin cambios) --- #}
-    <script src="{{ asset('cookieconsent/cookieconsent.js') }}"></script>
+    <script src="{{ asset('cookieconsent/cookieconsent.js') }}?v=2.1"></script>
     <!-- Google, Facebook, Clarity scripts... -->
     <!-- Google tag ANALYTICS 4 (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ google_tag_manager_id }}"></script>
@@ -549,7 +549,7 @@
                                                             {#                                                       href="{{ path('ss_tienda_contacto') }}" #}
                                                        href="{{ path('app_contact', {'_locale': app.request.locale}) }}"
                                                        rel="nofollow">
-                                                        {% trans %}Contacta{% endtrans %}
+                                                        {% trans %}Empresa{% endtrans %}
                                                     </a>
                                                 </li>
                                             </ul>
@@ -718,14 +718,13 @@
                 </div>
 
                 <div class="modal-body">
-                    {% include 'web/partials/_ultimos_vistos_grid.html.twig' %}
+                    {% include 'carrito/partials/_modal_cart_content.html.twig' %}
                 </div>
                 <div class="modal-footer">
                     {#                    <button onclick="window.location.href='{{ path('ss_tienda_carrito') }}'" class="button"> #}
-                    <button onclick="window.location.href='{{ path('app_cart_show') }}'" class="button">
-                        Abrir
-                        Carrito
-                    </button>
+                    <a href="{{ path('app_cart_show') }}" class="button">
+                        Abrir Carrito
+                    </a>
                 </div>
             </div>
         </div>

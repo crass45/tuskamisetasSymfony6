@@ -6,10 +6,24 @@ namespace App\Service;
 use App\Entity\Pedido;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
+
+
+//[GOOGLE_ADS]
+//developerToken = "TU_TOKEN_DE_DESARROLLADOR"
+//clientCustomerId = "TU_CUSTOMER_ID_DE_GOOGLE_ADS"
+//
+//[OAUTH2]
+//clientId = "1025565949258-sl662m9sjoljgte9jjj1mjr7dp95f6ra.apps.googleusercontent.com"
+//clientSecret = "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"
+//refreshToken = "TU_REFRESH_TOKEN"
+//
+//[LOGGING]
+//logFilePath = "/var/log/google-ads.log"
+//logLevel = "INFO"
 /**
  * Servicio para enviar eventos al Measurement Protocol de Google Analytics 4.
  */
-class GoogleAnalyticsService
+class GoogleAdsService
 {
     private const GA_ENDPOINT = 'https://www.google-analytics.com/mp/collect';
 

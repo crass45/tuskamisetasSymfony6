@@ -24,9 +24,10 @@
                 <td colspan="6" style="padding-left: 15px; border-top: 2px solid #ff9000;">
                     <strong>Personalizaciones para este grupo:</strong>
                     {% for trabajo in item.trabajos %}
-                        <span>{{ trabajo.trabajo }}</span>{% if not loop.last %}, {% endif %}
+                        <li style="margin-left: 10px">{{ trabajo }}</li>
+{#                        {% if not loop.last %}, {% endif %}#}
                     {% else %}
-                        <span>Sin personalización</span>
+                        <li style="margin-left: 10px">Sin personalización</li>
                     {% endfor %}
                 </td>
             </tr>

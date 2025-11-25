@@ -74,7 +74,7 @@ class PageController extends AbstractController
         ]);
     }
 
-    #[Route('/contacto', name: 'app_contact')]
+    #[Route('/empresa', name: 'app_contact')]
     public function contactAction(): Response
     {
         // MIGRACIÓN: La acción ahora simplemente renderiza la plantilla de contacto.

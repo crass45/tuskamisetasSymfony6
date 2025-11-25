@@ -298,7 +298,7 @@
     <div itemscope itemtype="http://schema.org/Product" style="margin-bottom: 15px">
         <div class="container">
             <div class="row">
-                <div class="col-sm-6 col-md-7">
+                <div class="col-sm-6 col-md-7" style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">
                     {# Incluimos el parcial de la galería. Lo crearemos en el siguiente paso. #}
                     {% include 'web/product/partials/_gallery.html.twig' %}
                     <div class="col-lg-12">
@@ -385,8 +385,7 @@
                 </div>
 
 
-                <div class="col-sm-6 col-md-5"
-                     style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">
+                <div class="col-sm-6 col-md-5" style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">
                     {# Incluimos el panel derecho. Lo crearemos en el siguiente paso. #}
                     {% include 'web/product/partials/_details_panel.html.twig' %}
 
@@ -414,7 +413,7 @@
 
                             <p><span style="color: #044266">PERSONALIZADO:</span><br>
                                 &nbsp;Servicio normal:
-                                <b>{{ deliveryDates['fechaEntregaImpreso']|format_datetime(locale='es', pattern="d 'de' MMM")}}
+                                <b>{{ deliveryDates['fechaEntregaImpreso']|format_datetime(locale='es', pattern="d 'de' MMM") }}
                                     - {{ deliveryDates['fechaEntregaImpreso2']|format_datetime(locale='es', pattern="d 'de' MMM") }}</b><br>
                                 &nbsp;Servicio express:
                                 <b>{{ deliveryDates['fechaEntregaExpress']|format_datetime(locale='es', pattern="d 'de' MMM") }}</b>
@@ -474,7 +473,8 @@
     {# ... Tus secciones de "Modelos Relacionados" y "Últimos Vistos" ... #}
 
     {% if modelo.modelosRelacionados|length > 0 %}
-        <div class="recommended_items mt-5"><h2 class="title text-center">{% trans %}MODELOS RELACIONADOS{% endtrans %}</h2>
+        <div class="recommended_items mt-5"><h2
+                class="title text-center">{% trans %}MODELOS RELACIONADOS{% endtrans %}</h2>
 
         <div class="row">
             {% for producto in modelo.modelosRelacionados %}

@@ -23,6 +23,16 @@ class Pedido
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $googleClientId = null;
     // --- FIN DE LA MEJORA ---
+    // --- ¡AÑADIR ESTOS TRES CAMPOS! ---
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $gclid = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $gbraid = null;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $wbraid = null;
+    // --- FIN DE LO AÑADIDO ---
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $agenciaEnvio = null;
@@ -910,6 +920,39 @@ class Pedido
 //            $this->lineasString = $this->lineasString . $linea->getCantidad() . ":" . $linea->getIdProducto()->getModelo()->nombre . ", ";
         }
         return $trabajos;
+    }
+
+    public function getGclid(): ?string
+    {
+        return $this->gclid;
+    }
+
+    public function setGclid(?string $gclid): static
+    {
+        $this->gclid = $gclid;
+        return $this;
+    }
+
+    public function getGbraid(): ?string
+    {
+        return $this->gbraid;
+    }
+
+    public function setGbraid(?string $gbraid): static
+    {
+        $this->gbraid = $gbraid;
+        return $this;
+    }
+
+    public function getWbraid(): ?string
+    {
+        return $this->wbraid;
+    }
+
+    public function setWbraid(?string $wbraid): static
+    {
+        $this->wbraid = $wbraid;
+        return $this;
     }
 
     public function hasStockTodo(){

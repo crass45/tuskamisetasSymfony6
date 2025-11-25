@@ -12,6 +12,8 @@
         "doctrine/doctrine-bundle": "^2.15",
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "^3.5",
+        "googleads/google-ads-php": "^31.1",
+        "josemmo/verifactu-php": "dev-main",
         "knplabs/knp-snappy-bundle": "^1.10",
         "oneup/uploader-bundle": "^5.0",
         "phpdocumentor/reflection-docblock": "^5.6",
@@ -57,7 +59,6 @@
         "symfonycasts/reset-password-bundle": "^1.23",
         "twig/extra-bundle": "^3.21",
         "twig/intl-extra": "^3.21",
-        "josemmo/verifactu-php": "dev-main",
         "twig/twig": "^2.12|^3.0"
     },
     "config": {

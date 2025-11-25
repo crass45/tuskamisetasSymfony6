@@ -1,21 +1,21 @@
 {% extends "web/indexTemplate.html.twig" %}
 
 
-{#{% block title %}#}
-{#    {% if tituloSEO is defined %}#}
-{#        {% if (categoria is defined) %}#}
-{#            {% if categoria != "fabricante" %}#}
+{# {% block title %} #}
+{#    {% if tituloSEO is defined %} #}
+{#        {% if (categoria is defined) %} #}
+{#            {% if categoria != "fabricante" %} #}
 {#                #}{# {{ cantidadArticulos }} #}
-{#            {% endif %}{% endif %}{{ tituloSEO | capitalize }}#}
-{#    {% else %}#}
-{#        {% if (categoria is defined) %}#}
-{#            {% if categoria != "fabricante" %}#}
+{#            {% endif %}{% endif %}{{ tituloSEO | capitalize }} #}
+{#    {% else %} #}
+{#        {% if (categoria is defined) %} #}
+{#            {% if categoria != "fabricante" %} #}
 {#                #}{# {{ cantidadArticulos }} #}
-{#            {% endif %}{% endif %} {{ titulo | capitalize }}#}
-{#    {% endif %}#}
-{#{% endblock %}#}
+{#            {% endif %}{% endif %} {{ titulo | capitalize }} #}
+{#    {% endif %} #}
+{# {% endblock %} #}
 
-{#{% block metaDescription %}{{ descripcion }}{% endblock %}#}
+{# {% block metaDescription %}{{ descripcion }}{% endblock %} #}
 
 {% block migas %}
     {# MIGRACIÓN: El bloque de migas de pan ahora es mucho más simple y se construye a partir del objeto 'context' #}
@@ -23,20 +23,70 @@
 {% endblock %}
 
 {% block cuerpo %}
-    <div class="features_items">
-        {# ... (Tu lógica para mostrar los filtros activos) ... #}
-        {% include 'web/partials/_filtros_activos.html.twig' %}
+<div class="features_items">
+    {% include 'web/partials/_filtros_activos.html.twig' %}
 
-        <h1 class="title text-center">{{ nombrePanel|default(context.name|default('Catálogo')) }}</h1>
-        <p class="subtitle text-center">- {{ cantidadArticulos }} Artículos -</p>
+    <h1 class="title text-center">{{ nombrePanel|default(context.nombre|default('Catálogo')) }}</h1>
+    <p class="subtitle text-center">- {{ cantidadArticulos }} Artículos -</p>
 
-        {# ... (Tu lógica para mostrar subcategorías si aplica) ... #}
 
-        {# MIGRACIÓN: Incluimos la nueva parrilla de productos, pasándole los modelos del paginador #}
-                {% include 'web/catalog/_producto_grid.html.twig' with {'modelos': modelos} %}
-    </div>
+    {% if paginaActual <= 1 %}
+        {# 1. BLOQUE DE SUBCATEGORÍAS #}
+        {% set categoriaObj = context %}
+        {% if categoriaObj is defined and categoriaObj.children is defined and categoriaObj.children | length > 0 %}
+{#            ESTA ES LA COMPROBACIÓN DE QUE NO HAYA FILTROS#}
+            {% if not filtros.fabricante and filtros.atributos is empty and filtros.colores is empty %}
+                {% for subcategoria in categoriaObj.children %}
+                    {% if subcategoria.enabled %}
+                        <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': subcategoria.slug}) }}"
+                           style="color: white">
+                            <div class="col-xs-6 col-sm-6 col-md-3 col-lg-3"
+                                 style="padding-left: 2px; padding-right: 2px">
+                                <div class="product-image-wrapper zoomHoverTKM" style="position: relative;">
+                                    <div class="single-products" style="height: 250px">
+                                        <div class="productinfo text-center">
+                                            {# Usamos la función sonata_path o sonata_media para la imagen #}
+                                            <img src="{{ asset('images/dummy200.png') }}"
+                                                 class="lazy"
+                                                 data-src="{% if subcategoria.imagen %}{{ sonata_path(subcategoria.imagen, 'grid') }}{% else %}{{ asset('images/dummy200.png') }}{% endif %}"
+                                                 alt="Comprar {{ subcategoria.name }} baratas"/>
+                                        </div>
+                                    </div>
 
-    {# ... (Tu lógica de textos arriba/abajo y paginación) ... #}
+                                    <div class="productoGridDescripcion">
+                                        <br>
+                                        <h2 style="text-align: center; color: white; font-size: 16px">{{ subcategoria.name | upper }}</h2>
+                                        <br>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+        <div class="clearfix"></div>
+
+        {# 2. BLOQUE DE TEXTO SUPERIOR #}
+        {% if context.textoArriba is defined and context.textoArriba is not empty %}
+            <div class="textosTkm" style="padding: 15px; font-size: 13px;">
+                {{ context.textoArriba | raw }}
+            </div>
+        {% endif %}
+    {% endif %}
+
+    {# MIGRACIÓN: Incluimos la nueva parrilla de productos, pasándole los modelos del paginador #}
+    {% include 'web/catalog/_producto_grid.html.twig' with {'modelos': modelos} %}
+    {#    </div> #}
+    <div class="clearfix"></div>
+    {% if context.textoAbajo is defined %}
+        {% if paginaActual <= 1 %}
+            <div class="textosTkm" style="padding: 15px; font-size: 13px;">
+                {{ context.textoAbajo |raw }}
+            </div>
+        {% endif %}
+    {% endif %}
+
 
     {# MIGRACIÓN: El JavaScript ahora necesita generar las URLs de los filtros #}
     <script>
@@ -45,6 +95,7 @@
             params.delete('fabricante'); // Suponiendo que el filtro se llama 'fabricante'
             window.location.search = params.toString();
         }
+
         // ... (lógica similar para eliminaColor y eliminaFiltro)
     </script>
-{% endblock %}
+    {% endblock %}

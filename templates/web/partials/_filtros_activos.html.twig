@@ -4,63 +4,62 @@
 {# Comprobamos si hay algún filtro activo antes de mostrar nada #}
 
     {% if filtros.fabricante or filtros.atributos is not empty or filtros.colores is not empty %}
-        <div style="margin-bottom: 15px; padding:15px;">
+        {% if is_brand_page is not defined or not is_brand_page %}
+            {# Píldora para el Fabricante (si está activo) #}
+            <div style="margin-bottom: 15px; padding:15px;">
             <p><strong>Filtrando por:</strong></p>
+            {% if filtros.fabricante %}
+                {% set fabricante_obj = filtrosDisponibles.fabricantes|filter(f => f.id == filtros.fabricante.id)|first %}
+                {% if fabricante_obj %}
+                    <div style="display: inline-block">
+                        {# MIGRACIÓN: El enlace ahora elimina el parámetro 'fabricante' de la URL actual #}
+                        <a href="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge(app.request.query.all)|merge({'fabricante': null, 'page': null})) }}"
+                           class="filter-pill">
+                            {{ fabricante_obj.nombre }}
+                            <i style="margin-left: 6px" class="fa fa-close"></i>
+                        </a>
+                    </div>
+                {% endif %}
+            {% endif %}
+        {% endif %}
 
-            {% if is_brand_page is not defined or not is_brand_page %}
-                {# Píldora para el Fabricante (si está activo) #}
-                {% if filtros.fabricante %}
-                    {% set fabricante_obj = filtrosDisponibles.fabricantes|filter(f => f.id == filtros.fabricante.id)|first %}
-                    {% if fabricante_obj %}
+        {# Píldoras para los Atributos (si están activos) #}
+        {% if filtros.atributos is not empty %}
+            {# Recorremos todos los grupos de atributos disponibles para encontrar los nombres #}
+            {% for group_name, group_items in filtrosDisponibles.atributos %}
+                {% for atributo in group_items %}
+                    {# Si el ID de este atributo está en la lista de filtros activos, lo mostramos #}
+                    {% if atributo.id in filtros.atributos %}
                         <div style="display: inline-block">
-                            {# MIGRACIÓN: El enlace ahora elimina el parámetro 'fabricante' de la URL actual #}
-                            <a href="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge(app.request.query.all)|merge({'fabricante': null, 'page': null})) }}"
+                            {# MIGRACIÓN: El enlace ahora elimina este ID de la lista de atributos en la URL #}
+                            {% set current_attributes = app.request.query.all('atributos')|default([]) %}
+                            {% set new_attributes = current_attributes|filter(id => id != atributo.id) %}
+                            <a href="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge(app.request.query.all)|merge({'atributos': new_attributes, 'page': null})) }}"
                                class="filter-pill">
-                                {{ fabricante_obj.nombre }}
+                                {{ atributo.valor }}
                                 <i style="margin-left: 6px" class="fa fa-close"></i>
                             </a>
                         </div>
                     {% endif %}
-                {% endif %}
-            {% endif %}
-
-            {# Píldoras para los Atributos (si están activos) #}
-            {% if filtros.atributos is not empty %}
-                {# Recorremos todos los grupos de atributos disponibles para encontrar los nombres #}
-                {% for group_name, group_items in filtrosDisponibles.atributos %}
-                    {% for atributo in group_items %}
-                        {# Si el ID de este atributo está en la lista de filtros activos, lo mostramos #}
-                        {% if atributo.id in filtros.atributos %}
-                            <div style="display: inline-block">
-                                {# MIGRACIÓN: El enlace ahora elimina este ID de la lista de atributos en la URL #}
-                                {% set current_attributes = app.request.query.all('atributos')|default([]) %}
-                                {% set new_attributes = current_attributes|filter(id => id != atributo.id) %}
-                                <a href="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge(app.request.query.all)|merge({'atributos': new_attributes, 'page': null})) }}"
-                                   class="filter-pill">
-                                    {{ atributo.valor }}
-                                    <i style="margin-left: 6px" class="fa fa-close"></i>
-                                </a>
-                            </div>
-                        {% endif %}
-                    {% endfor %}
                 {% endfor %}
-            {% endif %}
+            {% endfor %}
+        {% endif %}
 
-            {# Píldoras para los Colores (si están activos) #}
-            {% if filtros.colores is not empty %}
-                {% for color_code in filtros.colores %}
-                    <div style="display: inline-block">
-                        {# MIGRACIÓN: El enlace ahora elimina este código de color de la lista en la URL #}
-                        {% set current_colors = app.request.query.all('colores')|default([]) %}
-                        {% set new_colors = current_colors|filter(c => c != color_code) %}
-                        <a href="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge(app.request.query.all)|merge({'colores': new_colors, 'page': null})) }}"
-                           class="filter-pill">
-                            <span style="background-color: {{ color_code }}; width: 20px; line-height: 20px; border: 1px solid white; display: inline-block; vertical-align: middle;">&nbsp;</span>
-                            <i style="margin-left: 6px" class="fa fa-close"></i>
-                        </a>
-                    </div>
-                {% endfor %}
-            {% endif %}
+        {# Píldoras para los Colores (si están activos) #}
+        {% if filtros.colores is not empty %}
+            {% for color_code in filtros.colores %}
+                <div style="display: inline-block">
+                    {# MIGRACIÓN: El enlace ahora elimina este código de color de la lista en la URL #}
+                    {% set current_colors = app.request.query.all('colores')|default([]) %}
+                    {% set new_colors = current_colors|filter(c => c != color_code) %}
+                    <a href="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge(app.request.query.all)|merge({'colores': new_colors, 'page': null})) }}"
+                       class="filter-pill">
+                        <span style="background-color: {{ color_code }}; width: 20px; line-height: 20px; border: 1px solid white; display: inline-block; vertical-align: middle;">&nbsp;</span>
+                        <i style="margin-left: 6px" class="fa fa-close"></i>
+                    </a>
+                </div>
+            {% endfor %}
+        {% endif %}
         </div>
     {% endif %}
 {# Un poco de estilo para las "píldoras" #}

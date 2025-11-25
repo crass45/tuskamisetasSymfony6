@@ -17,6 +17,7 @@ use App\Model\Carrito;
 use App\Model\Presupuesto;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Twig\Environment as TwigEnvironment;
@@ -27,13 +28,14 @@ use Twig\Environment as TwigEnvironment;
 class OrderService
 {
     public function __construct(
-        private EntityManagerInterface $em,
-        private MailerInterface        $mailer,
-        private TwigEnvironment        $twig,
-        private Security               $security,
-        private FechaEntregaService    $deliveryDateService,
-        private PriceCalculatorService $priceCalculator,
-        private ShippingCalculatorService $shippingCalculator
+        private EntityManagerInterface    $em,
+        private MailerInterface           $mailer,
+        private TwigEnvironment           $twig,
+        private Security                  $security,
+        private FechaEntregaService       $deliveryDateService,
+        private PriceCalculatorService    $priceCalculator,
+        private ShippingCalculatorService $shippingCalculator,
+        private RequestStack              $requestStack
     )
     {
     }
@@ -72,6 +74,13 @@ class OrderService
 
         $pedido = new Pedido($fecha, $fiscalYear, $numeroPedido);
         $pedido->setGoogleClientId($googleClientId);
+
+        $session = $this->requestStack->getSession();
+        // 2. Los IDs de Anuncios que capturamos en la Sesión (del Paso 2)
+        $pedido->setGclid($session->get('gclid'));
+        $pedido->setGbraid($session->get('gbraid'));
+        $pedido->setWbraid($session->get('wbraid'));
+
         $pedido->setContacto($contacto);
         $pedido->setDireccion($direccionEnvio ?? $contacto->getDireccionFacturacion());
 

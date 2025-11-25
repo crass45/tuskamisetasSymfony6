@@ -2,9 +2,11 @@
 
 namespace App\Admin\Extension;
 
+use App\Entity\Sonata\ClassificationCategory;
 use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use Sonata\AdminBundle\Admin\AbstractAdminExtension;
 use Sonata\AdminBundle\Form\FormMapper;
+use Sonata\AdminBundle\Form\Type\ModelListType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -14,23 +16,25 @@ final class CategoryAdminExtension extends AbstractAdminExtension
 {
     public function configureFormFields(FormMapper $form): void
     {
-        // El Admin original de Sonata ya ha añadido sus campos (name, parent, etc.).
+
+
         // Nosotros ahora simplemente añadimos los nuestros.
         $form
 //            ->tab('General') // Volvemos a la pestaña 'General' para añadir nuestros campos
-            ->with('Datos Personalizados', ['class' => 'col-md-12'])
+            ->with('Datos Personalizados', ['class' => 'col-md-12','label' => "Datos Personalizados"])
             ->add('slug')
             ->add('aparece_home', CheckboxType::class, ['label' => 'Aparece en la Home', 'required' => false])
             ->add('visible_menu', CheckboxType::class, ['label' => 'Visible en el Menú', 'required' => false])
             ->add('precio_min', NumberType::class, ['label' => 'Precio Mínimo', 'required' => false])
+            ->add('imagen', ModelListType::class, ['label' => 'Imagen', 'required' => false])
             ->end()
 //            ->end()
 //            ->tab('Contenido Traducible') // Creamos nuestra propia pestaña para los campos traducibles
             ->with('Textos por Idioma')
-            ->add('descripcion', TextareaType::class, ['label' => "Descripción", 'required' => false])
+            ->add('descripcion', TextareaType::class, ['label' => "Descripción", 'required' => false,])
             ->add('tituloSEOTrans', TextType::class, ['label' => "Título SEO", 'required' => false])
-            ->add('textoArriba', CKEditorType::class, ['label' => "Texto Parte Superior", 'required' => false])
-            ->add('textoAbajo', CKEditorType::class, ['label' => "Texto Parte Inferior", 'required' => false])
+            ->add('textoArriba', TextareaType::class, ['label' => "Texto Parte Superior", 'required' => false,'attr' => ['class' => 'tinymce']])
+            ->add('textoAbajo', TextareaType::class, ['label' => "Texto Parte Inferior", 'required' => false,'attr' => ['class' => 'tinymce']])
             ->end()
 //            ->end()
         ;

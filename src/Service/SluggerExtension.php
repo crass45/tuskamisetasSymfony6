@@ -1,7 +1,7 @@
 <?php
 // src/Twig/Extension/SluggerExtension.php
 
-namespace App\Twig\Extension;
+namespace App\Service;
 
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Twig\Extension\AbstractExtension;

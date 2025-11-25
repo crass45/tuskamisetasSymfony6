@@ -1,0 +1,76 @@
+{# templates/carrito/partials/_modal_content.html.twig #}
+{# Vista informativa simple para el modal, sin cálculos ni JS. #}
+
+<div class="" style="margin-bottom: 0px">
+    {% set carrito = app.session.get('carrito') %}
+    {% if carrito is not null and carrito.items|length > 0 %}
+        <table id="tabla_carrito_modal" class="table-striped" style="width: 100%">
+            <thead>
+            <tr class="cart_menu">
+                <td class="image" colspan="2">Producto</td>
+                <td class="quantity" style="text-align: center;">Cantidad</td>
+            </tr>
+            </thead>
+            <tbody>
+            {% for presupuesto in carrito.items %}
+                {# Fila para las personalizaciones de este grupo #}
+                <tr style="background-color: #f0f0f0;">
+                    <td colspan="3" style="padding: 5px 10px; font-size: 12px;">
+                        <strong>Personalizaciones:</strong>
+
+                        {% for trabajo in presupuesto.getTrabajos() %}
+                            <li style="margin-left: 10px">{{ trabajo }}</li>
+                            {#{% if not loop.last %}, {% endif %}#}
+                        {% else %}
+                            <li style="margin-left: 10px">Sin personalización</li>
+                        {% endfor %}
+
+                    </td>
+                </tr>
+
+                {# Bucle para los productos dentro de este grupo #}
+                {% for productoPresupuesto in presupuesto.productos %}
+                    {% set producto = productoPresupuesto.producto %}
+                    {% if productoPresupuesto.cantidad > 0 %} {# Usamos 'unidades' de PresupuestoProducto #}
+                        <tr>
+                            <td class="cart_product hidden-xs" style="width: 50px; padding: 5px; vertical-align: middle;">
+                                <a href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': producto.modelo.nombreUrl}) }}">
+                                    {% if producto.imagen %}
+                                        <img style="max-width: 40px" src="{{ sonata_path(producto.imagen, 'mini') }}" alt="{{ producto.modelo.nombre }}">
+                                    {% else %}
+                                        <img style="max-width: 40px" src="{{ producto.urlImage|default(asset('images/placeholder.png')) }}" alt="{{ producto.modelo.nombre }}">
+                                    {% endif %}
+                                </a>
+                            </td>
+                            <td class="cart_description" style="padding: 5px; vertical-align: middle;">
+                                <a href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': producto.modelo.nombreUrl}) }}">
+                                    <h4 class="merder" style="font-size: 13px; margin: 0;">{{ producto.modelo.nombre | upper }}</h4>
+                                    <p style="margin: 0; color: black; font-size: 11px;">Talla: {{ producto.talla }} | Color: {{ producto.color }}</p>
+                                </a>
+                            </td>
+                            <td class="cart_quantity" style="text-align: center; vertical-align: middle;">
+                                <p style="margin: 0;"><b>{{ productoPresupuesto.cantidad }}</b></p>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            </tbody>
+        </table>
+
+{#        <div class="text-center" style="padding: 15px;">#}
+{#            <a class="btn btn-primary" href="{{ path('app_cart_show', {'_locale': app.request.locale}) }}">#}
+{#                Ver Carrito para Precios y Modificar#}
+{#            </a>#}
+{#        </div>#}
+
+    {% else %}
+        <div style="padding: 20px; text-align: center;">SU CARRITO ESTÁ VACÍO</div>
+        {% if muestraBoton is defined and muestraBoton %}
+            <div style="text-align: left; margin-bottom: 20px; padding: 15px;">
+                <a class="btn btn-default check_out" href="{{ path('app_home', {'_locale': app.request.locale}) }}" style="margin: 0;">Seguir
+                    Comprando</a>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>

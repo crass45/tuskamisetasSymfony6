@@ -25,3 +25,49 @@
         </div>
     </div>
 {% endblock %}
+
+{# --- INICIO DE LA MODIFICACIÓN: CÓDIGO DE SEGUIMIENTO --- #}
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            'event': 'generate_lead',
+            'ecommerce': {
+                'transaction_id': '{{ pedido.nombre | default('') }}',      {# ID de la transacción (tu número de pedido) #}
+                'value': {{ pedido.total | default(0) }},             {# Valor total del presupuesto #}
+                'currency': 'EUR',                                  {# Moneda #}
+                'items': [
+                    {# Iteramos sobre las líneas del pedido para añadirlas al dataLayer #}
+                    {% for linea in pedido.lineas %}
+                    {
+                        'item_id': '{{ linea.producto.modelo.referencia | default(linea.producto.referencia | default('SKU_DEFAULT')) }}',
+                        'item_name': '{{ linea.producto.modelo.nombre | default('Producto') }}',
+                        'item_brand': '{{ linea.producto.modelo.fabricante.nombre | default('Sin Marca') }}',
+                        'item_variant': '{{ linea.producto.referencia | default('') }}',
+                        'price': {{ linea.precio | default(0) }},
+                        'quantity': {{ linea.cantidad | default(0) }}
+                    }{% if not loop.last %},{% endif %} {# Añade una coma entre items, pero no al final #}
+                    {% endfor %}
+                ],
+
+                {# --- DATOS DE CONVERSIONES MEJORADAS (ENHANCED CONVERSIONS) --- #}
+                {# IMPORTANTE: Asegúrate de configurar GTM para que aplique hashing SHA-256 a estos campos #}
+                'user_data': {
+                    'email': '{{ pedido.contacto.usuario.email | default('') }}',
+                    'phone_number': '{{ pedido.contacto.direccionFacturacion.telefonoMovil | default('') }}',
+                    'address': {
+                        'first_name': '{{ pedido.contacto.nombre | default('') }}',
+                        'last_name': '{{ pedido.contacto.apellidos | default('') }}',
+                        'street': '{{ pedido.contacto.direccionFacturacion.dir | default('') }}',
+                        'city': '{{ pedido.contacto.direccionFacturacion.poblacion | default('') }}',
+                        'region': '{{ pedido.contacto.direccionFacturacion.provinciaBD | default('') }}',
+                        'postal_code': '{{ pedido.contacto.direccionFacturacion.cp | default('') }}',
+                        'country': '{{ pedido.contacto.direccionFacturacion.paisBD | default('ES') }}'
+                    }
+                }
+            }
+        });
+    </script>
+{% endblock %}
+{# --- FIN DE LA MODIFICACIÓN --- #}

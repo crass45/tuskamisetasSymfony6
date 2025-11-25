@@ -39,6 +39,7 @@ class ProductoRepository extends ServiceEntityRepository // <-- CAMBIAR ESTO
         // 2. Definimos el orden correcto y completo de las tallas
         $tallasOrdenadas = [
             // BEBÉ (Meses)
+            '104 (3-4)', '116 (5-6)', '128 (7-8)', '140 (9-11)', '152 (12-13)','164 (14-15)',
             '0-3', '3M', '03/06M', '3 MESES', '3-6', '6M', '6 MESES', '_0/6', '6-12', '06/12M', '9M', '9 MESES',
             '12M', '12 MESES', '_6/12', '12-18', '12;18', '12/18M', '18M', '18 MESES', '_12/18', '18-24',
             '18/23M', '_18/24', '24M',

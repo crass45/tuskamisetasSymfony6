@@ -183,6 +183,8 @@ class PriceCalculatorService
                 $precioVentaUnitario = $precioCoste * (1 + ($margenAplicado / 100));
             }
         }
+        //añadimos el descuento del proveedor
+        $precioVentaUnitario -= ($precioVentaUnitario * (float) $proveedor->getDescuentoEspecial() / 100);
         return $precioVentaUnitario;
     }
 

@@ -347,5 +347,29 @@ class CarritoController extends AbstractController
         // Redirigimos de vuelta al panel de administración, a la página de edición del pedido
         return $this->redirectToRoute('admin_app_pedido_edit', ['id' => $pedido->getId()]);
     }
+
+    /**
+     * ¡NUEVO MÉTODO!
+     * Devuelve el contenido HTML del modal del carrito.
+     * Se llama por AJAX.
+     */
+    #[Route('/_fragment/modal-cart-content', name: 'app_cart_modal_content', methods: ['GET'])]
+    public function getModalCartContentAction(SessionInterface $session): Response
+    {
+        $carrito = $this->getOrCreateCart($session);
+        $resultadosPrecios = null;
+
+        if ($carrito->getCantidadTotalProductos() > 0) {
+            $resultadosPrecios = $this->priceCalculator->calculateFullPresupuesto($carrito);
+        }
+
+        return $this->render('carrito/partials/_modal_cart_content.html.twig', [
+            'carrito' => $carrito,
+            'resultados' => $resultadosPrecios,
+            'muestraBoton' => true // Para el botón de "Seguir comprando" si está vacío
+        ]);
+    }
+
+
 }
 

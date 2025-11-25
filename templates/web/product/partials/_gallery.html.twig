@@ -6,19 +6,19 @@
 
         {# Vista Compleja (tu antigua alternativa2 y 3) #}
         {# Esta vista no muestra los selectores de color aquí #}
-        <div class="col-lg-12">
+        <div class="{% if modelo.childImage == null and modelo.otherImages == null and modelo.detailsImages==null %}col-lg-12{% else %}col-lg-6{% endif %}">
             <div class="row" style="padding: 5px">
                 <img class="imagenProducto" style="width: 100%; height: auto" id="imagen-producto" src="{{ modelo.imagen ? sonata_path(modelo.imagen, 'wide') : modelo.urlImage }}" alt="{{ modelo.nombre }}">
             </div>
         </div>
         {% if modelo.childImage %}
-            <div class="col-sm-4 hidden-xs"><div class="row" style="padding: 5px"><img class="imagenProducto" style="width: 100%; height: auto" src="{{ modelo.childImage }}" alt="{{ modelo.nombre }} infantil"></div></div>
+            <div class="col-lg-6 hidden-xs"><div class="row" style="padding: 5px"><img class="imagenProducto" style="width: 100%; height: auto" src="{{ modelo.childImage }}" alt="{{ modelo.nombre }} infantil"></div></div>
         {% endif %}
         {% for imagen in modelo.otherImages|split(',')|filter(img => img is not empty) %}
-            <div class="col-sm-4 hidden-xs"><div class="row" style="padding: 5px"><img class="imagenProducto" style="width: 100%; height: auto" src="{{ imagen }}" alt="{{ modelo.nombre }} otro"></div></div>
+            <div class="col-lg-6 hidden-xs"><div class="row" style="padding: 5px"><img class="imagenProducto" style="width: 100%; height: auto" src="{{ imagen }}" alt="{{ modelo.nombre }} otro"></div></div>
         {% endfor %}
         {% for imagen in modelo.detailsImages|split(',')|filter(img => img is not empty) %}
-            <div class="col-sm-4 hidden-xs"><div class="row" style="padding: 5px"><img class="imagenProducto" style="width: 100%; height: auto;" src="{{ imagen }}" alt="{{ modelo.nombre }}"></div></div>
+            <div class="col-lg-6 hidden-xs"><div class="row" style="padding: 5px"><img class="imagenProducto" style="width: 100%; height: auto;" src="{{ imagen }}" alt="{{ modelo.nombre }}"></div></div>
         {% endfor %}
 {#    {% else %}#}
 {#        #}{# Vista Simple (tu antigua alternativa 1) #}

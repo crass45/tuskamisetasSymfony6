@@ -1,38 +1,38 @@
 /*
     Descripción general: Parámetros del modo de consentimiento
-
-    Nombre del ajuste        Usado por Google    Descripción
-    ad_storage              Sí                  Habilita el almacenamiento (como cookies) relacionado con la publicidad.
-    analytics_storage       Sí                  Habilita el almacenamiento (como cookies) relacionado con análisis (ej. duración de la visita).
-    ad_user_data            Sí                  Indica si los servicios de Google pueden usar datos de usuario para crear audiencias publicitarias.
-    ad_personalization      Sí                  Indica si los servicios de Google pueden usar los datos para remarketing.
-    functionality_storage   No                  Habilita el almacenamiento que soporta la funcionalidad del sitio o app (ej. ajustes de idioma).
-    personalization_storage No                  Habilita el almacenamiento relacionado con la personalización (ej. recomendaciones de vídeo).
-    security_storage        No                  Habilita el almacenamiento relacionado con la seguridad (ej. autenticación, prevención de fraude).
 */
+
+// Define la versión actual de la política de consentimiento.
+const CURRENT_CONSENT_VERSION = 'v2';
+
 window.dataLayer = window.dataLayer || [];
 function gtag() { dataLayer.push(arguments); }
 
-// Se establece el estado de consentimiento por defecto antes de que se cargue cualquier etiqueta.
-// Si no hay un consentimiento guardado, se deniega todo por defecto.
-if (localStorage.getItem('consentMode') === null) {
+// --- Lógica de inicialización modificada para control de versión ---
+const savedConsent = JSON.parse(localStorage.getItem('consentMode'));
+
+if (savedConsent === null || savedConsent.version !== CURRENT_CONSENT_VERSION) {
+    // Si no hay consentimiento guardado O si la versión es antigua,
+    // se establece el estado de consentimiento más restrictivo por defecto.
     gtag('consent', 'default', {
-        'functionality_storage': 'denied',
-        'security_storage': 'denied',
+        'functionality_storage': 'granted',
+        'security_storage': 'granted',
         'ad_storage': 'denied',
         'ad_user_data': 'denied',
         'ad_personalization': 'denied',
         'analytics_storage': 'denied',
         'personalization_storage': 'denied',
-        'wait_for_update': 500, // Espera 500ms a una actualización antes de usar los valores por defecto.
+        'wait_for_update': 500,
     });
 } else {
-    // Si ya existe un consentimiento guardado, se usa como el valor por defecto para esta página.
-    gtag('consent', 'default', JSON.parse(localStorage.getItem('consentMode')));
+    // Si la versión es correcta, carga el consentimiento guardado del usuario
+    gtag('consent', 'default', savedConsent);
 }
+// --- Fin de la lógica de inicialización modificada ---
+
 
 window.onload = function() {
-    // Se define el HTML del banner de consentimiento.
+    // Se define el HTML del banner de consentimiento. (SU CÓDIGO ORIGINAL)
     const cookie_consent_banner_dom = `
     <div id="cookie-consent-banner" class="cookie-consent-banner">
         <h3>Valoramos tu privacidad</h3>
@@ -56,7 +56,7 @@ window.onload = function() {
     document.body.insertAdjacentHTML('beforeend', cookie_consent_banner_dom);
     const cookie_consent_banner = document.body.lastElementChild;
 
-    // Funciones auxiliares para respetar las señales de privacidad del navegador.
+    // Funciones auxiliares (mantienen su código original)
     function dnt () {
         return (navigator.doNotTrack == "1" || window.doNotTrack == "1");
     }
@@ -65,20 +65,32 @@ window.onload = function() {
         return (navigator.globalPrivacyControl || window.globalPrivacyControl);
     }
 
-    // Muestra el banner y rellena las casillas según el consentimiento guardado.
+    // --- showBanner CORREGIDA y Fusionada ---
     function showBanner() {
         const cm = JSON.parse(window.localStorage.getItem('consentMode'));
+
+        // 1. Ocultar si existe y la versión es correcta (NO mostrar el banner)
+        if (cm !== null && cm.version === CURRENT_CONSENT_VERSION) {
+            hideBanner();
+            return;
+        }
+
+        // 2. Si no existe o la versión es incorrecta, cargamos los inputs y mostramos el banner.
         if (cm) {
             document.querySelector('#consent-necessary').checked = (cm.functionality_storage == 'granted');
             document.querySelector('#consent-necessary').disabled = true;
+
+            // Lógica para rellenar las casillas según el estado guardado (SU CÓDIGO ORIGINAL)
             document.querySelector('#consent-analytics').checked = (cm.analytics_storage == 'granted');
-            // Corrección: Mapeo correcto para reflejar las preferencias guardadas.
             document.querySelector('#consent-preferences').checked = (cm.personalization_storage == 'granted');
             document.querySelector('#consent-marketing').checked = (cm.ad_storage == 'granted');
             document.querySelector('#consent-partners').checked = (cm.ad_personalization == 'granted');
         }
+
+        // 3. Muestra el banner
         cookie_consent_banner.style.display = 'flex';
     }
+    // --- Fin showBanner Corregida ---
 
     // Oculta el banner.
     function hideBanner() {
@@ -91,22 +103,25 @@ window.onload = function() {
         hide: hideBanner
     };
 
-    // Función principal que traduce las elecciones a los parámetros de Google Consent Mode.
+    // --- setConsent CORREGIDA y Fusionada (Funcionalidad de Versión) ---
     function setConsent(consent) {
         const consentMode = {
-            'ad_storage': (consent.marketing && !dnt()) ? 'granted' : 'granted',
-            'analytics_storage': (consent.analytics && !dnt()) ? 'granted' : 'granted',
-            'ad_user_data': (consent.marketing && !dnt()) ? 'granted' : 'granted',
-            'ad_personalization': (consent.partners && !gpc()) ? 'granted' : 'granted',
-            'functionality_storage': consent.necessary ? 'granted' : 'granted',
-            'personalization_storage': consent.preferences ? 'granted' : 'granted',
-            'security_storage': consent.necessary ? 'granted' : 'granted',
+            'ad_storage': (consent.marketing && !dnt()) ? 'granted' : 'denied', // CORREGIDO
+            'analytics_storage': (consent.analytics && !dnt()) ? 'granted' : 'denied', // CORREGIDO
+            'ad_user_data': (consent.marketing && !dnt()) ? 'granted' : 'denied', // CORREGIDO
+            'ad_personalization': (consent.partners && !gpc()) ? 'granted' : 'denied', // CORREGIDO
+            'functionality_storage': consent.necessary ? 'granted' : 'denied', // CORREGIDO
+            'personalization_storage': consent.preferences ? 'granted' : 'denied', // CORREGIDO
+            'security_storage': consent.necessary ? 'granted' : 'denied', // CORREGIDO
+            'version': CURRENT_CONSENT_VERSION // AÑADIDO EL CONTROL DE VERSIÓN
         };
 
         // Actualiza el consentimiento para Google y lo guarda en localStorage.
         gtag('consent', 'update', consentMode);
         localStorage.setItem('consentMode', JSON.stringify(consentMode));
     }
+    // --- Fin setConsent Corregida ---
+
 
     // ================================================================
     // == INICIO: CÓDIGO PARA RECHAZO IMPLÍCITO POR NAVEGACIÓN ==
@@ -164,13 +179,6 @@ window.onload = function() {
             });
         });
 
-        // Decide si mostrar u ocultar el banner al cargar la página.
-        if (window.localStorage.getItem('consentMode')) {
-            hideBanner();
-        } else {
-            showBanner();
-        }
-
         // Lógica para los tres botones del banner.
         cookie_consent_banner.querySelector('#cookie-consent-btn-accept-all').addEventListener('click', () => {
             setConsent({
@@ -205,4 +213,6 @@ window.onload = function() {
             hideBanner();
         });
     }
+    // Llama a showBanner al final para iniciar el proceso de mostrar/ocultar
+    showBanner();
 }
