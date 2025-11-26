@@ -315,23 +315,47 @@
                                 </nav>
                             </div>
 
+{#                            <div class="col-xs-10 col-md-8">#}
+{#                                <div class="search_box" style="width: 100%; margin-top: 7px;">#}
+{#                                    #}{# MIGRACIÓN: La ruta del formulario de búsqueda debe actualizarse #}
+{#                                    #}{#                                    <form action="{{ path('app_search') }}" method="post"> #}
+{#                                    #}{#                                        #}{##}{# ... #}
+{#                                    #}{#                                    </form> #}
+{#                                    <form action="{{ path('app_search_handle', {'_locale': app.request.locale}) }}"#}
+{#                                          method="post">#}
+{#                                        <div>#}
+{#                                            #}{# CORRECCIÓN: El nombre del campo ahora es 'q' #}
+{#                                            <input itemprop="query-input" required type="text" name="q"#}
+{#                                                   placeholder="{% trans %}Buscar{% endtrans %}"#}
+{#                                                   style="border: 1px solid #ff9000; width: 100%"/>#}
+{#                                            <input class="searchSubmit" type="submit" value=""/>#}
+{#                                        </div>#}
+{#                                        <div id="livesearch"#}
+{#                                             style="background-color:#ff9000;max-height:400px; overflow:scroll; background-color: white; position: absolute"></div>#}
+{#                                    </form>#}
+{#                                </div>#}
+{#                            </div>#}
+
                             <div class="col-xs-10 col-md-8">
                                 <div class="search_box" style="width: 100%; margin-top: 7px;">
-                                    {# MIGRACIÓN: La ruta del formulario de búsqueda debe actualizarse #}
-                                    {#                                    <form action="{{ path('app_search') }}" method="post"> #}
-                                    {#                                        #}{# ... #}
-                                    {#                                    </form> #}
                                     <form action="{{ path('app_search_handle', {'_locale': app.request.locale}) }}"
                                           method="post">
                                         <div>
-                                            {# CORRECCIÓN: El nombre del campo ahora es 'q' #}
-                                            <input itemprop="query-input" required type="text" name="q"
+                                            {# MODIFICACIÓN: Añadimos autocomplete y data-url-buscar #}
+                                            <input itemprop="query-input"
+                                                   required
+                                                   type="text"
+                                                   name="q"
                                                    placeholder="{% trans %}Buscar{% endtrans %}"
-                                                   style="border: 1px solid #ff9000; width: 100%"/>
+                                                   style="border: 1px solid #ff9000; width: 100%"
+                                                   autocomplete="off"
+                                                   data-url-buscar="{{ path('app_search_live', {'_locale': app.request.locale, 'query': 'cadenaNombre'}) }}"
+                                            />
                                             <input class="searchSubmit" type="submit" value=""/>
                                         </div>
+                                        {# Contenedor donde se pintarán los resultados AJAX #}
                                         <div id="livesearch"
-                                             style="background-color:#ff9000;max-height:400px; overflow:scroll; background-color: white; position: absolute"></div>
+                                             style="background-color:#ff9000;max-height:400px; overflow:scroll; background-color: white; position: absolute; width: 95%; z-index: 9999;"></div>
                                     </form>
                                 </div>
                             </div>

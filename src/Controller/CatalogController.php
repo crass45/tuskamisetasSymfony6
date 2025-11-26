@@ -154,4 +154,23 @@ class CatalogController extends AbstractController
 //            'descripcion' => $contextObject->getDescripcion() ?? '',
         ]);
     }
+
+    // ... dentro de src/Controller/CatalogController.php
+
+    /**
+     * Acción para el buscador en vivo (AJAX).
+     */
+    #[Route('/{_locale}/ajax/search/live/{query}', name: 'app_search_live', methods: ['GET'], requirements: ['_locale' => 'es|en|fr'])]
+    public function liveSearchAction(string $query, ModeloRepository $modeloRepository): Response
+    {
+        // Decodificamos la cadena por si viene con caracteres especiales URL
+        $query = urldecode($query);
+
+        $resultados = $modeloRepository->findByLiveSearch($query, 10);
+
+        return $this->render('web/catalog/_live_search_results.html.twig', [
+            'resultados' => $resultados,
+            'query' => $query
+        ]);
+    }
 }

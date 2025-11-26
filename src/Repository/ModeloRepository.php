@@ -103,7 +103,8 @@ class ModeloRepository extends ServiceEntityRepository
     }
 
     /**
-     * Este es ahora el "cerebro" que construye la consulta, fusionando tu lógica antigua.
+     * Este es ahora el "cerebro" que construye la consulta.
+     * ACTUALIZADO: Usa la misma lógica de SQL Nativo que el LiveSearch para obtener los IDs.
      */
     private function createFindByFiltrosQueryBuilder(Filtros $filtros): QueryBuilder
     {
@@ -111,27 +112,75 @@ class ModeloRepository extends ServiceEntityRepository
             ->where('m.activo = true')
             ->andWhere('m.precioMin > 0');
 
+        // --- LOGICA DE BÚSQUEDA HÍBRIDA (Sincronizada con Live Search) ---
         if ($filtros->getBusqueda()) {
-            // Lógica de Búsqueda por palabra clave
-            if ($filtros->getBusqueda()) {
-                $keywords = explode(" ", $filtros->getBusqueda());
-                $qb->leftJoin('m.fabricante', 'f');
+            $query = $filtros->getBusqueda();
 
-                foreach ($keywords as $key => $keyword) {
-                    if (!empty($keyword)) {
-                        $paramName = ':busqueda' . $key;
-                        $qb->andWhere($qb->expr()->orX(
-                            'm.referencia LIKE ' . $paramName,
-                            'm.nombre LIKE ' . $paramName,
-                            'f.nombre LIKE ' . $paramName
-                        ))->setParameter($paramName, '%' . rtrim($keyword, 'es') . '%');
-                    }
+            // 1. Usamos SQL Nativo para buscar IDs, igual que en findByLiveSearch
+            // Esto nos permite buscar en 'ext_translations' y usar lógica compleja de atributos
+            $conn = $this->getEntityManager()->getConnection();
+            $nativeQb = $conn->createQueryBuilder();
+
+            $nativeQb->select('m.id')
+                ->from('modelo', 'm')
+                ->leftJoin('m', 'fabricante', 'f', 'm.fabricante = f.id')
+                ->leftJoin('m', 'modelo_modeloatributos', 'mma', 'm.id = mma.modelo_id')
+                ->leftJoin('mma', 'modelo_atributo', 'ma', 'mma.modelo_atributo_id = ma.id')
+                // JOIN con traducciones
+                ->leftJoin('m', 'ext_translations', 't', "t.foreign_key = m.id AND t.object_class = :entityClass AND t.field = 'descripcion'")
+                ->where('m.activo = 1')
+                ->andWhere('m.precio_min > 0')
+                ->groupBy('m.id');
+
+            $nativeQb->setParameter('entityClass', Modelo::class);
+
+            // A. Lógica de Palabras Clave (AND de ORs)
+            $keywords = explode(' ', $query);
+            $keywordsExpr = $nativeQb->expr()->andX();
+
+            foreach ($keywords as $index => $keyword) {
+                if (!empty($keyword)) {
+                    $keyParam = 'search_key_' . $index;
+                    $keywordsExpr->add($nativeQb->expr()->orX(
+                        'm.referencia LIKE :' . $keyParam,
+                        'm.nombre LIKE :' . $keyParam,
+                        'f.nombre LIKE :' . $keyParam,
+                        'ma.nombre LIKE :' . $keyParam,
+                        'ma.valor LIKE :' . $keyParam
+                    ));
+                    $nativeQb->setParameter($keyParam, '%' . $keyword . '%');
                 }
             }
+
+            // B. Lógica de Descripción (Frase exacta en original o traducción)
+            $descOr = $nativeQb->expr()->orX(
+                'm.descripcion LIKE :fullQuery',
+                't.content LIKE :fullQuery'
+            );
+            $nativeQb->setParameter('fullQuery', '%' . $query . '%');
+
+            // Combinar: (Keywords) OR (Descripción)
+            if ($keywordsExpr->count() > 0) {
+                $nativeQb->andWhere($nativeQb->expr()->orX($keywordsExpr, $descOr));
+            } else {
+                $nativeQb->andWhere($descOr);
+            }
+
+            // Ejecutamos y obtenemos los IDs
+            $idsEncontrados = $nativeQb->executeQuery()->fetchFirstColumn();
+
+            if (!empty($idsEncontrados)) {
+                // Filtramos la consulta principal DQL por estos IDs
+                $qb->andWhere('m.id IN (:searchIds)')
+                    ->setParameter('searchIds', $idsEncontrados);
+            } else {
+                // Si la búsqueda nativa no devuelve nada, forzamos 0 resultados
+                $qb->andWhere('1=0');
+            }
         }
+        // --- FIN LOGICA BÚSQUEDA ---
 
         if ($filtros->getCategory()) {
-
             $idsCategorias = [$filtros->getCategory()->getId()];
             foreach ($filtros->getCategory()->getChildren() as $hijo) { $idsCategorias[] = $hijo->getId(); }
             $qb->leftJoin('m.category', 'c')
@@ -140,20 +189,17 @@ class ModeloRepository extends ServiceEntityRepository
         }
 
         if ($filtros->getFabricante()) {
-
             $qb->andWhere('m.fabricante = :fabricanteId')
                 ->setParameter('fabricanteId', $filtros->getFabricante()->getId());
         }
 
         if ($filtros->getFamilia()) {
-
             $qb->leftJoin("m.familias", "fam")
                 ->andWhere('fam.id = :familiaId OR m.familia = :familiaId')
                 ->setParameter('familiaId', $filtros->getFamilia()->getId());
         }
 
         if (!empty($filtros->getColores())) {
-
             $qb->leftJoin('m.productos', 'p_color')
                 ->leftJoin('p_color.color', 'co')
                 ->andWhere('co.rgbUnificado IN (:colores)')
@@ -181,9 +227,6 @@ class ModeloRepository extends ServiceEntityRepository
 
         // Lógica de Ordenación
         switch ($filtros->getOrden()) {
-//            case "Precio ASC": $qb->orderBy('m.precioMin', 'ASC'); break;
-//            case "Precio DESC": $qb->orderBy('m.precioMin', 'DESC'); break;
-
             case "Orden Por Defecto": $qb->addOrderBy('m.importancia', 'DESC')->addOrderBy('m.precioMinAdulto', 'ASC'); break;
             case "Precio Adulto DESC": $qb->orderBy('m.precioMinAdulto', 'DESC'); break;
             case "Precio Adulto ASC": $qb->orderBy('m.precioMinAdulto', 'ASC'); break;
@@ -238,5 +281,99 @@ class ModeloRepository extends ServiceEntityRepository
             ->setParameter('activo', true)
             ->setParameter('destacado', true)
             ->getQuery()->getResult();
+    }
+
+    /**
+     * Búsqueda rápida para el Live Search (AJAX).
+     * CORREGIDO: Soluciona el error de ExpressionBuilder::or() usando andX() / orX()
+     */
+    public function findByLiveSearch(string $query, int $limit = 10): array
+    {
+        if (empty($query) || strlen($query) < 3) {
+            return [];
+        }
+
+        $conn = $this->getEntityManager()->getConnection();
+        $qb = $conn->createQueryBuilder();
+
+        $qb->select('m.id')
+            ->from('modelo', 'm')
+            ->leftJoin('m', 'fabricante', 'f', 'm.fabricante = f.id')
+            ->leftJoin('m', 'modelo_modeloatributos', 'mma', 'm.id = mma.modelo_id')
+            ->leftJoin('mma', 'modelo_atributo', 'ma', 'mma.modelo_atributo_id = ma.id')
+            // JOIN con traducciones (Gedmo Translatable)
+            ->leftJoin('m', 'ext_translations', 't', "t.foreign_key = m.id AND t.object_class = :entityClass AND t.field = 'descripcion'")
+            ->where('m.activo = 1')
+            ->andWhere('m.precio_min > 0')
+            ->groupBy('m.id')
+            ->setMaxResults($limit);
+
+        $qb->setParameter('entityClass', Modelo::class);
+
+        $keywords = explode(' ', $query);
+
+        // CORRECCIÓN 1: Usamos andX() para el contenedor principal.
+        // Esto significa: (Palabra1 EN campos) Y (Palabra2 EN campos)...
+        // Usamos andX() porque permite iniciarse vacío, a diferencia de or().
+        $keywordsExpr = $qb->expr()->andX();
+
+        foreach ($keywords as $index => $keyword) {
+            if (!empty($keyword)) {
+                $keyParam = 'keyword_' . $index;
+
+                // CORRECCIÓN 2: Usamos orX() para las condiciones internas
+                // Esto significa: (Nombre TIENE palabra O Ref TIENE palabra O ...)
+                $keywordsExpr->add($qb->expr()->orX(
+                    'm.referencia LIKE :' . $keyParam,
+                    'm.nombre LIKE :' . $keyParam,
+                    'f.nombre LIKE :' . $keyParam,
+                    'ma.nombre LIKE :' . $keyParam,
+                    'ma.valor LIKE :' . $keyParam
+                ));
+                $qb->setParameter($keyParam, '%' . $keyword . '%');
+            }
+        }
+
+        // Lógica de Descripción (Frase exacta)
+        // CORRECCIÓN 3: Usamos orX() aquí también por consistencia y seguridad
+        $descOr = $qb->expr()->orX(
+            'm.descripcion LIKE :fullQuery',
+            't.content LIKE :fullQuery'
+        );
+        $qb->setParameter('fullQuery', '%' . $query . '%');
+
+        // COMBINACIÓN FINAL: (Keywords Coinciden) O (Descripción Coincide)
+        if ($keywordsExpr->count() > 0) {
+            // Si hay palabras clave, buscamos: (Todas las palabras coinciden) O (La frase está en la descripción)
+            $qb->andWhere($qb->expr()->orX($keywordsExpr, $descOr));
+        } else {
+            $qb->andWhere($descOr);
+        }
+
+        // Ordenación
+        $qb->orderBy('m.importancia', 'DESC')
+            ->addOrderBy('m.nombre', 'ASC');
+
+        // Ejecutar y obtener IDs
+        $ids = $qb->executeQuery()->fetchFirstColumn();
+
+        if (empty($ids)) {
+            return [];
+        }
+
+        // Hidratar objetos reales con Doctrine
+        $modelos = $this->createQueryBuilder('m')
+            ->where('m.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        // Reordenar en PHP
+        $idMap = array_flip($ids);
+        usort($modelos, function($a, $b) use ($idMap) {
+            return $idMap[$a->getId()] <=> $idMap[$b->getId()];
+        });
+
+        return $modelos;
     }
 }

@@ -1,0 +1,64 @@
+{# templates/web/catalog/_live_search_results.html.twig #}
+
+{% if resultados is not empty %}
+    <ul style="list-style: none; padding: 0; margin: 0; text-align: left;">
+        {% for modelo in resultados %}
+            <li style="border-bottom: 1px solid #eee;">
+                <a href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"
+                   style="display: block; padding: 10px; text-decoration: none; color: #333;">
+                    <div style="display: flex; align-items: center;">
+
+                        {# Imagen en miniatura #}
+                        <div style="width: 40px; height: 40px; margin-right: 10px; flex-shrink: 0;">
+                            {# 1. Guardamos la ruta del dummy en una variable para reutilizarla #}
+                            {% set dummyImg = asset('images/dummy40.png') %}
+
+                            {% if modelo.imagen %}
+                                {# Caso 1: Imagen de Sonata Media #}
+                                <img src="{{ sonata_path(modelo.imagen, 'mini') }}"
+                                     data-fallback="{{ dummyImg }}"
+                                     style="width: 100%; height: 100%; object-fit: contain;"
+                                     alt="{{ modelo.nombre }}"
+                                     onerror="this.onerror=null; this.src=this.dataset.fallback;">
+                            {% else %}
+                                {# Caso 2: Imagen por URL externa o antigua #}
+                                <img src="{{ modelo.urlImage is not empty ? modelo.urlImage : dummyImg }}"
+                                     data-fallback="{{ dummyImg }}"
+                                     style="width: 100%;"
+                                     alt="{{ modelo.nombre }}"
+                                     onerror="this.onerror=null; this.src=this.dataset.fallback;">
+                            {% endif %}
+                        </div>
+
+                        {# Información del producto #}
+                        <div>
+                            <span style="display: block; font-weight: bold; font-size: 13px;">
+                                {{ modelo.nombre }}
+                            </span>
+                            <span style="font-size: 11px; color: #777;">
+                                {{ modelo.fabricante.nombre }} | {{ modelo.referencia }}
+                            </span>
+                        </div>
+
+                        {# Precio #}
+                        <div style="margin-left: auto; font-weight: bold; color: #fe980f;">
+                            Desde: {{ modelo.precioMin|number_format(2, ',', '.') }}€
+                        </div>
+                    </div>
+                </a>
+            </li>
+        {% endfor %}
+
+        {# Enlace para ver todos los resultados #}
+        <li style="text-align: center; background-color: #f9f9f9;">
+            <a href="javascript:void(0);" onclick="$('.searchSubmit').click();"
+               style="display: block; padding: 10px; color: #fe980f; font-weight: bold;">
+                Ver todos los resultados para "{{ query }}"
+            </a>
+        </li>
+    </ul>
+{% else %}
+    <div style="padding: 10px; color: #777; text-align: center;">
+        No se encontraron productos para "<strong>{{ query }}</strong>"
+    </div>
+{% endif %}
