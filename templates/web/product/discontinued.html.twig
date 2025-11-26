@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{% trans %}Producto Descatalogado{% endtrans %} - {{ modelo.nombre }} | Tuskamisetas.com{% endblock %}
+
+{# Evitamos que Google indexe productos descatalogados, pero permitimos seguir los enlaces a relacionados #}
+{% block meta %}
+    <meta name="robots" content="noindex, follow">
+{% endblock %}
+
+{% block migas %}
+    {# Mantenemos las migas de pan para facilitar la navegación hacia atrás #}
+    {% if modelo.category is not empty and modelo.category|first %}
+        {% include 'web/partials/_breadcrumbs.html.twig' with {'context': modelo.category|first} %}
+    {% endif %}
+{% endblock %}
+
+{% block baseBody %}
+    <div class="container text-center" style="padding: 50px 0;">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="alert alert-warning" role="alert" style="background-color: #fcf8e3; border-color: #faebcc; color: #8a6d3b; padding: 20px; margin-bottom: 30px;">
+                    <i class="fa fa-exclamation-triangle" style="font-size: 24px; margin-right: 10px; vertical-align: middle;"></i>
+                    <span style="font-size: 18px; vertical-align: middle;">
+                        {% trans %}Lo sentimos, el producto{% endtrans %} <strong>"{{ modelo.nombre }}"</strong> {% trans %}está descatalogado o temporalmente no disponible.{% endtrans %}
+                    </span>
+                </div>
+
+                <div class="row" style="margin-bottom: 40px; display: flex; align-items: center; justify-content: center;">
+                    <div class="col-sm-4">
+                        {% if modelo.imagen %}
+                            <img src="{{ sonata_path(modelo.imagen, 'grid') }}"
+                                 alt="{{ modelo.nombre }}"
+                                 class="img-responsive img-thumbnail"
+                                 style="opacity: 0.6; max-width: 150px; margin: 0 auto;">
+                        {% else %}
+                            <img src="{{ asset('images/no-image.jpg') }}" class="img-responsive" alt="Sin imagen">
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-8 text-left">
+                        <h3>¿Qué puedes hacer?</h3>
+                        <p>Aunque este producto específico no está disponible, tenemos muchas otras opciones para ti:</p>
+                        <div style="margin-top: 20px;">
+                            <a href="{{ path('app_home', {'_locale': app.request.locale}) }}" class="btn btn-primary" style="margin-right: 10px; margin-top:0">
+                                <i class="fa fa-home"></i> Ir al Inicio
+                            </a>
+
+                            {% if modelo.category is not empty and modelo.category|first %}
+                                <a href="{{ path('app_catalog_resolver', {'slug': modelo.category|first.slug, '_locale': app.request.locale}) }}" class="btn btn-default">
+                                    <i class="fa fa-list"></i> Ver categoría {{ modelo.category|first.name }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# --- PRODUCTOS RELACIONADOS --- #}
+        {# Es vital mostrar alternativas para no perder la venta #}
+        {% if modelo.modelosRelacionados|length > 0 %}
+            <div class="recommended_items mt-5">
+                <h2 class="title text-center">{% trans %}QUIZÁS TE INTERESEN ESTOS MODELOS SIMILARES{% endtrans %}</h2>
+
+                <div class="row">
+                    {% for producto in modelo.modelosRelacionados %}
+                        {# Solo mostramos si el relacionado SÍ está activo #}
+                        {% if producto.activo == true %}
+                            {# Incluimos directamente el parcial.
+                               NOTA: No añadimos <div> extra alrededor para que las columnas (col-md-*)
+                               del parcial funcionen correctamente dentro del .row #}
+                            {% include 'web/catalog/_productoElementoGrid.html.twig' with {'producto': producto} %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

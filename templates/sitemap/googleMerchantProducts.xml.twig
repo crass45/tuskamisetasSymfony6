@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
+    <channel>
+        {# Usamos la URL absoluta generada por Symfony para el link del canal #}
+        <title>Tuskamisetas</title>
+        <link>{{ url('app_home', {'_locale': 'es'}) }}</link>
+        <description>Catálogo de productos de Tuskamisetas</description>
+
+        {% for producto in productos %}
+            {# Filtramos productos activos, con precio válido y rango lógico #}
+            {% if producto.activo and producto.precioMin is not null and producto.precioMin > 0 and producto.precioMin < 9999 %}
+                <item>
+                    <g:id>{{ producto.referencia }}</g:id>
+
+                    {# TÍTULO: Tu lógica de limpieza #}
+                    <title>{{ producto.nombre | striptags | replace({"\x00": "", "\x01": "", "\x02": "", "\x03": "", "\x04": "", "\x05": "", "\x06": "", "\x07": "", "\x08": "", "\x0B": "", "\x0C": "", "\x0E": "", "\x0F": "", "\x10": "", "\x11": "", "\x12": "", "\x13": "", "\x14": "", "\x15": "", "\x16": "", "\x17": "", "\x18": "", "\x19": "", "\x1A": "", "\x1B": "", "\x1C": "", "\x1D": "", "\x1E": "", "\x1F": "", "\x7F": ""}) | e('html') }}</title>
+
+                    {# DESCRIPCIÓN: Tu lógica de limpieza #}
+                    <description>{{ producto.descripcion | striptags | replace({"\x00": "", "\x01": "", "\x02": "", "\x03": "", "\x04": "", "\x05": "", "\x06": "", "\x07": "", "\x08": "", "\x0B": "", "\x0C": "", "\x0E": "", "\x0F": "", "\x10": "", "\x11": "", "\x12": "", "\x13": "", "\x14": "", "\x15": "", "\x16": "", "\x17": "", "\x18": "", "\x19": "", "\x1A": "", "\x1B": "", "\x1C": "", "\x1D": "", "\x1E": "", "\x1F": "", "\x7F": ""}) | normalize_whitespace | e('html') }}</description>
+
+                    {# LINK: Usamos el generador de rutas de Symfony (más robusto que concatenar strings) #}
+                    <link>{{ url('app_product_detail', {'_locale': 'es', 'slug': producto.nombreUrl}) }}</link>
+
+                    {# IMAGEN PRINCIPAL #}
+                    {% if producto.imagen is not null %}
+                        {# He cambiado 'grid' por 'wide' (820px) definido en tu YAML, Google prefiere imágenes grandes #}
+                        {# IMPORTANTE: Concatenamos el esquema y host porque path() a veces devuelve relativo #}
+                        <g:image_link>{{ app.request.schemeAndHttpHost ~ sonata_path(producto.imagen, 'wide') }}</g:image_link>
+                    {% else %}
+                        {# Tu lógica de fallback para imágenes por URL string #}
+                        {% set image_path = producto.urlImage %}
+                        {% if image_path is not empty %}
+                            {% if image_path starts with '/' %}
+                                <g:image_link>{{ app.request.schemeAndHttpHost ~ image_path }}</g:image_link>
+                            {% elseif image_path starts with 'http' %}
+                                <g:image_link>{{ image_path }}</g:image_link>
+                            {% else %}
+                                <g:image_link>{{ app.request.schemeAndHttpHost ~ '/' ~ image_path }}</g:image_link>
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+
+                    {# IMÁGENES ADICIONALES #}
+                    {% set additional_images = [] %}
+
+                    {# 1. Procesar otherImages #}
+                    {% if producto.otherImages is not null and producto.otherImages is not empty %}
+                        {% set additional_images = additional_images | merge(producto.otherImages | split(',')) %}
+                    {% endif %}
+
+                    {# 2. Procesar detailsImages #}
+                    {% if producto.detailsImages is not null and producto.detailsImages is not empty %}
+                        {% set additional_images = additional_images | merge(producto.detailsImages | split(',')) %}
+                    {% endif %}
+
+                    {% for image_path in additional_images %}
+                        {% set trimmed_path = image_path | trim %}
+                        {% if trimmed_path is not empty %}
+                            <g:additional_image_link>
+                                {% if trimmed_path starts with '/' %}
+                                    {{ app.request.schemeAndHttpHost ~ trimmed_path }}
+                                {% elseif trimmed_path starts with 'http' %}
+                                    {{ trimmed_path }}
+                                {% else %}
+                                    {{ app.request.schemeAndHttpHost ~ '/' ~ trimmed_path }}
+                                {% endif %}
+                            </g:additional_image_link>
+                        {% endif %}
+                    {% endfor %}
+
+                    {# PRECIO #}
+                    <g:price>{{ producto.precioMin | number_format(2, '.', '') }} EUR</g:price>
+
+                    <g:condition>new</g:condition>
+                    <g:availability>in stock</g:availability>
+
+                    {# MARCA #}
+                    {% if producto.fabricante %}
+                        <g:brand>{{ producto.fabricante.nombre | e('html') }}</g:brand>
+                    {% else %}
+                        <g:brand>Tuskamisetas</g:brand>
+                    {% endif %}
+
+                    <g:identifier_exists>FALSE</g:identifier_exists>
+
+                    <g:shipping>
+                        <g:country>ES</g:country>
+                        <g:service>Agencia 24h-72h</g:service>
+                        <g:price>0.00 EUR</g:price>
+                    </g:shipping>
+                </item>
+            {% endif %}
+        {% endfor %}
+    </channel>
+</rss>

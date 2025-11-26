@@ -703,7 +703,7 @@ z-index: 3" class="titulo">TU TIENDA ONLINE PARA PERSONALIZAR CAMISETAS, ROPA Y 
                             {% for oferta in ofertas %}
                                 {% if oferta.nombre is defined %}
 {#                                    <a href="{{ path('ss_tienda_producto_detalle',{'productoNombre':oferta.getModelos[0].nombreUrl}) }}"#}
-                                    <a href="#"
+                                    <a href="{{ path('app_product_detail', {'slug': oferta.modelos[0].nombreUrl, '_locale': app.request.locale}) }}"
                                        style="color: white">
                                         <div class="col-xs-6 col-sm-4 col-md-3 col-lg-2"
                                              style="padding-left: 2px; padding-right: 2px">

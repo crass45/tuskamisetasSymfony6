@@ -65,6 +65,7 @@ class TiendaExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('urlSafe', [$this, 'urlSafe']),
             new TwigFilter('base64UrlEncode', [$this, 'base64url_encode']),
             new TwigFilter('retina', [$this, 'dosX']),
+            new TwigFilter('normalize_whitespace', [$this, 'normalizeWhitespace']),
             // ... puedes añadir aquí el resto de tus filtros si los necesitas
         ];
     }
@@ -86,6 +87,16 @@ class TiendaExtension extends AbstractExtension implements GlobalsInterface
         $text = preg_replace('~[^\pL\d]+~u', '-', $cadena);
         $text = strtolower(trim(iconv('utf-8', 'us-ascii//TRANSLIT', $text) ?? '', '-'));
         return $text ?: 'n-a';
+    }
+
+    public function normalizeWhitespace(?string $value): string
+    {
+        if (null === $value) {
+            return '';
+        }
+
+        // Reemplaza cualquier secuencia de espacios en blanco (\s+) por un solo espacio ' '
+        return trim(preg_replace('/\s+/', ' ', $value));
     }
 
     public function base64url_encode($data)
