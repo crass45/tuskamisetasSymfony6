@@ -66,6 +66,7 @@ class TiendaExtension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('base64UrlEncode', [$this, 'base64url_encode']),
             new TwigFilter('retina', [$this, 'dosX']),
             new TwigFilter('normalize_whitespace', [$this, 'normalizeWhitespace']),
+            new TwigFilter('format_description', [$this, 'formatDescription'], ['is_safe' => ['html']]),
             // ... puedes añadir aquí el resto de tus filtros si los necesitas
         ];
     }
@@ -109,6 +110,86 @@ class TiendaExtension extends AbstractExtension implements GlobalsInterface
 
     public function fileGetContents($file)
     { /* ... tu código ... */
+    }
+
+    // --- AÑADIR ESTE MÉTODO AL FINAL DE LA CLASE ---
+    /**
+     * Convierte descripciones separadas por '·' en una lista HTML.
+     */
+//    public function formatDescription(?string $content): string
+//    {
+//        if (empty($content)) {
+//            return '';
+//        }
+//
+//        // 1. Detectamos si usa el separador de punto medio '·'
+//        if (str_contains($content, '·')) {
+//            // Dividimos el texto por el punto
+//            $parts = explode('·', $content);
+//
+//            // Iniciamos una lista desordenada con una clase para poder darle estilo si quieres
+//            $html = '<ul class="product-description-list" style="list-style-type: disc; padding-left: 20px;">';
+//
+//            foreach ($parts as $part) {
+//                $part = trim($part); // Quitamos espacios extra al principio y final
+//                if (!empty($part)) {
+//                    // Convertimos cada fragmento en un elemento de lista
+//                    $html .= '<li style="margin-bottom: 5px;">' . $part . '</li>';
+//                }
+//            }
+//
+//            $html .= '</ul>';
+//
+//            return $html;
+//        }
+//
+//        // 2. Si no tiene puntos, asumimos que es HTML normal o texto plano y lo devolvemos tal cual
+//        return $content;
+//    }
+
+    /**
+     * Convierte descripciones separadas por '·' (o &middot;) en una lista HTML limpia.
+     */
+    public function formatDescription(?string $content): string
+    {
+        if (empty($content)) {
+            return '';
+        }
+
+        // 1. Decodificamos entidades HTML para convertir &middot; en · y &sup2; en ²
+        // Esto es vital porque tu base de datos guarda el punto como código HTML.
+        $decodedContent = html_entity_decode($content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        // 2. Eliminamos etiquetas HTML antiguas (<p>, <br>, etc.) para trabajar con texto limpio
+        $plainText = strip_tags($decodedContent);
+
+        // 3. Detectamos el punto medio '·' (ahora sí lo encontrará)
+        if (str_contains($plainText, '·')) {
+            $parts = explode('·', $plainText);
+
+            $html = '<ul class="product-description-list" style="list-style-type: disc; padding-left: 20px;">';
+
+            foreach ($parts as $part) {
+                $part = trim($part); // Quitamos espacios extra
+
+                // Limpieza extra: A veces la palabra "Descripción:" se queda colada al principio
+                if (stripos($part, 'Descripción:') === 0 || empty($part)) {
+                    continue;
+                }
+
+                // Si hay texto, creamos el elemento de lista
+                if (!empty($part)) {
+                    $html .= '<li style="margin-bottom: 5px;">' . $part . '</li>';
+                }
+            }
+
+            $html .= '</ul>';
+
+            return $html;
+        }
+
+        // 4. Si no detectamos puntos, devolvemos el contenido original tal cual
+        return $content;
     }
 }
 

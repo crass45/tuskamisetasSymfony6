@@ -16,8 +16,8 @@
         <p><b>REF:</b> {{ modelo.referencia }}</p>
     </div>
 
-    <p itemprop="description"><b>{% trans %}Descripción{% endtrans %}: </b>{{ modelo.descripcion | raw }}</p>
-    <p>{{ modelo.descripcionTuskamisetas | raw }}</p>
+    <p itemprop="description"><b>{% trans %}Descripción{% endtrans %}: </b>{{ modelo.descripcion | format_description }}</p>
+    <p>{{ modelo.descripcionTuskamisetas | format_description }}</p>
 
     <p itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"><b>{% trans %}Precio{% endtrans %}
             :</b> {% trans %}Desde{% endtrans %} <span
