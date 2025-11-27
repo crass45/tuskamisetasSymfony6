@@ -504,12 +504,24 @@
                 {% endif %}
             {% endfor %}
         </div>
-        </div>{% endif %}
+        </div>
+    {% endif %}
+
+
+    {% if vistos is defined and vistos|length > 0 %}
+        <div class="recommended_items mt-5">
+            <h2 class="title text-center">{% trans %}ÚLTIMOS PRODUCTOS VISTOS{% endtrans %}</h2>
+            <div class="row">
+                {% for producto in vistos %}
+                    {# Evitamos mostrar el producto que estamos viendo actualmente #}
+                    {% if producto.id != modelo.id %}
+                        {# CORRECCIÓN: Usamos la ruta de plantilla relativa correcta y pasamos la variable 'producto' #}
+                        {% include 'web/partials/_ultimos_vistos_grid.html.twig' with {'producto': producto} %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
 
-{# {% block javascripts %} #}
-{#    {{ parent() }} #}
-{#    #}{# Incluimos un fichero JS dedicado. Lo crearemos en el siguiente paso. #}
-{#    {% include 'web/product/partials/_product_page_javascript.html.twig' %} #}
-{# {% endblock %} #}
 

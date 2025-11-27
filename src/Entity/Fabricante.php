@@ -58,6 +58,9 @@ class Fabricante implements Translatable
     #[Gedmo\Locale]
     private ?string $locale = null;
 
+    #[ORM\Column(name: 'vista_alternativa', options: ['default' => false])]
+    private bool $vistaAlternativa = false;
+
     #[ORM\ManyToOne(targetEntity: Media::class, cascade: ['persist'])]
     #[ORM\JoinColumn(name: 'imagen', onDelete: 'SET NULL')]
     private ?Media $imagen = null;
@@ -129,4 +132,15 @@ class Fabricante implements Translatable
     public function getFamilias(): Collection { return $this->familias; }
     public function addFamilia(Familia $familia): self { if (!$this->familias->contains($familia)) { $this->familias->add($familia); $familia->setMarca($this); } return $this; }
     public function removeFamilia(Familia $familia): self { if ($this->familias->removeElement($familia)) { if ($familia->getMarca() === $this) { $familia->setMarca(null); } } return $this; }
+
+    public function isVistaAlternativa(): bool
+    {
+        return $this->vistaAlternativa;
+    }
+
+    public function setVistaAlternativa(bool $vistaAlternativa): self
+    {
+        $this->vistaAlternativa = $vistaAlternativa;
+        return $this;
+    }
 }

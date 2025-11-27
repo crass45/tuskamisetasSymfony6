@@ -1,6 +1,5 @@
 // =================================================================================
 // ARCHIVO JAVASCRIPT GLOBAL PARA TODA LA TIENDA
-// Contiene únicamente la lógica común a todas las páginas.
 // =================================================================================
 
 (function ($) {
@@ -39,35 +38,48 @@
         });
     }, 350));
 
-    // --- Lógica de la Interfaz General ---
+    // --- Lógica de Vistos Recientemente (Cookies) ---
+    function addVistoRecientemente(referencia) {
+        if (!referencia) return;
+
+        // Leemos las cookies actuales
+        var v1 = $.cookie('vistosRecientemente1');
+        var v2 = $.cookie('vistosRecientemente2');
+        var v3 = $.cookie('vistosRecientemente3');
+
+        // Si el producto actual ya es el último visto, no hacemos nada
+        if (v1 === referencia) return;
+
+        console.log("Guardando producto visto: " + referencia); // DEBUG
+
+        // Rotamos las referencias
+        if (v3 && v3 !== referencia) $.cookie('vistosRecientemente4', v3, { expires: 30, path: '/' });
+        if (v2 && v2 !== referencia) $.cookie('vistosRecientemente3', v2, { expires: 30, path: '/' });
+        if (v1 && v1 !== referencia) $.cookie('vistosRecientemente2', v1, { expires: 30, path: '/' });
+
+        // Guardamos el actual
+        $.cookie('vistosRecientemente1', referencia, { expires: 30, path: '/' });
+    }
+
+    // --- Lógica Principal (DOM LISTO) ---
     $(document).ready(function () {
-        // Tooltips
-        $('a[data-toggle="tooltip"]').tooltip({
-            animated: 'fade',
-            placement: 'bottom',
-            html: false
-        });
 
-        // Menú hamburguesa
-        $('#nav-icon1, #nav-icon2, #nav-icon3, #nav-icon4').click(function () {
-            $(this).toggleClass('open');
-        });
+        // ... (tus tooltips, menú hamburguesa, etc.) ...
 
-        // Desplegables del menú móvil
-        $('.tkmPlus').click(function () {
-            if ($(this).hasClass('open')) {
-                $(this).toggleClass('open');
-            } else {
-                $('.tkmPlus.open').removeClass('open');
-                $(this).toggleClass('open');
+        // ==========================================================
+        // CORRECCIÓN: Ejecutar esto DENTRO de .ready()
+        // ==========================================================
+        var $imgProducto = $('#imagen-producto');
+
+        // DEBUG: Comprobamos si encuentra la imagen
+        console.log("Buscando #imagen-producto... Encontrados: " + $imgProducto.length);
+
+        if ($imgProducto.length > 0) {
+            var referencia = $imgProducto.data('id');
+            if (referencia) {
+                addVistoRecientemente(referencia);
             }
-        });
-
-        // Barra lateral de filtros
-        $('#sidebarCollapse').on('click', function () {
-            $('#sidebar').toggleClass('active');
-            $(this).toggleClass('active');
-        });
+        }
     });
-})(jQuery);
 
+})(jQuery);

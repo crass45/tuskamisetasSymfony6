@@ -1,66 +1,98 @@
 {# templates/web/product/partials/_gallery.html.twig #}
 
-{# 1. PREPARACIÓN DE DATOS: Unificamos todas las imágenes en una lista #}
-{% set todasLasImagenes = [] %}
+{# 1. PREPARACIÓN DE DATOS #}
+{% set rawImagenes = [] %}
+{% set dummyImg = asset('images/dummy200.png') %}
 
-{# A. Imagen Principal (Prioridad: SonataMedia > URL externa) #}
+{# Recopilamos imágenes #}
 {% if modelo.imagen %}
-    {% set todasLasImagenes = todasLasImagenes|merge([sonata_path(modelo.imagen, 'wide')]) %}
+    {% set rawImagenes = rawImagenes|merge([sonata_path(modelo.imagen, 'wide')]) %}
 {% elseif modelo.urlImage %}
-    {% set todasLasImagenes = todasLasImagenes|merge([modelo.urlImage]) %}
+    {% set rawImagenes = rawImagenes|merge([modelo.urlImage]) %}
 {% endif %}
-
-{# B. Imagen Infantil #}
 {% if modelo.childImage %}
-    {% set todasLasImagenes = todasLasImagenes|merge([modelo.childImage]) %}
+    {% set rawImagenes = rawImagenes|merge([modelo.childImage]) %}
 {% endif %}
-
-{# C. Otras Imágenes (Separadas por comas) #}
 {% if modelo.otherImages %}
     {% for img in modelo.otherImages|split(',') %}
-        {% if img|trim is not empty %}
-            {% set todasLasImagenes = todasLasImagenes|merge([img|trim]) %}
-        {% endif %}
+        {% if img|trim is not empty %}{% set rawImagenes = rawImagenes|merge([img|trim]) %}{% endif %}
     {% endfor %}
 {% endif %}
-
-{# D. Imágenes de Detalle #}
 {% if modelo.detailsImages %}
     {% for img in modelo.detailsImages|split(',') %}
-        {% if img|trim is not empty %}
-            {% set todasLasImagenes = todasLasImagenes|merge([img|trim]) %}
-        {% endif %}
+        {% if img|trim is not empty %}{% set rawImagenes = rawImagenes|merge([img|trim]) %}{% endif %}
     {% endfor %}
 {% endif %}
 
+{# Eliminamos duplicados #}
+{% set todasLasImagenes = [] %}
+{% for img in rawImagenes %}
+    {% if img not in todasLasImagenes %}
+        {% set todasLasImagenes = todasLasImagenes|merge([img]) %}
+    {% endif %}
+{% endfor %}
 
-{# 2. VISTA ESCRITORIO (Grid) - Se oculta en móviles #}
+{# Comprobación final de vacío #}
+{% if todasLasImagenes is empty %}
+    {% set todasLasImagenes = [dummyImg] %}
+{% endif %}
+
+
+{# 2. VISTA ESCRITORIO (Grid) #}
 <div class="hidden-xs">
     <div class="row">
-        {# Si hay más de 1 imagen, la principal ocupa la mitad (col-lg-6), si no, todo el ancho (col-lg-12) #}
-        {% set mainColClass = (todasLasImagenes|length > 1) ? 'col-lg-6' : 'col-lg-12' %}
+        {% set useAlternativeView = modelo.fabricante and modelo.fabricante.isVistaAlternativa %}
+        {% if useAlternativeView %}
+            {% set mainColClass = 'col-lg-12' %}
+            {% set subColClass = 'col-sm-4' %}
+        {% else %}
+            {% set mainColClass = (todasLasImagenes|length > 1) ? 'col-lg-6' : 'col-lg-12' %}
+            {% set subColClass = 'col-lg-6' %}
+        {% endif %}
 
-        {# Renderizamos la primera imagen (Principal) #}
+        {# --- IMAGEN PRINCIPAL --- #}
         {% if todasLasImagenes|length > 0 %}
             <div class="{{ mainColClass }}">
-                <div class="row" style="padding: 5px">
+                <div class="row" style="padding: 5px; position: relative;">
                     <img class="imagenProducto"
                          style="width: 100%; height: auto"
                          id="imagen-producto"
                          src="{{ todasLasImagenes[0] }}"
-                         alt="{{ modelo.nombre }}">
+                         data-fallback="{{ todasLasImagenes[1] ?? dummyImg }}"
+                         data-id="{{ modelo.referencia }}"
+                         alt="{{ modelo.nombre }}"
+                         title="{{ modelo.familia }} {{ modelo.fabricante.nombre }} {{ modelo.nombre }}"
+                         onerror="this.onerror=null; this.src=this.dataset.fallback; $('.gallery-thumb-1').hide();">
+
+                    {# Badge Novedad #}
+                    {% if modelo.isNovelty %}
+                        <img src="{{ asset('template/images/new.png') }}" alt="novedad"
+                             style="width: 40px; height: auto; position: absolute; right: 5px; top: 5px; border: none; z-index: 5;">
+                    {% endif %}
+
+                    {# Botón 360º Escritorio (SOLO AQUÍ) #}
+                    {% if modelo.url360 is not empty %}
+                        <a class="camuflaEnlace" atributo="{{ modelo.url360 }}" target="_blank" style="cursor: pointer;">
+                            <div class="btn btn-info btn-sm"
+                                 style="position: absolute; bottom: 5px; right: 15px; z-index: 5;"
+                                 data-toggle="modal" data-target="#360Modal">
+                                360º
+                            </div>
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         {% endif %}
 
-        {# Renderizamos el resto de imágenes en rejilla #}
+        {# --- IMÁGENES SECUNDARIAS --- #}
         {% for img in todasLasImagenes|slice(1) %}
-            <div class="col-lg-6">
+            <div class="{{ subColClass }} gallery-item-col gallery-thumb-{{ loop.index }}">
                 <div class="row" style="padding: 5px">
                     <img class="imagenProducto"
                          style="width: 100%; height: auto"
                          src="{{ img }}"
-                         alt="{{ modelo.nombre }} - vista {{ loop.index }}">
+                         alt="{{ modelo.nombre }} - vista {{ loop.index }}"
+                         onerror="this.closest('.gallery-item-col').remove();">
                 </div>
             </div>
         {% endfor %}
@@ -68,94 +100,82 @@
 </div>
 
 
-{# 3. VISTA MÓVIL (Carrusel) - Solo visible en móviles #}
+{# 3. VISTA MÓVIL (Carrusel) #}
 <div class="visible-xs">
-    {% if todasLasImagenes|length > 0 %}
-        <div id="carousel-producto-movil" class="carousel slide" data-ride="carousel" data-interval="false" style="margin-bottom: 20px;">
+    {# Quitamos el position relative que pusimos antes, ya no hace falta #}
+    <div id="carousel-producto-movil" class="carousel slide" data-ride="carousel" data-interval="false" style="margin-bottom: 20px;">
 
-            {# Indicadores (Puntos abajo) #}
-            <ol class="carousel-indicators" style="bottom: -20px;">
-                {% for img in todasLasImagenes %}
-                    <li data-target="#carousel-producto-movil"
-                        data-slide-to="{{ loop.index0 }}"
-                        class="{{ loop.first ? 'active' : '' }}"
-                        style="border-color: #666; background-color: {{ loop.first ? 'transparent' : 'transparent' }};">
-                    </li>
-                {% endfor %}
-            </ol>
+        <ol class="carousel-indicators" style="bottom: -20px;">
+            {% for img in todasLasImagenes %}
+                <li data-target="#carousel-producto-movil"
+                    data-slide-to="{{ loop.index0 }}"
+                    class="{{ loop.first ? 'active' : '' }}">
+                </li>
+            {% endfor %}
+        </ol>
 
-            {# Diapositivas #}
-            <div class="carousel-inner" role="listbox">
-                {% for img in todasLasImagenes %}
-                    <div class="item {{ loop.first ? 'active' : '' }}">
-                        <img src="{{ img }}" alt="{{ modelo.nombre }}" style="display: block; width: 100%; height: auto;">
-                    </div>
-                {% endfor %}
-            </div>
+        <div class="carousel-inner" role="listbox">
+            {% for img in todasLasImagenes %}
+                <div class="item {{ loop.first ? 'active' : '' }} mobile-slide-{{ loop.index }}">
+                    {% if loop.first %}
+                        {# Primera imagen: con lógica de recuperación #}
+                        {% set nextImg = todasLasImagenes[1] ?? dummyImg %}
+                        <img src="{{ img }}"
+                             alt="{{ modelo.nombre }}"
+                             style="display: block; width: 100%; height: auto;"
+                             data-fallback="{{ nextImg }}"
+                             data-remove=".mobile-slide-2"
+                             onerror="this.onerror=null; this.src=this.dataset.fallback; if(this.dataset.fallback !== '{{ dummyImg }}') { $(this.dataset.remove).remove(); }">
+                    {% else %}
+                        {# Resto de imágenes: eliminar si fallan #}
+                        <img src="{{ img }}"
+                             alt="{{ modelo.nombre }}"
+                             style="display: block; width: 100%; height: auto;"
+                             onerror="this.closest('.item').remove();">
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
 
-            {# Flechas de control (Opcional, ayudan a la usabilidad) #}
+        {# Flechas de control #}
+        {% if todasLasImagenes|length > 1 %}
             <a class="left carousel-control" href="#carousel-producto-movil" role="button" data-slide="prev" style="background: none; color: #333; text-shadow: none; opacity: 0.5;">
                 <span class="glyphicon glyphicon-chevron-left" aria-hidden="true" style="left: 0;"></span>
             </a>
             <a class="right carousel-control" href="#carousel-producto-movil" role="button" data-slide="next" style="background: none; color: #333; text-shadow: none; opacity: 0.5;">
                 <span class="glyphicon glyphicon-chevron-right" aria-hidden="true" style="right: 0;"></span>
             </a>
-        </div>
+        {% endif %}
 
-        {# Script para soporte TÁCTIL (Swipe) en el carrusel #}
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                var carousel = document.getElementById("carousel-producto-movil");
-                var startX;
+        {# ELIMINADO: Botón 360º para móvil #}
+    </div>
 
-                // Detectar inicio del toque
-                carousel.addEventListener("touchstart", function(e) {
-                    startX = e.touches[0].clientX;
-                }, {passive: true});
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var carousel = document.getElementById("carousel-producto-movil");
+            if(!carousel) return;
+            var startX;
+            carousel.addEventListener("touchstart", function(e) { startX = e.touches[0].clientX; }, {passive: true});
+            carousel.addEventListener("touchend", function(e) {
+                if (!startX) return;
+                var diffX = startX - e.changedTouches[0].clientX;
+                if (Math.abs(diffX) > 50) {
+                    $(carousel).carousel(diffX > 0 ? 'next' : 'prev');
+                }
+                startX = null;
+            }, {passive: true});
+        });
+    </script>
 
-                // Detectar fin del toque y calcular dirección
-                carousel.addEventListener("touchend", function(e) {
-                    if (!startX) return;
-                    var endX = e.changedTouches[0].clientX;
-                    var diffX = startX - endX;
-
-                    // Si el deslizamiento es mayor a 50px
-                    if (Math.abs(diffX) > 50) {
-                        if (diffX > 0) {
-                            // Deslizar izquierda -> Siguiente
-                            $(carousel).carousel('next');
-                        } else {
-                            // Deslizar derecha -> Anterior
-                            $(carousel).carousel('prev');
-                        }
-                    }
-                    startX = null;
-                }, {passive: true});
-            });
-        </script>
-
-        {# Estilos específicos para los puntos activos (color naranja corporativo) #}
-        {# Estilos específicos para los puntos activos (color naranja corporativo) #}
-        <style>
-            /* Forzamos el color con !important para ganar a Bootstrap */
-            #carousel-producto-movil .carousel-indicators .active {
-                background-color: #ff9933 !important;
-                border-color: #ff9933 !important;
-                width: 12px;
-                height: 12px;
-                margin: 0;
-                opacity: 1; /* Aseguramos que no sea transparente */
-            }
-            #carousel-producto-movil .item {
-                padding: 0; !important;
-            }
-
-            /* Estilo para los puntos inactivos */
-            #carousel-producto-movil .carousel-indicators li {
-                border-color: #999;
-                background-color: transparent;
-                margin: 0 2px;
-            }
-        </style>
-    {% endif %}
+    <style>
+        #carousel-producto-movil .item { padding-left: 0 !important; }
+        #carousel-producto-movil .carousel-indicators .active {
+            background-color: #ff9933 !important;
+            border-color: #044266 !important;
+            width: 12px; height: 12px; margin: 0; opacity: 1;
+        }
+        #carousel-producto-movil .carousel-indicators li {
+            border-color: #999; background-color: whitesmoke; margin: 0 2px;
+        }
+    </style>
 </div>

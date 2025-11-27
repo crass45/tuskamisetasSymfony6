@@ -1,30 +1,37 @@
-{# Este fichero muestra la tarjeta de un producto en la sección de "últimos vistos" #}
+{# templates/web/partials/_ultimos_vistos_grid.html.twig #}
+
 {% if producto.nombreUrl is defined %}
-    {# MIGRACIÓN: Se usa el nuevo nombre de la ruta y el parámetro 'slug' #}
-    <a href="{{ path('app_producto_detalle', {'slug': producto.nombreUrl}) }}">
+    {# CORRECCIÓN: Usamos 'app_product_detail' que es la ruta correcta en tu ProductController #}
+    <a href="{{ path('app_product_detail', {'slug': producto.nombreUrl, '_locale': app.request.locale}) }}">
         <div class="col-xs-6 col-md-3 col-sm-3 col-lg-3">
             <div class="product-image-wrapper" style="position: relative; height: 220px">
 
                 <div class="productinfo text-center">
                     {% if producto.imagen %}
-                        {# MIGRACIÓN: Se usa la función path() moderna para las imágenes de Sonata #}
+                        {# Usamos sonata_path para imágenes de Sonata #}
                         <img src="{{ asset('images/dummy200.png') }}"
-                             class="lazy" data-src="{{ path(producto.imagen, 'grid') }}"
+                             class="lazy"
+                             data-src="{{ sonata_path(producto.imagen, 'grid') }}"
                              alt="{{ producto.nombre }}"
-                             data-imagen="{{ path(producto.imagen, 'wide') }}"/>
+                             data-imagen="{{ sonata_path(producto.imagen, 'wide') }}"/>
                     {% else %}
+                        {# Fallback a URL externa #}
                         <img src="{{ asset('images/dummy200.png') }}"
-                             class="lazy" data-src="{{ producto.urlImage }}"
+                             class="lazy"
+                             data-src="{{ producto.urlImage }}"
                              alt="{{ producto.nombre }}"
                              data-imagen="{{ producto.urlImage }}"/>
                     {% endif %}
                 </div>
+
                 <div class="productoGridDescripcion">
-                    <p style="height: 42px; margin-top: 15px; margin-right: 10px; overflow: hidden">{{ producto.nombre | upper }}</p>
-                    <p>Desde {{ producto.getPrecioUnidad(contactoUsuario) | number_format(2, ',', '.') }}€</p>
+                    <p style="height: 42px; margin-top: 15px; margin-right: 10px; overflow: hidden">
+                        {{ producto.nombre | upper }}
+                    </p>
+                    {# CORRECCIÓN: Usamos 'app.user' en lugar de 'contactoUsuario' #}
+                    <p>Desde {{ producto.getPrecioUnidad(app.user) | number_format(2, ',', '.') }}€</p>
                 </div>
             </div>
         </div>
     </a>
 {% endif %}
-

@@ -23,6 +23,11 @@ final class FabricanteAdmin extends AbstractAdmin
                 'help' => 'El nombre principal del fabricante. Este campo NO es traducible.'
             ])
             ->add('activo', CheckboxType::class, ['required' => false])
+            ->add('vistaAlternativa', CheckboxType::class, [
+                'label' => 'Usar Vista Alternativa de Galería',
+                'help' => 'Si se activa, la imagen principal ocupará el 100% del ancho y las secundarias se mostrarán debajo en filas de 3.',
+                'required' => false,
+            ])
             ->add('showMenu', CheckboxType::class, [
                 'label' => "Mostrar en Menú",
                 'required' => false,
