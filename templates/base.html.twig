@@ -57,6 +57,7 @@
         <link rel="stylesheet" href="{{ asset('css/tkmestilos.css') }}">
         <link rel="stylesheet" href="{{ asset('js/jquery/fileUpload/css/jquery.fileupload.css') }}">
         <link rel="stylesheet" href="{{ asset('template/css/responsive.css') }}">
+        <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
     {% endblock %}
 
     {# --- Scripts de Tracking y Head (sin cambios) --- #}
@@ -858,9 +859,40 @@
             }
         });
 
-        $('#sidebarCollapse').on('click', function () {
+        // $('#sidebarCollapse').on('click', function () {
+        //     $('#sidebar').toggleClass('active');
+        //     $(this).toggleClass('active');
+        // });
+
+        // --- MENÚ LATERAL (FILTROS) ---
+
+        // Función para abrir/cerrar
+        function toggleSidebar() {
             $('#sidebar').toggleClass('active');
-            $(this).toggleClass('active');
+            $('#sidebar-overlay').toggleClass('active');
+            $('body').toggleClass('no-scroll');
+
+            // Toggle de la clase active en el botón (por si tienes estilos para el botón pulsado)
+            $('#sidebarCollapse').toggleClass('active');
+        }
+
+        // 1. Click en el botón de filtros
+        $('#sidebarCollapse').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleSidebar();
+        });
+
+        // 2. Click en el fondo oscuro -> CERRAR
+        $('#sidebar-overlay').on('click', function () {
+            toggleSidebar(); // Al pulsar fuera, cerramos
+        });
+
+        // 3. (Opcional) Cerrar al pulsar ESC
+        $(document).on('keydown', function(e) {
+            if (e.key === "Escape" && $('#sidebar').hasClass('active')) {
+                toggleSidebar();
+            }
         });
 
     });
@@ -947,6 +979,7 @@
     });
 </script>
 {# --- FIN DE LA MEJORA --- #}
+<div id="sidebar-overlay"></div>
 </body>
 </html>
 

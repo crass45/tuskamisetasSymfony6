@@ -1,3 +1,67 @@
-body {
-    background-color: skyblue;
+/* --- MENÚ DE FILTROS "OFF-CANVAS" (MÓVIL) --- */
+@media (max-width: 768px) {
+
+    /* 1. ROMPER LA JAULA: Anulamos las reglas de tkmestilos.css que atrapan al menú */
+    .wrapper {
+        perspective: none !important;
+        transform: none !important;
+        display: block !important; /* Quitamos el flex para que no afecte al layout móvil */
+    }
+
+    /* 2. Estilo del Menú Flotante */
+    #sidebar {
+        position: fixed !important;
+        top: 0;
+        left: -320px; /* Lo alejamos un poco más para asegurar que no se ve sombra */
+        height: 100vh !important;
+        width: 290px !important; /* Un poco más ancho para que quepa todo bien */
+        z-index: 99999 !important;
+        background: #fff !important;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow-y: auto;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.15);
+        display: block !important;
+
+        /* ESTILOS DE ESPACIADO NUEVOS */
+        padding: 25px 20px !important; /* 25px arriba/abajo, 20px izquierda/derecha */
+        box-sizing: border-box !important; /* Vital: para que el padding no ensanche la caja */
+
+        /* Reset de transformaciones antiguas */
+        transform: none !important;
+        margin-left: 0 !important;
+
+        /* Asegurar color de texto */
+        color: #333 !important;
+    }
+
+    /* Estado Activo: Entra en pantalla */
+    #sidebar.active {
+        left: 0 !important;
+        margin-left: 0 !important;
+        transform: none !important;
+    }
+
+    /* 3. Estilo del Fondo Oscuro (Overlay) */
+    #sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(3px);
+        z-index: 99990 !important; /* Justo debajo del sidebar */
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    #sidebar-overlay.active {
+        display: block;
+        opacity: 1;
+    }
+
+    body.no-scroll {
+        overflow: hidden !important;
+    }
 }
