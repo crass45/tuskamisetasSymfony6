@@ -382,22 +382,31 @@
                             </a>
                         </div>
 
+                        {# ... BLOQUE INVENTARIO (Solo visible para administradores) ... #}
                         {% if is_granted('ROLE_ALLOWED_TO_SWITCH') %}
                             <div class="clear-fix"></div>
-                            <div>
+                            <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
                                 <div class="col-xs-6">
-
-                                    {#                <a href="{{ path('ss_tienda_producto_inventario',{'modelo': modelo.id, 'operacion':1 }) }}" #}
-                                    <a href="#"
-                                       style="background-color: green; font-size: 24px; padding: 5px; color: white">Entradas</a>
+                                    {# Operación 1 = Entrada #}
+                                    <a href="{{ path('app_product_inventory', {'id': modelo.id, 'operacion': 1, '_locale': app.request.locale}) }}"
+                                       class="btn btn-success btn-block"
+                                       style="font-size: 16px; padding: 10px; color: white; font-weight: bold;">
+                                        <i class="fa fa-plus-circle"></i> Entradas
+                                    </a>
                                 </div>
-                                <div class="col-xs-6" style="text-align: right">
-                                    {#                <a href="{{ path('ss_tienda_producto_inventario',{'modelo': modelo.id, 'operacion':2 }) }}" #}
-                                    <a href="#"
-                                       style="background-color: red; font-size: 24px; padding: 5px; color: white">Salidas</a>
+                                <div class="col-xs-6">
+                                    {# Operación 2 = Salida #}
+                                    <a href="{{ path('app_product_inventory', {'id': modelo.id, 'operacion': 2, '_locale': app.request.locale}) }}"
+                                       class="btn btn-danger btn-block"
+                                       style="font-size: 16px; padding: 10px; color: white; font-weight: bold;">
+                                        <i class="fa fa-minus-circle"></i> Salidas
+                                    </a>
                                 </div>
                             </div>
                         {% endif %}
+                        {# ... FIN BLOQUE INVENTARIO ... #}
+
+
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-5" style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">

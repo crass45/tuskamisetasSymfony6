@@ -1,0 +1,164 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Inventario - {{ modelo.nombre }}{% endblock %}
+
+{% block migas %}
+    <div class="breadcrumbs">
+        <ol class="breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_home', {'_locale': app.request.locale}) }}">
+                    <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
+                </a>
+                <meta itemprop="position" content="1"/>
+            </li>
+            {# Podrías añadir aquí la miga del producto para volver atrás fácilmente #}
+            <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                <a itemprop="item" href="{{ path('app_product_detail', {'slug': modelo.nombreUrl, '_locale': app.request.locale}) }}">
+                    <span itemprop="name">{{ modelo.nombre }}</span>
+                </a>
+                <meta itemprop="position" content="2"/>
+            </li>
+            <li class="active" itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                <span itemprop="item" class="miActive">
+                    <span itemprop="name">{% trans %}Inventario{% endtrans %}</span>
+                </span>
+                <meta itemprop="position" content="3"/>
+            </li>
+        </ol>
+    </div>
+{% endblock %}
+
+{% block baseBody %}
+    {% if is_granted('ROLE_ALLOWED_TO_SWITCH') %} {# O el rol que uses para empleados #}
+        <div class="container" style="margin-bottom: 50px;">
+
+            {# Enviamos a la ruta de guardado pasando el ID del modelo y el tipo de operación (1=Entrada, 2=Salida) #}
+            <form action="{{ path('app_product_inventory_save', {'id': modelo.id, 'operacion': operacion, '_locale': app.request.locale}) }}" method="post">
+
+                <fieldset class="product-information borde_naranja inventario" style="padding: 20px; border: 1px solid #ff9933; background: #fff;">
+
+                    <h1 class="text-center" style="color: {{ operacion == 1 ? 'green' : 'red' }}">
+                        {% if operacion == 1 %}ENTRADA DE STOCK{% else %}SALIDA DE STOCK{% endif %}
+                    </h1>
+
+                    <h3 class="text-center" style="margin-top: 0;">
+                        <a href="{{ path('app_product_detail', {'slug': modelo.nombreUrl, '_locale': app.request.locale}) }}">
+                            {{ modelo.nombre }}
+                        </a>
+                    </h3>
+
+                    <div class="text-center" style="margin-bottom: 20px;">
+                        <p><b>Fabricante:</b> {{ modelo.fabricante.nombre }} | <b>Referencia:</b> {{ modelo.referencia }}</p>
+                    </div>
+
+                    {# Mensajes Flash #}
+                    {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                    {% endif %}
+                    {% if success %}
+                        <div class="alert alert-success">{{ success }}</div>
+                    {% endif %}
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">{{ message }}</div>
+                    {% endfor %}
+
+                    {# CAMPO CAJA #}
+                    <div class="form-group" style="background: #f9f9f9; padding: 10px; border-radius: 5px;">
+                        <label for="caja" style="font-size: 16px;">Nº Caja / Ubicación:</label>
+                        <input type="text" name="caja" id="caja" class="form-control" style="width: 150px; display: inline-block;" required>
+                    </div>
+
+                    {# LISTADO DE PRODUCTOS POR COLOR #}
+                    <div class="row">
+                        {% for color in modelo.getColoresProductos() %}
+                            <div class="col-md-12" style="margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                                <div style="display: flex; align-items: center; flex-wrap: wrap;">
+
+                                    {# IMAGEN DEL COLOR #}
+                                    <div style="margin-right: 20px; text-align: center; width: 60px;">
+                                        {% if color.imagen %}
+                                            <img src="{{ sonata_path(color.imagen, 'mini') }}" style="width: 50px; height: auto; border: 1px solid #ccc;" alt="{{ color.color.nombre }}">
+                                        {% elseif color.urlImage %}
+                                            <img src="{{ color.urlImage }}" style="width: 50px; height: auto; border: 1px solid #ccc;" alt="{{ color.color.nombre }}">
+                                        {% else %}
+                                            <div style="width: 50px; height: 50px; background-color: {{ color.color.codigoRGB }}; border: 1px solid #ccc;"></div>
+                                        {% endif %}
+                                        <p style="font-size: 10px; font-weight: bold; margin-top: 5px;">{{ color.color.nombre|default('ÚNICO') }}</p>
+                                    </div>
+
+                                    {# TALLAS DE ESE COLOR #}
+                                    <div style="flex: 1; display: flex; flex-wrap: wrap; gap: 10px;">
+                                        {% for productoTalla in productos %}
+                                            {# Filtramos para mostrar solo las tallas de ESTE color actual del bucle #}
+                                            {% if productoTalla.color == color.color and productoTalla.activo %}
+                                                <div style="text-align: center; background: #f5f5f5; padding: 5px; border-radius: 4px; margin-bottom: 5px; vertical-align: top; display: inline-block; margin-right: 2px;">
+
+                                                    {# Etiqueta Talla #}
+                                                    <label for="cant_{{ productoTalla.id }}" style="display: block; font-size: 11px; margin-bottom: 2px; color: black;">
+                                                        {{ productoTalla.talla }}
+                                                    </label>
+
+                                                    {# Input Cantidad #}
+                                                    <input type="number"
+                                                           name="cantidad[{{ productoTalla.id }}]"
+                                                           id="cant_{{ productoTalla.id }}"
+                                                           min="0"
+                                                           class="form-control input-sm"
+                                                           style="width: 60px; text-align: center; padding: 2px;"
+                                                           placeholder="">
+
+                                                    {# --- BLOQUE INVENTARIO LOCAL --- #}
+                                                    <div style="font-size: 9px; color: #555; margin-top: 4px; line-height: 1.2; min-height: 12px;">
+                                                        {% if productoTalla.inventario is not empty %}
+                                                            {% set totalLocal = 0 %}
+
+                                                            {# Recorremos las cajas donde hay stock de este producto #}
+                                                            {% for inv in productoTalla.inventario %}
+                                                                {% if inv.cantidad > 0 %}
+                                                                    <div style="white-space: nowrap;">
+                                                                        Caja <b>{{ inv.caja }}</b>: <span style="color: #000; font-weight: bold;">{{ inv.cantidad }}</span>
+                                                                    </div>
+                                                                    {% set totalLocal = totalLocal + inv.cantidad %}
+                                                                {% endif %}
+                                                            {% endfor %}
+
+                                                            {# Opcional: Total Sumado #}
+                                                            {% if totalLocal > 0 %}
+                                                                <div style="border-top: 1px solid #ccc; margin-top: 2px; padding-top: 1px; font-weight: bold; color: #044266;">
+                                                                    Total: {{ totalLocal }}
+                                                                </div>
+                                                            {% else %}
+                                                                <span style="color: #999;">Vacío</span>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <span style="color: #999;">-</span>
+                                                        {% endif %}
+                                                    </div>
+                                                    {# ------------------------------- #}
+
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label for="observaciones">Observaciones / Notas:</label>
+                        <textarea name="observaciones" id="observaciones" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button type="submit" class="btn btn-lg btn-{{ operacion == 1 ? 'success' : 'danger' }}">
+                            <i class="fa fa-save"></i>
+                            {% if operacion == 1 %}CONFIRMAR ENTRADA{% else %}CONFIRMAR SALIDA{% endif %}
+                        </button>
+                    </div>
+
+                </fieldset>
+            </form>
+        </div>
+    {% endif %}
+{% endblock %}

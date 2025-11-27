@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Entity\Color;
 use App\Entity\Empresa;
+use App\Entity\Inventario;
 use App\Entity\Modelo;
 use App\Entity\Personalizacion;
 use App\Entity\Producto;
@@ -279,6 +280,179 @@ class ProductController extends AbstractController
             'productosGTAG_ref' => $ultimoProducto ? $ultimoProducto->getModelo()->getReferencia() : '',
             'productosGTAGNombre' => $ultimoProducto ? $ultimoProducto->getModelo()->getNombre() : '',
             'productosGTAGBrand' => $ultimoProducto && $ultimoProducto->getModelo()->getFabricante() ? $ultimoProducto->getModelo()->getFabricante()->getNombre() : '',
+        ]);
+    }
+    /**
+     * Gestión de Inventario (Entradas/Salidas) para un modelo.
+     */
+    #[Route('/{_locale}/usuario/inventario/{id}/{operacion}', name: 'app_product_inventory', requirements: ['_locale' => 'es|en|fr'])]
+    public function inventoryAction(Modelo $modelo, int $operacion, Request $request): Response
+    {
+        // 1. Obtenemos todos los productos del modelo (optimizando la consulta)
+        // En lugar de ir color por color, traemos todos los productos activos de este modelo
+        $productos = $this->em->getRepository(Producto::class)->createQueryBuilder('p')
+            ->leftJoin('p.color', 'c')
+            ->leftJoin('p.inventario', 'inv') // <--- AÑADIR ESTO (Eager Loading)
+            ->addSelect('inv')                // <--- AÑADIR ESTO
+            ->where('p.modelo = :modelo')
+            ->setParameter('modelo', $modelo)
+            ->andWhere('p.activo = :activo')
+            ->setParameter('activo', true)
+            ->orderBy('c.nombre', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        // 2. Definimos el array de tallas para la ordenación (Copiado de tu lógica antigua)
+        $tallasOrdenadas = [
+            '1/2 AÑOS', '3/4 AÑOS', '5/6 AÑOS', '7/8 AÑOS', '9/10 AÑOS', '11/12 AÑOS', '13/14 AÑOS',
+            '1 AÑOS', '2 AÑOS', '3 AÑOS', '4 AÑOS', '6 AÑOS', '8 AÑOS', '11 AÑOS', '12 AÑOS',
+            '13 AÑOS', '14 AÑOS', '15 AÑOS', '16 AÑOS',
+            '1/2', '3/4', '5/6', '7/8', '9/10', '11/12', '13/14',
+            '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16',
+            'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', 'XXXXL', 'XXXXXL', 'XXXXXXL',
+            '2XL', '3XL', '4XL', '5XL', '6XL'
+        ];
+        // Añadimos números del 0 al 100
+        for ($i = 0; $i < 100; $i++) {
+            $tallasOrdenadas[] = (string)$i;
+        }
+
+        // Mapa de pesos para ordenación rápida
+        $tallasPeso = array_flip($tallasOrdenadas);
+
+        // 3. Ordenamos los productos: Primero por Color, luego por Talla
+        usort($productos, function (Producto $a, Producto $b) use ($tallasPeso) {
+            // A. Comparar Color
+            $colorA = $a->getColor() ? $a->getColor()->getNombre() : 'ZZZ'; // Sin color al final
+            $colorB = $b->getColor() ? $b->getColor()->getNombre() : 'ZZZ';
+
+            $colorCompare = strcasecmp($colorA, $colorB);
+            if ($colorCompare !== 0) {
+                return $colorCompare;
+            }
+
+            // B. Comparar Talla (si el color es igual)
+            $tallaA = strtoupper($a->getTalla());
+            $tallaB = strtoupper($b->getTalla());
+
+            $posA = $tallasPeso[$tallaA] ?? 9999;
+            $posB = $tallasPeso[$tallaB] ?? 9999;
+
+            return $posA <=> $posB;
+        });
+
+        // 4. Renderizamos la vista
+        // Recogemos mensajes de éxito/error si vienen por parámetros GET (query params)
+        $success = $request->query->get('success');
+        $error = $request->query->get('error');
+
+        return $this->render('web/product/inventario.html.twig', [
+            'productos' => $productos,
+            'modelo' => $modelo,
+            'operacion' => $operacion, // 1 = Entrada, 2 = Salida (suposición basada en tu código)
+            'success' => $success,
+            'error' => $error
+        ]);
+    }
+
+    /**
+     * Procesa el guardado del inventario (CORREGIDO).
+     */
+    #[Route('/{_locale}/usuario/inventario/{id}/save/{operacion}', name: 'app_product_inventory_save', methods: ['POST'], requirements: ['_locale' => 'es|en|fr'])]
+    public function inventorySaveAction(Modelo $modelo, int $operacion, Request $request): Response
+    {
+        $caja = (int) $request->request->get('caja');
+        $observaciones = $request->request->get('observaciones');
+        $cantidades = $request->request->all('cantidad');
+
+        if (empty($cantidades) || !is_array($cantidades)) {
+            $this->addFlash('error', 'No se han enviado datos válidos.');
+            return $this->redirectToRoute('app_product_inventory', ['id' => $modelo->getId(), 'operacion' => $operacion]);
+        }
+
+        $movimientos = 0;
+        $repoInventario = $this->em->getRepository(Inventario::class);
+
+        foreach ($cantidades as $productoId => $cantidad) {
+            $cantidad = (int)$cantidad;
+
+            if ($cantidad > 0) {
+                $producto = $this->em->getRepository(Producto::class)->find($productoId);
+
+                if ($producto) {
+                    // 1. Buscamos si ya existe inventario en esa caja
+                    $inventario = $repoInventario->findOneBy([
+                        'producto' => $producto,
+                        'caja' => $caja
+                    ]);
+
+                    // 2. Lógica según Operación
+                    if ($operacion == 1) {
+                        // --- ENTRADA ---
+                        if ($inventario) {
+                            // Si ya existe, SUMAMOS
+                            $inventario->addCantidad($cantidad);
+                            // Concatenamos observaciones si hay nuevas
+                            if ($observaciones) {
+                                $prevObs = $inventario->getObservaciones() ?? '';
+                                $inventario->setObservaciones(trim($prevObs . ' | ' . $observaciones, ' | '));
+                            }
+                        } else {
+                            // Si no existe, CREAMOS
+                            $inventario = new Inventario();
+                            $inventario->setProducto($producto);
+                            $inventario->setCaja($caja);
+                            $inventario->setCantidad($cantidad);
+                            $inventario->setObservaciones($observaciones);
+                            $this->em->persist($inventario);
+                        }
+
+                        // Actualizamos stock global
+//                        $producto->setStock($producto->getStock() + $cantidad);
+
+                    } else {
+                        // --- SALIDA ---
+                        if ($inventario) {
+                            // Si existe, RESTAMOS usando tu método lessCantidad
+                            $inventario->lessCantidad($cantidad);
+
+                            // Opcional: Si quieres actualizar observaciones en salida también
+                            if ($observaciones) {
+                                $prevObs = $inventario->getObservaciones() ?? '';
+                                $inventario->setObservaciones(trim($prevObs . ' | OUT: ' . $observaciones, ' | '));
+                            }
+
+                            // Actualizamos stock global (solo si había stock en caja)
+//                            $producto->setStock($producto->getStock() - $cantidad);
+                        } else {
+                            // Intentan sacar de una caja vacía.
+                            // Opción A: Ignorar.
+                            // Opción B: Restar del global aunque no haya en caja (Descomenta si quieres esto)
+                            // $producto->setStock($producto->getStock() - $cantidad);
+                        }
+                    }
+
+                    $this->em->persist($producto);
+                    $movimientos++;
+                }
+            }
+        }
+
+        if ($movimientos > 0) {
+            $this->em->flush();
+            $mensaje = ($operacion == 1) ? "Entrada de stock realizada correctamente." : "Salida de stock realizada correctamente.";
+
+            return $this->redirectToRoute('app_product_inventory', [
+                'id' => $modelo->getId(),
+                'operacion' => $operacion,
+                'success' => $mensaje
+            ]);
+        }
+
+        return $this->redirectToRoute('app_product_inventory', [
+            'id' => $modelo->getId(),
+            'operacion' => $operacion,
+            'error' => 'No se realizaron movimientos.'
         ]);
     }
 }
