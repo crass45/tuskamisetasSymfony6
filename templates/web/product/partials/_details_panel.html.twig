@@ -6,7 +6,7 @@
         <h1 style="font-size: 28px; margin: 0px;" itemprop="name">{{ modelo.nombre | upper }}</h1>
         <p itemprop="name">
             {#            <a style="color: black; font-size: 18px" href="{{ path('app_catalog_listing', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}"> #}
-            <a style="color: black; font-size: 18px" href="#">
+            <a style="color: black; font-size: 18px" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}">
                 {{ modelo.fabricante.nombre }}
             </a>
         </p>

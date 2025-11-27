@@ -69,6 +69,5 @@
             $(this).toggleClass('active');
         });
     });
-
 })(jQuery);
 

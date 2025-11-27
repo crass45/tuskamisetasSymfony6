@@ -576,16 +576,79 @@
             });
 
             // 6. Lógica del círculo de precio flotante
-            $(window).on('scroll', function () {
-                const priceDiv = $('#div_precio');
-                if (priceDiv.length && priceDiv.is(':visible')) {
-                    if ($(this).scrollTop() >= priceDiv.position().top - priceDiv.height()) {
-                        $('#circuloPrecioUnidad').fadeOut();
+            // $(window).scroll(function () {
+            //     var divPrecioTop = $('#div_precio').offset().top;
+            //     var windowBottom = $(this).scrollTop() + $(this).height();
+            //
+            //     if ($(this).scrollTop() > 200 && windowBottom < divPrecioTop) {
+            //         $('#floatingPriceCircle').fadeIn(); // <--- CORREGIDO
+            //     } else {
+            //         $('#floatingPriceCircle').fadeOut(); // <--- CORREGIDO
+            //     }
+            // });
+
+
+
+
+            // ... (resto del código anterior de búsqueda, etc.) ...
+
+            // =================================================================
+            // LÓGICA DEL PRODUCTO (Círculo Flotante)
+            // =================================================================
+            var $divPrecio = $('#div_precio');
+            var $floatingCircle = $('#floatingPriceCircle'); // USAMOS EL NUEVO ID
+
+            if ($divPrecio.length > 0 && $floatingCircle.length > 0) {
+
+                // 1. Scroll: Mostrar/Ocultar círculo
+                $(window).scroll(function () {
+                    var divPrecioTop = $divPrecio.offset().top;
+                    var windowBottom = $(this).scrollTop() + $(this).height();
+
+                    // Si hemos bajado y aún no vemos el resumen final, mostramos el círculo
+                    if ($(this).scrollTop() > 200 && windowBottom < divPrecioTop) {
+                        $floatingCircle.fadeIn();
                     } else {
-                        $('#circuloPrecioUnidad').fadeIn();
+                        $floatingCircle.fadeOut();
                     }
-                }
-            });
+                });
+
+                // 2. Click: Scroll suave al resumen
+                $floatingCircle.click(function () {
+                    $('html, body').animate({
+                        scrollTop: $divPrecio.offset().top - 100
+                    }, 1000);
+                });
+
+                // 3. Actualizar precio automáticamente (MutationObserver)
+                // 3. Actualizar precio Y UNIDADES automáticamente (MutationObserver)
+                var observer = new MutationObserver(function(mutations) {
+                    // A. Actualizar Precio
+                    var nuevoPrecio = $('#hidden-precio-unitario-update').val();
+                    if (nuevoPrecio) {
+                        var $valor = $('#circulo-precio-valor');
+                        if ($valor.text().trim() !== nuevoPrecio) {
+                            $valor.text(nuevoPrecio); // Actualizamos directo para evitar parpadeo doble
+                        }
+                    }
+
+                    // B. Actualizar Unidades (NUEVO)
+                    var nuevasUnidades = $('#hidden-total-unidades-update').val();
+                    if (nuevasUnidades) {
+                        var $unidades = $('#circulo-unidades');
+                        var textoUnidades = nuevasUnidades + " uds";
+                        if ($unidades.text().trim() !== textoUnidades) {
+                            $unidades.text(textoUnidades);
+                            // Efecto visual para resaltar que ha cambiado
+                            $unidades.css('color', '#fff').animate({'opacity': 0.5}, 100).animate({'opacity': 1}, 100);
+                        }
+                    }
+                });
+
+                observer.observe($divPrecio[0], { childList: true, subtree: true });
+            }
+
+
         })(jQuery);
     });
 </script>

@@ -294,6 +294,23 @@
 
 {% endblock %}
 
+{% block flotantes %}
+    <div id="floatingPriceCircle" class="scrollResumen">
+        <div class="circulo-contenido">
+            {# NUEVO: Contador de unidades #}
+            <span id="circulo-unidades" style="font-size: 14px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.5); margin-bottom: 3px; padding-bottom: 2px;">
+                0 uds
+            </span>
+
+            {# Precio #}
+            <span class="circulo-label" style="font-size: 9px;">Precio/ud</span>
+            <span id="circulo-precio-valor" class="circulo-valor">
+                {{ modelo.getPrecioUnidad(app.user) | number_format(2, ',', '.') }}€
+            </span>
+        </div>
+    </div>
+{% endblock %}
+
 {% block baseBody %}
     <div itemscope itemtype="http://schema.org/Product" style="margin-bottom: 15px">
         <div class="container">
@@ -383,8 +400,6 @@
                         {% endif %}
                     </div>
                 </div>
-
-
                 <div class="col-sm-6 col-md-5" style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">
                     {# Incluimos el panel derecho. Lo crearemos en el siguiente paso. #}
                     {% include 'web/product/partials/_details_panel.html.twig' %}
@@ -452,18 +467,17 @@
                                 data-target="#presupuestoRapidoModal"
                                 style="background-color:#5bc0de; width: 100%; padding: 10px"
                                 title="Si deseas más información sobre este producto">
-                            <b>{% trans %}CONTACTA{% endtrans %}</b></i>
+                            <b>{% trans %}CONTACTA{% endtrans %}</b>
                         </button>
                     </div>
 
                 </div><!--/product-information-->
-
-
             </div>
         </div>
 
+
         <div class="row">
-            <div class="col-sm-12" id="div_personalizacion">
+            <div class="col-xs-12" id="div_personalizacion">
                 {# Incluimos el panel de personalización. Lo crearemos en el siguiente paso. #}
                 {% include 'web/product/partials/_customization_panel.html.twig' %}
             </div>

@@ -25,6 +25,12 @@
     {% set precioTotal = precioSubTotal + ivaAplicar %}
     {% set precioUnidadSinIva = (totalProductos > 0) ? (precioSubTotal / totalProductos) : 0 %}
 
+    {% if totalProductos > 0 %}
+{#        {% set precioUnitarioConIva = precioTotal / totalProductos %}#}
+        <input type="hidden" id="hidden-precio-unitario-update" value="{{ precioUnidadSinIva | number_format(2, ',', '.') }}€">
+        {# NUEVO: Input para pasar las unidades al JS #}
+        <input type="hidden" id="hidden-total-unidades-update" value="{{ totalProductos }}">
+    {% endif %}
     <fieldset class="product-information borde_naranja" style="padding: 10px; display: block; margin-bottom: 0px;">
         <legend><b><span class="numberCircle">3</span> {% trans %}TU PEDIDO{% endtrans %}</b></legend>
 
