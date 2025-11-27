@@ -1,53 +1,161 @@
 {# templates/web/product/partials/_gallery.html.twig #}
-{# Este parcial decide qué tipo de galería mostrar basándose en las propiedades del 'modelo' #}
 
-<div class="row">
+{# 1. PREPARACIÓN DE DATOS: Unificamos todas las imágenes en una lista #}
+{% set todasLasImagenes = [] %}
 
+{# A. Imagen Principal (Prioridad: SonataMedia > URL externa) #}
+{% if modelo.imagen %}
+    {% set todasLasImagenes = todasLasImagenes|merge([sonata_path(modelo.imagen, 'wide')]) %}
+{% elseif modelo.urlImage %}
+    {% set todasLasImagenes = todasLasImagenes|merge([modelo.urlImage]) %}
+{% endif %}
 
-        {# Vista Compleja (tu antigua alternativa2 y 3) #}
-        {# Esta vista no muestra los selectores de color aquí #}
-        <div class="{% if modelo.childImage == null and modelo.otherImages == null and modelo.detailsImages==null %}col-lg-12{% else %}col-lg-6{% endif %}">
-            <div class="row" style="padding: 5px">
-                <img class="imagenProducto" style="width: 100%; height: auto" id="imagen-producto" src="{{ modelo.imagen ? sonata_path(modelo.imagen, 'wide') : modelo.urlImage }}" alt="{{ modelo.nombre }}">
-            </div>
-        </div>
-        {% if modelo.childImage %}
-            <div class="col-lg-6 hidden-xs"><div class="row" style="padding: 5px"><img class="imagenProducto" style="width: 100%; height: auto" src="{{ modelo.childImage }}" alt="{{ modelo.nombre }} infantil"></div></div>
+{# B. Imagen Infantil #}
+{% if modelo.childImage %}
+    {% set todasLasImagenes = todasLasImagenes|merge([modelo.childImage]) %}
+{% endif %}
+
+{# C. Otras Imágenes (Separadas por comas) #}
+{% if modelo.otherImages %}
+    {% for img in modelo.otherImages|split(',') %}
+        {% if img|trim is not empty %}
+            {% set todasLasImagenes = todasLasImagenes|merge([img|trim]) %}
         {% endif %}
-        {% for imagen in modelo.otherImages|split(',')|filter(img => img is not empty) %}
-            <div class="col-lg-6 hidden-xs"><div class="row" style="padding: 5px"><img class="imagenProducto" style="width: 100%; height: auto" src="{{ imagen }}" alt="{{ modelo.nombre }} otro"></div></div>
+    {% endfor %}
+{% endif %}
+
+{# D. Imágenes de Detalle #}
+{% if modelo.detailsImages %}
+    {% for img in modelo.detailsImages|split(',') %}
+        {% if img|trim is not empty %}
+            {% set todasLasImagenes = todasLasImagenes|merge([img|trim]) %}
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+
+{# 2. VISTA ESCRITORIO (Grid) - Se oculta en móviles #}
+<div class="hidden-xs">
+    <div class="row">
+        {# Si hay más de 1 imagen, la principal ocupa la mitad (col-lg-6), si no, todo el ancho (col-lg-12) #}
+        {% set mainColClass = (todasLasImagenes|length > 1) ? 'col-lg-6' : 'col-lg-12' %}
+
+        {# Renderizamos la primera imagen (Principal) #}
+        {% if todasLasImagenes|length > 0 %}
+            <div class="{{ mainColClass }}">
+                <div class="row" style="padding: 5px">
+                    <img class="imagenProducto"
+                         style="width: 100%; height: auto"
+                         id="imagen-producto"
+                         src="{{ todasLasImagenes[0] }}"
+                         alt="{{ modelo.nombre }}">
+                </div>
+            </div>
+        {% endif %}
+
+        {# Renderizamos el resto de imágenes en rejilla #}
+        {% for img in todasLasImagenes|slice(1) %}
+            <div class="col-lg-6">
+                <div class="row" style="padding: 5px">
+                    <img class="imagenProducto"
+                         style="width: 100%; height: auto"
+                         src="{{ img }}"
+                         alt="{{ modelo.nombre }} - vista {{ loop.index }}">
+                </div>
+            </div>
         {% endfor %}
-        {% for imagen in modelo.detailsImages|split(',')|filter(img => img is not empty) %}
-            <div class="col-lg-6 hidden-xs"><div class="row" style="padding: 5px"><img class="imagenProducto" style="width: 100%; height: auto;" src="{{ imagen }}" alt="{{ modelo.nombre }}"></div></div>
-        {% endfor %}
-{#    {% else %}#}
-{#        #}{# Vista Simple (tu antigua alternativa 1) #}
-{#        <div class="col-sm-12">#}
-{#            <div class="view-product" id="contenedor-imagen-producto">#}
-{#                {% if modelo.imagen %}#}
-{#                    <img src="{{ sonata_path(modelo.imagen, 'wide') }}" itemprop="image" id="imagen-producto-main" alt="{{ modelo.nombre }}" data-imagen-original="{{ sonata_path(modelo.imagen, 'wide') }}">#}
-{#                {% else %}#}
-{#                    <img src="{{ modelo.urlImage }}" itemprop="image" id="imagen-producto-main" alt="{{ modelo.nombre }}" data-imagen-original="{{ modelo.urlImage }}">#}
-{#                {% endif %}#}
-{#                {% if modelo.isNovelty %}<img src="{{ asset('template/images/new.png') }}" alt="novedad" class="novelty-badge"/>{% endif %}#}
-{#                {% if modelo.url360 %}<a class="btn btn-info btn-sm 360-button" data-toggle="modal" data-target="#360Modal">360º</a>{% endif %}#}
-{#            </div>#}
-{#            #}{# CORRECCIÓN: Los selectores de color solo se muestran en la vista simple #}
-{#            <div class="colores">#}
-{#                <div style="text-align: center; margin-bottom: 30px">#}
-{#                    {% for productoColor in modelo.getColoresProductos() %}#}
-{#                        <div class="colorProducto colorProductoPresupuesto {{ productoColor.color.id }}" data-modelo="{{ modelo.id }}" data-color="{{ productoColor.color.nombreUrl }}" style="display: inline-block; position: relative;">#}
-{#                            <a data-toggle="tooltip" title="{{ productoColor.color.nombre |upper }}">#}
-{#                                {% if productoColor.imagen %}#}
-{#                                    <img src="{{ sonata_path(productoColor.imagen, 'mini') }}" data-imagen-grande="{{ sonata_path(productoColor.imagen, 'wide') }}" alt="{{ productoColor.color.nombre }}">#}
-{#                                {% else %}#}
-{#                                    <div style="width: 40px; height: 40px; background-color: {{ productoColor.color.codigoRGB }}; border: 1px solid #ccc;" data-imagen-grande="{{ productoColor.modelo.urlImage }}"></div>#}
-{#                                {% endif %}#}
-{#                            </a>#}
-{#                        </div>#}
-{#                    {% endfor %}#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{#    {% endif %}#}
+    </div>
+</div>
+
+
+{# 3. VISTA MÓVIL (Carrusel) - Solo visible en móviles #}
+<div class="visible-xs">
+    {% if todasLasImagenes|length > 0 %}
+        <div id="carousel-producto-movil" class="carousel slide" data-ride="carousel" data-interval="false" style="margin-bottom: 20px;">
+
+            {# Indicadores (Puntos abajo) #}
+            <ol class="carousel-indicators" style="bottom: -20px;">
+                {% for img in todasLasImagenes %}
+                    <li data-target="#carousel-producto-movil"
+                        data-slide-to="{{ loop.index0 }}"
+                        class="{{ loop.first ? 'active' : '' }}"
+                        style="border-color: #666; background-color: {{ loop.first ? 'transparent' : 'transparent' }};">
+                    </li>
+                {% endfor %}
+            </ol>
+
+            {# Diapositivas #}
+            <div class="carousel-inner" role="listbox">
+                {% for img in todasLasImagenes %}
+                    <div class="item {{ loop.first ? 'active' : '' }}">
+                        <img src="{{ img }}" alt="{{ modelo.nombre }}" style="display: block; width: 100%; height: auto;">
+                    </div>
+                {% endfor %}
+            </div>
+
+            {# Flechas de control (Opcional, ayudan a la usabilidad) #}
+            <a class="left carousel-control" href="#carousel-producto-movil" role="button" data-slide="prev" style="background: none; color: #333; text-shadow: none; opacity: 0.5;">
+                <span class="glyphicon glyphicon-chevron-left" aria-hidden="true" style="left: 0;"></span>
+            </a>
+            <a class="right carousel-control" href="#carousel-producto-movil" role="button" data-slide="next" style="background: none; color: #333; text-shadow: none; opacity: 0.5;">
+                <span class="glyphicon glyphicon-chevron-right" aria-hidden="true" style="right: 0;"></span>
+            </a>
+        </div>
+
+        {# Script para soporte TÁCTIL (Swipe) en el carrusel #}
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var carousel = document.getElementById("carousel-producto-movil");
+                var startX;
+
+                // Detectar inicio del toque
+                carousel.addEventListener("touchstart", function(e) {
+                    startX = e.touches[0].clientX;
+                }, {passive: true});
+
+                // Detectar fin del toque y calcular dirección
+                carousel.addEventListener("touchend", function(e) {
+                    if (!startX) return;
+                    var endX = e.changedTouches[0].clientX;
+                    var diffX = startX - endX;
+
+                    // Si el deslizamiento es mayor a 50px
+                    if (Math.abs(diffX) > 50) {
+                        if (diffX > 0) {
+                            // Deslizar izquierda -> Siguiente
+                            $(carousel).carousel('next');
+                        } else {
+                            // Deslizar derecha -> Anterior
+                            $(carousel).carousel('prev');
+                        }
+                    }
+                    startX = null;
+                }, {passive: true});
+            });
+        </script>
+
+        {# Estilos específicos para los puntos activos (color naranja corporativo) #}
+        {# Estilos específicos para los puntos activos (color naranja corporativo) #}
+        <style>
+            /* Forzamos el color con !important para ganar a Bootstrap */
+            #carousel-producto-movil .carousel-indicators .active {
+                background-color: #ff9933 !important;
+                border-color: #ff9933 !important;
+                width: 12px;
+                height: 12px;
+                margin: 0;
+                opacity: 1; /* Aseguramos que no sea transparente */
+            }
+            #carousel-producto-movil .item {
+                padding: 0; !important;
+            }
+
+            /* Estilo para los puntos inactivos */
+            #carousel-producto-movil .carousel-indicators li {
+                border-color: #999;
+                background-color: transparent;
+                margin: 0 2px;
+            }
+        </style>
+    {% endif %}
 </div>

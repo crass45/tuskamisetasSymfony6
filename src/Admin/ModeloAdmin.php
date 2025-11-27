@@ -92,13 +92,11 @@ final class ModeloAdmin extends AbstractAdmin
             // --> CAMBIO 2: Reemplazamos todos los CKEditorType
             ->add('tituloSEO', TextareaType::class, [
                 'label' => 'Título SEO',
-                'required' => false,
-                'attr' => ['class' => 'tinymce']
+                'required' => false
             ])
             ->add('descripcionSEO', TextareaType::class, [
                 'label' => 'Descripción SEO',
-                'required' => false,
-                'attr' => ['class' => 'tinymce']
+                'required' => false
             ])
             ->add('descripcion', TextareaType::class, [
                 'label' => 'Descripción',

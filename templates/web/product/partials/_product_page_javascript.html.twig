@@ -649,6 +649,62 @@
             }
 
 
+            // ... (código anterior: checkQuantitiesAndTogglePanels(); ...)
+
+            // --- VALIDACIÓN DE STOCK Y PACKS ---
+            $('body').on('change input', '#tallas input[type=number]', function (e) {
+                const $input = $(this);
+                let value = parseInt($input.val()) || 0;
+
+                // 1. Validación de STOCK MÁXIMO
+                // El atributo 'data-max' ya lo tienes en el HTML si hay control de stock
+                const maxStock = parseInt($input.data('max'));
+
+                if (!isNaN(maxStock) && value > maxStock) {
+                    // Si se pasa, lo bajamos al máximo disponible
+                    value = maxStock;
+                    $input.val(value);
+
+                    // Feedback visual (opcional: borde rojo momentáneo)
+                    $input.css('border-color', 'red');
+                    setTimeout(() => $input.css('border-color', ''), 1000);
+                }
+
+                // 2. Validación de MULTIPLOS DE PACK
+                // El atributo 'step' o 'data-pack' contiene el tamaño del pack
+                const packSize = parseInt($input.data('pack')) || 1;
+                const isPackMandatory = ($input.attr('step') && parseInt($input.attr('step')) > 1);
+
+                // Solo aplicamos la lógica de múltiplos si es obligatorio y el evento es 'change' (cuando termina de escribir)
+                // Si lo hacemos en 'input', sería muy molesto mientras escribe.
+                if (isPackMandatory && e.type === 'change' && value > 0) {
+                    const remainder = value % packSize;
+
+                    if (remainder !== 0) {
+                        // Calculamos el múltiplo más cercano hacia arriba
+                        const nextMultiple = value + (packSize - remainder);
+
+                        // Si el múltiplo se pasa del stock, bajamos al múltiplo anterior
+                        if (!isNaN(maxStock) && nextMultiple > maxStock) {
+                            value = value - remainder; // Múltiplo inferior
+                        } else {
+                            value = nextMultiple; // Múltiplo superior (por defecto queremos vender más)
+                        }
+
+                        // Seguridad: nunca bajar de 0
+                        if (value < 0) value = 0;
+
+                        $input.val(value);
+
+                        // Aviso visual para el usuario
+                        alert("Este producto se vende en packs de " + packSize + " unidades. Hemos ajustado la cantidad a " + value + ".");
+                    }
+                }
+
+                // Finalmente, llamamos a la lógica de paneles (que ya tenías)
+                checkQuantitiesAndTogglePanels();
+            });
+
         })(jQuery);
     });
 </script>
