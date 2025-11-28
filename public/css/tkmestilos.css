@@ -1,0 +1,1152 @@
+.bg {
+    background-image: linear-gradient(to bottom, #226f76 0, #1d4e66 100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    margin: 0;
+    z-index: -1;
+    background-size: cover;
+    -moz-transition: 0.5s;
+    -o-transition: 0.5s;
+    -webkit-transition: 0.5s;
+    transition: 0.5s;
+}
+.productoGridDescripcion p{
+    margin: 0 0 5px;
+    font-size: 14px;
+    line-height: 14px;
+}
+
+.transparent {
+    background: transparent;
+    border-color: transparent;
+}
+
+.transparent li {
+    color: white
+}
+
+#contactoForm label {
+    font-size: 14px;
+    display: block;
+}
+
+#contactoForm input [type=text] {
+    height: 25px;
+    max-width: 280px;
+    width: 100%;
+}
+
+#contactoForm input[type=radio] + label {
+    display: inline-block;
+}
+
+#contactoForm textArea {
+    min-height: 80px;
+    /*max-width: 280psx;*/
+    width: 100%;
+}
+
+#contactoForm div {
+    text-align: left;
+    margin-top: 10px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+#barraaceptacion {
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    border: 1px solid #ddd;
+    padding: 40px 35px 30px;
+    background: white;
+    color: grey;
+    z-index: 10000;
+    width: 230px;
+    font-size: 10px;
+}
+
+.close {
+    cursor: pointer;
+    padding: 10px;
+    position: absolute;
+    top: 7px;
+    right: 7px;
+    text-align: right
+}
+
+input[type="checkbox"] {
+    /*appearance: none;*/
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid #c8c6c6;
+    width: 20px;
+    height: 20px;
+    /*border-radius: 2px;*/
+    margin: 0 5px 0 0;
+    cursor: pointer;
+    vertical-align: middle;
+    background-color: white;
+}
+
+.aside {
+    font-family: 'Roboto', sans-serif;
+    font-size: 17px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #555;
+    margin: 15px 0 10px;
+    border-bottom: 1px solid #E6E6E6;
+}
+
+input[type="checkbox"] + label {
+    cursor: pointer;
+}
+
+input[type="checkbox"]:checked {
+    background: url(../template/images/check.png) center no-repeat;
+    border: 1px solid black;
+    background-color: white;
+    /*background: #044266;*/
+}
+
+input[type="checkbox"]:disabled {
+    /*background: url(../template/images/check.png) center no-repeat;*/
+    border: 1px solid lightgrey;
+    background-color: #ddd;
+
+    /*background: #044266;*/
+}
+
+input[type="checkbox"]:disabled + label {
+    /*background: url(../template/images/check.png) center no-repeat;*/
+    /*border: 1px solid lightgrey;*/
+    /*background-color: lightgrey;*/
+
+    color: #ddd;
+    /*background: #044266;*/
+}
+
+input[type="checkbox"]:focus {
+    outline: double;
+}
+
+.cuadro-color {
+    display: inline-block;
+    min-height: 20px;
+    min-width: 20px;
+    height: 20px;
+    width: 20px;
+    margin: 5px;
+    border: 1px solid lightgrey;
+    cursor: pointer;
+
+}
+
+.cuadro-color.checked {
+    border: 2px solid black;
+    content: url(../template/images/check.png);
+}
+
+.coloroscuro {
+    color: #696763;
+}
+
+.colorclaro {
+    color: #AAAAAA;
+}
+
+.grid-producto-colores {
+    max-height: 0;
+    -moz-transition: max-height 1s;
+    -webkit-transition: max-height 1s;
+    -o-transition: max-height 1s;
+    transition: max-height 1s;
+
+}
+
+.cuadro_home {
+
+}
+
+.cuadro_home h2 {
+    color: #044266;
+    font-family: 'Roboto', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    z-index: 3;
+}
+.cuadro_home h3 {
+    color: #044266;
+    font-family: 'Roboto', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    z-index: 3;
+}
+
+/*.cuadro_home h2:before {*/
+/*content: " ";*/
+/*position: absolute;*/
+/*background: white;*/
+/*bottom: -6px;*/
+/*width: 130px;*/
+/*height: 30px;*/
+/*z-index: -1;*/
+/*left: 50%;*/
+/*margin-left: -65px*/
+/*}*/
+
+/*.cuadro_home h2:after {*/
+/*content: " ";*/
+/*position: absolute;*/
+/*border: 1px solid #f5f5f5;*/
+/*bottom: 8px;*/
+/*left: 0;*/
+/*width: 100%;*/
+/*height: 0;*/
+/*z-index: -2*/
+/*}*/
+
+.features_items h2 {
+    color: #044266;
+    font-family: 'Roboto', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 3;
+}
+
+/*.features_items h2:before {*/
+/*content: " ";*/
+/*position: absolute;*/
+/*background: #fff;*/
+/*bottom: -6px;*/
+/*width: 130px;*/
+/*height: 30px;*/
+/*z-index: -1;*/
+/*left: 50%;*/
+/*margin-left: -65px*/
+/*}*/
+
+/*.features_items h2:after {*/
+/*content: " ";*/
+/*position: absolute;*/
+/*border: 1px solid #f5f5f5;*/
+/*bottom: 8px;*/
+/*left: 0;*/
+/*width: 100%;*/
+/*height: 0;*/
+/*z-index: -2*/
+/*}*/
+
+.product-image-wrapper:hover .grid-producto-colores {
+
+    max-height: 317px;
+    /*-moz-transition: max-height 1s;*/
+    /*-webkit-transition: max-height 1s;*/
+    /*-o-transition: max-height 1s;*/
+    /*transition: max-height 0.25s;*/
+}
+
+.zoomHoverTKM img {
+    -webkit-transition: .5s ease-in-out;
+    -moz-transition: .5s ease-in-out;
+    -o-transition: .5s ease-in-out;
+    transition: .5s ease-in-out;
+}
+
+.zoomHoverTKM:hover img {
+    -webkit-transform: scale(1.25);
+    -moz-transform: scale(1.25);
+    -ms-transform: scale(1.25);
+    -o-transform: scale(1.25);
+    transform: scale(1.25);
+
+    /*max-height: 317px;*/
+}
+
+.product-information table tfoot {
+    color: #363432;
+    font-family: 'Roboto', sans-serif;
+    font-size: 20px;
+    margin-top: 0;
+}
+
+.product-information table {
+    margin-top: 20px;
+    border: 1px solid #dcdcdc;
+}
+
+.product-information table thead {
+    border: 1px solid #dcdcdc;
+}
+
+.product-information table tbody {
+    border: 1px solid #dcdcdc;
+}
+
+.product-information table td {
+    padding: 5px;
+}
+
+.border_gris {
+    border: 1px solid #dcdcdc;
+    padding: 60px;
+
+}
+
+.tkmPading {
+    padding: 60px;
+}
+
+.button {
+    /*background-color: #044266; !* Azul *!*/
+    background-color: #FE980F; /* Naranaja */
+    border-radius: 10px;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    /*width: 100%;*/
+
+}
+
+.naranja {
+    color: #FE980F;
+}
+
+.button:hover {
+    /*background-color: #044266; !* Azul *!*/
+    background-color: #FE980F; /* Naranaja */
+    border-radius: 10px;
+    border: none;
+    color: black;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    /*width: 100%;*/
+}
+
+.numberCircle {
+    display: inline-block;
+    height: 36px;
+    width: 36px;
+    border-radius: 50%;
+    /*behavior: url(PIE.htc); !* remove if you don't care about IE8 *!*/
+
+    padding: 5px;
+    font-size: 18px;
+    /*line-height: 36px;*/
+
+    /*border: 2px solid #fe980f;*/
+    text-align: center;
+    background-color: #FE980F;
+    color: white;
+
+    /*font: 32px Arial, sans-serif;*/
+}
+
+.smallCircle {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    /*behavior: url(PIE.htc); !* remove if you don't care about IE8 *!*/
+
+    padding: 0px;
+    /*font-size: 18px;*/
+    /*line-height: 36px;*/
+
+    /*border: 2px solid #fe980f;*/
+    text-align: center;
+    background-color: black;
+    color: white;
+
+    /*font: 32px Arial, sans-serif;*/
+}
+
+#trabajaForm li {
+    color: red;
+}
+
+#trabajaForm input[type=text] {
+    display: block;
+    width: 100%;
+}
+
+#trabajaFormEmpresa li {
+    color: red;
+}
+
+#trabajaFormEmpresa input[type=text] {
+    display: block;
+    width: 100%;
+}
+
+.helperAlign {
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+@media print {
+    .no-print, .no-print * {
+        display: none !important;
+    }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    /* display: none; <- Crashes Chrome on hover */
+    -webkit-appearance: none;
+    margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+.borde_naranja, .fondo_naranja, .fondo_rojo, .borde_rojo, .borde_redondo,
+.flash {
+    border-radius: 12px;
+    -moz-border-radius: 12px;
+    -webkit-border-radius: 12px
+}
+
+.borde_naranja, .fondo_naranja {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    padding: 0;
+    margin-bottom: 5%
+}
+
+.borde_naranja {
+    border: 2px solid #fe980f
+}
+
+.fondo_naranja {
+    background-color: #fe980f
+}
+
+.flash:not(.alert-error) {
+    border: 2px solid #fe980f;
+    color: #fe980f
+}
+
+fieldset.borde_naranja legend {
+    background-color: white;
+    font-weight: bold;
+    padding: 3px;
+    margin-left: 10px;
+    width: inherit;
+    border-bottom: 0px;
+    margin-bottom: 0px;
+}
+
+.ayuda.borde_naranja, .ayuda.fondo_naranja {
+    font-style: normal;
+    font-size: 1.2em
+}
+
+.ayuda.borde_naranja {
+    color: #fe980f
+}
+
+.ayuda.fondo_naranja {
+    color: #fff
+}
+
+/*#circuloPrecioUnidad {*/
+/*    position: fixed;*/
+/*    bottom: 15px;*/
+/*    right: 15px;*/
+/*    height: 90px;*/
+/*    width: 120px;*/
+/*    background-color: #ff9933;*/
+/*    border-radius: 15px;*/
+/*    z-index: 9895650;*/
+/*    border:2px solid white;*/
+/*    cursor: pointer;*/
+/*    display: none;*/
+/*}*/
+
+.radios{
+    float: right;
+    text-align: right;
+}
+
+.radios input[type="radio"]{
+    display: none;
+}
+
+#radioColorB + label,#radioEstampadono
+.btn-default{
+    border-radius: 5px;
+}
+
+/**::-webkit-input-placeholder{*/
+/*color: black;*/
+/*}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.onoffswitch {
+    position: relative; width: 126px;
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
+}
+.onoffswitch-checkbox {
+    display: none;
+}
+.onoffswitch-label {
+    display: block; overflow: hidden; cursor: pointer;
+    border: 2px solid #E3E3E3; border-radius: 36px;
+}
+.onoffswitch-inner {
+    display: block; width: 200%; margin-left: -100%;
+    transition: margin 0.3s ease-in 0s;
+}
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+    display: block; float: left; width: 50%; height: 36px; padding: 0; line-height: 36px;
+    font-size: 16px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+    box-sizing: border-box;
+}
+.onoffswitch-inner:before {
+    content: "Blancas";
+    padding-left: 17px;
+    background-color: #FFFFFF; color: #666666;
+}
+.onoffswitch-inner:after {
+    content: "Color";
+    padding-right: 17px;
+    background-color: #FFFFFF; color: #666666;
+    text-align: right;
+}
+.onoffswitch-switch {
+    display: block; width: 33px; margin: 1.5px;
+    background: #A1A1A1;
+    position: absolute; top: 0; bottom: 0;
+    right: 86px;
+    border: 2px solid #E3E3E3; border-radius: 36px;
+    transition: all 0.3s ease-in 0s;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+    margin-left: 0;
+}
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+    right: 0px;
+    background-color: #27A1CA;
+}
+
+.ulDouble {
+    columns: 2;
+    -webkit-columns: 2;
+    -moz-columns: 2;
+    /*min-width: 500px;*/
+}
+
+.ulTriple {
+    columns: 3;
+    -webkit-columns: 3;
+    -moz-columns: 3;
+    min-width: 500px;
+}
+
+
+
+/* ---------------------------------------------------
+    SIDEBAR STYLE
+----------------------------------------------------- */
+.wrapper {
+    display: flex;
+    align-items: stretch;
+    perspective: 1500px;
+}
+
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    /*background: #7386D5;*/
+    /*color: #fff;*/
+    transition: all 0.6s cubic-bezier(0.945, 0.020, 0.270, 0.665);
+    transform-origin: bottom left;
+    padding-left: 15px;
+}
+
+#sidebar.active {
+    margin-left: -250px;
+    transform: rotateY(119deg);
+}
+
+#sidebar .sidebar-header {
+    padding: 20px;
+    background: #6d7fcc;
+}
+
+#sidebar ul.components {
+    padding: 20px 0;
+    border-bottom: 1px solid #47748b;
+}
+
+#sidebar ul p {
+    color: #fff;
+    padding: 10px;
+}
+
+#sidebar ul li a {
+    padding: 10px;
+    font-size: 1.1em;
+    display: block;
+}
+#sidebar ul li a:hover {
+    color: #7386D5;
+    background: #fff;
+}
+
+#sidebar ul li.active > a, a[aria-expanded="true"] {
+    color: #fff;
+    background: #6d7fcc;
+}
+
+
+a[data-toggle="collapse"] {
+    position: relative;
+}
+
+a[aria-expanded="false"]::before, a[aria-expanded="true"]::before {
+    content: '\e259';
+    display: block;
+    position: absolute;
+    right: 20px;
+    font-family: 'Glyphicons Halflings';
+    font-size: 0.6em;
+}
+a[aria-expanded="true"]::before {
+    content: '\e260';
+}
+
+/*ul ul a {*/
+/*font-size: 0.9em !important;*/
+/*padding-left: 30px !important;*/
+/*background: #6d7fcc;*/
+/*}*/
+
+/*ul.CTAs {*/
+/*padding: 20px;*/
+/*}*/
+
+/*ul.CTAs a {*/
+/*text-align: center;*/
+/*font-size: 0.9em !important;*/
+/*display: block;*/
+/*border-radius: 5px;*/
+/*margin-bottom: 5px;*/
+/*}*/
+
+/*a.download {*/
+/*background: #fff;*/
+/*color: #7386D5;*/
+/*}*/
+
+/*a.article, a.article:hover {*/
+/*background: #6d7fcc !important;*/
+/*color: #fff !important;*/
+/*}*/
+
+
+
+/* ---------------------------------------------------
+    CONTENT STYLE
+----------------------------------------------------- */
+#content {
+    padding: 20px;
+    /*min-height: 100vh;*/
+    transition: all 0.3s;
+    width: 100%;
+}
+
+/*#sidebarCollapse {*/
+/*width: 40px;*/
+/*height: 40px;*/
+/*background: #f5f5f5;*/
+/*}*/
+
+/*#sidebarCollapse span {*/
+/*width: 80%;*/
+/*height: 2px;*/
+/*margin: 0 auto;*/
+/*display: block;*/
+/*background: #555;*/
+/*transition: all 0.8s cubic-bezier(0.810, -0.330, 0.345, 1.375);*/
+/*transition-delay: 0.2s;*/
+/*}*/
+
+/*#sidebarCollapse span:first-of-type {*/
+/*transform: rotate(45deg) translate(2px, 2px);*/
+/*}*/
+/*#sidebarCollapse span:nth-of-type(2) {*/
+/*opacity: 0;*/
+/*}*/
+/*#sidebarCollapse span:last-of-type {*/
+/*transform: rotate(-45deg) translate(1px, -1px);*/
+/*}*/
+
+/*#sidebarCollapse.active span {*/
+/*transform: none;*/
+/*opacity: 1;*/
+/*margin: 5px auto;*/
+/*}*/
+
+/* ---------------------------------------------------
+    MEDIAQUERIES
+----------------------------------------------------- */
+@media (max-width: 768px) {
+    #sidebar {
+        margin-left: -250px;
+        transform: rotateY(90deg);
+    }
+    #sidebar.active {
+        margin-left: 0;
+        transform: none;
+    }
+    #sidebarCollapse span:first-of-type,
+    #sidebarCollapse span:nth-of-type(2),
+    #sidebarCollapse span:last-of-type {
+        transform: none;
+        opacity: 1;
+        margin: 5px auto;
+    }
+    #sidebarCollapse.active span {
+        margin: 0 auto;
+    }
+    #sidebarCollapse.active span:first-of-type {
+        transform: rotate(45deg) translate(2px, 2px);
+    }
+    #sidebarCollapse.active span:nth-of-type(2) {
+        opacity: 0;
+    }
+    #sidebarCollapse.active span:last-of-type {
+        transform: rotate(-45deg) translate(1px, -1px);
+    }
+}
+
+
+
+.textosTkm h1{
+    color: #044266;
+    font-family: 'Roboto', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 15px;
+    text-transform: uppercase;
+    position: relative;
+    text-align: center;
+
+}
+
+.textosTkm h2{
+    color: #044266;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 15px;
+    text-transform: uppercase;
+    position: relative;
+    text-align: center;
+
+}
+
+.textosTkm h3{
+    color: #044266;
+    font-family: 'Roboto', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    margin: 0 15px;
+    text-transform: uppercase;
+    position: relative;
+    text-align: center;
+
+}
+
+
+/* Estilos para los grupos de filtros */
+.filter-group {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+.filter-group__title {
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+/* Estilos para el botón del acordeón */
+.filter-group__toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    width: 100%;
+    text-align: left;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+.filter-group__toggle .fa {
+    transition: transform 0.3s ease;
+}
+
+.filter-group__toggle[aria-expanded="true"] .fa {
+    transform: rotate(45deg);
+}
+
+.filter-group__body {
+    padding-left: 10px;
+}
+
+/* Estilos para las opciones de checkbox */
+.filter-group__option {
+    margin-bottom: 8px;
+}
+
+.filter-group__option label {
+    display: inline;
+    margin-left: 5px;
+    font-weight: normal;
+    color: #666;
+    cursor: pointer;
+}
+
+.filter-group__option input[type="checkbox"] {
+    cursor: pointer;
+}
+
+/* Estilos para los filtros de color */
+.filter-group__body--colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    padding-left: 0;
+}
+
+.cuadro-color {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    cursor: pointer; /* <-- Asegúrate de que esta línea esté presente */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding: 0;
+}
+
+.cuadro-color:hover {
+    transform: scale(1.1);
+}
+
+.cuadro-color.checked {
+    border: 2px solid #000;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+}
+
+/* Clase de Bootstrap para ocultar elementos visualmente pero mantenerlos para lectores de pantalla */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    border: 0;
+}
+
+/* --- ESTILOS COMPLETOS PARA LA BARRA LATERAL DE FILTROS --- */
+
+/* NUEVO: Estilos para el comportamiento "Sticky" */
+.left-sidebar {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 20px;
+}
+
+/* Estilos para los grupos de filtros */
+.filter-group {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+.filter-group:last-child {
+    border-bottom: none;
+}
+
+.filter-group__title {
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 0 0 10px 0;
+    color: #333;
+}
+
+/* Estilos para el botón del acordeón */
+.filter-group__toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    width: 100%;
+    text-align: left;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+.filter-group__toggle .fa {
+    transition: transform 0.3s ease;
+}
+
+.filter-group__toggle:not(.collapsed) .fa {
+    transform: rotate(45deg);
+}
+
+
+.filter-group__body {
+    padding-left: 10px;
+}
+
+/* Estilos para las opciones de checkbox */
+.filter-group__option {
+    margin-bottom: 8px;
+}
+
+.filter-group__option label {
+    display: inline;
+    margin-left: 5px;
+    font-weight: normal;
+    color: #666;
+    cursor: pointer;
+}
+
+.filter-group__option input[type="checkbox"] {
+    cursor: pointer;
+}
+
+/* Estilos para la lista de enlaces de categorías (caso de 1 marca) */
+.category-link-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.category-link {
+    color: #333333;
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.category-link:hover {
+    color: #ff9000;
+    text-decoration: none;
+}
+
+.category-link.is-active {
+    color: #ff9000;
+}
+
+.category-link .fa {
+    margin-right: 5px;
+}
+
+/* Estilos para los filtros de color */
+.filter-group__body--colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    padding-left: 0;
+}
+
+.cuadro-color {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding: 0;
+}
+
+.cuadro-color:hover {
+    transform: scale(1.1);
+}
+
+.cuadro-color.checked {
+    border: 2px solid #000;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+}
+
+/* Clase de Bootstrap para ocultar elementos visualmente */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+
+/* --- CÍRCULO FLOTANTE DE PRECIO (ID NUEVO) --- */
+#floatingPriceCircle {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    /*width: 100px;*/
+    /*height: 100px;*/
+    background-color: #ff9933; /* Naranja corporativo */
+    background: linear-gradient(135deg, #ff9933 0%, #ff7700 100%);
+    border-radius: 10%;
+    color: white;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 9999;
+    cursor: pointer;
+    display: none; /* Oculto por defecto */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    transition: transform 0.3s ease, bottom 0.3s ease;
+    border: 2px solid white;
+    padding: 10px;
+}
+
+#floatingPriceCircle:hover {
+    transform: scale(1.05);
+}
+
+.circulo-contenido {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    line-height: 1.2;
+}
+
+.circulo-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    opacity: 0.9;
+}
+
+.circulo-valor {
+    font-size: 22px;
+    font-weight: bold;
+    font-family: 'Roboto', sans-serif;
+}
+
+.circulo-unidad {
+    font-size: 12px;
+}
+
+/* Ajuste para móviles */
+@media (max-width: 768px) {
+    #floatingPriceCircle {
+        width: 80px;
+        height: 80px;
+        bottom: 15px;
+        right: 15px;
+    }
+    .circulo-valor {
+        font-size: 18px;
+    }
+}
+
+/* ... estilos anteriores del círculo ... */
+
+/* CORRECCIÓN VISUALIZACIÓN MÓVIL
+   Fuerza que el bloque de Tallas y Personalización pase POR ENCIMA
+   de la columna de información 'sticky' al hacer scroll */
+
+#div_personalizacion,
+#tallas,
+.product-information {
+    position: relative !important;
+    z-index: 100 !important; /* Z-index 100 gana al sticky (que suele ser auto o 10) */
+    background-color: #fff !important; /* Fondo opaco para tapar lo de abajo */
+    transform: translate3d(0,0,0); /* Truco para forzar renderizado de capa en algunos móviles */
+}
+
+/* Ajuste específico para que la leyenda del fieldset no se corte */
+fieldset.product-information legend {
+    background-color: #fff;
+    padding: 0 10px;
+}
+
+fieldset.product-information,
+.product-information {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+
+ .home-intro-block {
+     padding: 30px 0;
+ }
+.titulo-principal-home {
+    color: #044266;
+    font-family: 'Roboto', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    text-transform: uppercase;
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 3;
+}
+.intro-text p {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #555;
+    margin-bottom: 15px;
+}
+.features-container {
+    margin-top: 40px;
+}
+.feature-icon {
+    max-width: 60px;
+    height: auto;
+    margin-bottom: 15px;
+}
+.cuadro_home h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #044266;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+}
+.cuadro_home p {
+    font-size: 14px;
+    /*color: #666;*/
+    line-height: 1.5;
+}
