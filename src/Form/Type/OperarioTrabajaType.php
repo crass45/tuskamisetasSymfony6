@@ -11,6 +11,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Form\Extension\Core\Type\FileType; // AÑADIR ESTE IMPORT
+use Symfony\Component\Form\Extension\Core\Type\IntegerType; // AÑADIR ESTE IMPORT
 
 class OperarioTrabajaType extends AbstractType
 {
@@ -18,12 +20,19 @@ class OperarioTrabajaType extends AbstractType
     {
         $builder
             ->add('nombre', TextType::class)
+            ->add('edad', IntegerType::class, ['required' => true]) // <-- FALTABA ESTE
             ->add('telefono', TextType::class)
             ->add('email', EmailType::class)
             ->add('provincia', TextType::class)
             ->add('pais', TextType::class)
             ->add('experiencia', TextType::class)
             ->add('empresas', TextType::class)
+            // --- CAMPO DE SUBIDA DE FICHEROS ---
+            ->add('cv', FileType::class, [ // <-- FALTABA ESTE
+                'label' => 'Subir CV (PDF/Word)',
+                'required' => true,
+            ])
+            // -----------------------------------
             ->add('operario', CheckboxType::class, ['required' => false])
             ->add('comercial', CheckboxType::class, ['required' => false])
             ->add('design', CheckboxType::class, ['required' => false])

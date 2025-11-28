@@ -1,4 +1,4 @@
-{% extends "SSTiendaBundle:Web:indexTemplate.html.twig" %}
+{% extends "web/indexTemplate.html.twig" %}
 
 {% block title %}Presupuesto Confirmado{% endblock %}
 {% block metaDescription %}Confirmación del presupuesto{% endblock %}
@@ -18,7 +18,7 @@
                 <div style="text-align: right; border-top: 1px dashed #515151;">
                     <br>
                     <br>
-                    <a href="{{ path('ss_tienda_home') }}" style="text-align: right;"
+                    <a href="{{ path('app_home') }}" style="text-align: right;"
                        class="btn btn-default check_out">{% trans %}Volver a la web{% endtrans %}</a>
                 </div>
             </div>
