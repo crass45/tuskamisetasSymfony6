@@ -70,36 +70,86 @@ final class PedidoAdmin extends AbstractAdmin
         /** @var Pedido|null $pedido */
         $pedido = $this->getSubject();
 
-        $form
-            ->tab("Pedido");
-        if ($pedido && $pedido->getContacto() && $pedido->getContacto()->getUsuario()) {
-//                $form->with("General") // Volvemos a abrir el mismo grupo de campos
-//                ->add('contacto.groups', ModelType::class, [
-//                    'label' => "Grupos del Usuario (solo lectura)",
-//                    'disabled' => true,
-//                    'btn_add' => false,
-//                    'required' => false,
-//                    'multiple' => true,
-//                    'choice_label' => 'name',
-//                ])
-//                    ->end();
+        $infoGruposHtml = '';
+
+        if ($pedido && $pedido->getId() && $pedido->getContacto()) {
+            $contacto = $pedido->getContacto();
+            $usuario = $contacto->getUsuario();
+
+            $badges = [];
+
+            // 1. Grupos reales del Usuario (si tiene usuario asociado)
+            if ($usuario) {
+                foreach ($usuario->getGroups() as $grupo) {
+                    $badges[] = sprintf(
+                        '<span class="label label-primary" style="font-size: 11px; margin-right: 5px; padding: 4px 8px;">%s</span>',
+                        $grupo->getName()
+                    );
+                }
+            }
+
+            // 2. Grupos "Hardcodeados" / Lógica de Negocio (basado en Contacto)
+
+            // a) Recargo de Equivalencia
+            // Ajusta 'isRecargoEquivalencia()' al método real de tu entidad Contacto
+            if (method_exists($contacto, 'isRecargoEquivalencia') && $contacto->isRecargoEquivalencia()) {
+                $badges[] = '<span class="label label-warning" style="font-size: 11px; margin-right: 5px; padding: 4px 8px;">Recargo Equivalencia</span>';
+            } elseif (property_exists($contacto, 'recargo') && $contacto->isRecargoEquivalencia()) {
+                // Alternativa si se llama getRecargo()
+                $badges[] = '<span class="label label-warning" style="font-size: 11px; margin-right: 5px; padding: 4px 8px;">Recargo Equivalencia</span>';
+            }
+
+            // b) Intracomunitario
+            // Ajusta 'isIntracomunitario()' al método real
+            if (method_exists($contacto, 'isIntracomunitario') && $contacto->isIntracomunitario()) {
+                $badges[] = '<span class="label label-success" style="font-size: 11px; margin-right: 5px; padding: 4px 8px;">Intracomunitario</span>';
+            }
+
+            // 3. Generar HTML final
+            if (count($badges) > 0) {
+                $infoGruposHtml = '<div style="margin-top: 8px;">' . implode(' ', $badges) . '</div>';
+            } else {
+                $infoGruposHtml = '<span class="text-muted" style="font-size: 11px;"><i class="fa fa-info-circle"></i> Sin grupos ni condiciones especiales</span>';
+            }
         }
+
+        $form->tab("Pedido");
+
+        // 2. Generamos el HTML del botón dinámicamente
+        $botonVerImagen = '';
+        if ($pedido && $pedido->getMontaje()) {
+            $ruta = $pedido->getMontaje();
+
+            $botonVerImagen = sprintf(
+                '<a href="%s" target="_blank" class="btn btn-sm btn-info" style="margin-top: 5px;">' .
+                '<i class="fa fa-external-link" aria-hidden="true"></i> Ver Montaje</a>',
+                $ruta
+            );
+        }
+
         $form->with("General", ["class" => "col-md-9"])
-            // Corregido: idUsuario -> contacto
-//            ->add('contacto.usuario.groups', ModelType::class, [
-//                'label' => "Grupos",
-//                'disabled' => true,
-//                'btn_add' => false,
-//                'required' => false,
-//                'multiple' => true,
-//            ])
+            ->add('gruposUsuarioInfo', \Symfony\Component\Form\Extension\Core\Type\TextType::class, [
+                'label' => 'Tipo de Cliente', // Título bonito
+                'mapped' => false,               // No se guarda en BBDD
+                'required' => false,
+                'disabled' => true,              // No editable
+
+                // EL TRUCO: Ponemos el HTML en la ayuda
+                'help' => $infoGruposHtml,
+                'help_html' => true,
+
+                // EL TRUCO VISUAL: Ocultamos el "input" gris feo para dejar solo el texto
+                'attr' => ['style' => 'display: none;']
+            ])
             ->add('fecha', DateTimePickerType::class, ['format' => 'dd-MM-yyyy', "disabled" => true])
             ->add('fechaEntrega', DateTimePickerType::class, ['format' => 'dd-MM-yyyy', 'required' => false])
             ->add('bultosEstimados', null, ["disabled" => true])
             ->add('codigoSermepa', null, ["disabled" => true])
             ->add('seguimientoEnvio', TextType::class, ['required' => false])
             ->add('referenciaInterna', TextType::class, ['label' => 'Nombre del montaje', 'required' => false])
-            ->add('montaje', TextType::class, ['label' => 'Enlace al montaje (WeTransfer)', 'required' => false])
+            ->add('montaje', TextType::class, ['label' => 'Enlace al montaje (Drive)', 'required' => false, 'help' => $botonVerImagen,
+                'help_html' => true
+                ])
             ->add('enviaMail', CheckboxType::class, ['required' => false, 'label' => 'Enviar e-mail al cambiar estado','mapped' => true])
             ->add('estado')
             ->add('incidencias', TextareaType::class, ['required' => false, 'attr' => ['class' => 'tinymce']])
@@ -253,7 +303,10 @@ final class PedidoAdmin extends AbstractAdmin
             ->add('contacto') // Corregido
             ->add('estado', null, ['template' => 'admin/CRUD/list_estado_pedido.html.twig'])
             ->add('total', 'currency', ['currency' => 'EUR'])
-            ->add('referenciaInterna', null, ['label' => 'Nombre del Montaje'])
+            ->add('referenciaInterna', null, [
+                'label' => 'Nombre Montaje',
+                'template' => 'admin/CRUD/list_pedido_montaje.html.twig' // Usamos nuestra plantilla
+            ])
             ->add(ListMapper::NAME_ACTIONS, null, [
                 'actions' => [
                     'show' => [],

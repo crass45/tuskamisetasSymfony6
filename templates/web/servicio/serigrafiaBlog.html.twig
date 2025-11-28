@@ -1,29 +1,14 @@
-{% extends "SSTiendaBundle:Estaticos:estaticoPlantialla.html.twig" %}
+{% extends "web/estaticoPlantilla.html.twig" %}
 
 {% block title %}Serigrafía textil | Estampación económica de alta calidad{% endblock %}
 {% block metaDescription %}La serigrafía textil es una de las formas de estampación más usuales, te explicamos en qué consiste, cómo se hace y cuáles son sus ventajas. ¡Visítanos!{% endblock %}
 
 {% block migas %}
-    <!-- Creates the bootstrap modal where the image will appear -->
-    <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span
-                                aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                </div>
-                <div class="modal-body">
-                    <img src="" id="imagepreview" style="width: 100%">
-                </div>
-            </div>
-        </div>
-    </div>
     <div class="breadcrumbs">
         <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
             <li itemprop="itemListElement" itemscope
                 itemtype="http://schema.org/ListItem">
-                <a itemprop="item" href="{{ path('ss_tienda_home') }}">
+                <a itemprop="item" href="{{ path('app_home') }}">
                     <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
                 </a>
                 <meta itemprop="position" content="1"/>
@@ -31,7 +16,7 @@
             <li itemprop="itemListElement" itemscope
                 itemtype="http://schema.org/ListItem" class="active">
                 <a itemprop="item" href="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}" class="miActive">
-                    <span itemprop="name">{% trans %}Serigrafía{% endtrans %}</span>
+                    <span itemprop="name">{% trans %}Serigrafia{% endtrans %}</span>
                 </a>
                 <meta itemprop="position" content="2"/>
             </li>

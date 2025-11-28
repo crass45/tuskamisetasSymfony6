@@ -1,0 +1,15 @@
+{# templates/admin/CRUD/list_pedido_montaje.html.twig #}
+{% extends '@SonataAdmin/CRUD/base_list_field.html.twig' %}
+
+{% block field %}
+    {% if object.montaje is defined and object.montaje is not empty %}
+        {# Si hay URL, hacemos el nombre clicable #}
+        <div style="width: 100%; text-align: center">
+        <a href="{{ object.montaje }}" target="_blank" title="Abrir enlace de montaje">
+            {{ value|default('Ver Montaje') }} <i class="fa fa-external-link" style="font-size: 0.8em;"></i>
+        </a></div>
+    {% else %}
+        {# Si no hay URL, mostramos solo el nombre (o un guion si está vacío) #}
+        {{ value|default('') }}
+    {% endif %}
+{% endblock %}

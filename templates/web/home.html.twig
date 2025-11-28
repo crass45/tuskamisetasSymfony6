@@ -24,6 +24,71 @@
             ]
         }
     </script>
+
+
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [{
+                "@type": "Question",
+                "name": "¿Qué es una empresa de serigrafía textil y qué servicios ofrece?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Una empresa de serigrafía textil se especializa en la personalización de prendas utilizando técnicas como la serigrafía, el bordado o la impresión digital. En TusKamisetas ofrecemos servicios integrales para ropa laboral, merchandising, eventos y moda, con fábrica propia para garantizar calidad y precio."
+                }
+            }, {
+                "@type": "Question",
+                "name": "¿Vendéis a particulares o solo a empresas?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "¡Vendemos a todos! Atendemos tanto a particulares (regalos, fiestas, despedidas) como a empresas (ropa laboral, promociones) y diseñadores. No cerramos puertas a nadie."
+                }
+            }, {
+                "@type": "Question",
+                "name": "¿Cómo conseguir camisetas personalizadas baratas al por mayor?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Para conseguir el mejor precio, recomendamos realizar pedidos por volumen. Al ser mayoristas, ofrecemos descuentos escalados por cantidad. Elegir camisetas blancas y serigrafía a una sola tinta es la opción más económica para grandes tiradas."
+                }
+            }, {
+                "@type": "Question",
+                "name": "¿Hay un pedido mínimo para comprar?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "No, en la mayoría de nuestros productos puedes comprar desde 1 unidad. Sin embargo, para optimizar el precio unitario, recomendamos pedidos de mayor volumen para dividir los costes fijos de producción."
+                }
+            }, {
+                "@type": "Question",
+                "name": "¿Cuáles son los plazos de entrega para camisetas personalizadas?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "El plazo estándar es de 9-10 días laborables. Ofrecemos servicio exprés de 7 días y un servicio urgente de 72 horas bajo consulta. Las prendas sin personalizar se entregan en 4-5 días."
+                }
+            }, {
+                "@type": "Question",
+                "name": "¿Qué diferencia hay entre serigrafía y sublimación?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "La serigrafía aplica tinta sobre la prenda y es ideal para algodón y grandes cantidades. La sublimación tiñe químicamente la fibra, tiene tacto cero, pero solo se puede realizar sobre poliéster blanco o colores muy claros."
+                }
+            }, {
+                "@type": "Question",
+                "name": "¿Qué tipo de prendas puedo personalizar?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Además de camisetas, personalizamos sudaderas, polos, gorras, bolsas (tote bags), chalecos, ropa laboral y deportiva de marcas líderes como Roly, Fruit of the Loom o JHK."
+                }
+            }, {
+                "@type": "Question",
+                "name": "¿Cómo realizo mi pedido online?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Selecciona la prenda en nuestro catálogo, elige color, tallas y cantidad. Luego añade la técnica de personalización y sube tu logo. Siempre enviamos un boceto digital gratuito antes de imprimir para tu confirmación."
+                }
+            }]
+        }
+    </script>
 {% endblock %}
 
 
@@ -121,218 +186,287 @@ z-index: 3" class="titulo">
                 {# </div> #}
             </div>
         </div><!--/slider-->
-        {# <div class="titulo1" style="text-align: center; "> #}
-        {# <div style="padding: 10px; margin-bottom: 0; color: white;font-family: 'Roboto', sans-serif; background-color: #f90; font-size: 12px; line-height: 12px; height: 20px"> #}
-        {# &nbsp; #}
-        {# </div> #}
-        {# </div> #}
+
         <div class="container">
-            <div class="row text-center">
-                <h2 style="color: #044266;
-font-family: 'Roboto', sans-serif;
-font-size: 24px;
-font-weight: 700;
-text-align: center;
-text-transform: uppercase;
-position: relative;
-z-index: 3" class="titulo">TU TIENDA ONLINE PARA PERSONALIZAR CAMISETAS, ROPA Y REGALOS PUBLICITARIOS</h2>
-                <p>
-                    En TusKamisetas, nos <b>especializamos en la serigrafía textil</b> y en ofrecer una amplia variedad
-                    de opciones para personalizar camisetas, ropa de trabajo, merchandising y productos promocionales.
-                    Si buscas una empresa con experiencia y compromiso para tu proyecto, has llegado al lugar adecuado.
-                </p>
-                <p>Con más de 25 años de trayectoria, nos hemos consolidado como una de las <b>empresas de serigrafía
-                        textil</b> más destacadas en el mercado. Nuestro enfoque es ofrecer productos de alta calidad a
-                    precios competitivos, y nuestra amplia gama de opciones te permitirá encontrar lo que buscas.
-                </p>
-                <article class="col-sm-3 col-xs-6 cuadro_home">
-                    <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
-                                                     style="max-width: 60px;"
-                                                     alt="{% trans %}fabrica propia{% endtrans %}"/>
-                        <h3>
-                            {% trans %}FABRICA PROPIA{% endtrans %}
-                        </h3>
-                    </header>
+            <div class="row text-center home-intro-block">
+                {# Título H2: Ataca ambos públicos. "Personalizar" es B2C, "Empresa/Publicidad" es B2B #}
+                <h2 class="titulo-principal-home">
+                    {% trans %}CAMISETAS, ROPA Y REGALOS PERSONALIZADOS: PARA TI, TU EMPRESA O TU EVENTO{% endtrans %}
+                </h2>
+
+                <div class="intro-text col-md-10 col-md-offset-1">
                     <p>
-                        {% trans %}Personalizamos nosotros. Sin intermediarios. Nuestro taller dispone de los mejores avances en cuanto técnicas de estampado, somos muy profesionales en lo que hacemos{% endtrans %}
+                        En <strong>TusKamisetas</strong> acercamos la calidad profesional a todo el mundo.
+                        Somos especialistas en <strong>serigrafía e impresión digital</strong> para que puedas crear
+                        desde una única camiseta para un regalo especial, hasta miles de unidades para uniformes
+                        corporativos o <em>merchandising</em> publicitario.
                     </p>
-                </article>
-                <article class="col-sm-3 col-xs-6 cuadro_home">
-                    <header class="text-center"><img src="{{ asset('images/icons/proveedor.png') }}"
-                                                     style="max-width: 60px;"
-                                                     alt="{% trans %}Varideda de proveedores{% endtrans %}"/>
-                        <h3>
-                            {% trans %}VARIEDAD DE PROVEEDORES{% endtrans %}
-                        </h3>
-                    </header>
                     <p>
-                        {% trans %}Trabajamos con los principales proveedores textiles a nivel internacional.{% endtrans %}
+                        Disfruta de las ventajas de comprar <strong>directamente a fábrica</strong>: sin intermediarios,
+                        con la mejor tecnología de estampación y precios ajustados a tu volumen de compra.
+                        <strong>Grandes marcas y particulares</strong> ya confían en nosotros.
                     </p>
-                </article>
-                <article class="col-sm-3 col-xs-6 cuadro_home">
-                    <header class="text-center"><img src="{{ asset('images/icons/reparto.png') }}"
-                                                     style="max-width: 60px;"
-                                                     alt="{% trans %}Entregas rápdias{% endtrans %}"/>
-                        <h3>
-                            {% trans %}ENTREGAS RÁPIDAS{% endtrans %}
-                        </h3>
-                    </header>
-                    <p>
-                        {% trans %}Realizamos envíos rápidos desde nuestro taller y gratuitos a partir de 300€. Sin intermediarios ni contratiempos{% endtrans %}
-                    </p>
-                </article>
-                <article class="col-sm-3 col-xs-6 cuadro_home">
-                    <header class="text-center"><img src="{{ asset('images/icons/pedidos.png') }}"
-                                                     style="max-width: 60px;"
-                                                     alt="{% trans %}descuento por cantidades{% endtrans %}"/>
-                        <h3>
-                            {% trans %}DESCUENTOS POR CANTIDADES{% endtrans %}
-                        </h3>
-                    </header>
-                    <p>
-                        {% trans %}Disponemos de máquinas de última técnologia para impresión y bordado, ajustadas con precisión para realizar un trabajo perfecto.{% endtrans %}
-                    </p>
-                </article>
+                </div>
+
+                <div class="row features-container">
+
+                    {# CAMBIO: De "Fábrica Propia" a "Producción Propia". Suena menos industrial, más artesano/calidad #}
+                    <article class="col-sm-3 col-xs-6 cuadro_home feature-item">
+                        <header class="text-center">
+                            <img src="{{ asset('images/icons/serigrafia.png') }}" alt="{% trans %}Taller propio de personalización{% endtrans %}" class="feature-icon"/>
+                            <h3>{% trans %}PRODUCCIÓN PROPIA{% endtrans %}</h3>
+                        </header>
+                        <p>
+                            {% trans %}Controlamos todo el proceso en nuestro taller. Tanto si necesitas <strong>1 unidad como 10.000</strong>, garantizamos acabados profesionales y duraderos.{% endtrans %}
+                        </p>
+                    </article>
+
+                    <article class="col-sm-3 col-xs-6 cuadro_home feature-item">
+                        <header class="text-center">
+                            <img src="{{ asset('images/icons/proveedor.png') }}" alt="{% trans %}Las mejores marcas de ropa para personalizar{% endtrans %}" class="feature-icon"/>
+                            <h3>{% trans %}CATÁLOGO PREMIUM{% endtrans %}</h3>
+                        </header>
+                        <p>
+                            {% trans %}Seleccionamos las mejores prendas de marcas líderes (Roly, Fruit of the Loom...) para que tu diseño luzca perfecto, ya sea para <strong>moda, trabajo o publicidad</strong>.{% endtrans %}
+                        </p>
+                    </article>
+
+                    <article class="col-sm-3 col-xs-6 cuadro_home feature-item">
+                        <header class="text-center">
+                            <img src="{{ asset('images/icons/reparto.png') }}" alt="{% trans %}Envíos rápidos a domicilio{% endtrans %}" class="feature-icon"/>
+                            <h3>{% trans %}ENVÍO RÁPIDO{% endtrans %}</h3>
+                        </header>
+                        <p>
+                            {% trans %}Sabemos que la fecha importa. Recibe tu pedido cómodamente en casa o en tu empresa. Y si superas los 300€, <strong>¡el envío es gratis!</strong>{% endtrans %}
+                        </p>
+                    </article>
+
+                    {# CAMBIO: De "Descuentos" a "El Mejor Precio". Atrae al particular que busca "barato" y al mayorista que busca "margen" #}
+                    <article class="col-sm-3 col-xs-6 cuadro_home feature-item">
+                        <header class="text-center">
+                            <img src="{{ asset('images/icons/pedidos.png') }}" alt="{% trans %}Precios escalados por cantidad{% endtrans %}" class="feature-icon"/>
+                            <h3>{% trans %}PRECIOS DE FÁBRICA{% endtrans %}</h3>
+                        </header>
+                        <p>
+                            {% trans %}Nuestra política es transparente: <strong>cuantas más unidades pides, menos pagas</strong>. Pero siempre con precios competitivos desde la primera unidad.{% endtrans %}
+                        </p>
+                    </article>
+
+                </div>
             </div>
         </div>
-        <div class="container-fluid" style="padding: 20px">
-            <div class="row">
-                <div class="col-sm-6" style="padding: 5px">
-                    <div class="trabajoitem"
-                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What%20We%20Do/What%20We%20Do/Screen-Printing2.jpg);">
-                        <a href="{{ path('app_service_serigrafia') }}">
-                            <div class="mp2-griditem-mask">
-                                <div class="row">
-                                    <h3 class="col-lg-12">SERIGRAFIA</h3>
-                                    <p class="col-lg-12"><b>Da vida a tus diseños con nuestra serigrafía de alta
-                                            calidad</b>.
-                                        Personaliza tus camisetas,
-                                        sudaderas y más con un acabado duradero y profesional. ¡Solicita tu presupuesto
-                                        ahora y
-                                        empieza a crear!</p>
-                                    <div class="col-lg-12">
-                                        <button class="button">Solicita tu presupuesto de serigrafía aquí</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
 
-                <div class="col-sm-6" style="padding: 5px">
-                    <div class="trabajoitem"
-                         style="background-image: url({{ asset('images/1-sublimacion-textil.jpg') }});">
-                        <a href="{{ path('app_service_sublimacion') }}">
-                            <div class="mp2-griditem-mask">
-                                <div class="row">
-                                    <h3 class="col-lg12">SUBLIMACIÓN</h3>
-                                    <p class="col-lg-12">
-                                        <b>Colores vibrantes y detalles impecables con nuestra sublimación</b>. Ideal
-                                        para
-                                        productos con diseños complejos y colores brillantes. ¡Haz que tu idea se vea
-                                        increíble!
-                                    </p>
-                                    <div class="col-lg-12">
-                                        <button class="button">Empieza tu personalización don sublimación ahora</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
 
-                <div class="col-sm-6" style="padding: 5px">
-                    <div class="trabajoitem"
-                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What_We_Do/DTF%20Process.jpg);">
-                        <a href="{{ path('app_service_dtf') }}">
-                            <div class="mp2-griditem-mask">
-                                <div class="row">
-                                    <h3 class="col-lg12">IMPRESIÓN DTF</h3>
-                                    <p class="col-lg-12">
-                                        <b>Impresión DTF para diseños de alta definición en una amplia variedad de
-                                            tejidos</b>.
-                                        Obtén resultados excepcionales, incluso en materiales oscuros o difíciles. ¡Haz
-                                        tu
-                                        pedido hoy mismo!
-                                    </p>
-                                    <div class="col-lg-12">
-                                        <button class="button">Descubre la impresión DTF y personaliza ahora</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
 
-                <div class="col-sm-6" style="padding: 5px">
-                    <div class="trabajoitem"
-                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What%20We%20Do/What%20We%20Do/DTG%20Full%20Resized%402x.png);">
-                        <a href="{{ path('app_service_dtg') }}">
-                            <div class="mp2-griditem-mask">
-                                <div class="row">
-                                    <h3 class="col-lg-12">DIGITAL DTG</h3>
-                                    <p class="col-lg-12">
-                                        <b>La impresión digital te permite personalizar con precisión y rapidez</b>.
-                                        Ideal
-                                        para
-                                        tiradas pequeñas o diseños intrincados. ¡Haz realidad tu proyecto con nosotros!
-                                    </p>
-                                    <div class="col-lg-12">
-                                        <button class="button">Solicita tu personalización digital aquí</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
+{#        <div class="container">#}
+{#            <div class="row text-center">#}
+{#                <h2 style="color: #044266;#}
+{#font-family: 'Roboto', sans-serif;#}
+{#font-size: 24px;#}
+{#font-weight: 700;#}
+{#text-align: center;#}
+{#text-transform: uppercase;#}
+{#position: relative;#}
+{#z-index: 3" class="titulo">TU TIENDA ONLINE PARA PERSONALIZAR CAMISETAS, ROPA Y REGALOS PUBLICITARIOS</h2>#}
+{#                <p>#}
+{#                    En TusKamisetas, nos <b>especializamos en la serigrafía textil</b> y en ofrecer una amplia variedad#}
+{#                    de opciones para personalizar camisetas, ropa de trabajo, merchandising y productos promocionales.#}
+{#                    Si buscas una empresa con experiencia y compromiso para tu proyecto, has llegado al lugar adecuado.#}
+{#                </p>#}
+{#                <p>Con más de 25 años de trayectoria, nos hemos consolidado como una de las <b>empresas de serigrafía#}
+{#                        textil</b> más destacadas en el mercado. Nuestro enfoque es ofrecer productos de alta calidad a#}
+{#                    precios competitivos, y nuestra amplia gama de opciones te permitirá encontrar lo que buscas.#}
+{#                </p>#}
+{#                <article class="col-sm-3 col-xs-6 cuadro_home">#}
+{#                    <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"#}
+{#                                                     style="max-width: 60px;"#}
+{#                                                     alt="{% trans %}fabrica propia{% endtrans %}"/>#}
+{#                        <h3>#}
+{#                            {% trans %}FABRICA PROPIA{% endtrans %}#}
+{#                        </h3>#}
+{#                    </header>#}
+{#                    <p>#}
+{#                        {% trans %}Personalizamos nosotros. Sin intermediarios. Nuestro taller dispone de los mejores avances en cuanto técnicas de estampado, somos muy profesionales en lo que hacemos{% endtrans %}#}
+{#                    </p>#}
+{#                </article>#}
+{#                <article class="col-sm-3 col-xs-6 cuadro_home">#}
+{#                    <header class="text-center"><img src="{{ asset('images/icons/proveedor.png') }}"#}
+{#                                                     style="max-width: 60px;"#}
+{#                                                     alt="{% trans %}Varideda de proveedores{% endtrans %}"/>#}
+{#                        <h3>#}
+{#                            {% trans %}VARIEDAD DE PROVEEDORES{% endtrans %}#}
+{#                        </h3>#}
+{#                    </header>#}
+{#                    <p>#}
+{#                        {% trans %}Trabajamos con los principales proveedores textiles a nivel internacional.{% endtrans %}#}
+{#                    </p>#}
+{#                </article>#}
+{#                <article class="col-sm-3 col-xs-6 cuadro_home">#}
+{#                    <header class="text-center"><img src="{{ asset('images/icons/reparto.png') }}"#}
+{#                                                     style="max-width: 60px;"#}
+{#                                                     alt="{% trans %}Entregas rápdias{% endtrans %}"/>#}
+{#                        <h3>#}
+{#                            {% trans %}ENTREGAS RÁPIDAS{% endtrans %}#}
+{#                        </h3>#}
+{#                    </header>#}
+{#                    <p>#}
+{#                        {% trans %}Realizamos envíos rápidos desde nuestro taller y gratuitos a partir de 300€. Sin intermediarios ni contratiempos{% endtrans %}#}
+{#                    </p>#}
+{#                </article>#}
+{#                <article class="col-sm-3 col-xs-6 cuadro_home">#}
+{#                    <header class="text-center"><img src="{{ asset('images/icons/pedidos.png') }}"#}
+{#                                                     style="max-width: 60px;"#}
+{#                                                     alt="{% trans %}descuento por cantidades{% endtrans %}"/>#}
+{#                        <h3>#}
+{#                            {% trans %}DESCUENTOS POR CANTIDADES{% endtrans %}#}
+{#                        </h3>#}
+{#                    </header>#}
+{#                    <p>#}
+{#                        {% trans %}Disponemos de máquinas de última técnologia para impresión y bordado, ajustadas con precisión para realizar un trabajo perfecto.{% endtrans %}#}
+{#                    </p>#}
+{#                </article>#}
+{#            </div>#}
+{#        </div>#}
 
-                <div class="col-sm-6" style="padding: 5px">
-                    <div class="trabajoitem"
-                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What%20We%20Do/What%20We%20Do/embroidery2.jpg);">
-                        <a href="{{ path('app_service_bordados') }}">
-                            <div class="mp2-griditem-mask">
-                                <div class="row">
-                                    <h3 class="col-lg-12">BORDADOS Y PARCHES</h3>
-                                    <p class="col-lg-12">
-                                        <b>Agrega un toque de elegancia y distinción con nuestros bordados y parches</b>.
-                                        Perfectos
-                                        para ropa de trabajo, colecciones exclusivas o merchandising de alta gama. ¡Haz
-                                        tu
-                                        pedido ahora!
-                                    </p>
-                                    <div class="col-lg-12">
-                                        <button class="button">Personaliza con bordados y parches aquí</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
 
-                <div class="col-sm-6" style="padding: 5px">
-                    <div class="trabajoitem"
-                         style="background-image: url({{ asset('images/2-que-es-la-impresion-full-print.jpg') }});">
-                        <a href="{{ path('app_service_fullprint') }}">
-                            <div class="mp2-griditem-mask">
-                                <div class="row">
-                                    <h3 class="col-lg12">FULL PRINT</h3>
-                                    <p class="col-lg-12">
-                                        <b>Transforma tus productos con la personalización Full Print</b>. Diseños que
-                                        cubren
-                                        toda la prenda para un impacto visual total. ¡Crea algo único para tu marca o
-                                        evento!
-                                    </p>
-                                    <div class="col-lg-12">
-                                        <button class="button">Personaliza con Full Print ahora</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
+{#        <div class="container-fluid" style="padding: 20px">#}
+{#            <div class="row">#}
+{#                <div class="col-sm-6" style="padding: 5px">#}
+{#                    <div class="trabajoitem"#}
+{#                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What%20We%20Do/What%20We%20Do/Screen-Printing2.jpg);">#}
+{#                        <a href="{{ path('app_service_serigrafia') }}">#}
+{#                            <div class="mp2-griditem-mask">#}
+{#                                <div class="row">#}
+{#                                    <h3 class="col-lg-12">SERIGRAFIA</h3>#}
+{#                                    <p class="col-lg-12"><b>Da vida a tus diseños con nuestra serigrafía de alta#}
+{#                                            calidad</b>.#}
+{#                                        Personaliza tus camisetas,#}
+{#                                        sudaderas y más con un acabado duradero y profesional. ¡Solicita tu presupuesto#}
+{#                                        ahora y#}
+{#                                        empieza a crear!</p>#}
+{#                                    <div class="col-lg-12">#}
+{#                                        <button class="button">Solicita tu presupuesto de serigrafía aquí</button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </a>#}
+{#                    </div>#}
+{#                </div>#}
 
-            </div>
-        </div>
+{#                <div class="col-sm-6" style="padding: 5px">#}
+{#                    <div class="trabajoitem"#}
+{#                         style="background-image: url({{ asset('images/1-sublimacion-textil.jpg') }});">#}
+{#                        <a href="{{ path('app_service_sublimacion') }}">#}
+{#                            <div class="mp2-griditem-mask">#}
+{#                                <div class="row">#}
+{#                                    <h3 class="col-lg12">SUBLIMACIÓN</h3>#}
+{#                                    <p class="col-lg-12">#}
+{#                                        <b>Colores vibrantes y detalles impecables con nuestra sublimación</b>. Ideal#}
+{#                                        para#}
+{#                                        productos con diseños complejos y colores brillantes. ¡Haz que tu idea se vea#}
+{#                                        increíble!#}
+{#                                    </p>#}
+{#                                    <div class="col-lg-12">#}
+{#                                        <button class="button">Empieza tu personalización don sublimación ahora</button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </a>#}
+{#                    </div>#}
+{#                </div>#}
+
+{#                <div class="col-sm-6" style="padding: 5px">#}
+{#                    <div class="trabajoitem"#}
+{#                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What_We_Do/DTF%20Process.jpg);">#}
+{#                        <a href="{{ path('app_service_dtf') }}">#}
+{#                            <div class="mp2-griditem-mask">#}
+{#                                <div class="row">#}
+{#                                    <h3 class="col-lg12">IMPRESIÓN DTF</h3>#}
+{#                                    <p class="col-lg-12">#}
+{#                                        <b>Impresión DTF para diseños de alta definición en una amplia variedad de#}
+{#                                            tejidos</b>.#}
+{#                                        Obtén resultados excepcionales, incluso en materiales oscuros o difíciles. ¡Haz#}
+{#                                        tu#}
+{#                                        pedido hoy mismo!#}
+{#                                    </p>#}
+{#                                    <div class="col-lg-12">#}
+{#                                        <button class="button">Descubre la impresión DTF y personaliza ahora</button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </a>#}
+{#                    </div>#}
+{#                </div>#}
+
+{#                <div class="col-sm-6" style="padding: 5px">#}
+{#                    <div class="trabajoitem"#}
+{#                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What%20We%20Do/What%20We%20Do/DTG%20Full%20Resized%402x.png);">#}
+{#                        <a href="{{ path('app_service_dtg') }}">#}
+{#                            <div class="mp2-griditem-mask">#}
+{#                                <div class="row">#}
+{#                                    <h3 class="col-lg-12">DIGITAL DTG</h3>#}
+{#                                    <p class="col-lg-12">#}
+{#                                        <b>La impresión digital te permite personalizar con precisión y rapidez</b>.#}
+{#                                        Ideal#}
+{#                                        para#}
+{#                                        tiradas pequeñas o diseños intrincados. ¡Haz realidad tu proyecto con nosotros!#}
+{#                                    </p>#}
+{#                                    <div class="col-lg-12">#}
+{#                                        <button class="button">Solicita tu personalización digital aquí</button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </a>#}
+{#                    </div>#}
+{#                </div>#}
+
+{#                <div class="col-sm-6" style="padding: 5px">#}
+{#                    <div class="trabajoitem"#}
+{#                         style="background-image: url(https://monsterpress.co.uk/image/catalog/What%20We%20Do/What%20We%20Do/embroidery2.jpg);">#}
+{#                        <a href="{{ path('app_service_bordados') }}">#}
+{#                            <div class="mp2-griditem-mask">#}
+{#                                <div class="row">#}
+{#                                    <h3 class="col-lg-12">BORDADOS Y PARCHES</h3>#}
+{#                                    <p class="col-lg-12">#}
+{#                                        <b>Agrega un toque de elegancia y distinción con nuestros bordados y parches</b>.#}
+{#                                        Perfectos#}
+{#                                        para ropa de trabajo, colecciones exclusivas o merchandising de alta gama. ¡Haz#}
+{#                                        tu#}
+{#                                        pedido ahora!#}
+{#                                    </p>#}
+{#                                    <div class="col-lg-12">#}
+{#                                        <button class="button">Personaliza con bordados y parches aquí</button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </a>#}
+{#                    </div>#}
+{#                </div>#}
+
+{#                <div class="col-sm-6" style="padding: 5px">#}
+{#                    <div class="trabajoitem"#}
+{#                         style="background-image: url({{ asset('images/2-que-es-la-impresion-full-print.jpg') }});">#}
+{#                        <a href="{{ path('app_service_fullprint') }}">#}
+{#                            <div class="mp2-griditem-mask">#}
+{#                                <div class="row">#}
+{#                                    <h3 class="col-lg12">FULL PRINT</h3>#}
+{#                                    <p class="col-lg-12">#}
+{#                                        <b>Transforma tus productos con la personalización Full Print</b>. Diseños que#}
+{#                                        cubren#}
+{#                                        toda la prenda para un impacto visual total. ¡Crea algo único para tu marca o#}
+{#                                        evento!#}
+{#                                    </p>#}
+{#                                    <div class="col-lg-12">#}
+{#                                        <button class="button">Personaliza con Full Print ahora</button>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </a>#}
+{#                    </div>#}
+{#                </div>#}
+
+{#            </div>#}
+{#        </div>#}
 
     {% endblock %}
 {% block cuerpo %}
@@ -785,100 +919,103 @@ z-index: 3" class="titulo">TU TIENDA ONLINE PARA PERSONALIZAR CAMISETAS, ROPA Y 
 
 {% block postProductosVistos %}
     <article class="cuadro_home">
-        <h2 class="text-center">PREGUNTAS FRECUENTES</h2>
+        <h2 class="text-center" style="color: #044266; font-family: 'Roboto', sans-serif; font-weight: 700; margin-bottom: 30px;">
+            {% trans %}PREGUNTAS FRECUENTES{% endtrans %}
+        </h2>
+
         <div class="accordion" id="myAccordion">
+
+            {# 1. SERVICIOS GENERALES #}
             <div class="panel">
-                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-1"
-                    data-parent="#myAccordion">¿Qué es una empresa de serigrafía textil?
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-1" data-parent="#myAccordion">
+                    {% trans %}¿Qué es una empresa de serigrafía textil?{% endtrans %}
                 </h3>
                 <div id="collapsible-1" class="collapse">
-                    <p>Una empresa de <b>serigrafía textil</b> se especializa en la personalización de prendas y otros
-                        productos textiles utilizando la técnica de serigrafía. En TusKamisetas, ofrecemos camisetas
-                        serigrafiadas de alta calidad, ideales para eventos, promociones y ropa de trabajo. Nuestros
-                        servicios permiten personalizar tus diseños en camisetas, sudaderas, gorras y más, siempre con
-                        la mejor calidad.</p>
+                    <p>{% trans %}Una empresa de <strong>serigrafía textil</strong> se especializa en la personalización de prendas y otros productos utilizando técnicas de estampación duraderas. En <strong>TusKamisetas</strong>, al ser fábrica propia, ofrecemos servicios integrales para:{% endtrans %}</p>
+                    <ul>
+                        <li>{% trans %}Ropa laboral y uniformes.{% endtrans %}</li>
+                        <li>{% trans %}Merchandising publicitario y eventos.{% endtrans %}</li>
+                        <li>{% trans %}Moda y marcas personales.{% endtrans %}</li>
+                    </ul>
                 </div>
             </div>
 
+            {# 2. PÚBLICO OBJETIVO (NUEVO ESTRATÉGICO) #}
             <div class="panel">
-                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-2"
-                    data-parent="#myAccordion">¿Cómo puedo conseguir camisetas personalizadas baratas?
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-who" data-parent="#myAccordion">
+                    {% trans %}¿Vendéis a particulares o solo a empresas?{% endtrans %}
+                </h3>
+                <div id="collapsible-who" class="collapse">
+                    <p>{% trans %}<strong>¡Vendemos a todos!</strong> En TusKamisetas no cerramos puertas. Atendemos con la misma profesionalidad tanto a <strong>particulares</strong> (regalos, despedidas, fiestas) como a <strong>grandes empresas</strong> y mayoristas.{% endtrans %}</p>
+                </div>
+            </div>
+
+            {# 3. PRECIO / MAYORISTAS #}
+            <div class="panel">
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-2" data-parent="#myAccordion">
+                    {% trans %}¿Cómo conseguir camisetas personalizadas baratas?{% endtrans %}
                 </h3>
                 <div id="collapsible-2" class="collapse">
-                    <p>
-                        En <b>TusKamisetas</b>, te ofrecemos <b>camisetas personalizadas baratas</b> sin sacrificar la
-                        calidad. Al ser una empresa de serigrafía textil con amplia experiencia, podemos ofrecer precios
-                        competitivos en grandes tiradas. Puedes elegir entre una variedad de modelos de camisetas y
-                        personalizarlas a través de nuestra serigrafía, bordados o impresión digital, todo a un precio
-                        accesible para tu presupuesto.
-                    </p>
+                    <p>{% trans %}En <strong>TusKamisetas</strong> ofrecemos precios de fábrica. El secreto es el volumen: ofrecemos <strong>descuentos escalados por cantidad</strong>. Cuantas más unidades pidas, más barato te sale cada una.{% endtrans %}</p>
+                    <p>{% trans %}Además, te asesoramos para elegir la técnica más económica (como serigrafía a 1 tinta) sin sacrificar la calidad.{% endtrans %}</p>
                 </div>
             </div>
 
+            {# 4. PEDIDO MÍNIMO (NUEVO ESTRATÉGICO) #}
             <div class="panel">
-                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-3"
-                    data-parent="#myAccordion">¿Cuál es la diferencia entre serigrafía y otras técnicas de impresión de
-                    camisetas?
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-min" data-parent="#myAccordion">
+                    {% trans %}¿Hay un pedido mínimo?{% endtrans %}
+                </h3>
+                <div id="collapsible-min" class="collapse">
+                    <p>{% trans %}No, en la mayoría de productos <strong>puedes comprar desde 1 unidad</strong>.{% endtrans %}</p>
+                    <p>{% trans %}Sin embargo, para conseguir un precio "de chollo", recomendamos pedidos grupales, ya que los costes fijos de producción se dividen entre más prendas.{% endtrans %}</p>
+                </div>
+            </div>
+
+            {# 5. DIFERENCIAS TÉCNICAS #}
+            <div class="panel">
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-3" data-parent="#myAccordion">
+                    {% trans %}¿Diferencia entre serigrafía y otras técnicas?{% endtrans %}
                 </h3>
                 <div id="collapsible-3" class="collapse">
-                    <p>
-                        La <b>serigrafía de camisetas</b> es una de las técnicas más populares y económicas,
-                        especialmente si
-                        necesitas personalizar grandes cantidades. A diferencia de la impresión digital o la
-                        sublimación, la serigrafía es ideal para diseños sencillos o con pocos colores, y ofrece una
-                        alta durabilidad en la prenda.
-                    </p>
-                    <p>Si buscas un método económico y efectivo para personalizar camisetas, la <b>serigrafía
-                            camisetas</b> es una opción excelente.</p>
+                    <p>{% trans %}La <strong>serigrafía</strong> es la reina de la calidad/precio para grandes cantidades y diseños sencillos (máxima durabilidad).{% endtrans %}</p>
+                    <p>{% trans %}La <strong>sublimación</strong> es perfecta para camisetas técnicas blancas (tacto cero).{% endtrans %}</p>
+                    <p>{% trans %}La <strong>impresión digital (DTG/DTF)</strong> es ideal para fotos a todo color o pedidos pequeños.{% endtrans %}</p>
                 </div>
             </div>
 
+            {# 6. CATÁLOGO #}
             <div class="panel">
-                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-4"
-                    data-parent="#myAccordion">¿Qué tipo de camisetas personalizáis?
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-4" data-parent="#myAccordion">
+                    {% trans %}¿Qué tipo de prendas personalizáis?{% endtrans %}
                 </h3>
                 <div id="collapsible-4" class="collapse">
-                    <p>
-                        Ofrecemos una <b>amplia gama de camisetas personalizadas</b> en diferentes estilos, colores y
-                        materiales, perfectas para cualquier proyecto. Desde camisetas serigrafiadas para eventos hasta
-                        ropa de trabajo o camisetas para promociones, contamos con opciones adaptadas a todas tus
-                        necesidades.
-                    </p>
-                    <p>¡Si no encuentras lo que buscas, no dudes en preguntarnos y te ayudaremos a encontrar la mejor
-                        opción para tu personalización! </p>
+                    <p>{% trans %}Ofrecemos una <strong>amplia gama</strong>: Camisetas, Sudaderas, Polos, Gorras, Bolsas (Tote bags), Ropa Laboral (chalecos, polares) y Ropa Deportiva.{% endtrans %}</p>
+                    <p>{% trans %}Trabajamos con marcas líderes como Roly, Fruit of the Loom o JHK.{% endtrans %}</p>
                 </div>
             </div>
 
+            {# 7. PLAZOS #}
             <div class="panel">
-                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-5"
-                    data-parent="#myAccordion">¿Cuáles son los plazos de entrega para camisetas personalizadas?
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-5" data-parent="#myAccordion">
+                    {% trans %}¿Cuáles son los plazos de entrega?{% endtrans %}
                 </h3>
                 <div id="collapsible-5" class="collapse">
-                    <p>
-                        En TusKamisetas, nos comprometemos a cumplir con nuestros plazos de entrega. Para las <b>camisetas
-                            personalizadas con serigrafía</b>, el tiempo de entrega estándar es de 9-10 días laborables,
-                        aunque
-                        ofrecemos un servicio exprés para recibir tus productos en solo 7 días, también es posible un
-                        servicio aún mas rápido con el que podemos tener <b>tu pedido listo en tan solo 72 horas</b>.
-                    </p>
-                    <p>Las camisetas lisas y otros productos no personalizados pueden ser entregados en un plazo de 4-5
-                        días laborables.</p>
+                    <p>{% trans %}Estándar: <strong>9-10 días laborables</strong>.{% endtrans %}</p>
+                    <p>{% trans %}Exprés: <strong>7 días</strong>.{% endtrans %}</p>
+                    <p>{% trans %}Urgente 72h: Consúltanos para pedidos flash.{% endtrans %}</p>
+                    <p>{% trans %}Prendas lisas (sin estampar): <strong>4-5 días</strong>.{% endtrans %}</p>
                 </div>
             </div>
 
+            {# 8. CÓMO PEDIR #}
             <div class="panel">
-                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-6"
-                    data-parent="#myAccordion">¿Cómo puedo realizar un pedido de camisetas personalizadas?
+                <h3 style="cursor: pointer" data-toggle="collapse" data-target="#collapsible-6" data-parent="#myAccordion">
+                    {% trans %}¿Cómo realizo un pedido?{% endtrans %}
                 </h3>
                 <div id="collapsible-6" class="collapse">
-                    <p>
-                        Para <b>pedir tus camisetas personalizadas baratas</b> en <b>TusKamisetas</b>, simplemente
-                        selecciona el
-                        producto de tu elección en nuestro catálogo, elige los colores, tallas y la cantidad, y luego
-                        añade la personalización que desees (serigrafía, bordado, vinilo, etc.).
-                    </p>
-                    <p>¡Si tienes alguna duda, nuestro equipo está disponible para ayudarte a crear el diseño perfecto
-                        para ti!</p>
+                    <p>{% trans %}Simplemente selecciona el producto en nuestro catálogo, elige color, tallas y cantidad, y añade la personalización.{% endtrans %}</p>
+                    <p>{% trans %}<strong>Siempre enviamos un boceto digital gratuito</strong> antes de imprimir para que confirmes que el diseño está perfecto.{% endtrans %}</p>
                 </div>
             </div>
 
