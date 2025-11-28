@@ -1,0 +1,24 @@
+{# templates/admin/CRUD/list_url_external.html.twig #}
+{% extends '@SonataAdmin/CRUD/base_list_field.html.twig' %}
+
+{% block field %}
+    {% if value is not empty %}
+        {% set url = value %}
+
+        {# Comprobamos si es una URL completa (http...) o un archivo local #}
+        {% if 'http' not in value %}
+            {#
+            ATENCIÓN: Cambia 'uploads/pedidos/' por la ruta real donde
+            se guardan estas imágenes dentro de tu carpeta 'public'.
+            Ejemplos: 'uploads/gallery/', 'imagenes/trabajos/', etc.
+            #}
+            {% set url = asset('uploads/design/' ~ value) %}
+        {% endif %}
+
+        <a href="{{ url }}" target="_blank" class="btn btn-xs btn-default" title="{{ value }}">
+            <i class="fa fa-external-link" aria-hidden="true"></i> Ver Imagen
+        </a>
+    {% else %}
+        <span class="text-muted">-</span>
+    {% endif %}
+{% endblock %}

@@ -13,7 +13,8 @@ class ServicioController extends AbstractController
     #[Route('/serigrafia', name: 'app_service_serigrafia')]
     public function serigrafiaAction(): Response
     {
-        return $this->render('web/servicio/serigrafia.html.twig');
+//        return $this->render('web/servicio/serigrafia.html.twig');
+        return $this->render('web/servicio/serigrafiaBlog.html.twig');
     }
 
     #[Route('/sublimacion', name: 'app_service_sublimacion')]
