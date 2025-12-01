@@ -1,6 +1,6 @@
 <?php
 //
-//namespace App\Command;
+namespace App\Command;
 //
 //// 1. Importa todas tus entidades (asumiendo que están en App\Entity)
 //use App\Entity\Color;
