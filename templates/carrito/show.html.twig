@@ -18,11 +18,11 @@
     <br>
     <div class="carrito col-lg-12">
         <section id="cart_items">
-            <div class="container">
+{#            <div class="container">#}
                 {# MIGRACIÓN: Se actualiza la ruta de la plantilla incluida #}
                 {# La crearemos en el siguiente paso #}
                 {% include 'carrito/partials/_cart_details.html.twig' %}
-            </div>
+{#            </div>#}
         </section> <!--/#cart_items-->
 
         {% if carrito is not null and carrito.items is not empty %}

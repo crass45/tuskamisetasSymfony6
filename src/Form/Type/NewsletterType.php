@@ -2,7 +2,7 @@
 
 namespace App\Form\Type;
 
-use App\Entity\Newsletter;
+use App\Entity\ListaCorreo;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -19,9 +19,9 @@ class NewsletterType extends AbstractType
                 'label' => 'Tu dirección de correo electrónico',
                 'attr' => ['placeholder' => 'email@ejemplo.com']
             ])
-            ->add('suscribirse', SubmitType::class, [
-                'label' => 'Suscribirse'
-            ])
+//            ->add('suscribirse', SubmitType::class, [
+//                'label' => 'Suscribirse'
+//            ])
         ;
     }
 
@@ -29,7 +29,7 @@ class NewsletterType extends AbstractType
     {
         // MIGRACIÓN: Se enlaza el formulario con la entidad Newsletter.
         $resolver->setDefaults([
-            'data_class' => Newsletter::class,
+            'data_class' => ListaCorreo::class,
         ]);
     }
 }

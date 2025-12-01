@@ -1,152 +1,147 @@
+{# templates/web/page/solicita_presupuesto.html.twig #}
+
 {% extends "web/indexTemplateNoFiltros.html.twig" %}
 
-{% block title %}Personaliza camisetas al por mayor | la mejor calidad y precio{% endblock %}
-{% block metaDescription %}Disponemos de los mejores precios de impresión para grandes campañas publicitarias. ¡Visítanos!{% endblock %}
+{% block title %}{% trans %}Presupuesto Camisetas al por Mayor | TusKamisetas{% endtrans %}{% endblock %}
+{% block metaDescription %}{% trans %}Solicita presupuesto para grandes campañas, ropa laboral o eventos. Precios de fábrica, boceto gratuito y envíos rápidos.{% endtrans %}{% endblock %}
 
 {% block fueraBloques %}
-    <div style="width:100%;background-image: url({{ asset('images/press2.jpg') }}); background-size: cover;">
+    {# --- SECCIÓN HERO CON FORMULARIO --- #}
+    <div style="width:100%; background-image: url({{ asset('images/press2.jpg') }}); background-size: cover; background-position: center; background-attachment: fixed;">
         <div class="container-fluid">
-            <div class="row" style="background-color: rgba(0,0,0,.8); padding: 54px 20px;">
-                <div class="col-lg-6" style="text-align: center">
-                    <h1 style="font-size: 42px; text-align: center; vertical-align: center;  color: white; text-shadow: 2px 0 0 #000000, -2px 0 0 #000000, 0 2px 0 #000000, 0 -2px 0 #000000, 1px 1px #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000; ;">{% trans %}PERSONALIZA TUS CAMISETAS AL POR MAYOR CON LA MEJOR CALIDAD Y PRECIO{% endtrans %}</h1>
-                    <h2 class="subtitle"
-                        style="font-size:24px; text-align: center; vertical-align: center;  color: white; text-shadow: 2px 0 0 #000000, -2px 0 0 #000000, 0 2px 0 #000000, 0 -2px 0 #000000, 1px 1px #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;">
-                        Producción rápida, impresión premium y precios especiales para negocios</h2>
-                    <br>
-                    <br>
-                    <p class="subtitle" style="color: white">Cuéntanos tu proyecto de la forma más detallada posible y
-                        un miembro de nuestro equipo te contactará en las próximas horas.</p>
-                    <br>
-                    <br>
-                </div>
-                <div class="col-lg-6">
-                    <div class="login-form">
-                        <h3 class="subtitle"
-                            style="font-size:24px; text-align: center; vertical-align: center;  color: white; text-shadow: 2px 0 0 #000000, -2px 0 0 #000000, 0 2px 0 #000000, 0 -2px 0 #000000, 1px 1px #000000, -1px -1px 0 #000000, 1px -1px 0 #000000, -1px 1px 0 #000000;">
-                            Solicita tu presupuesto desde aquí mismo.</h3>
-                        <br>
+            <div class="row" style="background-color: rgba(0,0,0,0.8); padding: 60px 15px;">
+                <div class="container">
+                    <div class="row display-flex-center">
 
-                        {# MIGRACIÓN: La acción del formulario ahora apunta a la nueva ruta 'app_handle_quote_request' #}
-                        <form enctype="multipart/form-data"
-                              action="{{ path("app_handle_quote_request", {'_locale': app.request.locale}) }}"
-                              method="post">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <input type="text" id="empresa" name="_empresa" placeholder="Empresa"
-                                           style="color: black"/>
-                                </div>
-                                <div class="col-md-12">
-                                    <input type="text" id="nombre" name="_nombre" placeholder="Nombre"
-                                           style="color: black"/>
-                                </div>
-                                <div class="col-md-12">
-                                    <input type="email" id="email" name="_email" required placeholder="e-mail"
-                                           style="color: black"/>
-                                </div>
-                                <div class="col-md-6">
-                                    <input type="tel" id="telefono" name="_telefono" required placeholder="Teléfono"
-                                           style="color: black"/>
-                                </div>
-                                <div class="col-md-6">
-                                    <input type="text" id="ciudad" name="_ciudad" placeholder="Ciudad"
-                                           style="color: black"/>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="fecha" style="color: white">¿En qué fecha necesitas el pedido?</label>
-                                    <input type="date" id="fecha" name="_fecha" style="color: black"/>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="cantidad" style="color: white"></label>
-                                    <input type="number" id="cantidad" name="_cantidad"
-                                           placeholder="¿Cuántas prendas necesitas?" style="color: black"/>
-                                </div>
-                                <div class="col-lg-12">
-                                    <textarea name="_observaciones" id="observaciones" placeholder="Cuéntanos tu idea"
-                                              style="height: 120px;"></textarea>
-                                </div>
+                        {# COLUMNA IZQUIERDA: TEXTO PERSUASIVO #}
+                        <div class="col-lg-7 col-md-6" style="color: white; padding-right: 30px; text-align: left; margin-bottom: 30px;">
+                            <h1 style="font-size: 42px; font-weight: 800; text-transform: uppercase; margin-top: 0; margin-bottom: 20px; text-shadow: 1px 1px 10px rgba(0,0,0,0.5); line-height: 1.1;">
+                                {% trans %}PERSONALIZA TUS CAMISETAS AL POR MAYOR{% endtrans %}
+                            </h1>
+                            <h2 style="font-size: 24px; color: #ff9000; margin-top: 0; margin-bottom: 25px; font-weight: 500;">
+                                {% trans %}Calidad Premium · Precios de Fábrica · Envíos Rápidos{% endtrans %}
+                            </h2>
+
+                            <div class="hidden-xs hidden-sm" style="font-size: 16px; line-height: 1.8;">
+                                <p><i class="fa fa-check-circle" style="color: #ff9000; margin-right: 10px;"></i> {% trans %}Producción propia <strong>sin intermediarios</strong>.{% endtrans %}</p>
+                                <p><i class="fa fa-check-circle" style="color: #ff9000; margin-right: 10px;"></i> {% trans %}Descuentos escalados por cantidad.{% endtrans %}</p>
+                                <p><i class="fa fa-check-circle" style="color: #ff9000; margin-right: 10px;"></i> {% trans %}<strong>Boceto digital gratuito</strong> antes de imprimir.{% endtrans %}</p>
+                                <p><i class="fa fa-check-circle" style="color: #ff9000; margin-right: 10px;"></i> {% trans %}Envíos gratis a partir de 300€.{% endtrans %}</p>
                             </div>
+
                             <br>
-                            <button type="submit" class="btn btn-default"
-                                    style="position: relative; margin-top: 15px; margin-bottom: 0px; background-color: #ff9000; margin-left: auto; margin-right: 0;">
-                                <b>Enviar</b>
-                            </button>
-                        </form>
+                            <p style="color: #ddd; font-style: italic; font-size: 15px;">
+                                {% trans %}Cuéntanos tu proyecto y recibe una valoración personalizada en tiempo récord.{% endtrans %}
+                            </p>
+                        </div>
+
+                        {# COLUMNA DERECHA: FORMULARIO TIPO TARJETA #}
+                        <div class="col-lg-5 col-md-6">
+                            <div class="login-form" style="background-color: white; padding: 30px; border-radius: 6px; box-shadow: 0 15px 35px rgba(0,0,0,0.4);">
+                                <h3 style="color: #044266; font-weight: 700; text-transform: uppercase; text-align: center; margin-top: 0; margin-bottom: 20px; font-size: 22px;">
+                                    {% trans %}SOLICITAR PRESUPUESTO{% endtrans %}
+                                </h3>
+
+                                {# Formulario Manual #}
+                                <form enctype="multipart/form-data" action="{{ path("app_handle_quote_request", {'_locale': app.request.locale}) }}" method="post">
+                                    <div class="row">
+                                        <div class="col-md-12 form-group">
+                                            <label for="empresa" style="font-size: 12px; color: #666; font-weight: bold;">{% trans %}Empresa / Organización (Opcional){% endtrans %}</label>
+                                            <input type="text" id="empresa" name="_empresa" class="form-control" placeholder="{% trans %}Nombre de tu empresa{% endtrans %}"/>
+                                        </div>
+
+                                        <div class="col-md-6 form-group">
+                                            <label for="nombre" style="font-size: 12px; color: #666; font-weight: bold;">{% trans %}Nombre de contacto{% endtrans %} *</label>
+                                            <input type="text" id="nombre" name="_nombre" required class="form-control" placeholder="{% trans %}Tu nombre{% endtrans %}"/>
+                                        </div>
+
+                                        <div class="col-md-6 form-group">
+                                            <label for="telefono" style="font-size: 12px; color: #666; font-weight: bold;">{% trans %}Teléfono{% endtrans %} *</label>
+                                            <input type="tel" id="telefono" name="_telefono" required class="form-control" placeholder="{% trans %}Tu teléfono{% endtrans %}"/>
+                                        </div>
+
+                                        <div class="col-md-12 form-group">
+                                            <label for="email" style="font-size: 12px; color: #666; font-weight: bold;">{% trans %}Email{% endtrans %} *</label>
+                                            <input type="email" id="email" name="_email" required class="form-control" placeholder="{% trans %}email@ejemplo.com{% endtrans %}"/>
+                                        </div>
+
+                                        <div class="col-md-6 form-group">
+                                            <label for="cantidad" style="font-size: 12px; color: #666; font-weight: bold;">{% trans %}Cantidad aprox.{% endtrans %}</label>
+                                            <input type="number" id="cantidad" name="_cantidad" class="form-control" placeholder="Ej: 100"/>
+                                        </div>
+
+                                        <div class="col-md-6 form-group">
+                                            <label for="fecha" style="font-size: 12px; color: #666; font-weight: bold;">{% trans %}Fecha límite{% endtrans %}</label>
+                                            <input type="date" id="fecha" name="_fecha" class="form-control"/>
+                                        </div>
+
+                                        <div class="col-lg-12 form-group">
+                                            <label for="observaciones" style="font-size: 12px; color: #666; font-weight: bold;">{% trans %}Detalles del proyecto{% endtrans %}</label>
+                                            <textarea name="_observaciones" id="observaciones" class="form-control" rows="3" placeholder="{% trans %}Cuéntanos qué prendas necesitas, colores, tipo de estampación...{% endtrans %}"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-block"
+                                            style="background-color: #ff9000; color: white; font-weight: bold; font-size: 18px; padding: 12px; text-transform: uppercase; margin-top: 10px; border: none; border-radius: 4px; transition: background 0.3s;">
+                                        {% trans %}SOLICITAR AHORA{% endtrans %}
+                                    </button>
+
+                                    <p style="text-align: center; font-size: 11px; color: #888; margin-top: 10px; margin-bottom: 0;">
+                                        <i class="fa fa-clock-o"></i> {% trans %}Respuesta garantizada en menos de 24h{% endtrans %}
+                                    </p>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="row text-center" style="background-color: white; padding: 54px 20px;">
-                <div class="clearfix"></div>
-                <div class="col-sm-3 cuadro_home">
-                    <header class="text-center"><img src="{{ asset('images/icons/serigrafia.png') }}"
-                                                     style="max-width: 60px;"
-                                                     alt="{% trans %}fabrica propia{% endtrans %}"/>
-                        <h3>
-                            {% trans %}FABRICA PROPIA{% endtrans %}
-                        </h3>
-                    </header>
-                    <p>
-                        {% trans %}Personalizamos nosotros. Sin intermediarios. Nuestro taller dispone de los mejores avances en cuanto técnicas de estampado, somos muy profesionales en lo que hacemos{% endtrans %}
-                    </p>
-                </div>
-                <div class="col-sm-3 cuadro_home">
-                    <header class="text-center"><img src="{{ asset('images/icons/proveedor.png') }}"
-                                                     style="max-width: 60px;"
-                                                     alt="{% trans %}Varideda de proveedores{% endtrans %}"/>
-                        <h3>
-                            {% trans %}VARIEDAD DE PROVEEDORES{% endtrans %}
-                        </h3>
-                    </header>
-                    <p>
-                        {% trans %}Trabajamos con los principales proveedores textiles a nivel internacional.{% endtrans %}
-                    </p>
-                </div>
-                <div class="col-sm-3 cuadro_home">
-                    <header class="text-center"><img src="{{ asset('images/icons/reparto.png') }}"
-                                                     style="max-width: 60px;"
-                                                     alt="{% trans %}Entregas rápdias{% endtrans %}"/>
-                        <h3>
-                            {% trans %}ENTREGAS RÁPIDAS{% endtrans %}
-                        </h3>
-                    </header>
-                    <p>
-                        {% trans %}Realizamos envíos rápidos desde nuestro taller y gratuitos a partir de 300€. Sin intermediarios ni contratiempos{% endtrans %}
-                    </p>
-                </div>
-                <div class="col-sm-3 cuadro_home">
-                    <header class="text-center"><img src="{{ asset('images/icons/pedidos.png') }}"
-                                                     style="max-width: 60px;"
-                                                     alt="{% trans %}descuento por cantidades{% endtrans %}"/>
-                        <h3>
-                            {% trans %}DESCUENTOS POR CANTIDADES{% endtrans %}
-                        </h3>
-                    </header>
-                    <p>
-                        {% trans %}Disponemos de máquinas de última técnologia para impresión y bordado, ajustadas con precisión para realizar un trabajo perfecto.{% endtrans %}
-                    </p>
+            {# --- SECCIÓN DE VENTAJAS (ICONOS) --- #}
+            <div class="row text-center" style="background-color: white; padding: 60px 20px; border-bottom: 1px solid #eee;">
+                <div class="container">
+                    <div class="col-sm-3 cuadro_home" style="margin-bottom: 20px;">
+                        <header class="text-center">
+                            <img src="{{ asset('images/icons/serigrafia.png') }}" style="max-width: 60px; margin-bottom: 15px;" alt="{% trans %}Fábrica propia{% endtrans %}"/>
+                            <h3 style="color: #044266; font-weight: bold; font-size: 16px;">{% trans %}PRODUCCIÓN PROPIA{% endtrans %}</h3>
+                        </header>
+                        <p style="color: #666; font-size: 14px;">{% trans %}Personalizamos nosotros, sin intermediarios. Taller propio con tecnología avanzada para garantizar la máxima calidad.{% endtrans %}</p>
+                    </div>
+                    <div class="col-sm-3 cuadro_home" style="margin-bottom: 20px;">
+                        <header class="text-center">
+                            <img src="{{ asset('images/icons/proveedor.png') }}" style="max-width: 60px; margin-bottom: 15px;" alt="{% trans %}Marcas Líderes{% endtrans %}"/>
+                            <h3 style="color: #044266; font-weight: bold; font-size: 16px;">{% trans %}MARCAS LÍDERES{% endtrans %}</h3>
+                        </header>
+                        <p style="color: #666; font-size: 14px;">{% trans %}Trabajamos con los principales fabricantes textiles internacionales (Roly, Fruit of the Loom, JHK...).{% endtrans %}</p>
+                    </div>
+                    <div class="col-sm-3 cuadro_home" style="margin-bottom: 20px;">
+                        <header class="text-center">
+                            <img src="{{ asset('images/icons/reparto.png') }}" style="max-width: 60px; margin-bottom: 15px;" alt="{% trans %}Envíos Rápidos{% endtrans %}"/>
+                            <h3 style="color: #044266; font-weight: bold; font-size: 16px;">{% trans %}ENVÍOS RÁPIDOS{% endtrans %}</h3>
+                        </header>
+                        <p style="color: #666; font-size: 14px;">{% trans %}Cumplimos plazos. Envíos urgentes desde nuestro taller y gratuitos en pedidos superiores a 300€.{% endtrans %}</p>
+                    </div>
+                    <div class="col-sm-3 cuadro_home" style="margin-bottom: 20px;">
+                        <header class="text-center">
+                            <img src="{{ asset('images/icons/pedidos.png') }}" style="max-width: 60px; margin-bottom: 15px;" alt="{% trans %}Precio de Fábrica{% endtrans %}"/>
+                            <h3 style="color: #044266; font-weight: bold; font-size: 16px;">{% trans %}PRECIO DE FÁBRICA{% endtrans %}</h3>
+                        </header>
+                        <p style="color: #666; font-size: 14px;">{% trans %}Descuentos escalados por cantidad. Cuantas más unidades pidas, menor será el precio unitario.{% endtrans %}</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-
-        <div style="background-color: white;">
+        {# --- SECCIÓN DE CATEGORÍAS --- #}
+        <div style="background-color: white; padding-top: 40px;">
             <div class="container">
                 <div id="tkmCuerpo">
                     <div id="productoGrid">
+                        <h2 class="text-center" style="color: #044266; font-weight: 700; margin-bottom: 40px;">{% trans %}NUESTRO CATÁLOGO{% endtrans %}</h2>
 
-
-                        {# LO COMENTAMOS MOMENTANEAMENTE VA A IR A PIÑON #}
-                        {# {% for categoria in categoriasHome %} #}
-                        {# {% include 'SSTiendaBundle:Web:categoriaCuadroGrid.html.twig' %} #}
-                        {# {% endfor %} #}
                         <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections1">
                             <div style=" text-align: center;">
-
                                 <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'camisetas'}) }}">
-                                    <img class="img-responsive black-white-image"
-                                         style="margin: auto;"
-                                         src="{{ asset('images/imgcat/camisetas-personalizadas.jpg') }}"
-                                         alt="camisetas personalizadas"/>
+                                    <img class="img-responsive black-white-image" style="margin: auto;" src="{{ asset('images/imgcat/camisetas-personalizadas.jpg') }}" alt="camisetas personalizadas"/>
                                     <h3>CAMISETAS</h3>
                                 </a>
                                 <div style="width: 80px; height: 5px; background: #B80000; border-radius: 3px; margin: 0 auto; margin-bottom: 15px"></div>
@@ -155,10 +150,7 @@
                         <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections2">
                             <div style=" text-align: center;">
                                 <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'sudaderas'}) }}">
-                                    <img class="img-responsive black-white-image"
-                                         style="margin: auto;"
-                                         src="{{ asset('images/imgcat/sudaderas.jpg') }}"
-                                         alt="sudaderas personalizadas"/>
+                                    <img class="img-responsive black-white-image" style="margin: auto;" src="{{ asset('images/imgcat/sudaderas.jpg') }}" alt="sudaderas personalizadas"/>
                                     <h3>SUDADERAS</h3>
                                 </a>
                                 <div style="width: 80px; height: 5px; background: #ff9000; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
@@ -166,11 +158,8 @@
                         </div>
                         <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections3">
                             <div style=" text-align: center;">
-
                                 <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'polos'}) }}">
-                                    <img class="img-responsive black-white-image"
-                                         style="margin: auto;"
-                                         src="{{ asset('images/imgcat/polos-2.jpg') }}" alt="polos bordados"/>
+                                    <img class="img-responsive black-white-image" style="margin: auto;" src="{{ asset('images/imgcat/polos-2.jpg') }}" alt="polos bordados"/>
                                     <h3>POLOS</h3>
                                 </a>
                                 <div style="width: 80px; height: 5px; background: #FFD800; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
@@ -179,313 +168,153 @@
                         <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections4">
                             <div style=" text-align: center;">
                                 <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'ropa-deportiva'}) }}">
-                                    <img class="img-responsive black-white-image"
-                                         style="margin: auto;"
-                                         src="{{ asset('images/imgcat/ropa-deportiva.jpg') }}"
-                                         alt="ropa deportiva personalizadas"/>
-                                    <h3>ROPA DEPORTIVA</h3></a>
-
+                                    <img class="img-responsive black-white-image" style="margin: auto;" src="{{ asset('images/imgcat/ropa-deportiva.jpg') }}" alt="ropa deportiva personalizadas"/>
+                                    <h3>ROPA DEPORTIVA</h3>
+                                </a>
                                 <div style="width: 80px; height: 5px; background: #5CA688; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
                             </div>
                         </div>
                         <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections5">
                             <div style=" text-align: center;">
                                 <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'mochilas-y-bolsas'}) }}">
-                                    <img class="img-responsive black-white-image"
-                                         style="margin: auto;"
-                                         src="{{ asset('images/imgcat/mochila-cordones.jpg') }}"
-                                         alt="bolsas de tela personalizadas"/>
-                                    <h3>MOCHILAS Y BOLSAS</h3></a>
+                                    <img class="img-responsive black-white-image" style="margin: auto;" src="{{ asset('images/imgcat/mochila-cordones.jpg') }}" alt="bolsas de tela personalizadas"/>
+                                    <h3>MOCHILAS Y BOLSAS</h3>
+                                </a>
                                 <div style="width: 80px; height: 5px; background: #A3B957; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
                             </div>
                         </div>
-
                         <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections6">
                             <div style=" text-align: center;">
                                 <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'ropa-laboral'}) }}">
-                                    <img class="img-responsive black-white-image"
-                                         style="margin: auto;"
-                                         src="{{ asset('images/imgcat/ropa-laboral.jpg') }}"
-                                         alt="ropa laboral personalizadas"/>
-                                    <h3>ROPA LABORAL</h3></a>
+                                    <img class="img-responsive black-white-image" style="margin: auto;" src="{{ asset('images/imgcat/ropa-laboral.jpg') }}" alt="ropa laboral personalizadas"/>
+                                    <h3>ROPA LABORAL</h3>
+                                </a>
                                 <div style="width: 80px; height: 5px; background: #F1C700; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
                             </div>
                         </div>
-
                         <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections7">
                             <div style=" text-align: center;">
                                 <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'gorras-y-accesorios'}) }}">
-                                    <img class="img-responsive black-white-image"
-                                         style="margin: auto;"
-                                         src="{{ asset('images/imgcat/accesorios.jpg') }}"
-                                         alt="gorras y accesorios personalizadas"/>
-                                    <h3>ACCESORIOS</h3></a>
+                                    <img class="img-responsive black-white-image" style="margin: auto;" src="{{ asset('images/imgcat/accesorios.jpg') }}" alt="gorras y accesorios personalizadas"/>
+                                    <h3>ACCESORIOS</h3>
+                                </a>
                                 <div style="width: 80px; height: 5px; background: #C8487F; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
                             </div>
                         </div>
-
                         <div class="col-xs-12 col-md-4 col-sm-6 col-lg-3 home_sections home_sections8">
                             <div style=" text-align: center;">
                                 <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'regalos-personalizados'}) }}">
-                                    <img class="img-responsive black-white-image"
-                                         style="margin: auto;"
-                                         src="{{ asset('images/imgcat/merchandising.jpg') }}"
-                                         alt="merchandising personalizado"/>
-                                    <h3>MERCHANDISING</h3></a>
+                                    <img class="img-responsive black-white-image" style="margin: auto;" src="{{ asset('images/imgcat/merchandising.jpg') }}" alt="merchandising personalizado"/>
+                                    <h3>MERCHANDISING</h3>
+                                </a>
                                 <div style="width: 80px; height: 5px; background: #9000FF; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
                             </div>
                         </div>
 
                     </div>
-
                 </div>
             </div>
-            <div class="clearfix productoGrid" style="text-align: center; padding: 20px">
-                <h3>ALGUNOS DE NUESTROS CLIENTES</h3>
 
-                <div class="col-lg-12 center">
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/enae.jpg') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="ENAE"/>
-                    </div>
+            {# --- SECCIÓN DE CLIENTES --- #}
+            <div class="clearfix productoGrid" style="text-align: center; padding: 40px 20px; background-color: #f9f9f9;">
+                <h3 style="color: #044266; font-weight: 700; margin-bottom: 30px;">ELLOS YA CONFÍAN EN NOSOTROS</h3>
 
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/images.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="ULTRACLUB MILLENIUM"/>
+                <div class="container">
+                    <div class="row" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center;">
+                        {# Aquí van los logos. He mantenido tu estructura pero optimizado el estilo del contenedor flex #}
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/enae.jpg') }}" alt="ENAE"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/images.png') }}" alt="ULTRACLUB MILLENIUM"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/juanitobaker.svg') }}" alt="JUANITO BAKER"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/rutaquetzal.png') }}" alt="ruta quetzal"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/the-goyo-jimenez-experiencie-logo.png') }}" alt="GOYO EXPERIENCE"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/linxenegrydrink.png') }}" alt="LINX"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/pennywises.webp') }}" alt="PENNYWISES"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/mtxcorporation.jpeg') }}" alt="MTX"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/splitmania.jpeg') }}" alt="Splitmania"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/Logo-Manau.png') }}" alt="MANAU"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/TOKIOTEESLOGO.png.webp') }}" alt="Toko Tees"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/padelnuestro2.webp') }}" alt="Padel Nuestro"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/burmetmadrid.jpg') }}" alt="burmet madrid"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/celebreak.jpg') }}" alt="CELEBREAK"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/laikaocio.svg') }}" alt="LAika Ocio"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/sitgeslogo.png') }}" alt="Sitges Surf club"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/RISCALES.Logo_.png') }}" alt="Riscales"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/lonbali_logo.jpg.webp') }}" alt="Lonbali"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/sanmillang.jpg') }}" alt="San Millan Espectaculos"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/kenda.png') }}" alt="Kenda Tries"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/thebattlegames.png') }}" alt="THE BATTLE GAMES"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/caparros.png') }}" alt="caparros"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/supertitewe.png') }}" alt="SUPERTITE"/></div>
+                        <div class="col-xs-4 col-sm-2 col-md-1 logo-cliente"><img class="img-responsive" src="{{ asset('images/clientes/bodyfactory-02.png') }}" alt="BODYFACTORY"/></div>
                     </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/juanitobaker.svg') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="JUANITO BAKER"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/rutaquetzal.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="ruta quetzal"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive"
-                             src="{{ asset('images/clientes/the-goyo-jimenez-experiencie-logo.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="GOYO EXPERIENCE"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/linxenegrydrink.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="LINX"/>
-                    </div>
-
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/pennywises.webp') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="PENNYWISES"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/mtxcorporation.jpeg') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="MTX"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/splitmania.jpeg') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="Splitmania"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/Logo-Manau.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="MANAU"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/TOKIOTEESLOGO.png.webp') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="Toko Tees"/>
-                    </div>
-
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/padelnuestro2.webp') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="Padel Nuestro"/>
-                    </div>
-
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/burmetmadrid.jpg') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="burmet madrid"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/celebreak.jpg') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="CELEBREAK"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/laikaocio.svg') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="LAika Ocio"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/sitgeslogo.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="Sitges Surf club"/>
-                    </div>
-
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/RISCALES.Logo_.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="Riscales"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/lonbali_logo.jpg.webp') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="Lonbali"/>
-                    </div>
-
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/sanmillang.jpg') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="San Millan Espectaculos"/>
-                    </div>
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/kenda.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="Kenda Tries"/>
-                    </div>
-
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/thebattlegames.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="THE BATTLE GAMES"/>
-                    </div>
-
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/caparros.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="caparros"/>
-                    </div>
-
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/supertitewe.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="SUPERTITE"/>
-                    </div>
-
-                    <div class="col-xs-3 col-sm-2 col-lg-1"
-                         style="display: flex; align-items: center; justify-content: center;">
-                        <img class="img-responsive" src="{{ asset('images/clientes/bodyfactory-02.png') }}"
-                             style="height: 60px; width: auto; margin:10px"
-                             alt="BODYFACTORY"/>
-                    </div>
-
                 </div>
             </div>
 
 
-            <div style="background-color: rgba(0,0,0,.8)">
-                <br>
-                <br>
-                <br>
+            {# --- SECCIÓN DE INFO FINAL (Fondo Negro) --- #}
+            <div style="background-color: #111; padding: 50px 0;">
                 <div class="container">
                     <div class="row">
-                        <div class="col-lg-3">
-                            <h3 style="color: rgb(255, 144, 0)">Producción rápida y entrega garantizada</h3>
-                            <p style="color: white">En <b>TusKamisetas</b>, sabemos que el tiempo es clave. Por eso,
-                                contamos con procesos optimizados que nos permiten ofrecer una <b>producción rápida sin
-                                    comprometer la calidad</b>. Desde pequeños pedidos hasta grandes volúmenes,
-                                trabajamos
-                                con eficiencia para cumplir con los plazos más exigentes.
-                                Además, garantizamos la entrega puntual para que recibas tu pedido justo cuando lo
-                                necesitas. <b>Compromiso, calidad y rapidez</b> son nuestros pilares. ¡Confía en
-                                nosotros
-                                para llevar tu marca al siguiente nivel sin demoras!</p>
-                        </div>
-                        <div class="col-lg-3">
-                            <h3 style="color: rgb(255, 144, 0)">Calidad premium en telas y estampados</h3>
-                            <p style="color: white">En TusKamisetas, nos especializamos en ofrecer <b>serigrafía de alta
-                                    calidad</b> con materiales premium. Trabajamos con marcas de renombre que ofrecen
-                                productos resistentes y de excelente acabado.
-
-                                Nuestros estampados destacan por su <b>definición, colores vibrantes y resistencia al
-                                    desgaste</b>, asegurando que cada diseño luzca impecable incluso después de
-                                múltiples
-                                lavados.
-
-                                Si buscas productos con la mejor calidad en textiles y serigrafía, <b>somos tu mejor
-                                    opción</b>. ¡Convierte tus ideas en prendas únicas y duraderas con nosotros!</p>
-                        </div>
-                        <div class="col-lg-3">
-                            <h3 style="color: rgb(255, 144, 0)">Precios especiales para compras mayoristas</h3>
-                            <p style="color: white">En TusKamisetas, premiamos la confianza de nuestros clientes
-                                profesionales con <b>precios especiales y descuentos exclusivos</b> en pedidos al por
-                                mayor.
-                                Si necesitas grandes volúmenes de productos con la mejor calidad en serigrafía, te
-                                ofrecemos
-                                <b>tarifas competitivas y condiciones flexibles</b> para maximizar tu inversión.
-
-                                Ya sea para empresas, eventos, marcas de ropa o distribuidores, contamos con <b>producción
-                                    eficiente, materiales premium y entregas garantizadas</b>. ¡Consúltanos y descubre
-                                las
-                                ventajas de comprar al por mayor con nosotros!</b>
-                                . {# Además es el método de impresión más indicado para grandes tiradas #}
+                        <div class="col-lg-3 col-sm-6" style="margin-bottom: 20px;">
+                            <h3 style="color: #ff9000; font-size: 18px; font-weight: bold;">Producción rápida y entrega garantizada</h3>
+                            <p style="color: #ccc; font-size: 14px;">
+                                En <b>TusKamisetas</b>, sabemos que el tiempo es clave. Contamos con procesos optimizados para ofrecer una <b>producción exprés sin comprometer la calidad</b>. Cumplimos plazos exigentes con total seriedad.
                             </p>
                         </div>
-                        <div class="col-lg-3">
-                            <h3 style="color: rgb(255, 144, 0)">Diseños personalizados para tu empresa o evento</h3>
-                            <p style="color: white">En TusKamisetas, hacemos realidad tus ideas. Si tienes un diseño
-                                para tu
-                                <b>empresa, evento o equipo</b>, nosotros lo plasmamos con <b>calidad profesional y
-                                    máxima
-                                    precisión</b>. Trabajamos con materiales premium y sistemas de impresión avanzados e
-                                innovadores para garantizar un acabado duradero y colores vibrantes.
-
-                                Ya sea para <b>uniformes, promociones, celebraciones o merchandising</b>, nos encargamos
-                                de
-                                que tu imagen destaque. <b>Cuéntanos tu idea y la convertiremos en una prenda única.</b>
+                        <div class="col-lg-3 col-sm-6" style="margin-bottom: 20px;">
+                            <h3 style="color: #ff9000; font-size: 18px; font-weight: bold;">Calidad premium en materiales</h3>
+                            <p style="color: #ccc; font-size: 14px;">
+                                Especialistas en <b>serigrafía de alta definición</b>. Trabajamos con tintas resistentes al lavado y marcas textiles de renombre. Tus prendas lucirán impecables durante mucho tiempo.
+                            </p>
+                        </div>
+                        <div class="col-lg-3 col-sm-6" style="margin-bottom: 20px;">
+                            <h3 style="color: #ff9000; font-size: 18px; font-weight: bold;">Precios especiales mayoristas</h3>
+                            <p style="color: #ccc; font-size: 14px;">
+                                Premiamos tu confianza con <b>descuentos exclusivos por volumen</b>. Si eres empresa, agencia o distribuidor, tenemos la tarifa competitiva que necesitas para maximizar tu margen.
+                            </p>
+                        </div>
+                        <div class="col-lg-3 col-sm-6" style="margin-bottom: 20px;">
+                            <h3 style="color: #ff9000; font-size: 18px; font-weight: bold;">Diseño y asesoramiento experto</h3>
+                            <p style="color: #ccc; font-size: 14px;">
+                                ¿Dudas con el diseño? Nuestro equipo técnico revisa tus archivos y te asesora sobre la mejor técnica (serigrafía, bordado, DTF) para que tu logo destaque con la máxima precisión.
                             </p>
                         </div>
                     </div>
                 </div>
-                <br>
-                <br>
             </div>
         </div>
     </div>
 
-    <script>
-        $(".pop").on("click", function () {
-            $('#imagepreview').attr('src', $(this).find('.imageresource').attr('src')); // here asign the image to the modal when the user click the enlarge link
-            $('#imagemodal').modal('show'); // imagemodal is the id attribute assigned to the bootstrap modal, then i use the show function
-        });
-    </script>
+    <style>
+        /* Pequeños ajustes de estilo para esta página */
+        .display-flex-center {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .logo-cliente {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 80px;
+            padding: 10px;
+        }
+        .logo-cliente img {
+            max-height: 100%;
+            width: auto;
+            filter: grayscale(100%);
+            opacity: 0.6;
+            transition: all 0.3s;
+        }
+        .logo-cliente img:hover {
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+    </style>
 {% endblock %}
+
 {% block baseBody %}
 {% endblock %}
 {% block productosVistos %}
-{% endblock %}
-
-{% block javascript %}
-
 {% endblock %}

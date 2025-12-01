@@ -6,12 +6,16 @@ namespace App\Controller;
 use App\Entity\Empresa;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+// --- AÑADIR ESTAS IMPORTACIONES ---
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+// ----------------------------------
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 // MIGRACIÓN: Se añade un prefijo de ruta a nivel de clase.
-// Todas las rutas dentro de este controlador empezarán por /es, /en, etc.
-#[Route('/{_locale}', requirements: ['_locale' => 'es'])] // Puedes ajustar los idiomas soportados
+#[Route('/{_locale}', requirements: ['_locale' => 'es'])]
 class PageController extends AbstractController
 {
     private EntityManagerInterface $em;
@@ -21,17 +25,12 @@ class PageController extends AbstractController
         $this->em = $entityManager;
     }
 
-    /**
-     * MIGRACIÓN: Este método ahora obtiene la entidad Empresa de forma más eficiente
-     * y maneja la versión normal de la página.
-     */
     #[Route('/terminos-de-uso', name: 'app_terms_of_use')]
     public function termsOfUseAction(): Response
     {
         $empresa = $this->em->getRepository(Empresa::class)->findOneBy([], ['id' => 'DESC']);
 
         if (!$empresa) {
-            // Es una buena práctica manejar el caso en que la empresa no se encuentre
             throw $this->createNotFoundException('La configuración de la empresa no se ha encontrado.');
         }
 
@@ -77,8 +76,6 @@ class PageController extends AbstractController
     #[Route('/empresa', name: 'app_contact')]
     public function contactAction(): Response
     {
-        // MIGRACIÓN: La acción ahora simplemente renderiza la plantilla de contacto.
-        // La lógica del formulario se gestionará en otra acción si es necesario.
         return $this->render('web/page/contacto.html.twig');
     }
 
@@ -93,11 +90,13 @@ class PageController extends AbstractController
     {
         $emailCliente = $request->request->get('_email');
 
+        // Protección básica
         if ($emailCliente === "testing@example.com") {
             return $this->redirectToRoute('app_quote_request_success');
         }
 
         if (!filter_var($emailCliente, FILTER_VALIDATE_EMAIL)) {
+            // Podrías añadir un flash message aquí si quieres
             return $this->redirectToRoute('app_solicita_presupuesto_page');
         }
 
@@ -109,19 +108,23 @@ class PageController extends AbstractController
         $fechaPedido = $request->request->get('_fecha');
         $cantidadPrendas = $request->request->get('_cantidad');
 
-        $mensaje = "Empresa: {$nombreEmpresa}\n";
+        $mensaje = "SOLICITUD DE PRESUPUESTO WEB\n";
+        $mensaje .= "============================\n\n";
+        $mensaje .= "Empresa: {$nombreEmpresa}\n";
         $mensaje .= "Nombre: {$nombreCliente}\n";
-        $mensaje .= "e-mail: {$emailCliente}\n";
+        $mensaje .= "Email: {$emailCliente}\n";
         $mensaje .= "Teléfono: {$telefonoCliente}\n";
-        $mensaje .= "Población: {$ciudadCliente}\n";
-        $mensaje .= "Observaciones: {$observacionesCliente}\n\n";
-        $mensaje .= "Me gustaría obtener un presupuesto de {$cantidadPrendas} para {$fechaPedido}.";
+        $mensaje .= "Población: {$ciudadCliente}\n\n";
+        $mensaje .= "DETALLES DEL PEDIDO:\n";
+        $mensaje .= "Cantidad: {$cantidadPrendas}\n";
+        $mensaje .= "Fecha límite: {$fechaPedido}\n";
+        $mensaje .= "Observaciones:\n{$observacionesCliente}\n";
 
         $email = (new Email())
-            ->from('comercial@tuskamisetas.com')
+            ->from('noreply@tuskamisetas.com') // Importante usar un remitente del dominio
             ->to('comercial@tuskamisetas.com')
             ->replyTo($emailCliente)
-            ->subject('Solicitud de presupuesto desde web: ' . $emailCliente)
+            ->subject('Presupuesto Web: ' . $nombreCliente . ' (' . $nombreEmpresa . ')')
             ->text($mensaje);
 
         $mailer->send($email);
@@ -132,7 +135,11 @@ class PageController extends AbstractController
     #[Route('/presupuesto-confirmado', name: 'app_quote_request_success')]
     public function quoteRequestSuccessAction(): Response
     {
-        return $this->render('web/page/quote_request_success.html.twig');
+        // Asegúrate de tener esta plantilla creada,
+        // puedes reutilizar la de solicitud_trabajo_confirmado.html.twig adaptando los textos
+        return $this->render('web/solicitud_trabajo_confirmado.html.twig', [
+            'titulo' => '¡PRESUPUESTO RECIBIDO!',
+            'texto' => 'Gracias por contactar con nosotros. Un comercial revisará tu solicitud y te enviará una valoración en las próximas 24 horas laborables.'
+        ]);
     }
 }
-

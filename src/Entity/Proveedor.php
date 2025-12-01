@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[ORM\Entity(repositoryClass: ProveedorRepository::class)]
 #[ORM\Table(name: 'proveedor')]
@@ -133,13 +134,8 @@ class Proveedor
 
     private function slugify(string $text): string
     {
-        // Esta función es un placeholder para tu antigua clase Utiles::stringURLSafe()
-        $text = strtolower($text);
-        $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
-        $text = trim($text, '-');
-        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-        $text = preg_replace('~[^-\w]+~', '', $text);
-        return $text;
+        $slugger = new AsciiSlugger();
+        return $slugger->slug($text)->lower()->toString();
     }
 
     public function getIncremento(int $cantidad): float|int

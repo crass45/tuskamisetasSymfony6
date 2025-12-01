@@ -1,27 +1,43 @@
-{% extends "SSTiendaBundle:Web:indexTemplate.html.twig" %}
+{# templates/web/newsletter/error.html.twig #}
 
-{% block title %}Presupuesto Confirmado{% endblock %}
-{% block metaDescription %}Confirmación del presupuesto{% endblock %}
+{% extends 'web/indexTemplate.html.twig' %}
+
+{% block title %}{% trans %}Error Suscripción{% endtrans %}{% endblock %}
+{% block metaDescription %}{% trans %}Ha ocurrido un error al procesar su suscripción{% endtrans %}{% endblock %}
 
 {% block contenedor %}
-    <div class="row" style="background-color: white;">
-        <div class="col-lg-12">
-            <div class="border_gris" style="margin-bottom: 40px">
-                <div class="" style="padding: 20px;">
-                    <h1 class="titulo">{% trans %}Error en la suscripción{% endtrans %}</h1>
-                    <p class="fecha"></p>
-                    <div class="texto">{% trans %}La dirección de correo indicada ya está suscrita a nuestra lista de correo.{% endtrans %}</div>
-                </div>
-                <br>
-                <br>
-                <div style="text-align: right; border-top: 1px dashed #515151;">
-                    <br>
-                    <br>
-                    <a href="{{ path('ss_tienda_home') }}" style="text-align: right;"
-                       class="btn btn-default check_out">{% trans %}Volver a la web{% endtrans %}</a>
+    <div class="container" style="margin-top: 40px; margin-bottom: 60px;">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="border_gris" style="background-color: white; border-radius: 4px; padding: 40px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+
+                    <div style="margin-bottom: 30px;">
+                        {# Icono de error (Rojo) #}
+                        <i class="fa fa-exclamation-circle" style="font-size: 60px; color: #d9534f;"></i>
+                    </div>
+
+                    <h1 class="titulo" style="color: #d9534f; font-weight: bold; margin-top: 0;">
+                        {% trans %}¡VAYA! ALGO HA SALIDO MAL{% endtrans %}
+                    </h1>
+
+                    <div class="texto" style="font-size: 16px; color: #555; margin-top: 20px; line-height: 1.6;">
+                        <p>
+                            {% trans %}No hemos podido procesar tu suscripción en este momento.{% endtrans %}
+                        </p>
+                        <p>
+                            {# Texto informativo #}
+                            {% trans %}Es posible que la dirección de correo ya esté registrada en nuestra lista o que el formato no sea válido.{% endtrans %}
+                        </p>
+                    </div>
+
+                    <hr style="margin-top: 30px; margin-bottom: 30px; border-top: 1px dashed #ccc;">
+
+                    <a href="{{ path('app_home') }}" class="btn button">
+                        <i class="fa fa-home"></i> {% trans %}Volver a la página principal{% endtrans %}
+                    </a>
+
                 </div>
             </div>
         </div>
-    </div>
     </div>
 {% endblock %}

@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\PublicacionRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[ORM\Entity(repositoryClass: PublicacionRepository::class)]
 #[ORM\Table(name: 'publicaciones')]
@@ -65,18 +66,8 @@ class Publicacion
      */
     private function slugify(string $text): string
     {
-        // Convierte a minúsculas
-        $text = strtolower($text);
-        // Reemplaza caracteres no latinos
-        $text = preg_replace('~[^\\pL\d]+~u', '-', $text);
-        // Elimina guiones al principio y al final
-        $text = trim($text, '-');
-        // Translitera
-        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-        // Elimina caracteres no deseados
-        $text = preg_replace('~[^-\w]+~', '', $text);
-
-        return $text;
+        $slugger = new AsciiSlugger();
+        return $slugger->slug($text)->lower()->toString();
     }
 
     public function getId(): ?int

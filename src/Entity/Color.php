@@ -6,6 +6,7 @@ use App\Repository\ColorRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[ORM\Entity(repositoryClass: ColorRepository::class)]
 #[ORM\Table(name: 'color')]
@@ -69,10 +70,8 @@ class Color
 
     private function slugify(string $text): string
     {
-        // ... (misma función slugify que en las otras entidades) ...
-        $text = preg_replace('~[^\pL\d]+~u', '-', $text);
-        $text = strtolower(trim(iconv('utf-8', 'us-ascii//TRANSLIT', $text) ?? '', '-'));
-        return $text ?: 'n-a';
+        $slugger = new AsciiSlugger();
+        return $slugger->slug($text)->lower()->toString();
     }
 
     // --- Getters y Setters ---

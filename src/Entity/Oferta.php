@@ -7,7 +7,10 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Sonata\Media; // Asegúrate de que esta ruta es correcta
+use App\Entity\Sonata\Media;
+use Symfony\Component\String\Slugger\AsciiSlugger;
+
+// Asegúrate de que esta ruta es correcta
 
 #[ORM\Entity(repositoryClass: OfertaRepository::class)]
 #[ORM\Table(name: 'oferta')]
@@ -89,13 +92,8 @@ class Oferta
 
     private function slugify(string $text): string
     {
-        $text = preg_replace('~[^\pL\d]+~u', '-', $text);
-        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
-        $text = preg_replace('~[^-\w]+~', '', $text);
-        $text = trim($text, '-');
-        $text = preg_replace('~-+~', '-', $text);
-        $text = strtolower($text);
-        return $text ?: 'n-a';
+        $slugger = new AsciiSlugger();
+        return $slugger->slug($text)->lower()->toString();
     }
 
     public function getProductos(): Collection

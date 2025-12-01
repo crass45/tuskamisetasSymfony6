@@ -4,7 +4,6 @@
 namespace App\Controller;
 
 use App\Entity\ListaCorreo;
-use App\Entity\Newsletter;
 use App\Form\Type\NewsletterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,7 +11,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/newsletter')] // Prefijo para todas las acciones de este controlador
+// CAMBIO CLAVE: Añadido el prefijo de idioma
+#[Route('/{_locale}/newsletter', requirements: ['_locale' => 'es|en|fr'])]
 class NewsletterController extends AbstractController
 {
     private EntityManagerInterface $em;
@@ -23,22 +23,28 @@ class NewsletterController extends AbstractController
     }
 
     /**
-     * ACCIÓN 1: Muestra la página completa de la newsletter con un formulario.
+     * ACCIÓN 1: Página principal con formulario completo.
      */
     #[Route('/', name: 'app_newsletter_page')]
     public function newsletterPageAction(Request $request): Response
     {
-        $newsletter = new Newsletter();
-        $form = $this->createForm(NewsletterType::class, $newsletter);
+        $suscripcion = new ListaCorreo();
+        $form = $this->createForm(NewsletterType::class, $suscripcion);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            try {
-                $this->em->persist($newsletter);
-                $this->em->flush();
-            } catch (\Exception) {
-                return $this->render('web/newsletter/error.html.twig');
+            // Verificamos si ya existe para no duplicar
+            $existe = $this->em->getRepository(ListaCorreo::class)->findOneBy(['email' => $suscripcion->getEmail()]);
+
+            if (!$existe) {
+                try {
+                    $this->em->persist($suscripcion);
+                    $this->em->flush();
+                } catch (\Exception $e) {
+                    return $this->render('web/newsletter/error.html.twig');
+                }
             }
+            // Si ya existe o se acaba de guardar, mostramos éxito
             return $this->render('web/newsletter/success.html.twig');
         }
 
@@ -48,7 +54,7 @@ class NewsletterController extends AbstractController
     }
 
     /**
-     * ACCIÓN 2: Procesa la suscripción desde un formulario simple (ej. en el footer).
+     * ACCIÓN 2: Suscripción rápida (Footer).
      */
     #[Route('/subscribe', name: 'app_newsletter_subscribe_simple', methods: ['POST'])]
     public function subscribeSimpleAction(Request $request): Response
@@ -57,17 +63,23 @@ class NewsletterController extends AbstractController
             $email = $request->request->get('newsletteremail');
 
             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                throw new \Exception('Email no válido.');
+                return $this->render('web/newsletter/error.html.twig');
             }
 
-            // Usamos la entidad ListaCorreo como en tu código original para esta acción
-            $listaCorreo = new ListaCorreo();
-            $listaCorreo->setEmail($email);
+            // Verificamos si ya existe
+            $existe = $this->em->getRepository(ListaCorreo::class)->findOneBy(['email' => $email]);
 
-            $this->em->persist($listaCorreo);
-            $this->em->flush();
+            if (!$existe) {
+                $listaCorreo = new ListaCorreo();
+                $listaCorreo->setEmail($email);
 
-        } catch (\Exception) {
+                $this->em->persist($listaCorreo);
+                $this->em->flush();
+            }
+
+            // Si llegamos aquí es éxito (guardado o ya existente)
+
+        } catch (\Exception $e) {
             return $this->render('web/newsletter/error.html.twig');
         }
 
@@ -75,7 +87,7 @@ class NewsletterController extends AbstractController
     }
 
     /**
-     * ACCIÓN 3: Procesa la desuscripción desde un enlace.
+     * ACCIÓN 3: Desuscripción.
      */
     #[Route('/unsubscribe/{email}', name: 'app_newsletter_unsubscribe')]
     public function unsubscribeAction(string $email): Response
@@ -86,11 +98,9 @@ class NewsletterController extends AbstractController
             $this->em->remove($listaCorreo);
             $this->em->flush();
 
-            // Éxito en la desuscripción
             return $this->render('web/newsletter/success.html.twig');
         }
 
-        // El email no se encontró
         return $this->render('web/newsletter/error.html.twig');
     }
 }
