@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-
+//NO SABEMOS SI SE UTILIZA ESTA CLASE
 use Doctrine\ORM\Mapping as ORM;
 
 /**
