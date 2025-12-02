@@ -134,7 +134,12 @@
         {% endif %}
         <meta property="og:type" content="website"/>
         <meta property="og:url" content="{{ app.request.schemeAndHttpHost ~ app.request.requestUri }}"/>
-        <meta property="og:image" content="{{ sonata_path(empresa.logo, 'big') }}"/>
+        {% if empresa.logo is defined and empresa.logo %}
+            <meta property="og:image" content="{{ sonata_path(empresa.logo, 'big') }}"/>
+        {% else %}
+            {# Fallback: Si no hay logo, usamos una imagen por defecto o el favicon #}
+            <meta property="og:image" content="{{ asset('images/tuskamisetas-logo.png') }}"/>
+        {% endif %}
         {% if (ogDescripcion is defined) %}
             <meta property="og:description" content="{{ ogDescripcion }}"/>
         {% else %}
@@ -478,12 +483,18 @@
                                                                         <span class="helperAlign"></span>
                                                                         <div style="height: 100%; width: 30px;display: inline-block;vertical-align: middle">
 
-                                                                            <img
-                                                                                    src="{{ asset('images/dummy40.png') }}"
-                                                                                    class="lazy img-responsive"
-                                                                                    id="{{ proveedor.id }}"
-                                                                                    data-src="{{ sonata_path(proveedor.imagen, 'mini') }}"
-                                                                                    alt="{{ proveedor.nombre }}"/>
+                                                                            {% if proveedor.imagen %}
+                                                                                <img src="{{ asset('images/dummy40.png') }}"
+                                                                                     class="lazy img-responsive"
+                                                                                     id="{{ proveedor.id }}"
+                                                                                     data-src="{{ sonata_path(proveedor.imagen, 'mini') }}"
+                                                                                     alt="{{ proveedor.nombre }}"/>
+                                                                            {% else %}
+                                                                                {# Si no tiene imagen, mostramos un dummy o nada #}
+                                                                                <img src="{{ asset('images/dummy40.png') }}"
+                                                                                     class="img-responsive"
+                                                                                     alt="{{ proveedor.nombre }}"/>
+                                                                            {% endif %}
                                                                         </div>
 
                                                                         <span style="vertical-align: middle; margin-left: 15px"
