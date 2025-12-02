@@ -23,6 +23,9 @@
                 {% endif %}
 
                 {# MIGRACIÓN: El token CSRF se genera con la función de Twig. #}
+                {% if targetPath is defined and targetPath %}
+                    <input type="hidden" name="_target_path" value="{{ targetPath }}" />
+                {% endif %}
                 <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
                 <input type="text" class="form-control" id="username" name="_username" value="{{ last_username }}" required="required" placeholder="Usuario o Email"/>

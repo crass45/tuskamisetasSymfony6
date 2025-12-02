@@ -1,30 +1,33 @@
 <?php
-// src/Controller/SecurityController.php
 
 namespace App\Controller;
 
 use App\Entity\Sonata\User;
 use App\Form\Type\ChangePasswordFormType;
-use App\Form\Type\RegistroFormType;
 use App\Form\Type\ResetPasswordRequestFormType;
+use App\Form\Type\RegistroFormType; // Asegúrate de usar tu formulario correcto
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\MailerInterface; // <-- Se asegura de que se usa la interfaz correcta de Symfony
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Symfony\Component\Security\Http\SecurityEvents;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use SymfonyCasts\Bundle\ResetPassword\Controller\ResetPasswordControllerTrait;
 use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
 
 class SecurityController extends AbstractController
 {
-
     use ResetPasswordControllerTrait;
 
     private EntityManagerInterface $em;
@@ -37,75 +40,84 @@ class SecurityController extends AbstractController
         $this->em = $entityManager;
         $this->resetPasswordHelper = $resetPasswordHelper;
     }
-    /**
-     * MIGRACIÓN: Esta acción se encarga de renderizar el formulario de login.
-     * La lógica de procesar el login ahora la gestiona el firewall de Symfony.
-     * Esta acción se usa para el modal de login.
-     */
-    #[Route('/modal-login', name: 'app_modal_login')]
-    public function modalLoginAction(AuthenticationUtils $authenticationUtils): Response
-    {
-        // Obtiene el error de login si lo hay (desde el intento anterior)
-        $error = $authenticationUtils->getLastAuthenticationError();
 
-        // Obtiene el último nombre de usuario introducido
+    /**
+     * Método auxiliar para calcular a dónde redirigir después de login/registro.
+     */
+    private function getSmartTargetPath(Request $request): ?string
+    {
+        // 1. ¿Ya viene forzado por la URL (ej: ?_target_path=...)?
+        $targetPath = $request->get('_target_path');
+
+        // 2. Si no, miramos el Referer (de dónde venía)
+        if (!$targetPath && $request->isMethod('GET')) {
+            $referer = $request->headers->get('referer');
+            if ($referer && str_starts_with($referer, $request->getSchemeAndHttpHost())) {
+                $path = substr($referer, strlen($request->getSchemeAndHttpHost()));
+                // Evitamos bucles con páginas de autenticación
+                if (!preg_match('#/(login|register|reset|logout|modal-login)#', $path)) {
+                    $targetPath = $path;
+                }
+            }
+        }
+
+        // 3. Lógica Especial: Si venía de Checkout, mandarlo al Carrito
+        if ($targetPath && str_contains($targetPath, 'checkout')) {
+            return $this->generateUrl('app_cart_show', ['_locale' => $request->getLocale()]);
+        }
+
+        return $targetPath;
+    }
+
+    #[Route('/modal-login', name: 'app_modal_login')]
+    public function modalLoginAction(AuthenticationUtils $authenticationUtils, Request $request): Response
+    {
+        $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        return $this->render('security/modal_login.html.twig', ['loginAction',
+        // Calculamos el destino inteligente
+        $targetPath = $this->getSmartTargetPath($request);
+
+        return $this->render('security/modal_login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
+            'targetPath' => $targetPath, // Pasamos la variable a la plantilla
         ]);
     }
 
-    /**
-     * Esta acción renderiza el panel de bienvenida que se muestra
-     * en el modal cuando el usuario ya ha iniciado sesión.
-     */
     #[Route('/_modal-profile', name: 'app_modal_profile')]
     #[IsGranted('ROLE_USER')]
     public function modalShowAction(): Response
     {
-        // Esta acción no necesita lógica, solo renderizar la plantilla.
-        // Symfony se encarga de pasar el objeto 'app.user' a la plantilla.
         return $this->render('profile/_modal_show.html.twig');
     }
 
-
-    /**
-     * Esta es la acción principal del login. Es el endpoint que procesa el envío del formulario.
-     * Al definir esta ruta, se soluciona el error.
-     */
     #[Route(path: '/{_locale}/login', name: 'app_login', requirements: ['_locale' => 'es|en|fr'])]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
-        // Si el usuario ya ha iniciado sesión, redirigirlo a la home
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_home', ['_locale' => $this->get('request_stack')->getCurrentRequest()->getLocale()]);
+            return $this->redirectToRoute('app_home', ['_locale' => $request->getLocale()]);
         }
 
-        // Obtener el error de login si lo hay
         $error = $authenticationUtils->getLastAuthenticationError();
-        // Último nombre de usuario introducido
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        // Esta plantilla se usaría si tuvieras una página de login completa,
-        // pero la ruta es necesaria para que el formulario del modal funcione.
-        return $this->render('security/login_page.html.twig', ['last_username' => $lastUsername, 'error' => $error]);
+        // Calculamos el destino inteligente
+        $targetPath = $this->getSmartTargetPath($request);
+
+        return $this->render('security/login_page.html.twig', [
+            'last_username' => $lastUsername,
+            'error' => $error,
+            'targetPath' => $targetPath, // Pasamos la variable a la plantilla
+        ]);
     }
 
-    /**
-     * Esta acción se usa para cerrar la sesión.
-     */
     #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void
     {
-        // Esta acción puede estar vacía. El firewall de seguridad la interceptará.
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');
     }
 
-    /**
-     * Muestra y procesa el formulario para solicitar un reseteo de contraseña.
-     */
     #[Route('/{_locale}/resetting-password-request', name: 'app_forgot_password_request', requirements: ['_locale' => 'es|en|fr'])]
     public function requestPasswordResetAction(Request $request, MailerInterface $mailer): Response
     {
@@ -116,28 +128,22 @@ class SecurityController extends AbstractController
             $emailAddress = $form->get('email')->getData();
             $user = $this->em->getRepository(User::class)->findOneBy(['email' => $emailAddress]);
 
-            // Si se encuentra el usuario, se genera el token y se envía el email
             if ($user) {
                 try {
                     $resetToken = $this->resetPasswordHelper->generateResetToken($user);
-
                     $email = (new TemplatedEmail())
                         ->from(new Address('comercial@tuskamisetas.com', 'TusKamisetas.com'))
                         ->to($user->getEmail())
-                        ->subject('Tu solicitud para restablecer la contraseña')
+                        ->subject('Restablecer contraseña')
                         ->htmlTemplate('emails/reset_password.html.twig')
                         ->context(['resetToken' => $resetToken]);
 
                     $mailer->send($email);
-
                 } catch (ResetPasswordExceptionInterface $e) {
-                    // No revelamos si el usuario no fue encontrado para mayor seguridad
-                    $this->addFlash('success', 'Se ha enviado un correo con las instrucciones si la dirección existe en nuestra base de datos. FALSO'.$e->getReason());
-                    return $this->redirectToRoute('app_forgot_password_request');
+                    // Silencioso por seguridad
                 }
             }
-
-            $this->addFlash('success', 'Se ha enviado un correo con las instrucciones si la dirección existe en nuestra base de datos.');
+            $this->addFlash('success', 'Si el correo existe, recibirás instrucciones.');
             return $this->redirectToRoute('app_login', ['_locale' => $request->getLocale()]);
         }
 
@@ -146,53 +152,36 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    /**
-     * Valida el token del email y muestra el formulario para cambiar la contraseña.
-     */
     #[Route('/{_locale}/reset-password/{token}', name: 'app_reset_password', requirements: ['_locale' => 'es|en|fr'])]
     public function resetAction(Request $request, UserPasswordHasherInterface $passwordHasher, string $token = null): Response
     {
         if ($token) {
-            // Guardamos el token en la sesión y redirigimos para limpiar la URL.
             $this->storeTokenInSession($token);
             return $this->redirectToRoute('app_reset_password', ['_locale' => $request->getLocale()]);
         }
-
         $token = $this->getTokenFromSession();
         if (null === $token) {
-            throw $this->createNotFoundException('No se ha encontrado ningún token de reseteo en la URL o en la sesión.');
+            throw $this->createNotFoundException('No se ha encontrado token.');
         }
 
         try {
             $user = $this->resetPasswordHelper->validateTokenAndFetchUser($token);
         } catch (ResetPasswordExceptionInterface $e) {
-            $this->addFlash('error', sprintf(
-                'Ha ocurrido un problema al validar tu solicitud - %s',
-                $e->getReason()
-            ));
+            $this->addFlash('error', sprintf('Error validando solicitud: %s', $e->getReason()));
             return $this->redirectToRoute('app_forgot_password_request');
         }
 
-        // El token es válido. Permitimos al usuario cambiar su contraseña.
         $form = $this->createForm(ChangePasswordFormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // El token se elimina automáticamente al usarse con éxito
             $this->resetPasswordHelper->removeResetRequest($token);
-
-            $encodedPassword = $passwordHasher->hashPassword(
-                $user,
-                $form->get('plainPassword')->getData()
-            );
-
+            $encodedPassword = $passwordHasher->hashPassword($user, $form->get('plainPassword')->getData());
             $user->setPassword($encodedPassword);
             $this->em->flush();
-
-            // Limpiamos la sesión después de cambiar la contraseña.
             $this->cleanSessionAfterReset();
 
-            $this->addFlash('success', '¡Contraseña actualizada! Ya puedes iniciar sesión.');
+            $this->addFlash('success', '¡Contraseña actualizada!');
             return $this->redirectToRoute('app_login', ['_locale' => $request->getLocale()]);
         }
 
@@ -201,40 +190,51 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    /**
-     * Muestra y procesa el formulario de registro.
-     */
     #[Route('/{_locale}/register', name: 'app_register', requirements: ['_locale' => 'es|en|fr'])]
-    public function registerAction(Request $request, UserPasswordHasherInterface $passwordHasher, EntityManagerInterface $em): Response
+    public function registerAction(
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        EntityManagerInterface $em,
+        TokenStorageInterface $tokenStorage,
+        EventDispatcherInterface $eventDispatcher
+    ): Response
     {
+        // Usamos el mismo método inteligente
+        $targetPath = $this->getSmartTargetPath($request);
+
         $user = new User();
         $form = $this->createForm(RegistroFormType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Codificar la contraseña
-            $user->setPassword(
-                $passwordHasher->hashPassword(
-                    $user,
-                    $form->get('plainPassword')->getData()
-                )
-            );
+            $user->setUsername($user->getEmail());
+            $user->setEmail($user->getEmail());
+            $user->setPassword($passwordHasher->hashPassword($user, $form->get('plainPassword')->getData()));
             $user->setEnabled(true);
-
-            $user->setUsername($form->get('email')->getData());
-            $user->setEmail($form->get('email')->getData());
             $user->setRoles(['ROLE_USER']);
+
             $em->persist($user);
             $em->flush();
 
+            // Auto-Login
+            $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
+            $tokenStorage->setToken($token);
+            $request->getSession()->set('_security_main', serialize($token));
+            $event = new InteractiveLoginEvent($request, $token);
+            $eventDispatcher->dispatch($event, SecurityEvents::INTERACTIVE_LOGIN);
 
-            $this->addFlash('success', '¡Registro completado! Ahora puedes iniciar sesión.');
+            $this->addFlash('success', '¡Registro completado!');
 
-            return $this->redirectToRoute('app_login', ['_locale' => $request->getLocale()]);
+            // Redirección inteligente
+            if ($targetPath) {
+                return $this->redirect($targetPath);
+            }
+            return $this->redirectToRoute('app_home', ['_locale' => $request->getLocale()]);
         }
 
         return $this->render('security/register.html.twig', [
             'registration_form' => $form->createView(),
+            'targetPath' => $targetPath,
         ]);
     }
 }

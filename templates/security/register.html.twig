@@ -8,7 +8,8 @@
             <div class="col-md-6 col-md-offset-3">
                 <h1 class="text-center">Crear una Nueva Cuenta</h1>
                 <div class="login-form">
-                    {{ form_start(registration_form) }}
+                    {# Pasamos la variable targetPath a la URL de envío para no perderla #}
+                    {{ form_start(registration_form, {'action': path('app_register', {'_locale': app.request.locale, '_target_path': targetPath})}) }}
                     {{ form_widget(registration_form) }}
                     <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Registrarme</button>
                     {{ form_end(registration_form) }}

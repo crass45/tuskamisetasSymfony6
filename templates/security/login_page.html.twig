@@ -16,6 +16,11 @@
                     {% endif %}
 
                     <form action="{{ path('app_login', {'_locale': app.request.locale}) }}" method="post" style="margin-top: 20px;">
+
+                        {% if targetPath is defined and targetPath %}
+                            <input type="hidden" name="_target_path" value="{{ targetPath }}" />
+                        {% endif %}
+
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
                         <div class="form-group">
