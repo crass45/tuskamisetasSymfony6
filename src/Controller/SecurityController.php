@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Entity\Sonata\User;
 use App\Form\Type\ChangePasswordFormType;
+use App\Form\Type\RegistroFormType;
 use App\Form\Type\ResetPasswordRequestFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -218,9 +219,14 @@ class SecurityController extends AbstractController
                     $form->get('plainPassword')->getData()
                 )
             );
+            $user->setEnabled(true);
 
+            $user->setUsername($form->get('email')->getData());
+            $user->setEmail($form->get('email')->getData());
+            $user->setRoles(['ROLE_USER']);
             $em->persist($user);
             $em->flush();
+
 
             $this->addFlash('success', '¡Registro completado! Ahora puedes iniciar sesión.');
 

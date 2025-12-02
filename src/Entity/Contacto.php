@@ -28,11 +28,11 @@ class Contacto
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $cif = null;
 
-    #[ORM\Column(length: 200, nullable: true)]
-    private ?string $email = null;
+//    #[ORM\Column(length: 200, nullable: true)]
+//    private ?string $email = null;
 
-    #[ORM\Column(length: 200, nullable: true)]
-    private ?string $ciudad = null;
+//    #[ORM\Column(length: 200, nullable: true)]
+//    private ?string $ciudad = null;
 
     #[ORM\Column(name: 'telefono_movil', length: 45, nullable: true)]
     private ?string $telefonoMovil = null;
@@ -123,10 +123,7 @@ class Contacto
     public function setApellidos(?string $apellidos): self { $this->apellidos = $apellidos; return $this; }
     public function getCif(): ?string { return $this->cif; }
     public function setCif(?string $cif): self { $this->cif = $cif; return $this; }
-    public function getEmail(): ?string { return $this->email; }
-    public function setEmail(?string $email): self { $this->email = $email; return $this; }
-    public function getCiudad(): ?string { return $this->ciudad; }
-    public function setCiudad(?string $ciudad): self { $this->ciudad = $ciudad; return $this; }
+    public function getEmail(): ?string { return $this->usuario->getEmail(); }
     public function getUsuario(): ?User { return $this->usuario; }
     public function setUsuario(?User $usuario): self { $this->usuario = $usuario; return $this; }
     public function getTelefonoMovil(): ?string { return $this->telefonoMovil; }
