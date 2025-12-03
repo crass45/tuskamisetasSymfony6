@@ -41,7 +41,7 @@ final class ModeloAdmin extends AbstractAdmin
         $imagen = '';
 
         if ($modelo && $modelo->getImagen()) {
-            $format = 'wide';
+            $format = '';
             $provider = $this->mediaExtension->getProvider($modelo->getImagen()->getProviderName());//path($modelo->getImagen(), $format);
             $webPath = $provider->generatePublicUrl($modelo->getImagen(), $format);
             $imagen = '<img src="' . $webPath . '" class="admin-preview" style="max-width: 300px;"/>';
