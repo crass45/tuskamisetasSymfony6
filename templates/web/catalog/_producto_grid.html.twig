@@ -53,7 +53,7 @@
         {% if not is_granted('ROLE_ADMIN') %}
             <script>
                 fbq('track', 'Search', {search_string: "{{ busqueda }}"});
-                ga('send', 'pageview', '/search_results.php?q={{ busqueda }}');
+                gtag('send', 'pageview', '/search_results.php?q={{ busqueda }}');
             </script>
         {% endif %}
     {% endif %}
