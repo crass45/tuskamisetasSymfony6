@@ -69,8 +69,14 @@ class ProductController extends AbstractController
     // --- INICIO DE LA CORRECCIÓN ---
     // 1. Cambiamos la firma para pedir el ID en lugar del objeto
     #[Route('/{_locale}/ajax/product/{id}/add-customization/{nPersonalizaciones}', name: 'app_product_add_customization', requirements: ['_locale' => 'es|en|fr'])]
-    public function addCustomizationAction(int $id, int $nPersonalizaciones, SessionInterface $session): Response
+    public function addCustomizationAction(int $id, $nPersonalizaciones, SessionInterface $session): Response
     {
+        // Convertimos a entero manualmente. Si viene "N_PERS", se convertirá en 0.
+        $n = (int) $nPersonalizaciones;
+
+        // Si por algún motivo es 0 (falló el JS), forzamos a 1 para que funcione
+        if ($n <= 0) { $n = 1; }
+
         // 2. Hacemos la búsqueda del Modelo explícitamente
         $modelo = $this->em->getRepository(Modelo::class)->find($id);
         if (!$modelo) {
