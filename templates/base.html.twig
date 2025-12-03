@@ -16,6 +16,54 @@
     <meta name="twitter:creator" content="@tuskamisetas"/>
     <meta name="p:domain_verify" content="238319c8d47689a1737b0621c650f691"/>
 
+    <script>
+        const CURRENT_CONSENT_VERSION = 'v3';
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag("consent", "default", {
+            ad_storage: "denied",
+            ad_user_data: "denied",
+            ad_personalization: "denied",
+            analytics_storage: "denied",
+            functionality_storage: "granted",
+            personalization_storage: "denied",
+            security_storage: "granted",
+            wait_for_update: 500,
+        });
+        gtag("set", "ads_data_redaction", false);
+        gtag("set", "url_passthrough", true);
+    </script>
+
+    <!-- 2. GOOGLE TAG MANAGER (GTM) - RESTAURADO -->
+    <!-- Es necesario para que Tag Assistant funcione y para gestionar otras etiquetas (Facebook, Clarity) -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-WGSJ2QM');</script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Google Tag Manager -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1004279132"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        // Configuración de Google Ads (Con atribución de URL)
+        gtag('config', 'AW-1004279132', {
+            'allow_enhanced_conversions': true
+        });
+
+        // Configuración de GA4
+        gtag('config', 'G-J1ZQDH5W4Q', {
+            'send_page_view': true
+        });
+    </script>
+    <!-- End Google Tag Manager -->
+
     {# MIGRACIÓN: La lógica de canonicals y hreflang se mantiene, pero las rutas se actualizarán #}
     {% block canonical %}
         {% if(req.attributes.get('_route_params')['pagina'] is defined) %}
@@ -59,39 +107,6 @@
         <link rel="stylesheet" href="{{ asset('template/css/responsive.css') }}">
         <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
     {% endblock %}
-
-    {# --- Scripts de Tracking y Head (sin cambios) --- #}
-    <script src="{{ asset('cookieconsent/cookieconsent.js') }}?v=2.1"></script>
-    <!-- Google, Facebook, Clarity scripts... -->
-    <!-- Google tag ANALYTICS 4 (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id={{ google_tag_manager_id }}"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-
-        function gtag() {
-            dataLayer.push(arguments);
-        }
-
-        gtag('js', new Date());
-        gtag('config', '{{ google_tag_manager_id }}');
-    </script>
-
-
-    <!-- Google Tag Manager -->
-    <script>(function (w, d, s, l, i) {
-            w[l] = w[l] || [];
-            w[l].push({
-                'gtm.start':
-                    new Date().getTime(), event: 'gtm.js'
-            });
-            var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
-            j.async = true;
-            j.src =
-                'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-            f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', 'GTM-WGSJ2QM');</script>
-    <!-- End Google Tag Manager -->
 
     <!-- Facebook Pixel Code -->
     <script>
@@ -169,6 +184,8 @@
         <script src="{{ asset('js/app-tienda.js') }}"></script>
         <script src="{{ asset('js/lazy/jquery.lazy.js') }}"></script>
         {# ... (el resto de tus scripts JS) ... #}
+
+        <script src="{{ asset('cookieconsent/cookieconsent.js') }}?v=2.1"></script>
     {% endblock %}
 
     {% block aditionalHead %}{% endblock %}

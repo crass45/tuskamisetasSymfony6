@@ -2,34 +2,28 @@
     Descripción general: Parámetros del modo de consentimiento
 */
 
-// Define la versión actual de la política de consentimiento.
-const CURRENT_CONSENT_VERSION = 'v2';
 
-window.dataLayer = window.dataLayer || [];
-function gtag() { dataLayer.push(arguments); }
 
-// --- Lógica de inicialización modificada para control de versión ---
-const savedConsent = JSON.parse(localStorage.getItem('consentMode'));
+// --- LÓGICA DE UPDATE INMEDIATO ---
+// Esta parte se ejecuta en cuanto carga el archivo, para "desbloquear" a Google lo antes posible.
+(function() {
+    var savedConsent = JSON.parse(localStorage.getItem('consentMode'));
 
-if (savedConsent === null || savedConsent.version !== CURRENT_CONSENT_VERSION) {
-    // Si no hay consentimiento guardado O si la versión es antigua,
-    // se establece el estado de consentimiento más restrictivo por defecto.
-    gtag('consent', 'default', {
-        'functionality_storage': 'granted',
-        'security_storage': 'granted',
-        'ad_storage': 'denied',
-        'ad_user_data': 'denied',
-        'ad_personalization': 'denied',
-        'analytics_storage': 'denied',
-        'personalization_storage': 'denied',
-        'wait_for_update': 500,
-    });
-} else {
-    // Si la versión es correcta, carga el consentimiento guardado del usuario
-    gtag('consent', 'default', savedConsent);
-}
-// --- Fin de la lógica de inicialización modificada ---
-
+    // Si existe consentimiento y la versión es correcta, hacemos el UPDATE
+    if (savedConsent !== null && savedConsent.version === CURRENT_CONSENT_VERSION) {
+        gtag('consent', 'update', {
+            'ad_storage': 'granted', // CORREGIDO
+            'analytics_storage': 'granted', // CORREGIDO
+            'ad_user_data': 'granted', // CORREGIDO
+            'ad_personalization': 'granted', // CORREGIDO
+            'functionality_storage': 'granted', // CORREGIDO
+            'personalization_storage': 'granted', // CORREGIDO
+            'security_storage': 'granted', // CORREGIDO
+            'version': CURRENT_CONSENT_VERSION // AÑADIDO EL CONTROL DE VERSIÓN
+        });
+    }
+})();
+// --- FIN LÓGICA UPDATE ---
 
 window.onload = function() {
     // Se define el HTML del banner de consentimiento. (SU CÓDIGO ORIGINAL)
@@ -121,54 +115,6 @@ window.onload = function() {
         localStorage.setItem('consentMode', JSON.stringify(consentMode));
     }
     // --- Fin setConsent Corregida ---
-
-
-    // ================================================================
-    // == INICIO: CÓDIGO PARA RECHAZO IMPLÍCITO POR NAVEGACIÓN ==
-    // ================================================================
-    // Solo se activa este mecanismo si el usuario no ha dado su consentimiento todavía.
-    if (localStorage.getItem('consentMode') === null) {
-
-        // 1. Se define cuántos clics se considerarán como "navegación" antes de rechazar.
-        const clickThreshold = 2;
-        let navigationClicks = 0;
-
-        // 2. Función que maneja cada clic en la página.
-        function handleImpliedConsent(event) {
-            // Si el clic ocurre DENTRO del banner, se ignora.
-            if (event.target.closest('#cookie-consent-banner')) {
-                return;
-            }
-
-            navigationClicks++;
-
-            // 3. Si se alcanza el umbral de clics, se considera un rechazo implícito.
-            if (navigationClicks >= clickThreshold) {
-                console.log('Consentimiento rechazado implícitamente por navegación.');
-
-                // Se llama a la función setConsent con las mismas opciones que el botón "Rechazar todo".
-                setConsent({
-                    necessary: true,
-                    analytics: false,
-                    preferences: false,
-                    marketing: false,
-                    partners: false
-                });
-
-                // Se oculta el banner.
-                // hideBanner();
-
-                // 4. IMPORTANTE: Se desactiva el listener para que no siga contando.
-                document.removeEventListener('click', handleImpliedConsent);
-            }
-        }
-
-        // 5. Se añade el listener para que "escuche" todos los clics en el documento.
-        document.addEventListener('click', handleImpliedConsent);
-    }
-    // ================================================================
-    // == FIN: CÓDIGO PARA RECHAZO IMPLÍCITO POR NAVEGACIÓN ==
-    // ================================================================
 
 
     if (cookie_consent_banner) {
