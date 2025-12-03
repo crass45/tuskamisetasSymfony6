@@ -15,7 +15,7 @@ use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Form\Type\ModelListType;
 use Sonata\AdminBundle\Form\Type\ModelType;
 use Sonata\Form\Type\CollectionType;
-use Sonata\MediaBundle\Twig\Extension\MediaExtension;
+use Sonata\MediaBundle\Provider\Pool;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -26,9 +26,9 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 
 final class ModeloAdmin extends AbstractAdmin
 {
-    private MediaExtension $mediaExtension;
+    private Pool $mediaExtension;
 
-    public function __construct(MediaExtension $mediaExtension)
+    public function __construct(Pool $mediaExtension)
     {
         parent::__construct();
         $this->mediaExtension = $mediaExtension;
@@ -42,7 +42,8 @@ final class ModeloAdmin extends AbstractAdmin
 
         if ($modelo && $modelo->getImagen()) {
             $format = 'big';
-            $webPath = $this->mediaExtension->path($modelo->getImagen(), $format);
+            $provider = $this->mediaExtension->getProvider($modelo->getImagen()->getProviderName());//path($modelo->getImagen(), $format);
+            $webPath = $provider->generatePublicUrl($modelo->getImagen(), $format);
             $imagen = '<img src="' . $webPath . '" class="admin-preview" style="max-width: 300px;"/>';
         }
 

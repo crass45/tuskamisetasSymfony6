@@ -10,7 +10,7 @@ use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Form\Type\ModelAutocompleteType;
 use Sonata\AdminBundle\Form\Type\ModelListType;
 use Sonata\DoctrineORMAdminBundle\Filter\StringFilter;
-use Sonata\MediaBundle\Twig\Extension\MediaExtension;
+use Sonata\MediaBundle\Provider\Pool;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
@@ -19,9 +19,9 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 final class OfertaAdmin extends AbstractAdmin
 {
-    private MediaExtension $mediaExtension;
+    private Pool $mediaExtension;
 
-    public function __construct(MediaExtension $mediaExtension)
+    public function __construct(Pool $mediaExtension)
     {
         parent::__construct();
         $this->mediaExtension = $mediaExtension;
@@ -35,7 +35,8 @@ final class OfertaAdmin extends AbstractAdmin
 
         if ($oferta && $oferta->getImagen()) {
             $format = 'small';
-            $webPath = $this->mediaExtension->path($oferta->getImagen(), $format);
+            $provider = $this->mediaExtension->getProvider($oferta->getImagen()->getProviderName());//path($modelo->getImagen(), $format);
+            $webPath = $provider->generatePublicUrl($oferta->getImagen(), $format);
             $imagen = '<img src="' . $webPath . '" class="admin-preview" style="max-height: 100px;"/>';
         }
 
