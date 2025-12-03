@@ -53,6 +53,15 @@ class RepairMediaCommand extends Command
             $absRef = $baseDir . $pathReference;
             $absWide = $baseDir . $pathWide;
 
+            // --- DEBUG TEMPORAL (Añade esto) ---
+            if ($missing == 0 && !file_exists($absRef) && !file_exists($absWide)) {
+                $io->note("DEBUG - Buscando archivo ORIGINAL en: " . $absRef);
+                $io->note("DEBUG - Buscando copia WIDE en: " . $absWide);
+                // Paramos tras el primer fallo para leerlo
+                return Command::FAILURE;
+            }
+            // -----------------------------------
+
             // Comprobamos si falta el original
             if (!file_exists($absRef)) {
 
