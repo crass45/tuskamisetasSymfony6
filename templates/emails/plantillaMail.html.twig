@@ -129,7 +129,6 @@
         <td>
             <table class="content" align="center" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                    {# MIGRACIÓN: Uso de absolute_url() en lugar de app.request #}
                     <td style="background-image: url({{ absolute_url(asset('images/repeat_mail.png')) }}); background-repeat: repeat-x; height: 20px; width: 600px"></td>
                 </tr>
                 <tr style="background-color: white">
@@ -137,14 +136,13 @@
                         <table>
                             <tr>
                                 <td style="padding:20px; ">
-                                    {# MIGRACIÓN: Uso de absolute_url() #}
                                     <img class="fix"
                                          src="{{ absolute_url(asset('images/pollo.jpeg')) }}"
                                          width="90" height="auto" border="0" alt="logo tuskamisetas"/>
                                 </td>
                                 <td style="text-align: right; padding: 20px;">
                                     <span class="h1 innerpadding" style="color: #ff9000; text-align: right">
-                                    {{ emailTitulo }}
+                                    {{ emailTitulo|default('') }}
                                         </span>
                                 </td>
                             </tr>
@@ -161,9 +159,9 @@
             <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
                     <td class="bodycopy">
-                        <b>{{ emailSubtitulo }}<br></b>
+                        <b>{{ emailSubtitulo|default('') }}<br></b>
                         {% block texto %}
-                            {{ emailTexto | raw }}
+                            {{ emailTexto|default('') | raw }}
                         {% endblock %}
                     </td>
                 </tr>
@@ -182,7 +180,6 @@
                 </tr>
                 <tr>
                     <td align="left" class="footercopy" style="padding-top: 30px">
-                        {# MIGRACIÓN: Reemplazado uriForPath por una URL absoluta segura #}
                         <a href="https://www.tuskamisetas.com"
                            style="color: #ff9000; text-decoration: none; font-size: 16px; margin-top: 30px;">www.tuskamisetas.com</a>
                     </td>
@@ -191,7 +188,10 @@
                     <td align="left" style="padding: 20px 0 30px 0;">
                         <table border="0" cellspacing="0" cellpadding="0">
                             <tr>
-                                {% if empresa.facebook != "" %}
+                                {# CORRECCIÓN: Comprobamos si 'empresa' está definida antes de usarla #}
+
+                                {# FACEBOOK #}
+                                {% if empresa is defined and empresa.facebook is defined and empresa.facebook %}
                                     <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
                                         <a href="{{ empresa.facebook }}" target="_blank">
                                             <img src="{{ absolute_url(asset('images/facebook.png')) }}"
@@ -200,7 +200,9 @@
                                         </a>
                                     </td>
                                 {% endif %}
-                                {% if empresa.twitter != "" %}
+
+                                {# TWITTER #}
+                                {% if empresa is defined and empresa.twitter is defined and empresa.twitter %}
                                     <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
                                         <a href="{{ empresa.twitter }}" target="_blank">
                                             <img src="{{ absolute_url(asset('images/twitter.png')) }}"
@@ -209,7 +211,9 @@
                                         </a>
                                     </td>
                                 {% endif %}
-                                {% if empresa.youtube != "" %}
+
+                                {# YOUTUBE #}
+                                {% if empresa is defined and empresa.youtube is defined and empresa.youtube %}
                                     <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
                                         <a href="{{ empresa.youtube }}" target="_blank">
                                             <img src="{{ absolute_url(asset('images/google+.png')) }}"
@@ -218,7 +222,9 @@
                                         </a>
                                     </td>
                                 {% endif %}
-                                {% if empresa.pinterest != "" %}
+
+                                {# PINTEREST #}
+                                {% if empresa is defined and empresa.pinterest is defined and empresa.pinterest %}
                                     <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
                                         <a href="{{ empresa.pinterest }}" target="_blank">
                                             <img src="{{ absolute_url(asset('images/pinterest.png')) }}"
@@ -235,7 +241,6 @@
         </td>
     </tr>
     <tr>
-        {# MIGRACIÓN: Uso de absolute_url() #}
         <td style="background-image: url({{ absolute_url(asset('images/repeat_mail_abajo.png')) }}); background-repeat: repeat-x; height: 20px; width: 600px"></td>
     </tr>
 </table>
