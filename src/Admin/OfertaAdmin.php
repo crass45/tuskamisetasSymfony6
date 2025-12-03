@@ -34,7 +34,7 @@ final class OfertaAdmin extends AbstractAdmin
         $imagen = '';
 
         if ($oferta && $oferta->getImagen()) {
-            $format = '';
+            $format = 'reference';
             $provider = $this->mediaExtension->getProvider($oferta->getImagen()->getProviderName());//path($modelo->getImagen(), $format);
             $webPath = $provider->generatePublicUrl($oferta->getImagen(), $format);
             $imagen = '<img src="' . $webPath . '" class="admin-preview" style="max-height: 100px;"/>';
