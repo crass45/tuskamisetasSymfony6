@@ -9,3 +9,51 @@ framework:
 #      En desarrollo: No necesitas hacer nada. Gracias al fichero config/packages/dev/messenger.yaml, los correos se procesan al instante y los ves en la barra de depuración.
 #
 #      En producción: Deberás configurar una herramienta como Supervisor en tu servidor para que arranque y mantenga vivo el proceso messenger:consume. php bin/console messenger:consume async
+
+#  MONTAMOS ESTO EN EL SERVIDOR
+#  1. Crear el archivo de servicio: Crea un archivo llamado /etc/systemd/system/tuskamisetas_messenger.service:
+#
+#  nano /etc/systemd/system/tuskamisetas_messenger.service
+#
+#2. Pegar la configuración: Copia esto dentro (ajustando las rutas si fuera necesario):
+#  [ Unit ]
+#  Description=Symfony Messenger Worker para TusKamisetas
+#  After=network.target
+#
+#  [ Service ]
+#  Type=simple
+#  User=kamisetas
+#  Restart=always
+#  RestartSec=1
+#  # El comando: PHP + Consola + Consume Async (sin límite de tiempo, para que sea infinito)
+#  ExecStart=/opt/remi/php82/root/usr/bin/php /home/kamisetas/web/nueva_tienda_sf6/bin/console messenger:consume async --memory-limit=128M
+#
+#  # Logs (Opcional, para ver errores)
+#  StandardOutput=append:/home/kamisetas/web/nueva_tienda_sf6/var/log/messenger.out.log
+#  StandardError=append:/home/kamisetas/web/nueva_tienda_sf6/var/log/messenger.err.log
+#
+#  [ Install ]
+#  WantedBy=multi-user.target
+#
+#
+#  3. ACTIVAR EL SERVICIO Y EJECUTA ESTOS COMANDOS
+#
+#  # Recargar configuración de systemd
+#  systemctl daemon-reload
+#
+#  # Habilitar para que arranque al reiniciar el servidor
+#  systemctl enable tuskamisetas_messenger
+#
+#  # Iniciar ahora mismo
+#  systemctl start tuskamisetas_messenger
+#
+#
+#  4. COMPROBAR ESTADO
+#
+#  systemctl status tuskamisetas_messenger
+
+#  Cada vez que subas cambios a la web (git pull), ejecuta esto:
+#
+#  Bash
+#
+#  APP_ENV=prod /opt/remi/php82/root/usr/bin/php bin/console messenger:stop-workers
