@@ -15,7 +15,7 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[AsCommand(
     name: 'app:media:repair-missing-reference',
-    description: 'Restaura archivos reference perdidos usando búsqueda exhaustiva de miniaturas wide.',
+    description: 'Restores missing reference files using exhaustive brute-force search of wide thumbnails.',
 )]
 class RepairMediaCommand extends Command
 {
@@ -30,7 +30,7 @@ class RepairMediaCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->title('Reparando imágenes (Modo Fuerza Bruta)...');
+        $io->title('Repairing images (Smart Name Search)...');
 
         $medias = $this->em->getRepository(Media::class)->findAll();
         $baseDir = $this->params->get('kernel.project_dir') . '/public/uploads/media/';
@@ -40,76 +40,69 @@ class RepairMediaCommand extends Command
         $firstErrorShown = false;
 
         foreach ($medias as $media) {
-            // Solo procesamos imágenes
             if ($media->getProviderName() !== 'sonata.media.provider.image') {
                 continue;
             }
 
             $provider = $this->mediaPool->getProvider($media->getProviderName());
 
-            // 1. Ruta donde DEBERÍA estar el original (Reference) según la BBDD actual
+            // 1. Expected location of ORIGINAL (Reference)
             $pathRef = $provider->generatePrivateUrl($media, 'reference');
             $absRef = $baseDir . $pathRef;
 
-            // Si ya existe, perfecto, siguiente.
             if (file_exists($absRef)) {
                 continue;
             }
 
-            // --- GENERACIÓN DE CANDIDATOS (FUERZA BRUTA) ---
+            // --- CANDIDATE GENERATION ---
             $candidates = [];
 
-            // Datos base
-            $nameOriginal = $media->getName(); // "Camisetas full print"
-            $slugLower = $slugger->slug($nameOriginal)->lower()->toString(); // "camisetas-full-print"
-            $slugReal = $slugger->slug($nameOriginal)->toString(); // "Camisetas-full-print" (Respeta mayúsculas)
+            // Clean up the name: remove extension if present
+            $nameOriginal = $media->getName();
+            $nameClean = preg_replace('/\.[^.]+$/', '', $nameOriginal); // Remove .jpg, .png etc from end
 
-            // Extensiones posibles (a veces en BBDD es jpg y el archivo jpeg)
+            // Variations of the name
+            $nameVariations = [
+                $nameClean,                                 // Exact name (e.g. Camisetas-full-print)
+                $slugger->slug($nameClean)->toString(),     // Slugified (Camisetas-full-print)
+                $slugger->slug($nameClean)->lower()->toString(), // Lowercase slug (camisetas-full-print)
+                str_replace('-', ' ', $nameClean)           // Spaces instead of dashes
+            ];
+            $nameVariations = array_unique($nameVariations);
+
+            // Extensions to try
             $extDb = pathinfo($media->getProviderReference(), PATHINFO_EXTENSION);
             $extensions = array_unique([$extDb, 'jpeg', 'jpg', 'png']);
 
-            // Contextos posibles (carpetas y sufijos)
-            $contextsToCheck = array_unique([
-                $media->getContext(), // El de BBDD (ej: default)
-                'producto',           // El de tu servidor antiguo
-                'product',            // El estándar en inglés
-                'default'             // El por defecto
+            // Contexts to check (folders and suffixes)
+            $contexts = array_unique([
+                $media->getContext(), // DB context
+                'producto',
+                'product',
+                'default'
             ]);
 
-            // Generamos todas las rutas posibles donde podría estar el archivo 'wide'
-            // Ruta base de Sonata: ID/ID/ (ej: 0001/01)
-            // OJO: La ruta relativa de generatePrivateUrl ya incluye "contexto/0001/01/nombre.ext"
-            // Necesitamos extraer solo la parte numérica: "0001/01"
+            // Determine the ID folder structure (e.g. 0001/01) from the reference path
             $pathParts = explode('/', $pathRef);
-            // pathRef suele ser: contexto/0001/01/archivo.jpg
-            // Nos quedamos con las partes intermedias si la estructura es estándar
-            $idFolder = '';
-            if (count($pathParts) >= 4) {
-                $idFolder = $pathParts[1] . '/' . $pathParts[2]; // "0001/01"
-            } else {
-                // Fallback simple si la estructura es rara
-                $idFolder = '*/*';
-            }
+            $idFolder = (count($pathParts) >= 4) ? $pathParts[1] . '/' . $pathParts[2] : '';
 
-            foreach ($contextsToCheck as $ctxFolder) {
-                foreach ($contextsToCheck as $ctxFile) {
+            foreach ($contexts as $ctxFolder) {
+                foreach ($contexts as $ctxSuffix) {
                     foreach ($extensions as $ext) {
-                        foreach ([$slugReal, $slugLower] as $slug) {
-                            // Construimos ruta: public/uploads/media/{CARPETA}/0001/01/{SLUG}_{SUFIJO}_wide.{EXT}
-
-                            // Candidato A: Nombre-producto_contexto_wide.jpg (Tu caso)
-                            $filenameA = sprintf('%s_%s_wide.%s', $slug, $ctxFile, $ext);
+                        foreach ($nameVariations as $name) {
+                            // Strategy 1: Context in filename (e.g. Name_producto_wide.jpg)
+                            $filenameA = sprintf('%s_%s_wide.%s', $name, $ctxSuffix, $ext);
                             $candidates[] = $baseDir . $ctxFolder . '/' . $idFolder . '/' . $filenameA;
 
-                            // Candidato B: Nombre-producto_wide.jpg (Sin contexto duplicado)
-                            $filenameB = sprintf('%s_wide.%s', $slug, $ext);
+                            // Strategy 2: No context in filename (e.g. Name_wide.jpg)
+                            $filenameB = sprintf('%s_wide.%s', $name, $ext);
                             $candidates[] = $baseDir . $ctxFolder . '/' . $idFolder . '/' . $filenameB;
                         }
                     }
                 }
             }
 
-            // --- BÚSQUEDA ---
+            // --- SEARCH ---
             $foundPath = null;
             foreach ($candidates as $candidate) {
                 if (file_exists($candidate)) {
@@ -119,30 +112,29 @@ class RepairMediaCommand extends Command
             }
 
             if ($foundPath) {
-                // ¡ENCONTRADO!
-                // 1. Asegurar que existe la carpeta de destino del Reference
+                // FOUND! Restore it
                 $destDir = dirname($absRef);
                 if (!is_dir($destDir)) {
                     mkdir($destDir, 0775, true);
                 }
 
-                // 2. Copiar (Promocionar Wide -> Reference)
                 copy($foundPath, $absRef);
-                $io->text(sprintf("RECUPERADO: %s \n   Origen: %s", $media->getName(), basename($foundPath)));
+                $io->text(sprintf("RESTORED: %s \n   Source: %s", $media->getName(), basename($foundPath)));
                 $stats['restored']++;
             } else {
                 $stats['missing']++;
 
-                // DEBUG: Mostrar dónde buscó el primero que falló
+                // DEBUG: Show first failure details
                 if (!$firstErrorShown) {
-                    $io->warning("DEBUG FALLO - Ejemplo de rutas probadas para: " . $media->getName());
-                    $io->listing(array_slice($candidates, 0, 10)); // Muestra las 10 primeras pruebas
+                    $io->warning("DEBUG FAILURE - Tested paths for: " . $media->getName());
+                    // Show first 10 candidates
+                    $io->listing(array_slice($candidates, 0, 10));
                     $firstErrorShown = true;
                 }
             }
         }
 
-        $io->success(sprintf('PROCESO FINALIZADO. Recuperados: %d. Perdidos: %d', $stats['restored'], $stats['missing']));
+        $io->success(sprintf('FINISHED. Restored: %d. Missing: %d', $stats['restored'], $stats['missing']));
         return Command::SUCCESS;
     }
 }
