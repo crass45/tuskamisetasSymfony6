@@ -103,6 +103,20 @@ class PedidoMailerService
             $email->attach($pdfData, 'factura-' . $pedido->getFactura()->getNumeroFactura() . '.pdf', 'application/pdf');
         }
 
+        // Caso B: Estado 2 (Revisado) -> Adjuntar PRESUPUESTO (Corrección)
+        elseif ($estado->getEnviaCorreo() == 2) {
+            // Renderizamos la plantilla de presupuesto (asegúrate de que 'plantilla_pdf/presupuesto.html.twig' existe)
+            $htmlPresupuesto = $this->twig->render('plantilla_pdf/presupuesto.html.twig', ['pedido' => $pedido]);
+
+            // Configuramos opciones del PDF si son necesarias
+            $this->knpSnappyPdf->setOption('footer-html', $this->twig->render('plantilla_pdf/footer.html.twig'));
+
+            $pdfData = $this->knpSnappyPdf->getOutputFromHtml($htmlPresupuesto);
+
+            // Adjuntamos con nombre "presupuesto-REF.pdf"
+            $email->attach($pdfData, 'presupuesto-' . $pedido->getNombre() . '.pdf', 'application/pdf');
+        }
+
         // Aquí puedes añadir más lógica para pasar variables específicas a cada plantilla si es necesario
         // === LÓGICA DE CÁLCULO DE FECHAS (MOVIMOS LA LÓGICA AQUÍ) ===
         $templateContext = [
