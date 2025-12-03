@@ -1,0 +1,41 @@
+{# templates/bundles/TwigBundle/Exception/error410.html.twig #}
+
+{% extends 'web/indexTemplateNoFiltros.html.twig' %}
+
+{% block title %}{% trans %}Contenido no disponible{% endtrans %}{% endblock %}
+
+{% block contenedor %}
+    <div class="container" style="margin-top: 40px; margin-bottom: 60px;">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="border_gris" style="background-color: white; border-radius: 4px; padding: 40px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+
+                    <div style="margin-bottom: 30px;">
+                        {# Icono de "Fin" o "Archivo" #}
+                        <i class="fa fa-hourglass-end" style="font-size: 80px; color: #999;"></i>
+                    </div>
+
+                    <h1 class="titulo" style="color: #666; font-weight: 700; text-transform: uppercase; margin-top: 0;">
+                        {% trans %}ESTE CONTENIDO YA NO EXISTE{% endtrans %}
+                    </h1>
+
+                    <div class="texto" style="font-size: 16px; color: #555; margin-top: 20px; line-height: 1.6;">
+                        <p>
+                            {% trans %}El producto o la página que buscas ha sido eliminado permanentemente de nuestro catálogo y ya no está disponible.{% endtrans %}
+                        </p>
+                        <p>
+                            {% trans %}Te recomendamos buscar un producto similar en nuestra tienda.{% endtrans %}
+                        </p>
+                    </div>
+
+                    <hr style="margin-top: 30px; margin-bottom: 30px; border-top: 1px dashed #ccc;">
+
+                    <a href="{{ path('app_home') }}" class="btn button" style="text-transform: uppercase; padding: 12px 30px;">
+                        <i class="fa fa-search"></i> {% trans %}Ver Catálogo Actual{% endtrans %}
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

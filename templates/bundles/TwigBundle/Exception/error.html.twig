@@ -1,0 +1,44 @@
+{# templates/bundles/TwigBundle/Exception/error.html.twig #}
+
+{# MIGRACIÓN: Usamos la plantilla base moderna #}
+{% extends 'web/indexTemplateNoFiltros.html.twig' %}
+
+{% block title %}{% trans %}Error Inesperado{% endtrans %}{% endblock %}
+
+{% block contenedor %}
+    <div class="container" style="margin-top: 40px; margin-bottom: 60px;">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                {# Contenedor tipo tarjeta #}
+                <div class="border_gris" style="background-color: white; border-radius: 4px; padding: 40px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+
+                    <div style="margin-bottom: 30px;">
+                        {# Icono de alerta rojo #}
+                        <i class="fa fa-exclamation-triangle" style="font-size: 80px; color: #d9534f;"></i>
+                    </div>
+
+                    <h1 class="titulo" style="color: #d9534f; font-weight: 700; text-transform: uppercase; margin-top: 0;">
+                        {% trans %}HA OCURRIDO UN ERROR{% endtrans %}
+                    </h1>
+
+                    <div class="texto" style="font-size: 16px; color: #555; margin-top: 20px; line-height: 1.6;">
+                        <p>
+                            {% trans %}Lo sentimos, algo no ha funcionado correctamente en el servidor.{% endtrans %}
+                        </p>
+                        <p>
+                            {% trans %}Nuestro equipo técnico ha sido notificado. Por favor, inténtalo de nuevo más tarde.{% endtrans %}
+                        </p>
+                    </div>
+
+                    <hr style="margin-top: 30px; margin-bottom: 30px; border-top: 1px dashed #ccc;">
+
+                    {# MIGRACIÓN: Ruta actualizada a 'app_home' #}
+                    <a href="{{ path('app_home') }}" class="btn button" style="text-transform: uppercase; padding: 12px 30px;">
+                        <i class="fa fa-home"></i> {% trans %}VOLVER AL INICIO{% endtrans %}
+                    </a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
