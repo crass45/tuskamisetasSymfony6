@@ -911,9 +911,14 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        /**
-         * Lee la cookie de Google Analytics (_ga) y extrae el Client ID.
-         */
+
+        // 1. OBTENER DATOS DESDE LA SESIÓN DE SYMFONY (TWIG)
+        // Si existen en sesión, se imprimen aquí. Si no, quedan vacíos.
+        const gclid = "{{ app.session.get('gclid') }}";
+        const wbraid = "{{ app.session.get('wbraid') }}";
+        const gbraid = "{{ app.session.get('gbraid') }}";
+
+        // 2. CLIENT ID DE ANALYTICS (Este sí sigue siendo por Cookie de JS)
         function getGoogleAnalyticsClientId() {
             const cookies = document.cookie.split(';');
             for (let i = 0; i < cookies.length; i++) {
@@ -929,38 +934,37 @@
             return null;
         }
 
-        // Se seleccionan todos los enlaces cuyo href empieza con "mailto:"
+        // 3. INTERCEPTOR DE ENLACES MAILTO
         document.querySelectorAll('a[href^="mailto:"]').forEach(function(mailLink) {
             mailLink.addEventListener('click', function(event) {
-                // Se previene la acción por defecto para poder modificar el enlace
+                // Si no hay datos de seguimiento, no hacemos nada (comportamiento normal)
+                const clientId = getGoogleAnalyticsClientId();
+                if (!clientId && !gclid && !wbraid && !gbraid) return;
+
                 event.preventDefault();
 
-                const clientId = getGoogleAnalyticsClientId();
-                if (!clientId) {
-                    // Si no se encuentra el ID, simplemente se abre el enlace original
-                    window.location.href = this.href;
-                    return;
-                }
+                // Construimos el texto extra
+                let trackingInfo = "\n\n--------------------------------\nINFO DE SEGUIMIENTO (NO BORRAR):";
+
+                if (clientId) trackingInfo += "\nGA Client ID: " + clientId;
+                if (gclid)    trackingInfo += "\nGCLID: " + gclid;
+                if (wbraid)   trackingInfo += "\nWBRAID: " + wbraid;
+                if (gbraid)   trackingInfo += "\nGBRAID: " + gbraid;
 
                 const originalHref = this.getAttribute('href');
-                const textToAppend = "\n\n---\nGoogle Analytics Client ID: " + clientId;
                 let newHref = originalHref;
 
-                // Se comprueba si el enlace ya tiene parámetros (como un 'subject')
+                // Añadimos el cuerpo al mailto de forma segura
                 if (originalHref.includes('?')) {
-                    // Si ya tiene un 'body', se añade el texto al final
                     if (originalHref.includes('body=')) {
-                        newHref = originalHref.replace('body=', 'body=' + encodeURIComponent(textToAppend));
+                        newHref = originalHref.replace('body=', 'body=' + encodeURIComponent(trackingInfo));
                     } else {
-                        // Si no tiene 'body', se añade
-                        newHref += '&body=' + encodeURIComponent(textToAppend);
+                        newHref += '&body=' + encodeURIComponent(trackingInfo);
                     }
                 } else {
-                    // Si no tiene ningún parámetro, se añade el 'body'
-                    newHref += '?body=' + encodeURIComponent(textToAppend);
+                    newHref += '?body=' + encodeURIComponent(trackingInfo);
                 }
 
-                // Se abre el gestor de correo con el enlace ya modificado
                 window.location.href = newHref;
             });
         });

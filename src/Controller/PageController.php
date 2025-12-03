@@ -108,6 +108,13 @@ class PageController extends AbstractController
         $fechaPedido = $request->request->get('_fecha');
         $cantidadPrendas = $request->request->get('_cantidad');
 
+        // --- CAMBIO: LEER DE SESIÓN (Gracias a tu TrackingSubscriber) ---
+        $session = $request->getSession();
+        $gclid = $session->get('gclid');
+        $wbraid = $session->get('wbraid');
+        $gbraid = $session->get('gbraid');
+        // ---------------------------------------------------------------
+
         $mensaje = "SOLICITUD DE PRESUPUESTO WEB\n";
         $mensaje .= "============================\n\n";
         $mensaje .= "Empresa: {$nombreEmpresa}\n";
@@ -119,6 +126,14 @@ class PageController extends AbstractController
         $mensaje .= "Cantidad: {$cantidadPrendas}\n";
         $mensaje .= "Fecha límite: {$fechaPedido}\n";
         $mensaje .= "Observaciones:\n{$observacionesCliente}\n";
+
+        // AÑADIR AL CORREO
+        if ($gclid || $wbraid || $gbraid) {
+            $mensaje .= "\n\n--- DATOS DE SEGUIMIENTO ---\n";
+            if ($gclid) $mensaje .= "GCLID: $gclid\n";
+            if ($wbraid) $mensaje .= "WBRAID: $wbraid\n";
+            if ($gbraid) $mensaje .= "GBRAID: $gbraid\n";
+        }
 
         $email = (new Email())
             ->from('noreply@tuskamisetas.com') // Importante usar un remitente del dominio
