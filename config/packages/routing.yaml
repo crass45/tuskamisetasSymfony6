@@ -1,5 +1,6 @@
 framework:
     router:
+        default_uri: 'https://tuskamisetas.com'
         utf8: true
 
         # Configure how to generate URLs in non-HTTP contexts, such as CLI commands.
