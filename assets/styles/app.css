@@ -65,3 +65,27 @@
         overflow: hidden !important;
     }
 }
+
+/* --- CORRECCIÓN BUSCADOR CABECERA --- */
+.search_box {
+    position: relative; /* Asegura que el 'after' se posicione respecto a la caja */
+}
+
+.search_box:after {
+    top: 0 !important; /* Quitamos el desplazamiento de 7px que lo rompía */
+    height: 35px !important; /* Misma altura que el input (según main.css) */
+    line-height: 35px !important; /* Centramos el icono verticalmente */
+    right: 0 !important;
+    width: 40px !important; /* Ancho fijo para el cuadro naranja */
+    border-radius: 0 4px 4px 0; /* Opcional: redondear esquinas derechas si el input lo tiene */
+}
+
+.search_box input[type="text"] {
+    height: 35px !important; /* Aseguramos altura consistente */
+    border-radius: 4px !important; /* Modernizamos un poco el borde */
+}
+
+.searchSubmit {
+    height: 35px !important;
+    width: 40px !important;
+}

@@ -296,72 +296,49 @@
                                 </div>
                             </div>
                             {# boton del menu #}
-                            <div class="col-xs-2 hidden-md hidden-lg">
-                                <nav class="navbar navbar-defaul navbar-tkm"
-                                     style="z-index: 1008; padding: 0; margin: 0">
-                                    <div class="container-fluid">
-                                        <!-- Brand and toggle get grouped for better mobile display -->
-                                        <div class="navbar-header">
-                                            <button id="nav-icon4" type="button"
-                                                    class="TKMAnimationMenu navbar-toggle collapsed"
-                                                    data-toggle="collapse"
-                                                    data-target="#bs-example-navbar-collapse-1"
-                                                    aria-expanded="false"
-                                                    style="margin-bottom: 0; background-color: #044266">
-                                                {# <span class="sr-only">Toggle navigation</span> #}
-                                                <span class="icon-bar"></span>
-                                                <span class="icon-bar"></span>
-                                                <span class="icon-bar"></span>
-                                            </button>
-                                            {# <a class="navbar-brand" href="#"> #}
+                            <div class="col-xs-2 hidden-md hidden-lg" style="padding-left: 15px; padding-right: 0;">
+                                <nav class="navbar navbar-default navbar-tkm"
+                                     style="z-index: 1008; padding: 0; margin: 0; background: none; border: none;">
 
-                                            {# </a> #}
-                                        </div>
+                                    <div class="navbar-header" style="float: left;">
+                                        <button id="nav-icon4" type="button"
+                                                class="TKMAnimationMenu navbar-toggle collapsed"
+                                                data-toggle="collapse"
+                                                data-target="#bs-example-navbar-collapse-1"
+                                                aria-expanded="false"
+                                                style="margin: 0; margin-top: 8px; background-color: #044266; border: none; float: left;">
+                                            <span class="icon-bar"></span>
+                                            <span class="icon-bar"></span>
+                                            <span class="icon-bar"></span>
+                                        </button>
                                     </div>
+
                                 </nav>
                             </div>
 
-{#                            <div class="col-xs-10 col-md-8">#}
-{#                                <div class="search_box" style="width: 100%; margin-top: 7px;">#}
-{#                                    #}{# MIGRACIÓN: La ruta del formulario de búsqueda debe actualizarse #}
-{#                                    #}{#                                    <form action="{{ path('app_search') }}" method="post"> #}
-{#                                    #}{#                                        #}{##}{# ... #}
-{#                                    #}{#                                    </form> #}
-{#                                    <form action="{{ path('app_search_handle', {'_locale': app.request.locale}) }}"#}
-{#                                          method="post">#}
-{#                                        <div>#}
-{#                                            #}{# CORRECCIÓN: El nombre del campo ahora es 'q' #}
-{#                                            <input itemprop="query-input" required type="text" name="q"#}
-{#                                                   placeholder="{% trans %}Buscar{% endtrans %}"#}
-{#                                                   style="border: 1px solid #ff9000; width: 100%"/>#}
-{#                                            <input class="searchSubmit" type="submit" value=""/>#}
-{#                                        </div>#}
-{#                                        <div id="livesearch"#}
-{#                                             style="background-color:#ff9000;max-height:400px; overflow:scroll; background-color: white; position: absolute"></div>#}
-{#                                    </form>#}
-{#                                </div>#}
-{#                            </div>#}
-
-                            <div class="col-xs-10 col-md-8">
+                            {# Buscador (CORREGIDO: Márgenes y Posicionamiento) #}
+                            {# Buscador (Con márgenes arreglados) #}
+                            <div class="col-xs-10 col-md-8" style="padding-right: 15px; padding-left: 10px;">
                                 <div class="search_box" style="width: 100%; margin-top: 7px;">
                                     <form action="{{ path('app_search_handle', {'_locale': app.request.locale}) }}"
                                           method="post">
-                                        <div>
-                                            {# MODIFICACIÓN: Añadimos autocomplete y data-url-buscar #}
+
+                                        <div style="position: relative;">
                                             <input itemprop="query-input"
                                                    required
                                                    type="text"
                                                    name="q"
                                                    placeholder="{% trans %}Buscar{% endtrans %}"
-                                                   style="border: 1px solid #ff9000; width: 100%"
+                                                   style="border: 1px solid #ff9000; width: 100%; padding-right: 45px;"
                                                    autocomplete="off"
                                                    data-url-buscar="{{ path('app_search_live', {'_locale': app.request.locale, 'query': 'cadenaNombre'}) }}"
                                             />
+
                                             <input class="searchSubmit" type="submit" value=""/>
                                         </div>
-                                        {# Contenedor donde se pintarán los resultados AJAX #}
+
                                         <div id="livesearch"
-                                             style="background-color:#ff9000;max-height:400px; overflow:scroll; background-color: white; position: absolute; width: 95%; z-index: 9999;"></div>
+                                             style="background-color: white; max-height:400px; overflow:scroll; position: absolute; width: 100%; z-index: 9999; top: 100%; left: 0;"></div>
                                     </form>
                                 </div>
                             </div>
