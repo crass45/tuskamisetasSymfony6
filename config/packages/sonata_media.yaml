@@ -19,7 +19,6 @@ sonata_media:
   # --- INICIO DE LA MIGRACIÓN DE CONTEXTOS ---
   contexts:
     default:
-      download: sonata.media.security.public_strategy
       providers:
         - sonata.media.provider.youtube
         - sonata.media.provider.vimeo
@@ -34,7 +33,6 @@ sonata_media:
         big:     { width: 3000, quality: 100}
 
     producto:
-      download: sonata.media.security.public_strategy
       providers:
         - sonata.media.provider.image
       formats:
@@ -45,7 +43,6 @@ sonata_media:
         preview: { width: 100, quality: 100}
 
     sonata_category:
-      download: sonata.media.security.public_strategy
       providers:
         - sonata.media.provider.image
       formats:
