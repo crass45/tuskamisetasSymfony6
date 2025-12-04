@@ -37,7 +37,11 @@ class PaymentController extends AbstractController
         // Validaciones (el pedido existe, no está pagado, etc.)
         if ($pedido->isPagado()) {
             $this->addFlash('warning', 'Este pedido ya ha sido pagado.');
-            return $this->redirectToRoute('app_home');
+            return $this->redirectToRoute('app_profile_orders');
+        }
+        if($pedido->getEstado()->getId()!= 3){
+            $this->addFlash('warning', 'Este pedido no se puede pagar. (es posible que esté en revisión o tenga alguna incidencia)'.$pedido->getEstado()->getId());
+            return $this->redirectToRoute('app_profile_orders');
         }
 
         // Usamos nuestro servicio para generar los datos del formulario de Redsys
