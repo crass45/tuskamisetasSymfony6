@@ -137,11 +137,12 @@ class CleanOrphanMediaCommand extends Command
             ['App\Entity\Fabricante', 'imagen'],
             ['App\Entity\Proveedor', 'imagen'],
             ['App\Entity\Empresa', 'logo'], // Si Empresa tiene logo como Media
-            ['App\Entity\BannerHome', 'imagen'], // Si el blog usa Media
+            ['App\Entity\BannerHome', 'imagen'],
             ['App\Entity\PedidoTrabajo', 'montaje'],
             ['App\Entity\PedidoTrabajo', 'arteFin'],
             ['App\Entity\PedidoTrabajo', 'imagenOriginal'],
             ['App\Entity\EmpresaHasMedia', 'media'],
+            ['App\Entity\Oferta', 'imagen'],
         ];
 
         foreach ($relations as $relation) {
