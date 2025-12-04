@@ -668,14 +668,18 @@
                 // El atributo 'data-max' ya lo tienes en el HTML si hay control de stock
                 const maxStock = parseInt($input.data('max'));
 
-                if (!isNaN(maxStock) && value > maxStock) {
-                    // Si se pasa, lo bajamos al máximo disponible
+                // --- CAMBIO: Excepción para stock infinito (si es 500, no limitamos esto permite que en Roly deje pedir) ---
+                if (!isNaN(maxStock) && maxStock !== 500 && value > maxStock) {
+                    // Si se pasa y NO es la excepción de 500, lo bajamos al máximo disponible
                     value = maxStock;
                     $input.val(value);
 
                     // Feedback visual (opcional: borde rojo momentáneo)
                     $input.css('border-color', 'red');
                     setTimeout(() => $input.css('border-color', ''), 1000);
+
+                    // Opcional: Avisar al usuario por qué se le ha cambiado
+                    // alert("Lo sentimos, solo disponemos de " + maxStock + " unidades en stock.");
                 }
 
                 // 2. Validación de MULTIPLOS DE PACK

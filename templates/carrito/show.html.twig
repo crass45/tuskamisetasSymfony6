@@ -18,11 +18,11 @@
     <br>
     <div class="carrito col-lg-12">
         <section id="cart_items">
-{#            <div class="container">#}
-                {# MIGRACIÓN: Se actualiza la ruta de la plantilla incluida #}
-                {# La crearemos en el siguiente paso #}
-                {% include 'carrito/partials/_cart_details.html.twig' %}
-{#            </div>#}
+            {#            <div class="container"> #}
+            {# MIGRACIÓN: Se actualiza la ruta de la plantilla incluida #}
+            {# La crearemos en el siguiente paso #}
+            {% include 'carrito/partials/_cart_details.html.twig' %}
+            {#            </div> #}
         </section> <!--/#cart_items-->
 
         {% if carrito is not null and carrito.items is not empty %}
@@ -32,8 +32,7 @@
                     {# Se cambia la acción del formulario si estamos en modo edición #}
                     {% set form_action = (editing_order_id is defined and editing_order_id)
                         ? path('app_cart_save_edited_order')
-                        : path('app_checkout_start', {'_locale': app.request.locale})
-                    %}
+                        : path('app_checkout_start', {'_locale': app.request.locale}) %}
                     <form action="{{ form_action }}" method="post">
 
                         <div class="row">
@@ -60,8 +59,74 @@
             $('#carropaso2').css('color', 'black');
         });
 
+        document.addEventListener('DOMContentLoaded', function () {
+            // Función de validación de stock
+            function validateStock(input) {
+                let value = parseInt(input.value) || 0;
+                const maxStock = parseInt(input.getAttribute('data-max'));
+
+                // EXCEPCIÓN: Si el stock es exactamente 500, no hay límite
+                if (maxStock === 500) {
+                    return true;
+                }
+
+                if (value > maxStock) {
+                    alert("Lo sentimos, solo disponemos de " + maxStock + " unidades en stock.");
+                    input.value = maxStock;
+                    return false;
+                }
+                return true;
+            }
+
+            // 1. Controlar cambios manuales en el input
+            document.querySelectorAll('.cart_quantity_input').forEach(function (input) {
+                input.addEventListener('change', function () {
+                    if (validateStock(this)) {
+                        // Si es válido, redirigir para actualizar (tu lógica actual)
+                        const itemIndex = this.dataset.itemIndex;
+                        const productIndex = this.dataset.productIndex;
+                        const quantity = this.value;
+
+                        console.warn(itemIndex);
+                        console.warn(productIndex);
+                        console.warn(quantity);
+                        // Construir URL de actualización (ajusta la ruta según tu router)
+                        // Ejemplo: /es/carrito/update-quantity/0/0/5
+                        // Generamos una URL válida con valores dummy (0, 0, 0) que luego reemplazaremos
+                        let urlTemplate = "{{ path('app_cart_update_quantity', {'itemIndex': 999999, 'productIndex': 888888, 'quantity': 777777}) }}";
+
+// En JS:
+                        let url = urlTemplate.replace('999999', itemIndex)
+                            .replace('888888', productIndex)
+                            .replace('777777', quantity);
+
+                        window.location.href = url;
+                    }
+                });
+            });
+
+            // 2. Controlar botones de sumar (+)
+            document.querySelectorAll('.cart_quantity_up').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    const input = this.closest('.cart_quantity_button').querySelector('.cart_quantity_input');
+                    let currentValue = parseInt(input.value) || 0;
+                    const maxStock = parseInt(input.getAttribute('data-max'));
+
+                    // Si no es la excepción de 500 y vamos a superar el stock...
+                    if (maxStock !== 500 && (currentValue + 1) > maxStock) {
+                        e.preventDefault(); // Evitamos que el enlace funcione
+                        alert("No puedes añadir más cantidad. Stock máximo: " + maxStock);
+                    }
+                    // Si todo bien, dejamos que el enlace haga su redirección normal
+                });
+            });
+        });
+
+
         // El resto de tu JavaScript para Google Analytics se puede conservar aquí,
         // asegurándote de que las variables como 'carrito' y 'producto'
         // se acceden correctamente según la nueva estructura de los objetos.
+
+
     </script>
 {% endblock %}

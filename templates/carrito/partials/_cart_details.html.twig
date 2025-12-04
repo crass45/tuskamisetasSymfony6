@@ -61,7 +61,7 @@
                         {# Todo este bloque de botones y el input se mantiene exactamente igual #}
                         <div class="cart_quantity_button" style="display: flex; justify-content: center; align-items: center; flex-wrap: nowrap;">
                             <a class="cart_quantity_down btn btn-default btn-xs" style="margin-right: 5px;" href="{{ path('app_cart_decrease_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> - </a>
-                            <input class="cart_quantity_input form-control" type="number" name="quantity" value="{{ productoPresupuesto.cantidad }}" autocomplete="off" style="width: 60px; text-align: center; height: 22px; padding: 1px 6px;" data-item-index="{{ itemIndex }}" data-product-index="{{ productIndex }}">
+                            <input class="cart_quantity_input form-control" type="number" name="quantity" value="{{ productoPresupuesto.cantidad }}" autocomplete="off" style="width: 60px; text-align: center; height: 22px; padding: 1px 6px;" data-item-index="{{ itemIndex }}" data-product-index="{{ productIndex }}" data-max="{{ productoPresupuesto.producto.stock }}">
                             <a class="cart_quantity_up btn btn-default btn-xs" style="margin-left: 5px;" href="{{ path('app_cart_increase_quantity', {'_locale': app.request.locale, 'itemIndex': itemIndex, 'productIndex': productIndex}) }}"> + </a>
                             <a class="btn btn-primary btn-xs update-quantity-btn" style="margin-left: 10px; margin-top: auto;" href="#">
                                 <i class="fa fa-refresh"></i>
