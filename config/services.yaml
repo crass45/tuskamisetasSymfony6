@@ -29,6 +29,10 @@ services:
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
+    Sonata\MediaBundle\Model\MediaManagerInterface: '@sonata.media.manager.media'
+
+      # If you also need the Pool (which we used in other commands), alias it too:
+    Sonata\MediaBundle\Provider\Pool: '@sonata.media.pool'
     App\:
         resource: '../src/'
         exclude:

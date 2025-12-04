@@ -84,7 +84,8 @@ class Contacto
 
     public function __toString(): string
     {
-        return trim(sprintf('%s %s', $this->nombre, $this->apellidos));
+//        return trim(sprintf('%s %s', $this->nombre, $this->apellidos));
+        return $this->getEmail();
     }
 
     /**

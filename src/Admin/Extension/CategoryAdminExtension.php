@@ -3,7 +3,6 @@
 namespace App\Admin\Extension;
 
 use App\Entity\Sonata\ClassificationCategory;
-use FOS\CKEditorBundle\Form\Type\CKEditorType;
 use Sonata\AdminBundle\Admin\AbstractAdminExtension;
 use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Form\Type\ModelListType;

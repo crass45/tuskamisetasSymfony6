@@ -46,15 +46,15 @@ final class DireccionAdmin extends AbstractAdmin
             ->add('poblacion')
             ->add('provinciaBD', ModelFilter::class, [
                 'label' => 'Provincia (desde BD)',
-                'field_options' => [
-                    'property' => 'nombre'
-                ]
+//                'field_options' => [
+//                    'property' => 'nombre'
+//                ]
             ])
             ->add('paisBD', ModelFilter::class, [
                 'label' => 'País (desde BD)',
-                'field_options' => [
-                    'property' => 'nombre'
-                ]
+//                'field_options' => [
+//                    'property' => 'nombre'
+//                ]
             ]);
     }
 
@@ -62,9 +62,9 @@ final class DireccionAdmin extends AbstractAdmin
     {
         $list
             ->addIdentifier('nombre')
-            ->add('dir', ['label' => 'Dirección'])
-            ->add('cp', ['label' => 'C.P.'])
-            ->add('poblacion', ['label' => 'Población'])
+            ->add('dir', null, ['label' => 'Dirección'])
+            ->add('cp',null, ['label' => 'C.P.'])
+            ->add('poblacion',null, ['label' => 'Población'])
             ->add('provinciaBD', null, [
                 'label' => 'Provincia',
                 'associated_property' => 'nombre',
