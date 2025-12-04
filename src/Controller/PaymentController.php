@@ -40,7 +40,7 @@ class PaymentController extends AbstractController
             return $this->redirectToRoute('app_profile_orders');
         }
         if($pedido->getEstado()->getId()!= 3){
-            $this->addFlash('warning', 'Este pedido no se puede pagar. (es posible que esté en revisión o tenga alguna incidencia)'.$pedido->getEstado()->getId());
+            $this->addFlash('warning', 'Este pedido no se puede pagar. (es posible que esté en revisión o tenga alguna incidencia)');
             return $this->redirectToRoute('app_profile_orders');
         }
 
