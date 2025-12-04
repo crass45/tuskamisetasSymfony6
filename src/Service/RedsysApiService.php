@@ -155,9 +155,15 @@ class RedsysApiService
 
     private function encrypt_3DES(string $message, string $key): string
     {
+        // LÓGICA DE COMPATIBILIDAD CON MCRYPT (Zero Padding)
+        // Forzamos que la longitud sea múltiplo de 8 bytes rellenando con ceros (\0)
+        $l = ceil(strlen($message) / 8) * 8;
+        $message = $message . str_repeat("\0", $l - strlen($message));
+
         $iv = "\0\0\0\0\0\0\0\0";
-        $ciphertext = openssl_encrypt($message, 'des-ede3-cbc', $key, OPENSSL_RAW_DATA, $iv);
-        return $ciphertext;
+
+        // Usamos OPENSSL_RAW_DATA | OPENSSL_NO_PADDING para que OpenSSL no añada su propio relleno
+        return openssl_encrypt($message, 'des-ede3-cbc', $key, OPENSSL_RAW_DATA | OPENSSL_NO_PADDING, $iv);
     }
 
     private function mac256(string $ent, string $key): string
