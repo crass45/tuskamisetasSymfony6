@@ -65,12 +65,16 @@ class HomeController extends AbstractController
         // MIGRACIÓN: Ahora se usa el método personalizado del repositorio, que es más eficiente.
         $productosDestacados = $em->getRepository(Modelo::class)->findDestacadosParaHome();
 
-        return $this->render('web/home.html.twig', [
+        $response =  $this->render('web/home.html.twig', [
             'banners'        => $banners,
             'carrito'        => $carrito,
             'categoriasHome' => $categoriasHome,
             'destacados'     => $productosDestacados
         ]);
+        // Cachear la página durante 1 hora (3600 segundos)
+        $response->setSharedMaxAge(3600);
+
+        return $response;
     }
 
     // --- INICIO DEL NUEVO MÉTODO DE PRUEBA ---

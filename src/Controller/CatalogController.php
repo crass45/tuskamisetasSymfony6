@@ -135,7 +135,7 @@ class CatalogController extends AbstractController
         $paginator = $modeloRepository->findByFiltros($filtros, $page);
         $filtrosDisponibles = $modeloRepository->findAvailableFilters($filtros);
 
-        return $this->render($template, [
+        $response = $this->render($template, [
             'modelos' => $paginator,
             'filtros' => $filtros,
             'context' => $contextObject,
@@ -153,6 +153,11 @@ class CatalogController extends AbstractController
 //            'titulo' => $contextObject->getTituloSEO() ?? $contextObject->__toString(),
 //            'descripcion' => $contextObject->getDescripcion() ?? '',
         ]);
+
+        // Cachear la página durante 1 hora (3600 segundos)
+        $response->setSharedMaxAge(3600);
+
+        return $response;
     }
 
     // ... dentro de src/Controller/CatalogController.php
