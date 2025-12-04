@@ -1,148 +1,119 @@
+{# templates/web/product/show.html.twig #}
+
 {% extends "base.html.twig" %}
 
 {% block title %}{{ modelo.tituloSEO|default(modelo.nombre) }} | Tuskamisetas.com{% endblock %}
 {% block metaDescription %}{{ modelo.descripcionSEO|default(modelo.descripcion)|striptags|slice(0, 155) }}{% endblock %}
 
 {% block aditionalHead %}
-    {# Añade este bloque de estilos en la cabecera, por ejemplo, al final del bloque {% block meta %} #}
     <style>
-        {# Añade este bloque de estilos en la cabecera, por ejemplo, al final del bloque {% block meta %} #}
-
-        /* El contenedor principal para la fila de certificados */
+        /* --- ESTILOS PARA LA GALERÍA Y CERTIFICADOS --- */
         .certificados-container {
-            display: flex; /* ¡La magia de Flexbox! Pone los elementos en fila. */
-            flex-wrap: wrap; /* Permite que los elementos pasen a la siguiente línea si no caben. */
-            justify-content: center; /* Centra horizontalmente toda la fila de imágenes. */
-            align-items: center; /* Centra verticalmente las imágenes si tienen alturas distintas. */
-            gap: 20px; /* Un espacio agradable entre cada imagen. */
-            padding: 15px 0; /* Un poco de espacio vertical. */
-            margin-top: 20px;
-            border-top: 1px solid #eee; /* Una línea sutil para separar la sección. */
+            display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; padding: 15px 0; margin-top: 20px; border-top: 1px solid #eee;
         }
-
-        /* Estilo para cada imagen de certificado individual */
         .certificado-imagen {
-            max-height: 40px; /* <<< TU ALTO MÁXIMO: Ajústalo a tu gusto (ej. 60px, 100px). */
-            width: auto; /* El ancho se ajustará automáticamente para mantener la proporción. */
-            height: auto; /* Importante para que 'max-height' funcione bien. */
+            max-height: 40px; width: auto; height: auto;
         }
 
+        /* Galería Modal */
+        .modal-gallery { display: flex; flex-direction: column; height: 75vh; }
+        .gallery-main-view { position: relative; flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; margin-bottom: 15px; background-color: #f8f8f8; border-radius: 4px; }
+        .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background-color: rgba(0, 0, 0, 0.4); color: white; border: none; font-size: 24px; font-weight: bold; cursor: pointer; padding: 10px 15px; border-radius: 50%; transition: background-color 0.2s ease; z-index: 10; opacity: 0; }
+        .gallery-main-view:hover .gallery-nav { opacity: 1; }
+        .gallery-nav:hover { background-color: rgba(0, 0, 0, 0.7); }
+        #gallery-prev { left: 15px; }
+        #gallery-next { right: 15px; }
+        .gallery-main-view img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s ease; }
+        .gallery-main-view img:hover { transform: scale(1.05); }
+        .gallery-thumbnails { display: flex; overflow-x: auto; overflow-y: hidden; padding-bottom: 10px; gap: 10px; }
+        .gallery-thumbnails img { width: 100px; height: 100px; object-fit: cover; cursor: pointer; border: 2px solid transparent; border-radius: 4px; transition: border-color 0.2s ease, opacity 0.2s ease; opacity: 0.7; }
+        .gallery-thumbnails img:hover { border-color: #FF9933; opacity: 1; }
+        .gallery-thumbnails img.active { border-color: #044266; opacity: 1; }
 
-        /* Contenedor principal de la galería dentro del modal */
-        .modal-gallery {
-            display: flex;
-            flex-direction: column;
-            height: 75vh; /* La galería ocupará el 75% de la altura de la pantalla */
+        /* --- ESTILOS PARA EL STICKY HEADER MÓVIL (NUEVO) --- */
+        #producto-nombre-movil {
+            background: white;
+            width: 100%;
+            transition: all 0.3s ease;
+            padding: 10px 15px; /* Un poco de aire por defecto */
+            z-index: 1020; /* Por encima de casi todo */
         }
 
-        /* Área de la imagen principal */
-        .gallery-main-view {
-            positon: relative;
-            flex-grow: 1; /* Ocupa todo el espacio vertical disponible */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            margin-bottom: 15px;
-            background-color: #f8f8f8;
-            border-radius: 4px;
-        }
-
-        /* Estilo para los botones de navegación (flechas) */
-        .gallery-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: rgba(0, 0, 0, 0.4);
-            color: white;
-            border: none;
-            font-size: 24px;
-            font-weight: bold;
-            cursor: pointer;
+        /* Estado "Pegado" (Stuck) */
+        #producto-nombre-movil.is-stuck {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
             padding: 10px 15px;
-            border-radius: 50%;
-            transition: background-color 0.2s ease;
-            z-index: 10;
-            opacity: 0; /* Ocultos por defecto */
-        }
-
-        /* Mostramos los botones al pasar el ratón sobre la galería (para escritorio)
-       o de forma permanente en pantallas táctiles (lo controlaremos con JS) */
-        .gallery-main-view:hover .gallery-nav {
-            opacity: 1;
-        }
-
-        .gallery-nav:hover {
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-
-        /* Posición específica para cada botón */
-        #gallery-prev {
-            left: 15px;
-        }
-
-        #gallery-next {
-            right: 15px;
-        }
-
-        /* La imagen principal, adaptable y centrada */
-        .gallery-main-view img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain; /* Asegura que la imagen se vea completa sin deformarse */
-            transition: transform 0.3s ease;
-        }
-
-        .gallery-main-view img:hover {
-            transform: scale(1.05); /* Un pequeño zoom al pasar el ratón */
-        }
-
-        /* Contenedor de las miniaturas con scroll horizontal */
-        .gallery-thumbnails {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Sombrita para separar */
+            border-bottom: 1px solid #eee;
             display: flex;
-            overflow-x: auto; /* Permite el scroll horizontal si hay muchas imágenes */
-            overflow-y: hidden;
-            padding-bottom: 10px; /* Espacio para la barra de scroll */
-            gap: 10px; /* Espacio entre miniaturas */
+            align-items: center;
+            /*height: 50px; !* Altura fija compacta *!*/
         }
 
-        /* Estilo de cada miniatura */
-        .gallery-thumbnails img {
-            width: 100px; /* Ancho fijo para las miniaturas */
-            height: 100px; /* Altura fija */
-            object-fit: cover; /* Recorta la imagen para que llene el espacio sin deformarse */
-            cursor: pointer;
-            border: 2px solid transparent;
-            border-radius: 4px;
-            transition: border-color 0.2s ease, opacity 0.2s ease;
-            opacity: 0.7;
+        #producto-nombre-movil.is-stuck h1 {
+            font-size: 16px !important; /* Texto pequeño */
+            margin: 0 !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* Puntos suspensivos si es muy largo */
+            color: #044266;
+            font-weight: bold;
+            text-align: left !important;
+            width: 100%;
         }
 
-        /* Estilo al pasar el ratón sobre una miniatura */
-        .gallery-thumbnails img:hover {
-            border-color: #FF9933; /* Color naranja de tu marca */
-            opacity: 1;
+        /* Ocultar todo lo demás cuando está pegado */
+        #producto-nombre-movil.is-stuck .extra-info,
+        #producto-nombre-movil.is-stuck p,
+        #producto-nombre-movil.is-stuck h2 {
+            display: none !important;
         }
 
-        /* Estilo para la miniatura activa (la que se está viendo en grande) */
-        .gallery-thumbnails img.active {
-            border-color: #044266; /* Color azul de tu marca */
-            opacity: 1;
+        /* Espaciador para que no salte el contenido al ponerse fixed */
+        #sticky-placeholder {
+            display: none;
+            /*height: 120px; !* Altura aproximada del bloque original *!*/
+        }
+        #producto-nombre-movil.is-stuck + #sticky-placeholder {
+            display: block;
         }
     </style>
 {% endblock %}
 
 {% block javascripts %}
-    {# 1. Se cargan los scripts de la plantilla base (jQuery, Bootstrap, etc.) #}
     {{ parent() }}
-
-    {# 2. Se cargan los scripts del plugin jQuery File Upload, que son necesarios para esta página #}
     <script src="{{ asset('js/jquery/fileUpload/js/vendor/jquery.ui.widget.min.js') }}"></script>
     <script src="{{ asset('js/jquery/fileUpload/js/jquery.iframe-transport.min.js') }}"></script>
     <script src="{{ asset('js/jquery/fileUpload/js/jquery.fileupload.min.js') }}"></script>
-
-    {# 3. Finalmente, se incluye el fichero parcial que contiene TODA la lógica específica de esta página #}
     {% include 'web/product/partials/_product_page_javascript.html.twig' %}
+
+    {# --- SCRIPT PARA EL EFECTO STICKY MÓVIL --- #}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const target = document.getElementById('producto-nombre-movil');
+            const sentinel = document.getElementById('sticky-sentinel');
+
+            if(target && sentinel) {
+                // Creamos un observador que vigila al "centinela"
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        // Si el centinela deja de verse por arriba (scroll down)
+                        if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
+                            target.classList.add('is-stuck');
+                        } else {
+                            // Si volvemos a subir y vemos al centinela
+                            target.classList.remove('is-stuck');
+                        }
+                    });
+                }, { threshold: 0 });
+
+                observer.observe(sentinel);
+            }
+        });
+    </script>
 {% endblock %}
 
 {% block meta %}
@@ -150,19 +121,16 @@
     <meta property="og:type" content="product"/>
     <meta property="og:title" content="{{ modelo.nombre|title }}"/>
     <meta property="og:description" content="{{ modelo.descripcion|striptags|slice(0, 200) }}"/>
-    <meta property="og:url"
-          content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
+    <meta property="og:url" content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
     {% if modelo.imagen %}
         <meta property="og:image" content="{{ sonata_path(modelo.imagen, 'big') }}"/>
     {% elseif modelo.urlImage %}
         <meta property="og:image" content="{{ modelo.urlImage }}"/>
     {% endif %}
     <meta property="product:brand" content="{{ modelo.fabricante.nombre }}">
-    {# ... resto de tus metadatos product:category ... #}
     <meta property="product:availability" content="instock"/>
     <meta property="product:condition" content="new">
-    <meta property="product:price:amount"
-          content="{{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }}"/>
+    <meta property="product:price:amount" content="{{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }}"/>
     <meta property="product:price:currency" content="EUR"/>
     <meta property="product:retailer_item_id" content="{{ modelo.referencia }}">
 {% endblock %}
@@ -174,15 +142,8 @@
 {% endblock %}
 
 {% block modals %}
-    {# ... Tus modales (360, medidas y presupuesto rápido) irán aquí ... #}
-    <div id="presupuestoRapidoModal" class="modal fade" role="dialog">
-
-    </div>
-
-    <div id="360Modal" class="modal fade" role="dialog">
-
-    </div>
-
+    <div id="presupuestoRapidoModal" class="modal fade" role="dialog"></div>
+    <div id="360Modal" class="modal fade" role="dialog"></div>
     <div id="fotos-detalle-modal" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -197,8 +158,7 @@
                             <img id="gallery-main-image" src="" alt="Vista principal de la galería">
                             <button id="gallery-next" class="gallery-nav">&#10095;</button>
                         </div>
-                        <div class="gallery-thumbnails">
-                        </div>
+                        <div class="gallery-thumbnails"></div>
                     </div>
                 </div>
             </div>
@@ -206,71 +166,38 @@
     </div>
     <div id="medidas-talla-modal" class="modal fade" role="dialog">
         <div class="modal-dialog">
-
-            <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                     <h4 class="modal-title">{% trans %}MEDIDAS POR TALLA{% endtrans %}</h4>
                 </div>
                 <div class="modal-body">
-
-                    {% if modelo.getDrawing is defined  and modelo.getDrawing != null %}
+                    {% if modelo.getDrawing is defined and modelo.getDrawing != null %}
                         <div>
-                            <img class="img-responsive"
-                                 src="{{ sonata_path(modelo.getDrawing, 'wide') }}"
-                                 alt="ficha técnica del producto"/>
+                            <img class="img-responsive" src="{{ sonata_path(modelo.getDrawing, 'wide') }}" alt="ficha técnica del producto"/>
                         </div>
                     {% else %}
                         <div class="table-responsive">
                             <table class="table-responsive" style="text-align: center; font-size: 12px; width: 100%">
                                 <tr>
-                                    <td style="border: 1px solid darkgray; background-color: lightgrey;">
-                                        <b>{% trans %}Talla{% endtrans %}</b>
-                                    </td>
-                                    <td style="border: 1px solid darkgray; background-color: lightgrey;">
-                                        <b>{% trans %}Medidas{% endtrans %}</b>
-                                    </td>
+                                    <td style="border: 1px solid darkgray; background-color: lightgrey;"><b>{% trans %}Talla{% endtrans %}</b></td>
+                                    <td style="border: 1px solid darkgray; background-color: lightgrey;"><b>{% trans %}Medidas{% endtrans %}</b></td>
                                 </tr>
-                                {% for talla  in modelo.getTallasP %}
+                                {% for talla in modelo.getTallasP %}
                                     <tr>
-                                        <td style="border: 1px solid darkgray;">
-                                            <b>{{ talla.talla }}</b>
-                                        </td>
-
-                                        <td style="border: 1px solid darkgray;">
-                                            <b>{{ talla.medidas }}</b>
-                                        </td>
+                                        <td style="border: 1px solid darkgray;"><b>{{ talla.talla }}</b></td>
+                                        <td style="border: 1px solid darkgray;"><b>{{ talla.medidas }}</b></td>
                                     </tr>
                                 {% endfor %}
-
                                 <tr>
-                                    <td style="border: 1px solid darkgray" colspan="2">
-                                        <p style="font-size: 12px">Las medidas son aproximadas.</p>
-                                    </td>
+                                    <td style="border: 1px solid darkgray" colspan="2"><p style="font-size: 12px">Las medidas son aproximadas.</p></td>
                                 </tr>
                             </table>
                             <div class="row" style="margin-top: 15px;">
-                                <div class="col-xs-3" style="text-align: center">
-                                    <img src="{{ asset('images/medir-camiseta.jpg') }}"
-                                         style="max-width:130px;width: 100%; height: auto"
-                                         alt="Patron para medir camisetas"/>
-                                </div>
-                                <div class="col-xs-3" style="text-align: center">
-                                    <img src="{{ asset('images/medir-sudadera.jpg') }}"
-                                         style="max-width:130px;width: 100%; height: auto"
-                                         alt="Patron para medir sudaderas"/>
-                                </div>
-                                <div class="col-xs-3" style="text-align: center">
-                                    <img src="{{ asset('images/medir-pantalon.jpg') }}"
-                                         style="max-width:130px;width: 100%; height: auto"
-                                         alt="Patron para medir pantalones"/>
-                                </div>
-                                <div class="col-xs-3" style="text-align: center">
-                                    <img src="{{ asset('images/medir-bolsa.jpg') }}"
-                                         style="max-width:130px;width: 100%; height: auto"
-                                         alt="Patron para medir bolsas y regalos"/>
-                                </div>
+                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-camiseta.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir camisetas"/></div>
+                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-sudadera.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir sudaderas"/></div>
+                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-pantalon.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir pantalones"/></div>
+                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-bolsa.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir bolsas y regalos"/></div>
                             </div>
                         </div>
                     {% endif %}
@@ -278,11 +205,8 @@
             </div>
         </div>
     </div>
-
     <div id="editor-talla-modal" class="modal fade" role="dialog">
         <div class="modal-dialog" style="width: 80%;">
-
-            <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -291,22 +215,14 @@
             </div>
         </div>
     </div>
-
 {% endblock %}
 
 {% block flotantes %}
     <div id="floatingPriceCircle" class="scrollResumen">
         <div class="circulo-contenido">
-            {# NUEVO: Contador de unidades #}
-            <span id="circulo-unidades" style="font-size: 14px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.5); margin-bottom: 3px; padding-bottom: 2px;">
-                0 uds
-            </span>
-
-            {# Precio #}
+            <span id="circulo-unidades" style="font-size: 14px; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.5); margin-bottom: 3px; padding-bottom: 2px;">0 uds</span>
             <span class="circulo-label" style="font-size: 9px;">Precio/ud</span>
-            <span id="circulo-precio-valor" class="circulo-valor">
-                {{ modelo.getPrecioUnidad(app.user) | number_format(2, ',', '.') }}€
-            </span>
+            <span id="circulo-precio-valor" class="circulo-valor">{{ modelo.getPrecioUnidad(app.user) | number_format(2, ',', '.') }}€</span>
         </div>
     </div>
 {% endblock %}
@@ -315,216 +231,129 @@
     <div itemscope itemtype="http://schema.org/Product" style="margin-bottom: 15px">
         <div class="container">
             <div class="row">
+                {# --- ELEMENTO CENTINELA PARA EL SCROLL --- #}
+                <div id="sticky-sentinel" style="position: absolute; top: 0; height: 1px; width: 100%;"></div>
+
+                {# --- BLOQUE DE NOMBRE MÓVIL (MODIFICADO) --- #}
+                <div id="producto-nombre-movil" class="col-lg-12 hidden-sm hidden-md hidden-lg">
+                    <h1 style="font-size: 28px; margin: 0px;" itemprop="name">{{ modelo.nombre | upper }}</h1>
+
+                    {# Envolvemos el resto en un div extra-info para ocultarlo fácilmente #}
+                    <div class="extra-info">
+                        <p itemprop="name">
+                            <a style="color: black; font-size: 18px" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}">
+                                {{ modelo.fabricante.nombre }}
+                            </a>
+                        </p>
+                        <h2 style="font-size: 14px; margin: 0px;">{{ modelo.familia }}</h2>
+                        <p><b>REF:</b> {{ modelo.referencia }}</p>
+                    </div>
+                </div>
+                {# Placeholder para evitar saltos cuando se pone fixed #}
+                <div id="sticky-placeholder" class="hidden-sm hidden-md hidden-lg"></div>
+                {# -------------------------------------------- #}
+
                 <div class="col-sm-6 col-md-7" style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">
-                    {# Incluimos el parcial de la galería. Lo crearemos en el siguiente paso. #}
                     {% include 'web/product/partials/_gallery.html.twig' %}
                     <div class="col-lg-12">
-                        <div class="redesReceta hidden-xl hidden-lg hidden-md hidden-sm"
-                             style="text-align: center; margin-top: 12px">
-                            {# <a class="solomovil" href="whatsapp://send" data-text="Mira lo que acabo de encontrar en TusKamisetas" data-href="https://tuskamisetasoriginal.com/es/producto/roly-camisetas-atomic-150" target="blank"><img src="{{ asset('images/whatsapp-logo.svg')}}" style="max-width: 20px;" alt="whatsapp"/></a> #}
-                            <a href="whatsapp://send?text=Mira lo que acabo de encontrar en TusKamisetas%20{{ app.request.uri }}?utm_source=whatsapp"
-                               target="_blank"><img
-                                        src="{{ asset('images/whatsapp-logo.svg') }}" style="max-width: 18px;"
-                                        alt="compartir en whatsapp"/></a>
-                            <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img
-                                        src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;"
-                                        alt="facebook"/></a>
-                            <a href="https://twitter.com/intent/tweet?url={{ app.request.uri }}" target="blank"><img
-                                        src="{{ asset('images/twitter.svg') }}" style="max-width: 20px;"
-                                        alt="twitter"/></a>
-                            <a href="https://plus.google.com/share?url={{ app.request.uri }}" target="blank"><img
-                                        src="{{ asset('images/google+.svg') }}" style="max-width: 20px;"
-                                        alt="google plus"/></a>
+                        <div class="redesReceta hidden-xl hidden-lg hidden-md hidden-sm" style="text-align: center; margin-top: 12px">
+                            <a href="whatsapp://send?text=Mira lo que acabo de encontrar en TusKamisetas%20{{ app.request.uri }}?utm_source=whatsapp" target="_blank"><img src="{{ asset('images/whatsapp-logo.svg') }}" style="max-width: 18px;" alt="whatsapp"/></a>
+                            <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;" alt="facebook"/></a>
+                            <a href="https://twitter.com/intent/tweet?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/twitter.svg') }}" style="max-width: 20px;" alt="twitter"/></a>
+                            <a href="https://plus.google.com/share?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/google+.svg') }}" style="max-width: 20px;" alt="google plus"/></a>
                             {% if modelo.imagen != null %}
-                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}"
-                                   target="_blank">
-                                    <img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;"
-                                         alt="pinterest"/>
-                                </a>
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest"/></a>
                             {% else %}
-                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}&media={{ modelo.urlImage }}&description={{ modelo.familia }} {{ modelo.nombre }}"
-                                   target="_blank">
-                                    <img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;"
-                                         alt="pinterest"/>
-                                </a>
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}&media={{ modelo.urlImage }}&description={{ modelo.familia }} {{ modelo.nombre }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest"/></a>
                             {% endif %}
-                            <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}">
-                                <img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;"
-                                     alt="mail"/>
-                            </a>
+                            <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}"><img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;" alt="mail"/></a>
                         </div>
+                        {# ... Redes escritorio ... #}
                         <div class="redesReceta hidden-xs" style="text-align: center; margin-top: 12px">
-                            <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img
-                                        src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;"
-                                        alt="facebook"/></a>
-                            <a href="https://twitter.com/intent/tweet?url={{ app.request.uri }}" target="blank"><img
-                                        src="{{ asset('images/twitter.svg') }}" style="max-width: 20px;"
-                                        alt="twitter"/></a>
-                            <a href="https://plus.google.com/share?url={{ app.request.uri }}" target="blank"><img
-                                        src="{{ asset('images/google+.svg') }}" style="max-width: 20px;"
-                                        alt="google plus"/></a>
+                            <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;" alt="facebook"/></a>
+                            <a href="https://twitter.com/intent/tweet?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/twitter.svg') }}" style="max-width: 20px;" alt="twitter"/></a>
+                            <a href="https://plus.google.com/share?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/google+.svg') }}" style="max-width: 20px;" alt="google plus"/></a>
                             {% if modelo.imagen != null %}
-                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}"
-                                   target="_blank">
-                                    <img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;"
-                                         alt="pinterest"/>
-                                </a>
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest"/></a>
                             {% else %}
-                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}&media={{ modelo.urlImage }}&description={{ modelo.familia }} {{ modelo.nombre }}"
-                                   target="_blank">
-                                    <img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;"
-                                         alt="pinterest"/>
-                                </a>
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}&media={{ modelo.urlImage }}&description={{ modelo.familia }} {{ modelo.nombre }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest"/></a>
                             {% endif %}
-                            <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}">
-                                <img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;"
-                                     alt="mail"/>
-                            </a>
+                            <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}"><img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;" alt="mail"/></a>
                         </div>
 
-                        {# ... BLOQUE INVENTARIO (Solo visible para administradores) ... #}
                         {% if is_granted('ROLE_ALLOWED_TO_SWITCH') %}
                             <div class="clear-fix"></div>
                             <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
                                 <div class="col-xs-6">
-                                    {# Operación 1 = Entrada #}
-                                    <a href="{{ path('app_product_inventory', {'id': modelo.id, 'operacion': 1, '_locale': app.request.locale}) }}"
-                                       class="btn btn-success btn-block"
-                                       style="font-size: 16px; padding: 10px; color: white; font-weight: bold;">
-                                        <i class="fa fa-plus-circle"></i> Entradas
-                                    </a>
+                                    <a href="{{ path('app_product_inventory', {'id': modelo.id, 'operacion': 1, '_locale': app.request.locale}) }}" class="btn btn-success btn-block" style="font-size: 16px; padding: 10px; color: white; font-weight: bold;"><i class="fa fa-plus-circle"></i> Entradas</a>
                                 </div>
                                 <div class="col-xs-6">
-                                    {# Operación 2 = Salida #}
-                                    <a href="{{ path('app_product_inventory', {'id': modelo.id, 'operacion': 2, '_locale': app.request.locale}) }}"
-                                       class="btn btn-danger btn-block"
-                                       style="font-size: 16px; padding: 10px; color: white; font-weight: bold;">
-                                        <i class="fa fa-minus-circle"></i> Salidas
-                                    </a>
+                                    <a href="{{ path('app_product_inventory', {'id': modelo.id, 'operacion': 2, '_locale': app.request.locale}) }}" class="btn btn-danger btn-block" style="font-size: 16px; padding: 10px; color: white; font-weight: bold;"><i class="fa fa-minus-circle"></i> Salidas</a>
                                 </div>
                             </div>
                         {% endif %}
-                        {# ... FIN BLOQUE INVENTARIO ... #}
-
-
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-5" style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">
-                    {# Incluimos el panel derecho. Lo crearemos en el siguiente paso. #}
                     {% include 'web/product/partials/_details_panel.html.twig' %}
-
                     <div class="clearfix"></div>
                     <div style="background: #ececec; padding: 20px; margin-top: 15px;">
-                        {# <legend><b>{% trans %}LO RECIBIRAS{% endtrans %}</b> #}
-                        {# </legend> #}
-                        <p style="
-                font-family: Roboto, sans-serif;
-                font-size: 16px;
-                font-weight: bold;
-                text-align: center;">PIDELO HOY Y RECIBELO: </p>
+                        <p style="font-family: Roboto, sans-serif; font-size: 16px; font-weight: bold; text-align: center;">PIDELO HOY Y RECIBELO: </p>
                         <div style="text-align: left">
-                            {# <h5><b>Realiza hoy tu pedido hoy y recibelo entre:</b></h5> #}
-                            {# <h5>Si lo pides hoy lo recibiras entre:</h5> #}
-
                             <p><span style="color: #044266">SIN PERSONALIZAR:</span><BR>
-
-                                {# {{ fechaSinImprimir|localizeddate('none', 'none', app.request.locale, "Europe/Paris", "d MM ") }} #}
-                                &nbsp;Envío normal:
-                                <b>{{ deliveryDates['fechaEntregaSinImprimir']|format_datetime(locale='es', pattern="d 'de' MMM") }}
-                                    - {{ deliveryDates['fechaEntregaSinImprimir2']|format_datetime(locale='es', pattern="d 'de' MMM") }}</b>
+                                &nbsp;Envío normal: <b>{{ deliveryDates['fechaEntregaSinImprimir']|format_datetime(locale='es', pattern="d 'de' MMM") }} - {{ deliveryDates['fechaEntregaSinImprimir2']|format_datetime(locale='es', pattern="d 'de' MMM") }}</b>
                             </p>
-
-
                             <p><span style="color: #044266">PERSONALIZADO:</span><br>
-                                &nbsp;Servicio normal:
-                                <b>{{ deliveryDates['fechaEntregaImpreso']|format_datetime(locale='es', pattern="d 'de' MMM") }}
-                                    - {{ deliveryDates['fechaEntregaImpreso2']|format_datetime(locale='es', pattern="d 'de' MMM") }}</b><br>
-                                &nbsp;Servicio express:
-                                <b>{{ deliveryDates['fechaEntregaExpress']|format_datetime(locale='es', pattern="d 'de' MMM") }}</b>
+                                &nbsp;Servicio normal: <b>{{ deliveryDates['fechaEntregaImpreso']|format_datetime(locale='es', pattern="d 'de' MMM") }} - {{ deliveryDates['fechaEntregaImpreso2']|format_datetime(locale='es', pattern="d 'de' MMM") }}</b><br>
+                                &nbsp;Servicio express: <b>{{ deliveryDates['fechaEntregaExpress']|format_datetime(locale='es', pattern="d 'de' MMM") }}</b>
                             </p>
-
-
                             {% if empresa.vacacionesActivas %}
-                                <p><b style="color: #044266">Estaremos cerrados por vacaciones desde
-                                        el {{ empresa.fechaInicioVacaciones|format_datetime(locale='es', pattern="d 'de' MMM") }}
-                                        hasta
-                                        el {{ empresa.fechaFinVacaciones|format_datetime(locale='es', pattern="d 'de' MMM") }}</b>
-                                </p>
+                                <p><b style="color: #044266">Estaremos cerrados por vacaciones desde el {{ empresa.fechaInicioVacaciones|format_datetime(locale='es', pattern="d 'de' MMM") }} hasta el {{ empresa.fechaFinVacaciones|format_datetime(locale='es', pattern="d 'de' MMM") }}</b></p>
                             {% endif %}
                         </div>
-                        {# {% include 'SSTiendaBundle:Web:detalleProductoPresupuestoRapidoBlock.html.twig' %} #}
-
                     </div>
 
                     <div style="background: white; padding: 20px;">
-                        <p style="
-                font-family: Roboto, sans-serif;
-                font-size: 16px;
-                font-weight: bold;
-                text-align: center;">MONTAJE PREVIO GRATUITO</p>
-                        Te enviaremos un <b>montaje con tu diseño</b>
-                        para que valides que todo está donde y cómo te gusta
+                        <p style="font-family: Roboto, sans-serif; font-size: 16px; font-weight: bold; text-align: center;">MONTAJE PREVIO GRATUITO</p>
+                        Te enviaremos un <b>montaje con tu diseño</b> para que valides que todo está donde y cómo te gusta
                     </div>
                     <div style="background: #f9f9f9; padding: 20px;">
-
-                        <p style="
-                font-family: Roboto, sans-serif;
-                font-size: 16px;
-                font-weight: bold;
-                text-align: center;">¿TIENES ALGUNA DUDA?</p>
-                        <button class="button calculaPresupuesto" data-toggle="modal"
-                                data-target="#presupuestoRapidoModal"
-                                style="background-color:#5bc0de; width: 100%; padding: 10px"
-                                title="Si deseas más información sobre este producto">
+                        <p style="font-family: Roboto, sans-serif; font-size: 16px; font-weight: bold; text-align: center;">¿TIENES ALGUNA DUDA?</p>
+                        <button class="button calculaPresupuesto" data-toggle="modal" data-target="#presupuestoRapidoModal" style="background-color:#5bc0de; width: 100%; padding: 10px" title="Si deseas más información sobre este producto">
                             <b>{% trans %}CONTACTA{% endtrans %}</b>
                         </button>
                     </div>
-
-                </div><!--/product-information-->
+                </div>
             </div>
         </div>
 
-
         <div class="row">
             <div class="col-xs-12" id="div_personalizacion">
-                {# Incluimos el panel de personalización. Lo crearemos en el siguiente paso. #}
                 {% include 'web/product/partials/_customization_panel.html.twig' %}
             </div>
         </div>
     </div>
 
-    {# ... Tus secciones de "Modelos Relacionados" y "Últimos Vistos" ... #}
-
     {% if modelo.modelosRelacionados|length > 0 %}
-        <div class="recommended_items mt-5"><h2
-                class="title text-center">{% trans %}MODELOS RELACIONADOS{% endtrans %}</h2>
-
-        <div class="row">
-            {% for producto in modelo.modelosRelacionados %}
-                {# Solo mostramos el producto si está activo #}
-                {% if producto.activo == true %}
-                    <div>
-                        {#
-                        CORRECCIÓN: Usamos el parcial estándar de tu nuevo proyecto
-                        para asegurar un estilo visual consistente.
-                        #}
-                        {% include 'web/catalog/_productoElementoGrid.html.twig' with {'producto': producto} %}
-                    </div>
-                {% endif %}
-            {% endfor %}
-        </div>
+        <div class="recommended_items mt-5"><h2 class="title text-center">{% trans %}MODELOS RELACIONADOS{% endtrans %}</h2>
+            <div class="row">
+                {% for producto in modelo.modelosRelacionados %}
+                    {% if producto.activo == true %}
+                        <div>
+                            {% include 'web/catalog/_productoElementoGrid.html.twig' with {'producto': producto} %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
     {% endif %}
-
 
     {% if vistos is defined and vistos|length > 0 %}
         <div class="recommended_items mt-5">
             <h2 class="title text-center">{% trans %}ÚLTIMOS PRODUCTOS VISTOS{% endtrans %}</h2>
             <div class="row">
                 {% for producto in vistos %}
-                    {# Evitamos mostrar el producto que estamos viendo actualmente #}
                     {% if producto.id != modelo.id %}
-                        {# CORRECCIÓN: Usamos la ruta de plantilla relativa correcta y pasamos la variable 'producto' #}
                         {% include 'web/partials/_ultimos_vistos_grid.html.twig' with {'producto': producto} %}
                     {% endif %}
                 {% endfor %}
@@ -532,5 +361,3 @@
         </div>
     {% endif %}
 {% endblock %}
-
-
