@@ -26,17 +26,62 @@ class ModeloRepository extends ServiceEntityRepository
     }
 
     /**
-     * MÉTODO PRINCIPAL: Obtiene los resultados paginados.
+     * MÉTODO PRINCIPAL: Obtiene los resultados paginados y OPTIMIZADOS.
      */
     public function findByFiltros(Filtros $filtros, int $page = 1): Paginator
     {
         $qb = $this->createFindByFiltrosQueryBuilder($filtros);
 
-        $paginator = new Paginator($qb->getQuery());
+        // 1. Cargamos las relaciones "To-One" del Modelo
+        // Traemos Fabricante, Proveedor, Imagen Principal y Tarifa de una vez.
+        $qb->addSelect('f, p, img, t')
+            ->leftJoin('m.fabricante', 'f')
+            ->leftJoin('m.proveedor', 'p')
+            ->leftJoin('m.imagen', 'img')
+            ->leftJoin('m.tarifa', 't');
+
+        // 2. Configuración de la consulta para Paginación
+        $query = $qb->getQuery();
+
+        // TRUCO DE RENDIMIENTO 1: Optimización para Traducciones (Gedmo)
+        // Si usas campos traducibles (nombre, descripción), esto evita 1 consulta extra por producto.
+        $query->setHint(
+            Query::HINT_CUSTOM_OUTPUT_WALKER,
+            'Gedmo\\Translatable\\Query\\TreeWalker\\TranslationWalker'
+        );
+        // Cargamos traducciones para el locale actual
+        $query->setHint(
+            \Gedmo\Translatable\TranslatableListener::HINT_TRANSLATABLE_LOCALE,
+            $filtros->getLocale() ?? 'es' // Asegúrate de pasar el locale o usar 'es'
+        );
+
+        $paginator = new Paginator($query, true);
+
         $paginator
             ->getQuery()
             ->setFirstResult(self::PAGINATOR_PER_PAGE * ($page - 1))
             ->setMaxResults(self::PAGINATOR_PER_PAGE);
+
+        // 3. TRUCO DE RENDIMIENTO 2: "Eager Loading" Masivo (Hydration Query)
+        // Obtenemos los modelos de esta página para hidratar sus colecciones en UNA sola consulta.
+        $modelosEnPagina = $paginator->getIterator()->getArrayCopy();
+
+        if (!empty($modelosEnPagina)) {
+            $this->getEntityManager()->createQueryBuilder()
+                ->select('PARTIAL m.{id}', 'p', 'c', 'pi', 'attr') // <-- AÑADIDO: pi (prod image), attr (atributos)
+                ->from(Modelo::class, 'm')
+                ->leftJoin('m.productos', 'p')
+                ->leftJoin('p.color', 'c')
+                ->leftJoin('p.imagen', 'pi')       // <-- CRÍTICO: Carga la imagen de la variante
+                ->leftJoin('m.atributos', 'attr')  // <-- CRÍTICO: Carga atributos (algodón, etc)
+                ->where('m IN (:modelos)')
+                ->andWhere('p.activo = true')
+                ->setParameter('modelos', $modelosEnPagina)
+                ->getQuery()
+                ->getResult();
+
+            // Doctrine "inyecta" estos datos en los objetos $modelosEnPagina que ya están en memoria.
+        }
 
         return $paginator;
     }
@@ -48,13 +93,10 @@ class ModeloRepository extends ServiceEntityRepository
     {
         $qb = $this->createFindByFiltrosQueryBuilder($filtros);
 
-        // --- INICIO DE LA CORRECCIÓN ---
-        // Se elimina cualquier cláusula de ordenación de la consulta, ya que
-        // para buscar los filtros disponibles no la necesitamos y puede causar conflictos.
-//        $qb->resetDQLPart('orderBy');
-        // --- FIN DE LA CORRECCIÓN ---
-
+        // Eliminamos selects previos para quedarnos solo con los IDs
         $qb->select('DISTINCT m.id');
+        $qb->resetDQLPart('orderBy'); // Importante quitar orden para count/ids
+
         $modelIds = array_column($qb->getQuery()->getScalarResult(), 'id');
 
         if (empty($modelIds)) {
@@ -68,6 +110,7 @@ class ModeloRepository extends ServiceEntityRepository
             ->join('f.modelos', 'm')
             ->where('m.id IN (:ids)')
             ->setParameter('ids', $modelIds)
+            ->orderBy('f.nombre', 'ASC')
             ->getQuery()->getResult();
 
         // Obtener colores disponibles
@@ -103,8 +146,7 @@ class ModeloRepository extends ServiceEntityRepository
     }
 
     /**
-     * Este es ahora el "cerebro" que construye la consulta.
-     * ACTUALIZADO: Usa la misma lógica de SQL Nativo que el LiveSearch para obtener los IDs.
+     * Cerebro constructor de la consulta (Filtros WHERE).
      */
     private function createFindByFiltrosQueryBuilder(Filtros $filtros): QueryBuilder
     {
@@ -114,12 +156,9 @@ class ModeloRepository extends ServiceEntityRepository
             ->andWhere('m.precioMin < 9999')
         ;
 
-        // --- LOGICA DE BÚSQUEDA HÍBRIDA (Sincronizada con Live Search) ---
+        // --- LOGICA DE BÚSQUEDA HÍBRIDA ---
         if ($filtros->getBusqueda()) {
             $query = $filtros->getBusqueda();
-
-            // 1. Usamos SQL Nativo para buscar IDs, igual que en findByLiveSearch
-            // Esto nos permite buscar en 'ext_translations' y usar lógica compleja de atributos
             $conn = $this->getEntityManager()->getConnection();
             $nativeQb = $conn->createQueryBuilder();
 
@@ -128,7 +167,6 @@ class ModeloRepository extends ServiceEntityRepository
                 ->leftJoin('m', 'fabricante', 'f', 'm.fabricante = f.id')
                 ->leftJoin('m', 'modelo_modeloatributos', 'mma', 'm.id = mma.modelo_id')
                 ->leftJoin('mma', 'modelo_atributo', 'ma', 'mma.modelo_atributo_id = ma.id')
-                // JOIN con traducciones
                 ->leftJoin('m', 'ext_translations', 't', "t.foreign_key = m.id AND t.object_class = :entityClass AND t.field = 'descripcion'")
                 ->where('m.activo = 1')
                 ->andWhere('m.precio_min > 0')
@@ -136,7 +174,6 @@ class ModeloRepository extends ServiceEntityRepository
 
             $nativeQb->setParameter('entityClass', Modelo::class);
 
-            // A. Lógica de Palabras Clave (AND de ORs)
             $keywords = explode(' ', $query);
             $keywordsExpr = $nativeQb->expr()->andX();
 
@@ -154,39 +191,33 @@ class ModeloRepository extends ServiceEntityRepository
                 }
             }
 
-            // B. Lógica de Descripción (Frase exacta en original o traducción)
             $descOr = $nativeQb->expr()->orX(
                 'm.descripcion LIKE :fullQuery',
                 't.content LIKE :fullQuery'
             );
             $nativeQb->setParameter('fullQuery', '%' . $query . '%');
 
-            // Combinar: (Keywords) OR (Descripción)
             if ($keywordsExpr->count() > 0) {
                 $nativeQb->andWhere($nativeQb->expr()->orX($keywordsExpr, $descOr));
             } else {
                 $nativeQb->andWhere($descOr);
             }
 
-            // Ejecutamos y obtenemos los IDs
             $idsEncontrados = $nativeQb->executeQuery()->fetchFirstColumn();
 
             if (!empty($idsEncontrados)) {
-                // Filtramos la consulta principal DQL por estos IDs
                 $qb->andWhere('m.id IN (:searchIds)')
                     ->setParameter('searchIds', $idsEncontrados);
             } else {
-                // Si la búsqueda nativa no devuelve nada, forzamos 0 resultados
                 $qb->andWhere('1=0');
             }
         }
-        // --- FIN LOGICA BÚSQUEDA ---
 
         if ($filtros->getCategory()) {
             $idsCategorias = [$filtros->getCategory()->getId()];
             foreach ($filtros->getCategory()->getChildren() as $hijo) { $idsCategorias[] = $hijo->getId(); }
-            $qb->leftJoin('m.category', 'c')
-                ->andWhere($qb->expr()->in('c.id', ':idsCategorias'))
+            $qb->leftJoin('m.category', 'cat') // Cambio alias 'c' a 'cat' por seguridad
+            ->andWhere($qb->expr()->in('cat.id', ':idsCategorias'))
                 ->setParameter('idsCategorias', $idsCategorias);
         }
 
@@ -246,42 +277,34 @@ class ModeloRepository extends ServiceEntityRepository
         return $qb;
     }
 
-    /**
-     * Método auxiliar para obtener IDs de modelos que tienen TODOS los atributos seleccionados.
-     */
     private function findModelosIdsByAtributos(array $atributosIds): array
     {
-        if (empty($atributosIds)) {
-            return [];
-        }
+        if (empty($atributosIds)) return [];
 
-        // CORRECCIÓN: Se cambia 'atributo_id' por el nombre correcto de la columna 'modelo_atributo_id'
         $sql = "SELECT modelo_id FROM modelo_modeloatributos WHERE modelo_atributo_id IN (:atributos) GROUP BY modelo_id HAVING COUNT(DISTINCT modelo_atributo_id) = :count";
-
-        // --- INICIO DE LA CORRECCIÓN ---
-        // 2. Obtenemos la conexión a la base de datos
         $conn = $this->getEntityManager()->getConnection();
-
-        // 3. Ejecutamos la consulta pasándole los tipos de parámetros explícitamente
         $result = $conn->executeQuery($sql, [
             'atributos' => $atributosIds,
             'count' => count($atributosIds)
         ], [
-            'atributos' => Connection::PARAM_INT_ARRAY // <-- La línea clave que lo soluciona
+            'atributos' => Connection::PARAM_INT_ARRAY
         ]);
-        // --- FIN DE LA CORRECCIÓN ---
 
         return $result->fetchFirstColumn();
     }
 
     public function findDestacadosParaHome(): array
     {
+        // Versión optimizada también para la home
         return $this->createQueryBuilder('m')
+            ->addSelect('i') // Traemos la imagen
+            ->leftJoin('m.imagen', 'i')
             ->where('m.activo = :activo')
             ->andWhere('m.destacado = :destacado')
             ->orderBy('m.importancia', 'DESC')
             ->setParameter('activo', true)
             ->setParameter('destacado', true)
+            ->setMaxResults(12) // Importante limitar
             ->getQuery()->getResult();
     }
 
