@@ -7,15 +7,9 @@
 
 {% block aditionalHead %}
     <style>
-        /* --- ESTILOS PARA LA GALERÍA Y CERTIFICADOS --- */
-        .certificados-container {
-            display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; padding: 15px 0; margin-top: 20px; border-top: 1px solid #eee;
-        }
-        .certificado-imagen {
-            max-height: 40px; width: auto; height: auto;
-        }
-
-        /* Galería Modal */
+        /* --- ESTILOS GENERALES (Galería, Certificados...) --- */
+        .certificados-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; padding: 15px 0; margin-top: 20px; border-top: 1px solid #eee; }
+        .certificado-imagen { max-height: 40px; width: auto; height: auto; }
         .modal-gallery { display: flex; flex-direction: column; height: 75vh; }
         .gallery-main-view { position: relative; flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; margin-bottom: 15px; background-color: #f8f8f8; border-radius: 4px; }
         .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background-color: rgba(0, 0, 0, 0.4); color: white; border: none; font-size: 24px; font-weight: bold; cursor: pointer; padding: 10px 15px; border-radius: 50%; transition: background-color 0.2s ease; z-index: 10; opacity: 0; }
@@ -30,55 +24,87 @@
         .gallery-thumbnails img:hover { border-color: #FF9933; opacity: 1; }
         .gallery-thumbnails img.active { border-color: #044266; opacity: 1; }
 
-        /* --- ESTILOS PARA EL STICKY HEADER MÓVIL (NUEVO) --- */
+        /* --- ESTILOS PARA EL STICKY HEADER MÓVIL (ANIMADO) --- */
         #producto-nombre-movil {
             background: white;
             width: 100%;
-            transition: all 0.3s ease;
-            padding: 10px 15px; /* Un poco de aire por defecto */
-            z-index: 1020; /* Por encima de casi todo */
+            padding: 15px;
+            z-index: 1020;
+            /* Transición suave para todo */
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform-origin: top center;
+            /* Estado inicial relativo */
+            position: relative;
+            box-shadow: none;
         }
 
-        /* Estado "Pegado" (Stuck) */
+        /* Contenedor de la info extra que desaparecerá */
+        .extra-info {
+            transition: opacity 0.2s ease, max-height 0.3s ease;
+            opacity: 1;
+            max-height: 200px; /* Altura suficiente para el contenido */
+            overflow: hidden;
+        }
+
+        /* --- ESTADO "PEGADO" (STUCK) --- */
         #producto-nombre-movil.is-stuck {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             padding: 10px 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); /* Sombrita para separar */
-            border-bottom: 1px solid #eee;
-            display: flex;
-            align-items: center;
-            /*height: 50px; !* Altura fija compacta *!*/
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Sombra suave */
+            border-bottom: 1px solid #f0f0f0;
+            background: rgba(255, 255, 255, 0.98); /* Casi opaco */
+            backdrop-filter: blur(5px); /* Efecto moderno */
+            animation: slideDown 0.3s ease forwards; /* Animación de entrada */
+        }
+
+        /* Animación de entrada desde arriba */
+        @keyframes slideDown {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+
+        /* Transformación del Título */
+        #producto-nombre-movil h1 {
+            transition: font-size 0.3s ease;
         }
 
         #producto-nombre-movil.is-stuck h1 {
-            font-size: 16px !important; /* Texto pequeño */
+            font-size: 16px !important; /* Reducción de tamaño */
             margin: 0 !important;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* Puntos suspensivos si es muy largo */
+            text-overflow: ellipsis;
             color: #044266;
-            font-weight: bold;
-            text-align: left !important;
-            width: 100%;
+            text-align: center !important; /* Centrado queda más "app" */
         }
 
-        /* Ocultar todo lo demás cuando está pegado */
-        #producto-nombre-movil.is-stuck .extra-info,
-        #producto-nombre-movil.is-stuck p,
-        #producto-nombre-movil.is-stuck h2 {
-            display: none !important;
+        /* Ocultar suavemente la info extra */
+        #producto-nombre-movil.is-stuck .extra-info {
+            opacity: 0;
+            max-height: 0;
+            margin: 0;
         }
 
-        /* Espaciador para que no salte el contenido al ponerse fixed */
+        /* Placeholder para evitar el salto de contenido */
         #sticky-placeholder {
             display: none;
-            /*height: 120px; !* Altura aproximada del bloque original *!*/
+            /* La altura se ajustará con JS o CSS según el contenido */
+            height: 140px;
         }
         #producto-nombre-movil.is-stuck + #sticky-placeholder {
             display: block;
+        }
+
+        /* Ajuste del centinela: Lo bajamos para que salte más tarde */
+        #sticky-sentinel {
+            position: absolute;
+            top: 80px; /* <-- AJUSTE CLAVE: Salta cuando has bajado 80px */
+            height: 1px;
+            width: 100%;
+            visibility: hidden;
         }
     </style>
 {% endblock %}
@@ -90,25 +116,30 @@
     <script src="{{ asset('js/jquery/fileUpload/js/jquery.fileupload.min.js') }}"></script>
     {% include 'web/product/partials/_product_page_javascript.html.twig' %}
 
-    {# --- SCRIPT PARA EL EFECTO STICKY MÓVIL --- #}
+    {# --- SCRIPT OBSERVER --- #}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const target = document.getElementById('producto-nombre-movil');
             const sentinel = document.getElementById('sticky-sentinel');
+            const placeholder = document.getElementById('sticky-placeholder');
+
+            // Calculamos la altura real del bloque para el placeholder
+            if(target && placeholder) {
+                const height = target.offsetHeight;
+                placeholder.style.height = height + 'px';
+            }
 
             if(target && sentinel) {
-                // Creamos un observador que vigila al "centinela"
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
-                        // Si el centinela deja de verse por arriba (scroll down)
+                        // Solo activamos si estamos bajando y el centinela sale por arriba
                         if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
                             target.classList.add('is-stuck');
                         } else {
-                            // Si volvemos a subir y vemos al centinela
                             target.classList.remove('is-stuck');
                         }
                     });
-                }, { threshold: 0 });
+                }, { threshold: 0 }); // threshold 0 dispara en cuanto toca el borde
 
                 observer.observe(sentinel);
             }
@@ -117,6 +148,7 @@
 {% endblock %}
 
 {% block meta %}
+    {# ... Metadatos sin cambios ... #}
     <meta property="og:site_name" content="www.tuskamisetas.com"/>
     <meta property="og:type" content="product"/>
     <meta property="og:title" content="{{ modelo.nombre|title }}"/>
@@ -142,6 +174,7 @@
 {% endblock %}
 
 {% block modals %}
+    {# ... Modales sin cambios ... #}
     <div id="presupuestoRapidoModal" class="modal fade" role="dialog"></div>
     <div id="360Modal" class="modal fade" role="dialog"></div>
     <div id="fotos-detalle-modal" class="modal fade" role="dialog">
@@ -231,31 +264,35 @@
     <div itemscope itemtype="http://schema.org/Product" style="margin-bottom: 15px">
         <div class="container">
             <div class="row">
-                {# --- ELEMENTO CENTINELA PARA EL SCROLL --- #}
-                <div id="sticky-sentinel" style="position: absolute; top: 0; height: 1px; width: 100%;"></div>
 
-                {# --- BLOQUE DE NOMBRE MÓVIL (MODIFICADO) --- #}
-                <div id="producto-nombre-movil" class="col-lg-12 hidden-sm hidden-md hidden-lg">
-                    <h1 style="font-size: 28px; margin: 0px;" itemprop="name">{{ modelo.nombre | upper }}</h1>
+                {# --- BLOQUE NOMBRE MÓVIL CON CENTINELA --- #}
+                <div style="position: relative;">
+                    {# Centinela invisible: Lo bajamos 80px para que el efecto empiece más tarde #}
+                    <div id="sticky-sentinel"></div>
 
-                    {# Envolvemos el resto en un div extra-info para ocultarlo fácilmente #}
-                    <div class="extra-info">
-                        <p itemprop="name">
-                            <a style="color: black; font-size: 18px" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}">
-                                {{ modelo.fabricante.nombre }}
-                            </a>
-                        </p>
-                        <h2 style="font-size: 14px; margin: 0px;">{{ modelo.familia }}</h2>
-                        <p><b>REF:</b> {{ modelo.referencia }}</p>
+                    <div id="producto-nombre-movil" class="col-lg-12 hidden-sm hidden-md hidden-lg">
+                        <h1 style="font-size: 28px; margin: 0px;" itemprop="name">{{ modelo.nombre | upper }}</h1>
+
+                        <div class="extra-info">
+                            <p itemprop="name">
+                                <a style="color: black; font-size: 18px" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}">
+                                    {{ modelo.fabricante.nombre }}
+                                </a>
+                            </p>
+                            <h2 style="font-size: 14px; margin: 0px;">{{ modelo.familia }}</h2>
+                            <p><b>REF:</b> {{ modelo.referencia }}</p>
+                        </div>
                     </div>
+
+                    {# Placeholder oculto que ocupa el espacio cuando el original se pega #}
+                    <div id="sticky-placeholder" class="hidden-sm hidden-md hidden-lg"></div>
                 </div>
-                {# Placeholder para evitar saltos cuando se pone fixed #}
-                <div id="sticky-placeholder" class="hidden-sm hidden-md hidden-lg"></div>
-                {# -------------------------------------------- #}
+                {# ----------------------------------------- #}
 
                 <div class="col-sm-6 col-md-7" style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">
                     {% include 'web/product/partials/_gallery.html.twig' %}
                     <div class="col-lg-12">
+                        {# Redes sociales (Sin cambios) #}
                         <div class="redesReceta hidden-xl hidden-lg hidden-md hidden-sm" style="text-align: center; margin-top: 12px">
                             <a href="whatsapp://send?text=Mira lo que acabo de encontrar en TusKamisetas%20{{ app.request.uri }}?utm_source=whatsapp" target="_blank"><img src="{{ asset('images/whatsapp-logo.svg') }}" style="max-width: 18px;" alt="whatsapp"/></a>
                             <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;" alt="facebook"/></a>
@@ -268,8 +305,8 @@
                             {% endif %}
                             <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}"><img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;" alt="mail"/></a>
                         </div>
-                        {# ... Redes escritorio ... #}
                         <div class="redesReceta hidden-xs" style="text-align: center; margin-top: 12px">
+                            {# ... redes escritorio ... #}
                             <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;" alt="facebook"/></a>
                             <a href="https://twitter.com/intent/tweet?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/twitter.svg') }}" style="max-width: 20px;" alt="twitter"/></a>
                             <a href="https://plus.google.com/share?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/google+.svg') }}" style="max-width: 20px;" alt="google plus"/></a>
