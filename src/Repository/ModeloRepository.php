@@ -110,7 +110,9 @@ class ModeloRepository extends ServiceEntityRepository
     {
         $qb = $this->createQueryBuilder('m')
             ->where('m.activo = true')
-            ->andWhere('m.precioMin > 0');
+            ->andWhere('m.precioMin > 0')
+            ->andWhere('m.precioMin < 9999')
+        ;
 
         // --- LOGICA DE BÚSQUEDA HÍBRIDA (Sincronizada con Live Search) ---
         if ($filtros->getBusqueda()) {
@@ -126,6 +128,17 @@ class ModeloRepository extends ServiceEntityRepository
                 ->leftJoin('m', 'fabricante', 'f', 'm.fabricante = f.id')
                 ->leftJoin('m', 'modelo_modeloatributos', 'mma', 'm.id = mma.modelo_id')
                 ->leftJoin('mma', 'modelo_atributo', 'ma', 'mma.modelo_atributo_id = ma.id')
+
+                //join productos
+                ->leftJoin('i','m.imagen', 'i') // Imagen principal (Media)
+                // Nota: Un modelo tiene MUCHOS productos, y cada producto un color.
+                // Si 'm.color' no existe en Modelo (parece que no), usamos un truco:
+                // Hacemos join con productos activos para tenerlos a mano.
+                ->leftJoin('m.productos', 'prod', 'WITH', 'prod.activo = 1')
+                ->addSelect('prod')
+                ->leftJoin('c','prod.color', 'c') // Colores de los productos
+                ->addSelect('c')
+                ->leftJoin('t','m.tarifa', 't')
                 // JOIN con traducciones
                 ->leftJoin('m', 'ext_translations', 't', "t.foreign_key = m.id AND t.object_class = :entityClass AND t.field = 'descripcion'")
                 ->where('m.activo = 1')
