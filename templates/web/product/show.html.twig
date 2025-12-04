@@ -92,7 +92,7 @@
         #sticky-placeholder {
             display: none;
             /* La altura se ajustará con JS o CSS según el contenido */
-            height: 140px;
+            height: 0;
         }
         #producto-nombre-movil.is-stuck + #sticky-placeholder {
             display: block;
@@ -124,10 +124,10 @@
             const placeholder = document.getElementById('sticky-placeholder');
 
             // Calculamos la altura real del bloque para el placeholder
-            if(target && placeholder) {
-                const height = target.offsetHeight;
-                placeholder.style.height = height + 'px';
-            }
+            // if(target && placeholder) {
+            //     const height = target.offsetHeight;
+            //     placeholder.style.height = height + 'px';
+            // }
 
             if(target && sentinel) {
                 const observer = new IntersectionObserver((entries) => {
