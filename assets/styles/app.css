@@ -89,6 +89,28 @@
     height: 35px !important;
     width: 40px !important;
 }
+
+/* Pantallas de escritorio y tablets (mayor a 768px) */
+@media (min-width: 768px) {
+    .divBanner {
+        /* 1. Define una altura fija que se vea bien con tu imagen más alta */
+        min-height: 500px;
+
+        /* 2. Activa Flexbox para centrar el contenido verticalmente */
+        display: flex;
+        align-items: center;
+
+        /* 3. Asegura que la imagen de fondo cubra todo siempre */
+        background-position: center center !important;
+    }
+
+    /* Aseguramos que el contenedor interno ocupe el ancho correcto */
+    /*.divBanner .container {*/
+    /*    width: 100%;*/
+    /*}*/
+}
+
+
 /*    este bloque pinta lineas de todos los elementos es para depurar contenedores y cuando la página se descuadra */
 /** {*/
 /*    outline: 1px solid red;*/
