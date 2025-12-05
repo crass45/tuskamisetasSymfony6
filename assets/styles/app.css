@@ -89,3 +89,7 @@
     height: 35px !important;
     width: 40px !important;
 }
+/*    este bloque pinta lineas de todos los elementos es para depurar contenedores y cuando la página se descuadra */
+/** {*/
+/*    outline: 1px solid red;*/
+/*}*/
