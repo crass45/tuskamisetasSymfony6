@@ -94,7 +94,7 @@
 @media (min-width: 768px) {
     .divBanner {
         /* 1. Define una altura fija que se vea bien con tu imagen más alta */
-        min-height: 500px;
+        min-height: 430px;
 
         /* 2. Activa Flexbox para centrar el contenido verticalmente */
         display: flex;

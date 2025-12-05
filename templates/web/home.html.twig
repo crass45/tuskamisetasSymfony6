@@ -143,12 +143,23 @@ z-index: 3" class="titulo">
                                     <a href="{% if banner.url!="" %}{{ banner.url }}{% endif %}"
                                        style="width: 100%;height: 100%;">
                                         {# https://static.gorfactory.es/images/home/ROLY_Intro_2024_Sport.mp4?v=2 #}
-                                        <div class="divBanner banerLazy"
+
+                                        {% if loop.first %}
+                                        <div class="divBanner"
                                              style="background: url('{{ sonata_path(banner.imagen, 'big') }}') no-repeat center top;
                                                      -webkit-background-size: cover;
                                                      -moz-background-size: cover;
                                                      -o-background-size: cover;
-                                                     background-size: cover;">
+                                                     background-size: cover;"
+                                             fetchpriority="high">
+                                            {% else %}
+                                            <div class="divBanner banerLazy"
+                                                 style="background: url('{{ sonata_path(banner.imagen, 'big') }}') no-repeat center top;
+                                                         -webkit-background-size: cover;
+                                                         -moz-background-size: cover;
+                                                         -o-background-size: cover;
+                                                         background-size: cover;">
+                                            {% endif %}
                                             <div class="container">
                                                 <div class="row">
 
@@ -173,20 +184,16 @@ z-index: 3" class="titulo">
                                                 </div>
                                             </div>
                                         </div>
-                                        {# <div class="col-sm-6"> #}
-                                        {# <img src="{% path banner.imagen, 'big' %}" class="girl img-responsive" alt=""/> #}
-                                        {# <img src="images/home/pricing.png" class="pricing" alt=""/> #}
-                                        {# </div> #}
                                     </a>
                                 </div>
                             {% endfor %}
                         </div>
 
                         {% if banners|length > 1 %}
-                            <a href="#slider-carousel" class="left control-carousel hidden-xs" data-slide="prev">
+                            <a href="#slider-carousel" class="left control-carousel hidden-xs" data-slide="prev" aria-label="Diapositiva anterior">
                                 <i class="fa fa-angle-left"></i>
                             </a>
-                            <a href="#slider-carousel" class="right control-carousel hidden-xs" data-slide="next">
+                            <a href="#slider-carousel" class="right control-carousel hidden-xs" data-slide="next" aria-label="Siguiente diapositiva">
                                 <i class="fa fa-angle-right"></i>
                             </a>
                         {% endif %}
@@ -212,12 +219,14 @@ z-index: 3" class="titulo">
                         <div class="intro-text col-md-10 col-md-offset-1">
                             <p>
                                 En <strong>TusKamisetas</strong> acercamos la calidad profesional a todo el mundo.
-                                Somos especialistas en <strong>serigrafía e impresión digital</strong> para que puedas crear
+                                Somos especialistas en <strong>serigrafía e impresión digital</strong> para que puedas
+                                crear
                                 desde una única camiseta para un regalo especial, hasta miles de unidades para uniformes
                                 corporativos o <em>merchandising</em> publicitario.
                             </p>
                             <p>
-                                Disfruta de las ventajas de comprar <strong>directamente a fábrica</strong>: sin intermediarios,
+                                Disfruta de las ventajas de comprar <strong>directamente a fábrica</strong>: sin
+                                intermediarios,
                                 con la mejor tecnología de estampación y precios ajustados a tu volumen de compra.
                                 <strong>Grandes marcas y particulares</strong> ya confían en nosotros.
                             </p>
@@ -233,7 +242,8 @@ z-index: 3" class="titulo">
                         <article class="col-sm-3 col-xs-6 cuadro_home feature-item">
                             <header class="text-center">
                                 <img src="{{ asset('images/icons/serigrafia.png') }}"
-                                     alt="{% trans %}Taller propio de personalización{% endtrans %}" class="feature-icon"/>
+                                     alt="{% trans %}Taller propio de personalización{% endtrans %}"
+                                     class="feature-icon"/>
                                 <h3>{% trans %}PRODUCCIÓN PROPIA{% endtrans %}</h3>
                             </header>
                             <p>
@@ -271,7 +281,8 @@ z-index: 3" class="titulo">
                         <article class="col-sm-3 col-xs-6 cuadro_home feature-item">
                             <header class="text-center">
                                 <img src="{{ asset('images/icons/pedidos.png') }}"
-                                     alt="{% trans %}Precios escalados por cantidad{% endtrans %}" class="feature-icon"/>
+                                     alt="{% trans %}Precios escalados por cantidad{% endtrans %}"
+                                     class="feature-icon"/>
                                 <h3>{% trans %}PRECIOS DE FÁBRICA{% endtrans %}</h3>
                             </header>
                             <p>
@@ -522,7 +533,7 @@ z-index: 3" class="titulo">
                             <img class="img-responsive black-white-image"
                                  style="margin: auto;"
                                  src="{{ asset('images/imgcat/camisetas-personalizadas.jpg') }}"
-                                 alt="camisetas personalizadas"/></a>
+                                 alt="camisetas personalizadas" width="253" height="256"/></a>
                         <br>
                         <div style="width: 80px; height: 5px; background: #B80000; border-radius: 3px; margin: 0 auto; margin-bottom: 15px"></div>
                         <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'camisetas-tecnicas'}) }}">
@@ -551,7 +562,7 @@ z-index: 3" class="titulo">
                             <img class="img-responsive black-white-image"
                                  style="margin: auto;"
                                  src="{{ asset('images/imgcat/sudaderas.jpg') }}"
-                                 alt="sudaderas personalizadas"/></a>
+                                 alt="sudaderas personalizadas" width="253" height="256"/></a>
                         <br>
                         <div style="width: 80px; height: 5px; background: #ff9000; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
                         <a href="sudaderas?filtros=33"><p>Sudaderas con capucha</p></a>
@@ -568,7 +579,7 @@ z-index: 3" class="titulo">
                         <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'polos'}) }}">
                             <img class="img-responsive black-white-image"
                                  style="margin: auto;"
-                                 src="{{ asset('images/imgcat/polos-2.jpg') }}" alt="polos bordados"/></a>
+                                 src="{{ asset('images/imgcat/polos-2.jpg') }}" alt="polos bordados" width="253" height="256"/></a>
                         <br>
                         <div style="width: 80px; height: 5px; background: #FFD800; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
                         <a href="polos?filtros=115"><p>Polos de mujer</p></a>
@@ -586,7 +597,7 @@ z-index: 3" class="titulo">
                             <img class="img-responsive black-white-image"
                                  style="margin: auto;"
                                  src="{{ asset('images/imgcat/ropa-deportiva.jpg') }}"
-                                 alt="ropa deportiva personalizadas"/></a>
+                                 alt="ropa deportiva personalizadas" width="253" height="256"/></a>
                         <br>
                         <div style="width: 80px; height: 5px; background: #5CA688; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
                         <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'equipaciones-deportivas'}) }}">
@@ -609,7 +620,7 @@ z-index: 3" class="titulo">
                             <img class="img-responsive black-white-image"
                                  style="margin: auto;"
                                  src="{{ asset('images/imgcat/mochila-cordones.jpg') }}"
-                                 alt="bolsas de tela personalizadas"/></a>
+                                 alt="bolsas de tela personalizadas" width="253" height="256"/></a>
                         <br>
                         <div style="width: 80px; height: 5px; background: #A3B957; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
                         <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'mochilas-de-cuerdas'}) }}">
@@ -633,7 +644,7 @@ z-index: 3" class="titulo">
                             <img class="img-responsive black-white-image"
                                  style="margin: auto;"
                                  src="{{ asset('images/imgcat/ropa-laboral.jpg') }}"
-                                 alt="ropa laboral personalizadas"/></a>
+                                 alt="ropa laboral personalizadas" width="253" height="256"/></a>
                         <br>
                         <div style="width: 80px; height: 5px; background: #F1C700; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
                         <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'buzos-de-trabajo-monos'}) }}">
@@ -656,7 +667,7 @@ z-index: 3" class="titulo">
                             <img class="img-responsive black-white-image"
                                  style="margin: auto;"
                                  src="{{ asset('images/imgcat/accesorios.jpg') }}"
-                                 alt="gorras y accesorios personalizadas"/></a>
+                                 alt="gorras y accesorios personalizadas" width="253" height="256"/></a>
                         <br>
                         <div style="width: 80px; height: 5px; background: #C8487F; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
                         <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': 'panuelos-y-panoletas'}) }}">
@@ -680,7 +691,7 @@ z-index: 3" class="titulo">
                             <img class="img-responsive black-white-image"
                                  style="margin: auto;"
                                  src="{{ asset('images/imgcat/merchandising.jpg') }}"
-                                 alt="merchandising personalizado"/></a>
+                                 alt="merchandising personalizado" width="253" height="256"/></a>
                         <br>
                         <div style="width: 80px; height: 5px; background: #9000FF; border-radius: 3px; margin: 0 auto;margin-bottom: 15px"></div>
 

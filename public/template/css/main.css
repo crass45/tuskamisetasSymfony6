@@ -506,6 +506,21 @@ ul.sub-menu {
     text-transform: uppercase;
 }
 
+.single-widget .titulo {
+    color: #666663;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 22px;
+    margin-top: 15px;
+    text-transform: uppercase;
+    margin-left: 0;
+}
+
+.single-widget .titulo i {
+    margin-right: 15px;
+}
+
 .single-widget h2 i {
     margin-right: 15px;
 }

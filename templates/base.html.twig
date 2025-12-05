@@ -616,7 +616,7 @@
                     <div class="row">
                         <div class="col-sm-3">
                             <div class="single-widget">
-                                <h2>{% trans %}Servicio{% endtrans %}</h2>
+                                <p class="titulo">{% trans %}Servicio{% endtrans %}</p>
                                 <nav aria-label="{% trans %}Navegación de servicio{% endtrans %}">
                                     <ul class="nav nav-pills nav-stacked">
                                         {# MIGRACIÓN: Se actualizan los nombres de las rutas #}
@@ -636,7 +636,7 @@
 
                         <div class="col-sm-3">
                             <div class="single-widget">
-                                <h2>{% trans %}Búsqueda Rápida{% endtrans %}</h2>
+                                <p class="titulo">{% trans %}Búsqueda Rápida{% endtrans %}</p>
                                 <nav aria-label="{% trans %}Navegación de categorías{% endtrans %}">
                                     <ul class="nav nav-pills nav-stacked">
                                         {# MIGRACIÓN: Se usa la ruta genérica 'app_catalog_resolver' #}
@@ -656,7 +656,7 @@
 
                         <div class="col-sm-3">
                             <div class="single-widget">
-                                <h2>{% trans %}Legal{% endtrans %}</h2>
+                                <p class="titulo">{% trans %}Legal{% endtrans %}</p>
                                 <nav aria-label="{% trans %}Navegación legal{% endtrans %}">
                                     <ul class="nav nav-pills nav-stacked">
                                         <li><a href="{{ path('app_terms_of_use', {'_locale': app.request.locale}) }}"
@@ -672,7 +672,7 @@
 
                         <div class="col-sm-3">
                             <div class="single-widget">
-                                <h2>{% trans %}Mantente Informado{% endtrans %}</h2>
+                                <p class="titulo">{% trans %}Mantente Informado{% endtrans %}</p>
                                 <form action="{{ path('app_newsletter_subscribe_simple', {'_locale': app.request.locale}) }}"
                                       method="post" class="searchform">
                                     <label for="newsletter-email"
