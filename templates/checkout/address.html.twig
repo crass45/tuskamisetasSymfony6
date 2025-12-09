@@ -163,7 +163,7 @@
                         // item_list_name: "Related Products",
                         item_variant: "producto.producto.referencia",
                         // location_id: "ChIJIQBpAG2ahYAR_6128GcTUEo",
-                        price: {{ producto.precioProducto|number_format(2, ',', '.') }},
+                        price: '{{ producto.precioProducto | number_format(2, ',', '.') }}',
                         quantity: {{ producto.cantidad }}
                     }
                     {% if not loop.last %}
