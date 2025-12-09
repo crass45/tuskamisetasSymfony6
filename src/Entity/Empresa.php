@@ -82,10 +82,10 @@ class Empresa
     #[ORM\Column(length: 45, nullable: true)]
     private ?string $pinterest = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'decimal', precision: 13, scale: 10, nullable: true)]
     private ?float $longitud = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'decimal', precision: 13, scale: 10, nullable: true)]
     private ?float $latitud = null;
 
     #[ORM\Column(name: 'descripcion_contacto', type: Types::TEXT, nullable: true)]
