@@ -14,6 +14,7 @@ use Gedmo\Translatable\Translatable;
 
 #[ORM\Entity(repositoryClass: FabricanteRepository::class)]
 #[ORM\Table(name: 'fabricante')]
+#[ORM\Cache(usage: 'NONSTRICT_READ_WRITE')] // <--- AÑADE ESTO
 class Fabricante implements Translatable
 {
     #[ORM\Id]

@@ -29,25 +29,77 @@ class TiendaExtension extends AbstractExtension implements GlobalsInterface
 
     public function getGlobals(): array
     {
-        // MIGRACIÓN: Obtenemos la petición actual de forma segura desde el RequestStack
+        // MIGRACIÓN: Obtenemos la petición actual de forma segura
         $request = $this->requestStack->getCurrentRequest();
         if (!$request) {
-            return []; // No hacer nada si no estamos en un contexto de petición web (ej. un comando)
+            return [];
         }
 
+        // 1. Vistos Recientemente (ESTO ES DINÁMICO, NO SE PUEDE CACHEAR IGUAL)
         $vistosRecientementeRefs = [
             $request->cookies->get('vistosRecientemente1'),
             $request->cookies->get('vistosRecientemente2'),
             $request->cookies->get('vistosRecientemente3'),
             $request->cookies->get('vistosRecientemente4'),
         ];
+        // Filtramos array vacío
+        $referenciasVistas = array_filter($vistosRecientementeRefs);
 
-        // MIGRACIÓN: Se usan los repositorios con la nueva sintaxis
-        $vistos = $this->em->getRepository(Modelo::class)->findBy(['referencia' => array_filter($vistosRecientementeRefs)]);
-        $empresa = $this->em->getRepository(Empresa::class)->findOneBy([], ['id' => 'DESC']);
-        $proveedores = $this->em->getRepository(Fabricante::class)->findBy([], ['nombre' => 'ASC']);
-        $categorias = $this->em->getRepository(ClassificationCategory::class)->findOneBy(['name' => 'Home', 'enabled' => true]);
-        $ofertas = $this->em->getRepository(Oferta::class)->findBy(['activo' => true], ['precio' => 'ASC']);
+        $vistos = [];
+        if (!empty($referenciasVistas)) {
+            // Esta consulta depende del usuario, no se debe usar caché compartida
+            $vistos = $this->em->getRepository(Modelo::class)->findBy(['referencia' => $referenciasVistas]);
+        }
+
+        // --- INICIO DE LA OPTIMIZACIÓN CON CACHÉ (1 HORA) ---
+        $cacheTime = 3600;
+
+        // 2. Empresa (Cacheado)
+        $empresa = $this->em->createQueryBuilder()
+            ->select('e')
+            ->from(Empresa::class, 'e')
+            ->orderBy('e.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->enableResultCache($cacheTime) // <--- MAGIA
+            ->getOneOrNullResult();
+
+        // 3. Proveedores (Cacheado)
+        $proveedores = $this->em->createQueryBuilder()
+            ->select('f')
+            ->from(Fabricante::class, 'f')
+            ->orderBy('f.nombre', 'ASC')
+            ->getQuery()
+            ->enableResultCache($cacheTime)
+            ->getResult();
+
+        // 4. Categorías / Menú (Cacheado + Eager Loading)
+        // TRUCO: Hacemos leftJoin para traer los hijos (children) de golpe y que pintar el menú no lance 20 consultas.
+        $categorias = $this->em->createQueryBuilder()
+            ->select('c', 'ch', 'subch') // Traemos Categoria, Hijos y Nietos
+            ->from(ClassificationCategory::class, 'c')
+            ->leftJoin('c.children', 'ch')
+            ->leftJoin('ch.children', 'subch')
+            ->where('c.name = :name')
+            ->andWhere('c.enabled = :enabled')
+            ->setParameter('name', 'Home')
+            ->setParameter('enabled', true)
+            ->getQuery()
+            ->enableResultCache($cacheTime)
+            ->getOneOrNullResult();
+
+        // 5. Ofertas (Cacheado)
+        $ofertas = $this->em->createQueryBuilder()
+            ->select('o', 'm', 'i') // Traemos Oferta, Modelo e Imagen de golpe
+            ->from(Oferta::class, 'o')
+            ->leftJoin('o.modelos', 'm') // <--- CORREGIDO: Es 'modelos' en plural
+            ->leftJoin('o.imagen', 'i')
+            ->where('o.activo = :activo')
+            ->setParameter('activo', true)
+            ->orderBy('o.precio', 'ASC')
+            ->getQuery()
+            ->enableResultCache($cacheTime)
+            ->getResult();
 
         return [
             'empresa' => $empresa,

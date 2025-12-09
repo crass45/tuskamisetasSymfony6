@@ -10,6 +10,7 @@ use Symfony\Component\String\Slugger\AsciiSlugger;
 
 #[ORM\Entity(repositoryClass: ColorRepository::class)]
 #[ORM\Table(name: 'color')]
+#[ORM\Cache(usage: 'NONSTRICT_READ_WRITE')] // <--- AÑADE ESTO
 #[ORM\HasLifecycleCallbacks]
 class Color
 {

@@ -43,7 +43,7 @@ class ModeloRepository extends ServiceEntityRepository
             ->leftJoin('m.imagen', 'img');
 
         // Configuración de la consulta
-        $query = $qb->getQuery();
+        $query = $qb->getQuery()->enableResultCache(3600);
 
         // Hints de optimización para traducciones (si usas Gedmo)
         $query->setHint(
@@ -111,12 +111,12 @@ class ModeloRepository extends ServiceEntityRepository
     }
 
     /**
-     * Devuelve los filtros disponibles (Fabricantes, Colores, Atributos)
-     * CORREGIDO: Agrupa colores por tono visual (rgbUnificado) para evitar duplicados.
+     * Devuelve los filtros disponibles con CACHÉ (1 hora) y Agrupación Visual Correcta.
      */
     public function findAvailableFilters(Filtros $filtros): array
     {
         $em = $this->getEntityManager();
+        $cacheLifetime = 3600; // 1 hora de caché para los filtros
 
         // 1. FABRICANTES
         $qbFab = $this->createFindByFiltrosQueryBuilder($filtros);
@@ -126,7 +126,10 @@ class ModeloRepository extends ServiceEntityRepository
             ->resetDQLPart('orderBy')
             ->orderBy('f.nombre', 'ASC');
 
-        $fabIds = $qbFab->getQuery()->getSingleColumnResult();
+        // Activamos caché para la consulta de IDs
+        $fabIds = $qbFab->getQuery()
+            ->enableResultCache($cacheLifetime)
+            ->getSingleColumnResult();
 
         $fabricantes = [];
         if (!empty($fabIds)) {
@@ -134,24 +137,26 @@ class ModeloRepository extends ServiceEntityRepository
                 ->findBy(['id' => $fabIds], ['nombre' => 'ASC']);
         }
 
-        // 2. COLORES (CORREGIDO: Agrupación visual)
+        // 2. COLORES (Con Agrupación Visual)
         $qbCol = $this->createFindByFiltrosQueryBuilder($filtros);
 
-        // En lugar de traer todos los IDs, traemos "uno cualquiera" (MIN) de cada grupo visual
+        // Truco: Pedimos el ID mínimo de cada grupo visual de color
         $qbCol->select('MIN(c.id)')
             ->join('m.productos', 'p')
             ->join('p.color', 'c')
             ->andWhere('p.activo = true')
-            ->resetDQLPart('groupBy') // Quitamos el group by de modelo
+            ->resetDQLPart('groupBy')
             ->resetDQLPart('orderBy')
-            ->groupBy('c.rgbUnificado') // <--- CLAVE: Agrupamos por el tono visual
+            ->groupBy('c.rgbUnificado') // <--- Agrupamos visualmente
             ->orderBy('c.codigoRGB', 'ASC');
 
-        $colIds = $qbCol->getQuery()->getSingleColumnResult();
+        // Activamos caché
+        $colIds = $qbCol->getQuery()
+            ->enableResultCache($cacheLifetime)
+            ->getSingleColumnResult();
 
         $colores = [];
         if (!empty($colIds)) {
-            // Buscamos los objetos color reales usando esos IDs representativos
             $colores = $em->getRepository(\App\Entity\Color::class)
                 ->findBy(['id' => $colIds], ['codigoRGB' => 'ASC']);
         }
@@ -163,14 +168,16 @@ class ModeloRepository extends ServiceEntityRepository
             ->resetDQLPart('groupBy')
             ->resetDQLPart('orderBy');
 
-        $attrIds = $qbAttr->getQuery()->getSingleColumnResult();
+        // Activamos caché
+        $attrIds = $qbAttr->getQuery()
+            ->enableResultCache($cacheLifetime)
+            ->getSingleColumnResult();
 
         $atributos = [];
         if (!empty($attrIds)) {
             $atributosRaw = $em->getRepository(\App\Entity\ModeloAtributo::class)
                 ->findBy(['id' => $attrIds]);
 
-            // Agrupamos por nombre
             foreach ($atributosRaw as $atributo) {
                 $atributos[$atributo->getNombre()][] = $atributo;
             }

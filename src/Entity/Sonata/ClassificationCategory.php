@@ -14,6 +14,7 @@ use Sonata\ClassificationBundle\Entity\BaseCategory;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'classification__category')]
+#[ORM\Cache(usage: 'NONSTRICT_READ_WRITE')] // <--- AÑADE ESTO
 class ClassificationCategory extends BaseCategory implements Translatable
 {
     #[ORM\Id]

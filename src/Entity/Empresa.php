@@ -11,6 +11,7 @@ use App\Entity\Sonata\Media;
 
 #[ORM\Entity(repositoryClass: EmpresaRepository::class)]
 #[ORM\Table(name: 'empresa')]
+#[ORM\Cache(usage: 'NONSTRICT_READ_WRITE')] // <--- AÑADE ESTO
 class Empresa
 {
     #[ORM\Id]
