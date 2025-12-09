@@ -37,7 +37,7 @@
         </div>
         <div>
             {% for producto in modelos %}
-                {% include 'web/catalog/_productoElementoGrid.html.twig' %}
+                {% include 'web/catalog/_productoElementoGrid.html.twig' with {'loop_index': loop.index} %}
             {% endfor %}
 
             <div class="col-xs-12">

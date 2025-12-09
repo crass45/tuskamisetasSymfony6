@@ -38,6 +38,10 @@
             {% if not filtros.fabricante and filtros.atributos is empty and filtros.colores is empty %}
                 {% for subcategoria in categoriaObj.children %}
                     {% if subcategoria.enabled %}
+                        {# Lógica de optimización: Las 4 primeras cargan al instante #}
+                        {% set is_lcp = (loop.index <= 4) %}
+                        {% set img_path = subcategoria.imagen ? sonata_path(subcategoria.imagen, 'grid') : asset('images/dummy200.png') %}
+
                         <a href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': subcategoria.slug}) }}"
                            style="color: white">
                             <div class="col-xs-6 col-sm-6 col-md-3 col-lg-3"
@@ -45,11 +49,14 @@
                                 <div class="product-image-wrapper zoomHoverTKM" style="position: relative;">
                                     <div class="single-products" style="height: 250px">
                                         <div class="productinfo text-center">
-                                            {# Usamos la función sonata_path o sonata_media para la imagen #}
-                                            <img src="{{ asset('images/dummy200.png') }}"
-                                                 class="lazy"
-                                                 data-src="{% if subcategoria.imagen %}{{ sonata_path(subcategoria.imagen, 'grid') }}{% else %}{{ asset('images/dummy200.png') }}{% endif %}"
-                                                 alt="Comprar {{ subcategoria.name }} baratas"/>
+
+                                            <img src="{{ is_lcp ? img_path : asset('images/dummy200.png') }}"
+                                                 {% if not is_lcp %}class="lazy" data-src="{{ img_path }}"{% endif %}
+                                                 alt="Comprar {{ subcategoria.name }} baratas"
+{#                                                 width="363" height="300"#}
+                                                    {% if is_lcp %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                                            />
+
                                         </div>
                                     </div>
 

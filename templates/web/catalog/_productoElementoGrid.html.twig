@@ -10,19 +10,26 @@
             <div class="product-image-wrapper" style="position: relative;">
                 <div class="single-products">
                     <div class="productinfo text-center">
+                        {% set is_lcp = (loop_index is defined and loop_index <= 2) %}
+
                         {% if producto.imagen != null %}
-                            <img src="{{ asset('images/dummy200.png') }}" class="lazy" id="{{ producto.id }}"
-                                 data-src="{{ sonata_path(producto.imagen, 'grid') }}"
-                                    {#data-retina="{% path producto.imagen, 'wide' %}"#}
+                            <img src="{{ is_lcp ? sonata_path(producto.imagen, 'grid') : asset('images/dummy200.png') }}"
+                                 {% if not is_lcp %}class="lazy"{% endif %}
+                                 id="{{ producto.id }}"
+                                    {% if not is_lcp %}data-src="{{ sonata_path(producto.imagen, 'grid') }}"{% endif %}
                                  alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
-                                    {#title="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"#}
+{#                                 width="253" height="256" #}{# AÑADIDO: Dimensiones explícitas para evitar CLS #}
+                                    {% if is_lcp %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
                                  data-imagen="{{ sonata_path(producto.imagen, 'grid') }}"/>
                         {% else %}
-                            <img src="{{ asset('images/dummy200.png') }}" class="lazy" id="{{ producto.id }}"
-                                 data-src="{{ producto.urlImage }}"
-                                    {#data-retina="{{ producto.urlImage | retina}}"#}
+                            {# Mismo cambio para la imagen fallback #}
+                            <img src="{{ is_lcp ? producto.urlImage : asset('images/dummy200.png') }}"
+                                 {% if not is_lcp %}class="lazy"{% endif %}
+                                 id="{{ producto.id }}"
+                                    {% if not is_lcp %}data-src="{{ producto.urlImage }}"{% endif %}
                                  alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
-                                    {#title="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"#}
+{#                                 width="253" height="256"#}
+                                    {% if is_lcp %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
                                  data-imagen="{{ producto.urlImage }}"/>
                         {% endif %}
                         {% if producto.isNovelty %}
