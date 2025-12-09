@@ -137,6 +137,46 @@
     {# =================================================================== #}
     <script>
         $(document).ready(function() {
+
+            gtag("event", "begin_checkout", {
+                currency: "EUR",
+                value: {{ carrito.getSubtotal(app.user) }},
+                items: [
+                    {% set referenciaModelo = -1 %}
+                    {% for presupuesto in carrito.getItems() %}
+                    {% set itemIndex = loop.index0 %}
+                    {% for producto in presupuesto.getProductos() %}
+                    {
+                        item_id: "{{ producto.producto.modelo.referencia }}",
+                        item_name: "{{ producto.producto.modelo.nombre }}",
+                        affiliation: "TusKamisetas.com",
+                        // coupon: "SUMMER_FUN",
+                        // discount: 2.22,
+                        // index: 0,
+                        item_brand: "{{ producto.producto.modelo.fabricante }}",
+                        // item_category: "Apparel",
+                        // item_category2: "Adult",
+                        // item_category3: "Shirts",
+                        // item_category4: "Crew",
+                        // item_category5: "Short sleeve",
+                        // item_list_id: "related_products",
+                        // item_list_name: "Related Products",
+                        item_variant: "producto.producto.referencia",
+                        // location_id: "ChIJIQBpAG2ahYAR_6128GcTUEo",
+                        price: {{ producto.precioProducto|number_format(2, ',', '.') }},
+                        quantity: {{ producto.cantidad }}
+                    }
+                    {% if not loop.last %}
+                    ,
+                    {% endif %}
+                    {% endfor %}
+                    {% if not loop.last %}
+                    ,
+                    {% endif %}
+                    {% endfor %}
+                ]
+            });
+
             $('#carropaso3').css('color', 'black');
 
             const $shippingFormContainer = $('#newAddressFormContainer');
