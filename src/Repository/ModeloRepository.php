@@ -28,31 +28,31 @@ class ModeloRepository extends ServiceEntityRepository
     /**
      * MÉTODO PRINCIPAL: Obtiene los resultados paginados y OPTIMIZADOS.
      */
+    // En src/Repository/ModeloRepository.php
+
     public function findByFiltros(Filtros $filtros, int $page = 1): Paginator
     {
         $qb = $this->createFindByFiltrosQueryBuilder($filtros);
 
-        // 1. Cargamos las relaciones "To-One" del Modelo
-        // Traemos Fabricante, Proveedor, Imagen Principal y Tarifa de una vez.
-        $qb->addSelect('f, p, img, t')
+        // 1. Consulta Principal: Solo datos del Modelo y relaciones simples "To-One"
+        // NOTA: He quitado 't' (tarifa) de aquí para cargarla después junto con sus precios
+        // y no ralentizar la paginación principal.
+        $qb->addSelect('f, p, img')
             ->leftJoin('m.fabricante', 'f')
             ->leftJoin('m.proveedor', 'p')
-            ->leftJoin('m.imagen', 'img')
-            ->leftJoin('m.tarifa', 't');
+            ->leftJoin('m.imagen', 'img');
 
-        // 2. Configuración de la consulta para Paginación
+        // Configuración de la consulta
         $query = $qb->getQuery();
 
-        // TRUCO DE RENDIMIENTO 1: Optimización para Traducciones (Gedmo)
-        // Si usas campos traducibles (nombre, descripción), esto evita 1 consulta extra por producto.
+        // Hints de optimización para traducciones (si usas Gedmo)
         $query->setHint(
             Query::HINT_CUSTOM_OUTPUT_WALKER,
             'Gedmo\\Translatable\\Query\\TreeWalker\\TranslationWalker'
         );
-        // Cargamos traducciones para el locale actual
         $query->setHint(
             \Gedmo\Translatable\TranslatableListener::HINT_TRANSLATABLE_LOCALE,
-            $filtros->getLocale() ?? 'es' // Asegúrate de pasar el locale o usar 'es'
+            $filtros->getLocale() ?? 'es'
         );
 
         $paginator = new Paginator($query, true);
@@ -62,80 +62,118 @@ class ModeloRepository extends ServiceEntityRepository
             ->setFirstResult(self::PAGINATOR_PER_PAGE * ($page - 1))
             ->setMaxResults(self::PAGINATOR_PER_PAGE);
 
-        // 3. TRUCO DE RENDIMIENTO 2: "Eager Loading" Masivo (Hydration Query)
-        // Obtenemos los modelos de esta página para hidratar sus colecciones en UNA sola consulta.
+        // 3. TRUCO DE RENDIMIENTO: "Eager Loading" Masivo (Hidratación)
+        // Obtenemos los modelos de esta página para hidratar sus datos en BLOQUE.
         $modelosEnPagina = $paginator->getIterator()->getArrayCopy();
 
         if (!empty($modelosEnPagina)) {
-            $this->getEntityManager()->createQueryBuilder()
-                ->select('PARTIAL m.{id}', 'p', 'c', 'pi', 'attr') // <-- AÑADIDO: pi (prod image), attr (atributos)
+            $em = $this->getEntityManager();
+
+            // A) Cargar Productos + Colores + Imágenes de Productos (de golpe)
+            // Esto elimina la consulta gigante de 800ms que tenías antes.
+            $em->createQueryBuilder()
+                ->select('PARTIAL m.{id}', 'p', 'c', 'pi')
                 ->from(Modelo::class, 'm')
                 ->leftJoin('m.productos', 'p')
                 ->leftJoin('p.color', 'c')
-                ->leftJoin('p.imagen', 'pi')       // <-- CRÍTICO: Carga la imagen de la variante
-                ->leftJoin('m.atributos', 'attr')  // <-- CRÍTICO: Carga atributos (algodón, etc)
+                ->leftJoin('p.imagen', 'pi')
                 ->where('m IN (:modelos)')
                 ->andWhere('p.activo = true')
                 ->setParameter('modelos', $modelosEnPagina)
                 ->getQuery()
                 ->getResult();
 
-            // Doctrine "inyecta" estos datos en los objetos $modelosEnPagina que ya están en memoria.
+            // B) Cargar Tarifas y SUS PRECIOS (Solución al N+1 de tarifas)
+            // Gracias a que tu Tarifa.php está bien, esto cargará los precios de golpe
+            // evitando las 40 consultas repetidas de "tarifa_precios".
+            $em->createQueryBuilder()
+                ->select('PARTIAL m.{id}', 't', 'tp')
+                ->from(Modelo::class, 'm')
+                ->leftJoin('m.tarifa', 't')
+                ->leftJoin('t.precios', 'tp')
+                ->where('m IN (:modelos)')
+                ->setParameter('modelos', $modelosEnPagina)
+                ->getQuery()
+                ->getResult();
+
+            // C) Cargar Atributos (Algodón, etc.)
+            $em->createQueryBuilder()
+                ->select('PARTIAL m.{id}', 'attr')
+                ->from(Modelo::class, 'm')
+                ->leftJoin('m.atributos', 'attr')
+                ->where('m IN (:modelos)')
+                ->setParameter('modelos', $modelosEnPagina)
+                ->getQuery()
+                ->getResult();
         }
 
         return $paginator;
     }
 
     /**
-     * Analiza los resultados de una búsqueda y devuelve los filtros disponibles.
+     * Devuelve los filtros disponibles (Fabricantes, Colores, Atributos)
+     * CORREGIDO: Agrupa colores por tono visual (rgbUnificado) para evitar duplicados.
      */
     public function findAvailableFilters(Filtros $filtros): array
     {
-        $qb = $this->createFindByFiltrosQueryBuilder($filtros);
+        $em = $this->getEntityManager();
 
-        // Eliminamos selects previos para quedarnos solo con los IDs
-        $qb->select('DISTINCT m.id');
-        $qb->resetDQLPart('orderBy'); // Importante quitar orden para count/ids
+        // 1. FABRICANTES
+        $qbFab = $this->createFindByFiltrosQueryBuilder($filtros);
+        $qbFab->select('DISTINCT f.id')
+            ->join('m.fabricante', 'f')
+            ->resetDQLPart('groupBy')
+            ->resetDQLPart('orderBy')
+            ->orderBy('f.nombre', 'ASC');
 
-        $modelIds = array_column($qb->getQuery()->getScalarResult(), 'id');
+        $fabIds = $qbFab->getQuery()->getSingleColumnResult();
 
-        if (empty($modelIds)) {
-            return ['fabricantes' => [], 'colores' => [], 'atributos' => []];
+        $fabricantes = [];
+        if (!empty($fabIds)) {
+            $fabricantes = $em->getRepository(\App\Entity\Fabricante::class)
+                ->findBy(['id' => $fabIds], ['nombre' => 'ASC']);
         }
 
-        // Obtener fabricantes disponibles
-        $fabricantes = $this->getEntityManager()->createQueryBuilder()
-            ->select('DISTINCT f')
-            ->from('App\Entity\Fabricante', 'f')
-            ->join('f.modelos', 'm')
-            ->where('m.id IN (:ids)')
-            ->setParameter('ids', $modelIds)
-            ->orderBy('f.nombre', 'ASC')
-            ->getQuery()->getResult();
+        // 2. COLORES (CORREGIDO: Agrupación visual)
+        $qbCol = $this->createFindByFiltrosQueryBuilder($filtros);
 
-        // Obtener colores disponibles
-        $colores = $this->getEntityManager()->createQueryBuilder()
-            ->select('DISTINCT c')
-            ->from('App\Entity\Color', 'c')
-            ->join('c.productos', 'p')
-            ->where('p.modelo IN (:ids)')
-            ->setParameter('ids', $modelIds)
-            ->groupBy('c.rgbUnificado')
-            ->orderBy('c.codigoRGB', 'ASC')
-            ->getQuery()->getResult();
+        // En lugar de traer todos los IDs, traemos "uno cualquiera" (MIN) de cada grupo visual
+        $qbCol->select('MIN(c.id)')
+            ->join('m.productos', 'p')
+            ->join('p.color', 'c')
+            ->andWhere('p.activo = true')
+            ->resetDQLPart('groupBy') // Quitamos el group by de modelo
+            ->resetDQLPart('orderBy')
+            ->groupBy('c.rgbUnificado') // <--- CLAVE: Agrupamos por el tono visual
+            ->orderBy('c.codigoRGB', 'ASC');
 
-        // Obtener atributos disponibles
-        $atributosRaw = $this->getEntityManager()->createQueryBuilder()
-            ->select('DISTINCT a')
-            ->from('App\Entity\ModeloAtributo', 'a')
-            ->join('a.modelos', 'm')
-            ->where('m.id IN (:ids)')
-            ->setParameter('ids', $modelIds)
-            ->getQuery()->getResult();
+        $colIds = $qbCol->getQuery()->getSingleColumnResult();
+
+        $colores = [];
+        if (!empty($colIds)) {
+            // Buscamos los objetos color reales usando esos IDs representativos
+            $colores = $em->getRepository(\App\Entity\Color::class)
+                ->findBy(['id' => $colIds], ['codigoRGB' => 'ASC']);
+        }
+
+        // 3. ATRIBUTOS
+        $qbAttr = $this->createFindByFiltrosQueryBuilder($filtros);
+        $qbAttr->select('DISTINCT a.id')
+            ->join('m.atributos', 'a')
+            ->resetDQLPart('groupBy')
+            ->resetDQLPart('orderBy');
+
+        $attrIds = $qbAttr->getQuery()->getSingleColumnResult();
 
         $atributos = [];
-        foreach ($atributosRaw as $atributo) {
-            $atributos[$atributo->getNombre()][] = $atributo;
+        if (!empty($attrIds)) {
+            $atributosRaw = $em->getRepository(\App\Entity\ModeloAtributo::class)
+                ->findBy(['id' => $attrIds]);
+
+            // Agrupamos por nombre
+            foreach ($atributosRaw as $atributo) {
+                $atributos[$atributo->getNombre()][] = $atributo;
+            }
         }
 
         return [
