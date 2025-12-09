@@ -150,7 +150,7 @@ z-index: 3" class="titulo">
                                             {# 1. IMAGEN DE FONDO OPTIMIZADA #}
                                             <picture style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;">
                                                 {# MÓVIL: Carga versión 'small' (menos KB) #}
-                                                <source media="(max-width: 768px)" srcset="{{ sonata_path(banner.imagen, 'small') }}">
+                                                <source media="(max-width: 768px)" srcset="{{ sonata_path(banner.imagen, 'wide') }}">
 
                                                 {# ESCRITORIO: Carga versión 'big' #}
                                                 <img src="{{ sonata_path(banner.imagen, 'big') }}"
