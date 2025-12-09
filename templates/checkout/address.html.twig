@@ -140,6 +140,7 @@
 
             gtag("event", "begin_checkout", {
                 currency: "EUR",
+                send_to: 'AW-1004279132/NRbpCOfqiMobENyq8N4D',
                 value: {{ carrito.getSubtotal(app.user) }},
                 items: [
                     {% set referenciaModelo = -1 %}

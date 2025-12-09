@@ -38,6 +38,7 @@
                 // Google Analytics Event
                 if (typeof gtag === 'function') {
                     gtag("event", "view_item", {
+                        send_to: "AW-1004279132/NgyUCOG3iMobENyq8N4D",
                         currency: "EUR",
                         value: {{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }},
                         items: [{
@@ -289,6 +290,40 @@
 
                     }
                 });
+            });
+
+            // =================================================================
+            // TRACKING: ADD TO CART (GA4)
+            // =================================================================
+            $('body').on('click', '#addAMiPEdido', function(e) {
+                // 1. Obtenemos el precio actualizado del DOM
+                // Buscamos el texto, quitamos el símbolo de euro y cambiamos coma por punto
+                var precioTexto = $('.precio-unidad-valor').text(); // Ej: "5,35€"
+                var precioNumerico = parseFloat(precioTexto.replace('€', '').replace('.', '').replace(',', '.'));
+
+                // Si falla al leer, usamos 0 o un valor por defecto
+                if (isNaN(precioNumerico)) {
+                    precioNumerico = 0;
+                }
+
+                // 2. Enviamos el evento a Google
+                if (typeof gtag === 'function') {
+                    gtag("event", "add_to_cart", {
+                        send_to: "AW-1004279132/gg0cCOTqiMobENyq8N4D",
+                        currency: "EUR",
+                        value: precioNumerico, // Valor dinámico real
+                        items: [
+                            {
+                                item_id: "{{ modelo.referencia }}", // Twig renderiza esto una vez al inicio
+                                item_name: "{{ modelo.nombre }}",
+                                affiliation: "TusKamisetas.com",
+                                item_brand: "{{ modelo.fabricante.nombre }}",
+                                price: precioNumerico,
+                                quantity: $('#hidden-total-unidades-update').val() || 1 // Cantidad real seleccionada
+                            }
+                        ]
+                    });
+                }
             });
 
             // --- LÓGICA PARA LOS ELEMENTOS DINÁMICOS DEL PANEL DE PERSONALIZACIÓN ---

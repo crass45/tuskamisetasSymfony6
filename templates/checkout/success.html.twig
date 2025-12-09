@@ -12,13 +12,16 @@
                     Hemos recibido tu solicitud de presupuesto con el número <strong>{{ pedido }}</strong>.
                 </p>
                 <p>
-                    Nuestro equipo comercial la revisará a la mayor brevedad posible. Recibirás un correo electrónico con los detalles y los siguientes pasos para confirmar y pagar tu pedido.
+                    Nuestro equipo comercial la revisará a la mayor brevedad posible. Recibirás un correo electrónico
+                    con los detalles y los siguientes pasos para confirmar y pagar tu pedido.
                 </p>
                 <hr>
                 <p>
-                    Si tienes cualquier duda, no dudes en <a href="{{ path('app_contact', {'_locale': app.request.locale}) }}">contactar con nosotros</a>.
+                    Si tienes cualquier duda, no dudes en <a
+                            href="{{ path('app_contact', {'_locale': app.request.locale}) }}">contactar con nosotros</a>.
                 </p>
-                <a href="{{ path('app_home', {'_locale': app.request.locale}) }}" class="btn btn-primary" style="margin-top: 20px;">
+                <a href="{{ path('app_home', {'_locale': app.request.locale}) }}" class="btn btn-primary"
+                   style="margin-top: 20px;">
                     Volver a la página principal
                 </a>
             </div>
@@ -26,48 +29,98 @@
     </div>
 {% endblock %}
 
-{# --- INICIO DE LA MODIFICACIÓN: CÓDIGO DE SEGUIMIENTO --- #}
+
+{# templates/checkout/success.html.twig #}
+
+{# ... (resto del contenido HTML superior) ... #}
+
 {% block javascripts %}
     {{ parent() }}
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({
-            'event': 'generate_lead',
-            'ecommerce': {
-                'transaction_id': '{{ pedido.nombre | default('') }}',      {# ID de la transacción (tu número de pedido) #}
-                'value': {{ pedido.total | default(0) }},             {# Valor total del presupuesto #}
-                'currency': 'EUR',                                  {# Moneda #}
-                'items': [
-                    {# Iteramos sobre las líneas del pedido para añadirlas al dataLayer #}
+    {% if not is_granted('ROLE_ADMIN') and (pedido.compruebaTrabajos() or pedido.subTotal > 150) %}
+        <script>
+            // 1. Configuramos los datos del usuario para Conversiones Mejoradas (Enhanced Conversions)
+            // Es importante hacer esto ANTES de enviar el evento de compra.
+            gtag('set', 'user_data', {
+                'email': '{{ pedido.contacto.usuario.email | default('') }}',
+                'phone_number': '{{ pedido.contacto.direccionFacturacion.telefonoMovil | default('') }}',
+                'address': {
+                    'first_name': '{{ pedido.contacto.nombre | default('') }}',
+                    'last_name': '{{ pedido.contacto.apellidos | default('') }}',
+                    'street': '{{ pedido.contacto.direccionFacturacion.dir | default('') }}',
+                    'city': '{{ pedido.contacto.direccionFacturacion.poblacion | default('') }}',
+                    'region': '{{ pedido.contacto.direccionFacturacion.provinciaBD | default('') }}',
+                    'postal_code': '{{ pedido.contacto.direccionFacturacion.cp | default('') }}',
+                    'country': '{{ pedido.contacto.direccionFacturacion.paisBD | default('ES') }}'
+                }
+            });
+
+            // 2. Enviamos el evento de COMPRA (Purchase)
+            gtag("event", "purchase", {
+                send_to: "AW-1004279132/jPbACKfl4fEaENyq8N4D",
+                transaction_id: "{{ pedido.nombre }}",  // ID único del pedido (ej: PR2300001)
+                value: {{ pedido.total | default(0) }}, // Valor total
+                currency: "EUR",
+                tax: {{ pedido.iva | default(0) }},     // Impuestos
+                shipping: {{ pedido.envio | default(0) }}, // Gastos de envío
+                items: [
                     {% for linea in pedido.lineas %}
                     {
-                        'item_id': '{{ linea.producto.modelo.referencia | default(linea.producto.referencia | default('SKU_DEFAULT')) }}',
-                        'item_name': '{{ linea.producto.modelo.nombre | default('Producto') }}',
-                        'item_brand': '{{ linea.producto.modelo.fabricante.nombre | default('Sin Marca') }}',
-                        'item_variant': '{{ linea.producto.referencia | default('') }}',
-                        'price': {{ linea.precio | default(0) }},
-                        'quantity': {{ linea.cantidad | default(0) }}
-                    }{% if not loop.last %},{% endif %} {# Añade una coma entre items, pero no al final #}
+                        item_id: "{{ linea.producto.modelo.referencia | default(linea.producto.referencia | default('SKU_DEFAULT')) }}",
+                        item_name: "{{ linea.producto.modelo.nombre | default('Producto') }}",
+                        item_brand: "{{ linea.producto.modelo.fabricante.nombre | default('TusKamisetas') }}",
+                        item_variant: "{{ linea.producto.referencia | default('') }}", // Ej: Talla/Color si está en la ref
+                        price: {{ linea.precio | default(0) }},
+                        quantity: {{ linea.cantidad | default(1) }}
+                    }{% if not loop.last %},{% endif %}
                     {% endfor %}
-                ],
-
-                {# --- DATOS DE CONVERSIONES MEJORADAS (ENHANCED CONVERSIONS) --- #}
-                {# IMPORTANTE: Asegúrate de configurar GTM para que aplique hashing SHA-256 a estos campos #}
-                'user_data': {
-                    'email': '{{ pedido.contacto.usuario.email | default('') }}',
-                    'phone_number': '{{ pedido.contacto.direccionFacturacion.telefonoMovil | default('') }}',
-                    'address': {
-                        'first_name': '{{ pedido.contacto.nombre | default('') }}',
-                        'last_name': '{{ pedido.contacto.apellidos | default('') }}',
-                        'street': '{{ pedido.contacto.direccionFacturacion.dir | default('') }}',
-                        'city': '{{ pedido.contacto.direccionFacturacion.poblacion | default('') }}',
-                        'region': '{{ pedido.contacto.direccionFacturacion.provinciaBD | default('') }}',
-                        'postal_code': '{{ pedido.contacto.direccionFacturacion.cp | default('') }}',
-                        'country': '{{ pedido.contacto.direccionFacturacion.paisBD | default('ES') }}'
-                    }
-                }
-            }
-        });
-    </script>
+                ]
+            });
+        </script>
+    {% endif %}
 {% endblock %}
+
+{# --- INICIO DE LA MODIFICACIÓN: CÓDIGO DE SEGUIMIENTO --- #}
+{# {% block javascripts %} #}
+{#    {{ parent() }} #}
+{#    <script> #}
+{#        window.dataLayer = window.dataLayer || []; #}
+{#        window.dataLayer.push({ #}
+{#            'event': 'generate_lead', #}
+{#            'ecommerce': { #}
+{#                'transaction_id': '{{ pedido.nombre | default('') }}',      #}{# ID de la transacción (tu número de pedido) #}
+{#                'value': {{ pedido.total | default(0) }},             #}{# Valor total del presupuesto #}
+{#                'currency': 'EUR',                                  #}{# Moneda #}
+{#                'items': [ #}
+{#                    #}{# Iteramos sobre las líneas del pedido para añadirlas al dataLayer #}
+{#                    {% for linea in pedido.lineas %} #}
+{#                    { #}
+{#                        'item_id': '{{ linea.producto.modelo.referencia | default(linea.producto.referencia | default('SKU_DEFAULT')) }}', #}
+{#                        'item_name': '{{ linea.producto.modelo.nombre | default('Producto') }}', #}
+{#                        'item_brand': '{{ linea.producto.modelo.fabricante.nombre | default('Sin Marca') }}', #}
+{#                        'item_variant': '{{ linea.producto.referencia | default('') }}', #}
+{#                        'price': {{ linea.precio | default(0) }}, #}
+{#                        'quantity': {{ linea.cantidad | default(0) }} #}
+{#                    }{% if not loop.last %},{% endif %} #}{# Añade una coma entre items, pero no al final #}
+{#                    {% endfor %} #}
+{#                ], #}
+
+{#                #}{# --- DATOS DE CONVERSIONES MEJORADAS (ENHANCED CONVERSIONS) --- #}
+{#                #}{# IMPORTANTE: Asegúrate de configurar GTM para que aplique hashing SHA-256 a estos campos #}
+{#                'user_data': { #}
+{#                    'email': '{{ pedido.contacto.usuario.email | default('') }}', #}
+{#                    'phone_number': '{{ pedido.contacto.direccionFacturacion.telefonoMovil | default('') }}', #}
+{#                    'address': { #}
+{#                        'first_name': '{{ pedido.contacto.nombre | default('') }}', #}
+{#                        'last_name': '{{ pedido.contacto.apellidos | default('') }}', #}
+{#                        'street': '{{ pedido.contacto.direccionFacturacion.dir | default('') }}', #}
+{#                        'city': '{{ pedido.contacto.direccionFacturacion.poblacion | default('') }}', #}
+{#                        'region': '{{ pedido.contacto.direccionFacturacion.provinciaBD | default('') }}', #}
+{#                        'postal_code': '{{ pedido.contacto.direccionFacturacion.cp | default('') }}', #}
+{#                        'country': '{{ pedido.contacto.direccionFacturacion.paisBD | default('ES') }}' #}
+{#                    } #}
+{#                } #}
+{#            } #}
+{#        }); #}
+{#    </script> #}
+{# {% endblock %} #}
 {# --- FIN DE LA MODIFICACIÓN --- #}
