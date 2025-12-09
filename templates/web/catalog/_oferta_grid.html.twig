@@ -5,15 +5,18 @@
             {% for oferta in ofertas %}
                 {% if oferta.nombre is defined and oferta.modelos|length > 0 %}
                     {# MIGRACIÓN: Se usa el nuevo nombre de la ruta y el parámetro 'slug' #}
-                    <a href="{{ path('app_producto_detalle', {'slug': oferta.modelos[0].nombreUrl}) }}">
+
+                    <a href="{{ path('app_product_detail', {'slug': oferta.modelos[0].nombreUrl, '_locale': app.request.locale}) }}">
                         <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3" style="padding: 0">
                             <div class="product-image-wrapper" style="position: relative;">
                                 <div class="single-products">
                                     <div class="productinfo text-center">
                                         {# MIGRACIÓN: Se usa la función path() moderna para las imágenes de Sonata #}
                                         <img src="{{ asset('images/dummy200.png') }}"
-                                             class="lazy" id="{{ oferta.id }}"
-                                             data-src="{{ path(oferta.imagen, 'grid') }}"
+                                             class="lazy"
+                                                {% if oferta.imagen %}
+                                                    data-src="{{ sonata_path(oferta.imagen, 'grid') }}"
+                                                {% endif %}
                                              alt="{{ oferta.nombre }}"/>
                                     </div>
                                 </div>

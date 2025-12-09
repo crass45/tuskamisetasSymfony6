@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Entity\Fabricante;
 use App\Entity\Familia;
+use App\Entity\Oferta;
 use App\Entity\Sonata\ClassificationCategory;
 use App\Model\Filtros;
 use App\Repository\FabricanteRepository;
@@ -176,6 +177,21 @@ class CatalogController extends AbstractController
         return $this->render('web/catalog/_live_search_results.html.twig', [
             'resultados' => $resultados,
             'query' => $query
+        ]);
+    }
+
+    /**
+     * Muestra la página de ofertas.
+     */
+    #[Route('/{_locale}/nuestras-ofertas', name: 'app_offer_list', requirements: ['_locale' => 'es|en|fr'])]
+    public function ofertasAction(): Response
+    {
+        // Obtener las ofertas activas, ordenadas por precio ascendente
+        $ofertas = $this->em->getRepository(Oferta::class)->findBy(['activo' => true], ['precio' => 'ASC']);
+
+        return $this->render('web/catalog/ofertas.html.twig', [
+            'ofertas' => $ofertas,
+            // 'textoOfertas' => '...' // Opcional: Si quieres pasar el texto desde aquí
         ]);
     }
 }
