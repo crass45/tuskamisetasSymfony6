@@ -6,6 +6,9 @@
 {# 2. Estilos (sin cambios) #}
 {% block stylesheets %}
     {{ parent() }}
+    <link rel="shortcut icon" href="{{ asset('icon.png') }}" type="image/x-icon">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('icon.png') }}"> {# Opcional si tienes el PNG #}
 {% endblock %}
 
 {# 3. Bloque de contenido de la barra lateral con la ruta final corregida #}

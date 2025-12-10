@@ -92,7 +92,7 @@ sonata_admin:
       - { type: App\Block\PedidosRecientesBlockService, position: top, class: 'col-lg-6 col-xs-12' }
       - { type: App\Block\ClientesRecientesBlockService, position: top, class: 'col-lg-6 col-xs-12' }
 
-      - { type: App\Block\PedidosComparativaBlockService, position: top, class: 'col-lg-12' }
+      - { type: App\Block\PedidosComparativaBlockService, position: top, class: 'col-lg-12 col-xs-12' }
 
   templates:
     layout: 'admin/layout.html.twig' # Asegúrate de que esta plantilla existe en /templates/admin/
