@@ -10,14 +10,17 @@ use Sonata\BlockBundle\Block\Service\AbstractBlockService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Twig\Environment as TwigEnvironment;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class PedidosComparativaBlockService extends AbstractBlockService
 {
     protected EntityManagerInterface $entityManager;
+    protected Security $security;
 
-    public function __construct(TwigEnvironment $twig, EntityManagerInterface $entityManager)
+    public function __construct(TwigEnvironment $twig, EntityManagerInterface $entityManager, Security $security)
     {
         $this->entityManager = $entityManager;
+        $this->security = $security;
         parent::__construct($twig);
     }
 
@@ -31,6 +34,9 @@ class PedidosComparativaBlockService extends AbstractBlockService
 
     public function execute(BlockContextInterface $blockContext, Response $response = null): Response
     {
+        if (!$this->security->isGranted('ROLE_SUPER_ADMIN')) {
+            return new Response();
+        }
         $adminIds = $this->getAdminIds();
         $startDate = new \DateTime('first day of this month -11 months 00:00:00');
 

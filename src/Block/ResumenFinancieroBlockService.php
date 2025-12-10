@@ -10,14 +10,17 @@ use Sonata\BlockBundle\Block\Service\AbstractBlockService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Twig\Environment as TwigEnvironment;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class ResumenFinancieroBlockService extends AbstractBlockService
 {
     protected EntityManagerInterface $entityManager;
+    protected Security $security;
 
-    public function __construct(TwigEnvironment $twig, EntityManagerInterface $entityManager)
+    public function __construct(TwigEnvironment $twig, EntityManagerInterface $entityManager, Security $security)
     {
         $this->entityManager = $entityManager;
+        $this->security = $security;
         parent::__construct($twig);
     }
 
@@ -31,6 +34,9 @@ class ResumenFinancieroBlockService extends AbstractBlockService
 
     public function execute(BlockContextInterface $blockContext, Response $response = null): Response
     {
+        if (!$this->security->isGranted('ROLE_SUPER_ADMIN')) {
+            return new Response();
+        }
         $pedidoRepo = $this->entityManager->getRepository(Pedido::class);
         $userRepo = $this->entityManager->getRepository(Contacto::class);
 

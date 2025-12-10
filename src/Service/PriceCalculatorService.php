@@ -129,13 +129,13 @@ class PriceCalculatorService
 
         // --- CÁLCULO DEL COSTE NORMAL ---
         $costeFijoNormal = 0;
-        if ($personalizacion->getNumeroMaximoColores() > 0) {
+//        if ($personalizacion->getNumeroMaximoColores() > 0) {
             if ($rangoPrecios) {
                 $numColores = $itemTrabajo->getCantidad();
                 $costePantalla = (float)($rangoPrecios->getPantalla() ?? 0.0);
                 $costeFijoNormal = $numColores * $costePantalla;
             }
-        }
+//        }
 
         $costeVariableTotal = 0;
         foreach ($productosAfectados as $itemProducto) {

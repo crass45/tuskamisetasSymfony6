@@ -653,7 +653,7 @@
                     var windowBottom = $(this).scrollTop() + $(this).height();
 
                     // Si hemos bajado y aún no vemos el resumen final, mostramos el círculo
-                    if ($(this).scrollTop() > 200 && windowBottom < divPrecioTop) {
+                    if ($(this).scrollTop() > 200 && windowBottom-500 < divPrecioTop) {
                         $floatingCircle.fadeIn();
                     } else {
                         $floatingCircle.fadeOut();

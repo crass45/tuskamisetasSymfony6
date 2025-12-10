@@ -1,94 +1,27 @@
-## config/packages/security.yaml
-#security:
-#  # 1. Sistema de encriptación de contraseñas (antes 'encoders')
-#  password_hashers:
-#    # Usamos 'auto', que elige el algoritmo más seguro disponible (bcrypt o argon2)
-#    Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-#
-#  # 2. Proveedor de usuarios (antes 'providers')
-#  providers:
-#    # Le decimos a Symfony que los usuarios se gestionan a través de SonataUserBundle
-#    sonata_user_bundle:
-#      id: sonata.user.security.user_provider
-#
-#  # 3. Cortafuegos (Firewalls) - ¡La sección con más cambios!
-#  firewalls:
-#    dev:
-#      pattern: ^/(_(profiler|wdt)|css|images|js)/
-#      security: false
-#
-#    # Cortafuegos para el panel de administración
-#    admin:
-#      pattern: ^/admin
-#      lazy: true
-#      provider: sonata_user_bundle
-#      form_login:
-#        login_path: sonata_user_admin_security_login
-#        check_path: sonata_user_admin_security_check
-#        default_target_path: sonata_admin_dashboard
-#      logout:
-#        path: sonata_user_admin_security_logout
-#        target: sonata_user_admin_security_login
-#
-#
-#    # Cortafuegos para la parte pública de la web
-#    main:
-#      lazy: true
-#      provider: sonata_user_bundle
-#      # NOTA IMPORTANTE: La lógica de login del frontend (fos_user_security_login)
-#      # y tus 'handlers' personalizados deben ser migrados.
-#      # Por ahora, esto prepara el terreno para que puedas construirlo.
-#      # custom_authenticators:
-#      #     - App\Security\TuAuthenticatorFrontend # Ejemplo de un futuro authenticator
-#
-#  # 4. Jerarquía de Roles (role_hierarchy) - ¡La sintaxis es la misma!
-#  role_hierarchy:
-#    ROLE_ADMIN: [ROLE_USER, ROLE_SONATA_ADMIN]
-#    ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
-#
-#  # 5. Control de Acceso (access_control)
-#  access_control:
-#    # Rutas de login/logout de Sonata que deben ser públicas
-#    - { path: ^/admin/login, roles: PUBLIC_ACCESS }
-#    - { path: ^/admin/logout, roles: PUBLIC_ACCESS }
-#    - { path: ^/admin/request, roles: PUBLIC_ACCESS }
-#    - { path: ^/admin/resetting, roles: PUBLIC_ACCESS }
-#
-#    # Tu regla personalizada para la empresa
-#    - { path: ^/admin/ss/tienda/empresa/, roles: ROLE_SUPER_ADMIN }
-#
-#    # Aseguramos el resto del panel de administración
-#    - { path: ^/admin/, roles: ROLE_ADMIN }
-#
-#    # Tu regla para la zona de usuarios del frontend
-#    - { path: ^/usuario, roles: ROLE_USER } # Asumiendo que ya no necesitas los prefijos de idioma /fr|en|es
-
-
 security:
-  # 1. Sistema de encriptación de contraseñas (antes 'encoders')
-  # Se reemplaza 'sha512' por 'auto', que es el más moderno y seguro
+  # 1. Sistema de encriptación
   password_hashers:
     Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
-  # 2. Proveedor de usuarios (antes 'providers')
-  # Se reemplaza 'fos_userbundle' por el proveedor de Sonata
+  # 2. Proveedores
   providers:
     sonata_user_bundle:
       id: sonata.user.security.user_provider
 
-  # 3. Cortafuegos (Firewalls)
+  # 3. Firewalls
   firewalls:
     dev:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
       security: false
 
-    # Cortafuegos para el panel de administración (/admin)
+    # Firewall Admin
     admin:
       pattern: ^/admin
       lazy: true
       provider: sonata_user_bundle
-      # AÑADIMOS ESTA LÍNEA para que comparta la sesión con 'main'
       context: main
+      # ACTIVAR IMPERSONATION AQUÍ TAMBIÉN
+      switch_user: { role: ROLE_ALLOWED_TO_SWITCH } # <<<< CORREGIDO
       form_login:
         login_path: sonata_user_admin_security_login
         check_path: sonata_user_admin_security_check
@@ -97,52 +30,56 @@ security:
         path: sonata_user_admin_security_logout
         target: sonata_user_admin_security_login
 
-    # Cortafuegos para la parte pública de la web (main)
+    # Firewall Main (Web pública)
     main:
       lazy: true
       provider: sonata_user_bundle
-      # AÑADIMOS ESTA LÍNEA para que comparta la sesión con 'main'
       context: main
-      # Aquí configuramos el login para los clientes
+      # ACTIVAR IMPERSONATION (Vital para que funcione el 'acceder como')
+      switch_user: { role: ROLE_ALLOWED_TO_SWITCH } # <<<< CORREGIDO
       form_login:
-        login_path: app_login      # La página donde está el formulario (ej. /es/login)
-        check_path: app_login      # La ruta a la que se envía el formulario
-        default_target_path: app_home # A dónde redirigir tras un login exitoso
-        # NOTA: Tus 'success_handler' y 'failure_handler' personalizados
-        # deben ser migrados a un Authenticator personalizado.
+        login_path: app_login
+        check_path: app_login
+        default_target_path: app_home
       logout:
-        path: app_logout           # La ruta para cerrar sesión
-        target: app_home           # A dónde redirigir tras el logout
+        path: app_logout
+        target: app_home
       remember_me:
         secret:   '%kernel.secret%'
-        lifetime: 604800 # 1 semana
+        lifetime: 604800
         path:     /
-      # 'anonymous: true' permite que los visitantes no logueados naveguen por el sitio - SE ELIMINA ESTA LÍNEA
 
-  # 4. Jerarquía de Roles (se mantiene la lógica principal)
+  # 4. Jerarquía de Roles
   role_hierarchy:
     ROLE_ADMIN: [ROLE_USER, ROLE_SONATA_ADMIN]
     ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+    
+    # Tu rol personalizado (Correcto)
+    ROLE_EDITOR_BLOG:
+      - ROLE_USER
+      - ROLE_SONATA_ADMIN # Permite ver el dashboard básico
+      - ROLE_APP_ADMIN_PUBLICACION_ADMIN_LIST
+      - ROLE_APP_ADMIN_PUBLICACION_ADMIN_VIEW
+      - ROLE_APP_ADMIN_PUBLICACION_ADMIN_CREATE
+      - ROLE_APP_ADMIN_PUBLICACION_ADMIN_EDIT
 
-  # 5. Control de Acceso (reglas de tu fichero antiguo, adaptadas)
+  # 5. Control de Acceso
   access_control:
-    # Rutas públicas del frontend (login, registro, etc.)
-    # Se actualiza 'IS_AUTHENTICATED_ANONYMOUSLY' a 'PUBLIC_ACCESS'
+    # Rutas públicas
     - { path: ^/(_locale)/login, roles: PUBLIC_ACCESS }
     - { path: ^/(_locale)/register, roles: PUBLIC_ACCESS }
     - { path: ^/(_locale)/resetting, roles: PUBLIC_ACCESS }
-
-    # Rutas públicas del admin
     - { path: ^/admin/login, roles: PUBLIC_ACCESS }
     - { path: ^/admin/logout, roles: PUBLIC_ACCESS }
 
-    # Tu regla personalizada para el admin de Empresa (ruta actualizada)
+    # Regla estricta para configuración de empresa
     - { path: ^/admin/app/empresa, roles: ROLE_SUPER_ADMIN }
 
-    # Aseguramos el resto del panel de administración
-    - { path: ^/admin/, roles: ROLE_ADMIN }
+    # --- CAMBIO IMPORTANTE AQUÍ ---
+    # Permitimos entrar al admin a cualquiera que tenga ROLE_SONATA_ADMIN.
+    # Esto incluye a Admins, Super Admins Y a tu Editor de Blog.
+    # Sonata se encargará luego de ocultar los menús que no pueden tocar.
+    - { path: ^/admin/, roles: ROLE_SONATA_ADMIN } # <<<< CORREGIDO (Antes ROLE_ADMIN)
 
-    # Tu regla para la zona de usuarios del frontend (ruta actualizada)
+    # Zona usuarios
     - { path: ^/(_locale)/usuario, roles: ROLE_USER }
-
-

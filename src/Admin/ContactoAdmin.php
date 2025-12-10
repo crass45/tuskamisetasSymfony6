@@ -20,6 +20,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Twig\Environment;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 
 final class ContactoAdmin extends AbstractAdmin
 {
@@ -106,6 +107,20 @@ final class ContactoAdmin extends AbstractAdmin
 //                'placeholder' => 'Selecciona una tarifa',
 //                'required' => false, // Se asume que una tarifa puede ser nula
 //            ])
+            ->add('usuario.roles', ChoiceType::class, [
+                'label'    => 'Roles y Permisos',
+                'choices'  => [
+                    'Usuario Básico'   => 'ROLE_USER',
+                    'Editor de Blog'   => 'ROLE_EDITOR_BLOG',
+                    'Administrador'    => 'ROLE_ADMIN',
+                    'Super Admin'      => 'ROLE_SUPER_ADMIN',
+                    // Puedes añadir aquí otros roles personalizados si tienes
+                    // 'Gestor Pedidos' => 'ROLE_GESTOR',
+                ],
+                'multiple' => true, // Permite seleccionar varios
+                'expanded' => true, // true = Muestra Checkboxes (más visual)
+                // false = Muestra lista desplegable con Ctrl+Click
+            ])
             // --- FIN DE LA CORRECCIÓN ---
             ->add('recargoEquivalencia', CheckboxType::class, ['required' => false])
             ->add('intracomunitario', CheckboxType::class, ['required' => false])

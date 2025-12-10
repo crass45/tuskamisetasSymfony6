@@ -192,6 +192,20 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
 
 
         if ($paso == 2 || $paso == 0) {
+            // --- INICIO CORRECCIÓN ---
+            // Como venimos de un clear(), $proveedor está desconectado. Lo recargamos.
+            if ($proveedor->getId()) {
+                $proveedor = $this->em->getRepository(Proveedor::class)->find($proveedor->getId());
+            } else {
+                // Por si acaso no se persistió antes (raro, pero seguro)
+                $proveedor = $this->em->getRepository(Proveedor::class)->findOneBy(['nombre' => $nombreProveedor]);
+            }
+            // Hacemos lo mismo con fabricante si lo vas a usar
+            if ($fabricante && $fabricante->getId()) {
+                $fabricante = $this->em->getRepository(Fabricante::class)->find($fabricante->getId());
+            }
+            // --- FIN CORRECCIÓN ---
+
             $output->writeln("PASO 2- OBTENEMOS LAS VARIACIONES Y DATOS DE CADA MODELO");
             $sql = "UPDATE modelo SET activo = 0 WHERE proveedor = 3320";
             $stmt = $this->em->getConnection()->prepare($sql);
@@ -323,6 +337,8 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
         }
 
         if ($paso == 3 || $paso == 0) {
+            // Recargar proveedor tras el clear() anterior
+            $proveedor = $this->em->getRepository(Proveedor::class)->find($proveedor->getId());
             $output->writeln("PASO 3- MODIFICAMOS PRECIOS ONLINE");
             $urlPriceList = "http://print.makito.es:8080/user/xml/PriceListFile.php?pszinternal=" . $pzinternal;
             $xml = simplexml_load_file($urlPriceList);
@@ -336,7 +352,7 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
                         $precioModelo = 10000;
                     }
 
-                    foreach ($modelo->getModeloHasProductos() as $productoHijo) { // Renombrada la variable
+                    foreach ($modelo->getProductos() as $productoHijo) { // Renombrada la variable
                         $productoHijo->setPrecioCaja($precioModelo);
                         $productoHijo->setPrecioPack($precioModelo);
                         $productoHijo->setPrecioUnidad($precioModelo);
@@ -373,6 +389,8 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
         }
 
         if ($paso == 4) {
+            // Recargar proveedor tras el clear() anterior
+            $proveedor = $this->em->getRepository(Proveedor::class)->find($proveedor->getId());
             $output->writeln("PASO 4- PONEMOS LAS TECNICAS DE ESTAMPADO");
             $urlPersonalizaciones = "http://print.makito.es:8080/user/xml/PrintJobsPrices.php?pszinternal=" . $pzinternal;
             $xmlPersonalizaciones = simplexml_load_file($urlPersonalizaciones);
