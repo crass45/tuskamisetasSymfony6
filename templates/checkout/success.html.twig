@@ -56,7 +56,10 @@
 
             // 2. Enviamos el evento de COMPRA (Purchase)
             gtag("event", "purchase", {
-                send_to: "AW-1004279132/jPbACKfl4fEaENyq8N4D",
+                send_to: [
+                    "AW-1004279132/jPbACKfl4fEaENyq8N4D",
+                    "G-J1ZQDH5W4Q"                        // Tu propiedad de GA4
+                ],
                 transaction_id: "{{ pedido.nombre }}",  // ID único del pedido (ej: PR2300001)
                 value: {{ pedido.total | default(0) }}, // Valor total
                 currency: "EUR",

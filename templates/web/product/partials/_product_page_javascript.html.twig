@@ -39,7 +39,10 @@
                 // Google Analytics Event
                 if (typeof gtag === 'function') {
                     gtag("event", "view_item", {
-                        send_to: "AW-1004279132/NgyUCOG3iMobENyq8N4D",
+                        send_to: [
+                            "AW-1004279132/NgyUCOG3iMobENyq8N4D",
+                            "G-J1ZQDH5W4Q"                        // Tu propiedad de GA4
+                        ],
                         currency: "EUR",
                         value: {{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }},
                         items: [{
@@ -312,7 +315,10 @@
                 // 2. Enviamos el evento a Google
                 if (typeof gtag === 'function') {
                     gtag("event", "add_to_cart", {
-                        send_to: "AW-1004279132/gg0cCOTqiMobENyq8N4D",
+                        send_to: [
+                            "AW-1004279132/gg0cCOTqiMobENyq8N4D",
+                            "G-J1ZQDH5W4Q"                        // Tu propiedad de GA4
+                        ],
                         currency: "EUR",
                         value: precioNumerico, // Valor dinámico real
                         items: [

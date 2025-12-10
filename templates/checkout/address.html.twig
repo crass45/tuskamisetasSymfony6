@@ -141,7 +141,10 @@
             {% if not is_granted('ROLE_ADMIN') %}
             gtag("event", "begin_checkout", {
                 currency: "EUR",
-                send_to: 'AW-1004279132/NRbpCOfqiMobENyq8N4D',
+                send_to: [
+                    "AW-1004279132/NRbpCOfqiMobENyq8N4D",
+                    "G-J1ZQDH5W4Q"                        // Tu propiedad de GA4
+                ],
                 value: {{ carrito.getSubtotal(app.user) }},
                 items: [
                     {% set referenciaModelo = -1 %}
