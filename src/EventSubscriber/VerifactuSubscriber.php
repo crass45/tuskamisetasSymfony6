@@ -16,7 +16,8 @@ class VerifactuSubscriber implements EventSubscriberInterface
     public function __construct(
         private VerifactuService $verifactuService,
         private EntityManagerInterface $em,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private bool $isEnabled = false
     ) {}
 
     public function getSubscribedEvents(): array
@@ -26,6 +27,9 @@ class VerifactuSubscriber implements EventSubscriberInterface
 
     public function postPersist(LifecycleEventArgs $args): void
     {
+        if(!$this->isEnabled){
+            return;
+        }
         $entity = $args->getObject();
 
         // Solo actuar si es una nueva Factura y aún no tiene hash

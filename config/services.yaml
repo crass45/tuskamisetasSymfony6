@@ -12,6 +12,7 @@ parameters:
   mrw.abonado: '%env(MRW_ABONADO)%'
   mrw.usuario: '%env(MRW_USUARIO)%'
   mrw.password: '%env(MRW_PASSWORD)%'
+  verifactu.enabled: '%env(bool:VERIFACTU_ENABLED)%'
 
 services:
     # default configuration for services in *this* file
@@ -47,6 +48,12 @@ services:
       tags:
         - { name: twig.extension }
 
+
+    App\EventSubscriber\VerifactuSubscriber:
+      arguments:
+        $isEnabled: '%verifactu.enabled%'
+      tags:
+        - { name: doctrine.event_subscriber }
 
       # --- AÑADE ESTA SECCIÓN ---
       # Configuración explícita para AeatClientService para resolver la ambigüedad del autowiring
@@ -181,6 +188,11 @@ services:
   # ===============================
   # GRUPO: Tienda
   # ===============================
+    App\Controller\Admin\FacturaCRUDController:
+      arguments:
+        $verifactuEnabled: '%verifactu.enabled%'
+      tags: [ 'controller.service_arguments' ]
+
     App\Admin\FacturaAdmin:
       tags:
         - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Factura, group: "Tienda", label: "Facturas", controller: App\Controller\Admin\FacturaCRUDController }

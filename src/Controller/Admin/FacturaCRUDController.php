@@ -29,7 +29,9 @@ class FacturaCRUDController extends CRUDController
                                 private FacturaRepository              $facturaRepo, // <-- Inyección añadida
                                 private VerifactuService               $verifactuService, // <-- Inyección añadida
                                 private LoggerInterface                $logger, // <-- Inyección añadida
-                                private FacturaRectificativaAdmin      $rectificativaAdmin, private readonly FacturaRectificativaAdmin $facturaRectificativaAdmin
+                                private FacturaRectificativaAdmin      $rectificativaAdmin,
+                                private readonly FacturaRectificativaAdmin $facturaRectificativaAdmin,
+                                private bool $verifactuEnabled = false
     )
     {
     }
@@ -219,6 +221,11 @@ class FacturaCRUDController extends CRUDController
         /** @var FacturaRectificativa|null $rectificativa */
         $rectificativa = $this->admin->getObject($id);
 
+        if($rectificativa->getNumeroFactura()!=null){
+            $this->addFlash('sonata_flash_error', "FACTURA YA NUMERADA (VERIFACTU DESACTIVADO)");
+            return $this->redirectToList();
+        }
+
         if (!$rectificativa) {
             throw new NotFoundHttpException("No se encuentra la factura rectificativa con ID: {$id}");
         }
@@ -237,25 +244,30 @@ class FacturaCRUDController extends CRUDController
             $rectificativa->setNumeroFactura($numeroFacturaRectificativa);
             // --- FIN DE LA LÓGICA DE NUMERACIÓN ---
 
-            // 1. Buscamos los DATOS COMPLETOS del último registro
-            $previousRecordData = $this->facturaRepo->findLastVerifactuRecordData();
+            if($this->verifactuEnabled) {
+                // 1. Buscamos los DATOS COMPLETOS del último registro
+                $previousRecordData = $this->facturaRepo->findLastVerifactuRecordData();
 
-            // 2. Pasamos el array de datos al servicio
-            $record = $this->verifactuService->createCreditNoteRecord($rectificativa, $previousRecordData);
-            // --- FIN DE LA CORRECCIÓN ---
+                // 2. Pasamos el array de datos al servicio
+                $record = $this->verifactuService->createCreditNoteRecord($rectificativa, $previousRecordData);
+                // --- FIN DE LA CORRECCIÓN ---
 
-            // 3. Generamos el QR
-            $qrUrl = $this->verifactuService->getQrContent($record);
+                // 3. Generamos el QR
+                $qrUrl = $this->verifactuService->getQrContent($record);
 //            $qrCodeContent = (new \QRCode($qrUrl))->render();
 
-            // 4. Guardamos los datos en la entidad
-            $rectificativa->setVerifactuHash($record->hash);
-            $rectificativa->setVerifactuQr($qrUrl);
+                // 4. Guardamos los datos en la entidad
+                $rectificativa->setVerifactuHash($record->hash);
+                $rectificativa->setVerifactuQr($qrUrl);
+                $mensajeFlash = 'Factura rectificativa numerada y registro VeriFactu generado correctamente.';
+            }else{
+                $mensajeFlash = 'Factura rectificativa numerada correctamente (VeriFactu desactivado).';
+            }
 
             // 5. Persistimos en la base de datos
             $this->em->flush();
 
-            $this->addFlash('sonata_flash_success', 'Registro VeriFactu para la factura rectificativa generado correctamente.');
+            $this->addFlash('sonata_flash_success', $mensajeFlash);
 
 
         } catch (\Exception $e) {
