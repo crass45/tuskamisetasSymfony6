@@ -138,6 +138,7 @@
     <script>
         $(document).ready(function() {
 
+            {% if not is_granted('ROLE_ADMIN') %}
             gtag("event", "begin_checkout", {
                 currency: "EUR",
                 send_to: 'AW-1004279132/NRbpCOfqiMobENyq8N4D',
@@ -177,6 +178,7 @@
                     {% endfor %}
                 ]
             });
+            {% endif %}
 
             $('#carropaso3').css('color', 'black');
 

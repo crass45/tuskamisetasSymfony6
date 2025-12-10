@@ -9,7 +9,7 @@
         update_price: "{{ path('app_product_update_price', {'_locale': app.request.locale}) }}",
         // Ruta para el plugin de subida de ficheros. Necesitarás un controlador para esto.
         file_upload: "{{ oneup_uploader_endpoint('gallery') }}",
-         presupuesto_rapido_modal: "{{ path('app_product_presupuesto_rapido_modal', {'id': modelo.id}) }}"
+        presupuesto_rapido_modal: "{{ path('app_product_presupuesto_rapido_modal', {'id': modelo.id}) }}"
     };
 
     // 2. Envolvemos toda nuestra lógica en un listener para asegurar que la página está lista.
@@ -35,6 +35,7 @@
             // --- CÓDIGO DE SEGUIMIENTO (TRACKING) ---
             // Lo ejecutamos dentro de un timeout para asegurar que cualquier otro script de tracking se haya cargado.
             setTimeout(function () {
+                {% if not is_granted('ROLE_ADMIN') %}
                 // Google Analytics Event
                 if (typeof gtag === 'function') {
                     gtag("event", "view_item", {
@@ -79,6 +80,7 @@
                         content_type: 'product'
                     });
                 }
+                {% endif %}
             }, 1500);
 
 
@@ -295,7 +297,7 @@
             // =================================================================
             // TRACKING: ADD TO CART (GA4)
             // =================================================================
-            $('body').on('click', '#addAMiPEdido', function(e) {
+            $('body').on('click', '#addAMiPEdido', function (e) {
                 // 1. Obtenemos el precio actualizado del DOM
                 // Buscamos el texto, quitamos el símbolo de euro y cambiamos coma por punto
                 var precioTexto = $('.precio-unidad-valor').text(); // Ej: "5,35€"
@@ -306,6 +308,7 @@
                     precioNumerico = 0;
                 }
 
+                {% if not is_granted('ROLE_ADMIN') %}
                 // 2. Enviamos el evento a Google
                 if (typeof gtag === 'function') {
                     gtag("event", "add_to_cart", {
@@ -324,6 +327,7 @@
                         ]
                     });
                 }
+                {% endif %}
             });
 
             // --- LÓGICA PARA LOS ELEMENTOS DINÁMICOS DEL PANEL DE PERSONALIZACIÓN ---
@@ -522,17 +526,17 @@
                 }
 
                 // 4. Asignar eventos a los botones de navegación (con .off() para evitar duplicados)
-                nextButton.off('click').on('click', function() {
+                nextButton.off('click').on('click', function () {
                     var nextIndex = (currentIndex + 1) % imageArray.length;
                     showImageByIndex(nextIndex);
                 });
 
-                prevButton.off('click').on('click', function() {
+                prevButton.off('click').on('click', function () {
                     var prevIndex = (currentIndex - 1 + imageArray.length) % imageArray.length;
                     showImageByIndex(prevIndex);
                 });
 
-                thumbnailsContainer.off('click', '.gallery-thumbnail').on('click', '.gallery-thumbnail', function() {
+                thumbnailsContainer.off('click', '.gallery-thumbnail').on('click', '.gallery-thumbnail', function () {
                     showImageByIndex($(this).data('index'));
                 });
             });
@@ -548,16 +552,18 @@
             if (mainImage.length) {
                 const originalImageSrc = mainImage.attr('src');
                 // Usamos 'body' para delegar el evento, ya que los selectores de color se cargan dinámicamente
-                $('body').on('mouseover', '.color-swatch-wrapper', function() {
+                $('body').on('mouseover', '.color-swatch-wrapper', function () {
                     const newImageSrc = $(this).find('[data-imagen-grande]').data('imagen-grande');
-                    if (newImageSrc) { mainImage.attr('src', newImageSrc); }
-                }).on('mouseout', '.color-swatch-wrapper', function() {
+                    if (newImageSrc) {
+                        mainImage.attr('src', newImageSrc);
+                    }
+                }).on('mouseout', '.color-swatch-wrapper', function () {
                     mainImage.attr('src', originalImageSrc);
                 });
             }
 
             // 3. Scroll suave al hacer clic en un color para ver sus tallas
-            $('body').on('click', '.color-swatch-wrapper', function() {
+            $('body').on('click', '.color-swatch-wrapper', function () {
                 const colorId = $(this).data('color');
                 const tallasContainer = $(`#tallas-para-${colorId}`);
                 if (tallasContainer.length) {
@@ -583,12 +589,12 @@
                         // AHORA que el formulario existe, vinculamos el script de GA
                         const contactForm = modal.find('#solicitud-contacto-form')[0]; // Usamos find() y obtenemos el elemento DOM
                         if (contactForm) {
-                            contactForm.addEventListener('submit', function() {
+                            contactForm.addEventListener('submit', function () {
                                 const clientId = getGoogleAnalyticsClientId();
                                 if (clientId) {
                                     // Eliminamos campos previos para evitar duplicados
                                     let existingField = this.querySelector('input[name="googleClientId"]');
-                                    if(existingField) {
+                                    if (existingField) {
                                         existingField.remove();
                                     }
 
@@ -602,7 +608,7 @@
                             });
                         }
                     },
-                    error: function() {
+                    error: function () {
                         modal.find('.modal-content').html('<div class="modal-body"><p class="alert alert-danger">Error al cargar.</p></div>');
                     }
                 });
@@ -629,8 +635,6 @@
             //         $('#floatingPriceCircle').fadeOut(); // <--- CORREGIDO
             //     }
             // });
-
-
 
 
             // ... (resto del código anterior de búsqueda, etc.) ...
@@ -665,7 +669,7 @@
 
                 // 3. Actualizar precio automáticamente (MutationObserver)
                 // 3. Actualizar precio Y UNIDADES automáticamente (MutationObserver)
-                var observer = new MutationObserver(function(mutations) {
+                var observer = new MutationObserver(function (mutations) {
                     // A. Actualizar Precio
                     var nuevoPrecio = $('#hidden-precio-unitario-update').val();
                     if (nuevoPrecio) {
@@ -688,7 +692,7 @@
                     }
                 });
 
-                observer.observe($divPrecio[0], { childList: true, subtree: true });
+                observer.observe($divPrecio[0], {childList: true, subtree: true});
             }
 
 
