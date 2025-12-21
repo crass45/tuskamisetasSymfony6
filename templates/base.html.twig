@@ -66,31 +66,56 @@
 
     {# MIGRACIÓN: La lógica de canonicals y hreflang se mantiene, pero las rutas se actualizarán #}
     {% block canonical %}
-        {% if(req.attributes.get('_route_params')['pagina'] is defined) %}
-            <link rel="canonical"
-                  href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({'pagina': req.attributes.get('_route_params')['pagina']})) }}"/>
-            {% if(req.attributes.get('_route_params')['pagina'] > 0) %}
-                <link rel="prev" href="{{ absolute_url(
-                    path(
-                        req.attributes.get('_route'),
-                        req.attributes.get('_route_params')|merge({'pagina': req.attributes.get('_route_params')['pagina']-1})
-                    )
-                ) }}{% if (routeFiltros is defined and routeFiltros != null and routeFiltros != "") %}?filtros={{ routeFiltros }} {% endif %}"/>
-            {% endif %}
-            {% if (npaginas is defined and (req.attributes.get('_route_params')['pagina']+1) < npaginas) %}
-                <link rel="next" href="{{ absolute_url(
-                    path(
-                        req.attributes.get('_route'),
-                        req.attributes.get('_route_params')|merge({'pagina': req.attributes.get('_route_params')['pagina']+1})
-                    )
-                ) }}{% if (routeFiltros is defined and routeFiltros != null and routeFiltros != "") %}?filtros={{ routeFiltros }} {% endif %}"/>
-            {% endif %}
-        {% else %}
-            {% if (app.request.attributes.get('_route_params') != null) %}
-                <link rel="canonical"
-                      href="{{ url(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')) }}"/>
-            {% endif %}
+        {# CONFIGURACIÓN #}
+        {% set nombreParametroPagina = 'page' %}
+
+        {# 1. OBTENER PARÁMETROS #}
+        {% set routeParams = app.request.attributes.get('_route_params') %}
+        {% set queryParams = app.request.query.all %}
+
+        {# 2. DETECTAR PÁGINA ACTUAL #}
+        {% set paginaActual = queryParams[nombreParametroPagina] is defined ? queryParams[nombreParametroPagina]|default(1)|number_format : 1 %}
+
+        {# --- LÓGICA CANONICAL (LIMPIA) --- #}
+        {# La canonical solo debe llevar los parámetros de la ruta (slugs) y la página si es > 1 #}
+        {# NO incluimos queryParams (filtros) para evitar contenido duplicado en Google #}
+
+        {% set canonicalParams = routeParams %}
+
+        {% if paginaActual > 1 %}
+            {% set canonicalParams = canonicalParams|merge({ (nombreParametroPagina): paginaActual }) %}
         {% endif %}
+
+        <link rel="canonical" href="{{ url(app.request.attributes.get('_route'), canonicalParams) }}"/>
+
+
+        {# --- LÓGICA PREV / NEXT (CON FILTROS) --- #}
+        {# Aquí sí necesitamos los filtros para navegar #}
+
+        {% set allParams = routeParams|merge(queryParams) %}
+
+        {# REL="PREV" #}
+        {% if paginaActual > 1 %}
+            {% set prevPage = paginaActual - 1 %}
+
+            {# Si la página anterior es la 1, ELIMINAMOS el parámetro 'page' para ir a la raíz limpia #}
+            {% if prevPage == 1 %}
+                {# Twig: fusionamos con filtros pero forzamos page a null o lo quitamos del array #}
+                {# La forma más limpia en Twig es filtrar el array #}
+                {% set prevParams = allParams|filter((v, k) => k != nombreParametroPagina) %}
+            {% else %}
+                {% set prevParams = allParams|merge({ (nombreParametroPagina): prevPage }) %}
+            {% endif %}
+
+            <link rel="prev" href="{{ url(app.request.attributes.get('_route'), prevParams) }}"/>
+        {% endif %}
+
+        {# REL="NEXT" #}
+        {% if npaginas is defined and paginaActual < npaginas %}
+            {% set nextParams = allParams|merge({ (nombreParametroPagina): paginaActual + 1 }) %}
+            <link rel="next" href="{{ url(app.request.attributes.get('_route'), nextParams) }}"/>
+        {% endif %}
+
     {% endblock %}
 
     {# --- MIGRACIÓN DE ASSETS (CSS) --- #}
@@ -184,6 +209,30 @@
     {% endblock %}
 
     {% block aditionalHead %}{% endblock %}
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "TusKamisetas",
+            "alternateName": "Camisetas personalizadas baratas",
+            "url": "{{ url('app_home') }}",
+    "potentialAction": {
+        "@type": "SearchAction",
+        {#
+        AQUÍ ESTÁ EL CAMBIO IMPORTANTE:
+        1. Generamos la URL absoluta de la página de resultados (ej: https://.../es/buscar)
+        2. Le concatenamos manualmente '?q={search_term_string}'
+        Google sustituirá {search_term_string} por lo que escriba el usuario.
+        #}
+        "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "{{ url('app_search_results') }}?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+    }
+}
+    </script>
+
 </head>
 
 <body>
@@ -336,8 +385,7 @@
                                           method="post">
 
                                         <div style="position: relative;">
-                                            <input itemprop="query-input"
-                                                   required
+                                            <input
                                                    type="text"
                                                    name="q"
                                                    placeholder="{% trans %}Buscar{% endtrans %}"

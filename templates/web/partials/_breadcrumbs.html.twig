@@ -1,39 +1,23 @@
 {# templates/web/partials/_breadcrumbs.html.twig #}
 
-{# 1. Tu macro recursiva se mantiene, ya que es la forma correcta de hacerlo #}
-{% macro breadcrumb_links(category, position) %}
-    {% import _self as macros %}
-
-    {% if category.parent and category.parent.parent %}
-        {{ macros.breadcrumb_links(category.parent, position - 1) }}
-    {% endif %}
-
-    {% if category.name != 'Home' %}
-        <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
-            {# MIGRACIÓN NOTA: Asegúrate de que la ruta 'app_catalog_resolver' existe #}
-            <a itemprop="item" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': category.slug}) }}">
-                <span itemprop="name">{{ category.name }}</span>
-            </a>
-            <meta itemprop="position" content="{{ position }}"/>
-        </li>
-    {% endif %}
-{% endmacro %}
-
-{% import _self as macros %}
-
 <div class="breadcrumbs">
     <ol itemscope itemtype="http://schema.org/BreadcrumbList" class="breadcrumb">
-        {# El enlace a la página Principal (siempre presente) #}
+
+        {# --- 1. INICIALIZAMOS EL CONTADOR --- #}
+        {% set currentPosition = 1 %}
+
+        {# --- 2. HOME (Siempre Posición 1) --- #}
         <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
             <a itemprop="item" href="{{ path('app_home', {'_locale': app.request.locale}) }}">
                 <span itemprop="name">{% trans %}Principal{% endtrans %}</span>
             </a>
-            <meta itemprop="position" content="1"/>
+            <meta itemprop="position" content="{{ currentPosition }}"/>
         </li>
 
-        {# --- INICIO DE LA CORRECCIÓN --- #}
+        {% set currentPosition = currentPosition + 1 %}
 
-        {# 1. Primero, determinamos si hay un fabricante que mostrar #}
+
+        {# --- 3. LOGICA DE FABRICANTE (Posición 2 si existe) --- #}
         {% set fabricante_a_mostrar = null %}
         {% if breadcrumb_fabricante is defined and breadcrumb_fabricante %}
             {% set fabricante_a_mostrar = breadcrumb_fabricante %}
@@ -41,31 +25,54 @@
             {% set fabricante_a_mostrar = context.getMarca %}
         {% endif %}
 
-        {# 2. Si hemos encontrado un fabricante, lo mostramos #}
         {% if fabricante_a_mostrar %}
             <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
                 <a itemprop="item" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': fabricante_a_mostrar.nombreUrl}) }}">
                     <span itemprop="name">{{ fabricante_a_mostrar.nombre }}</span>
                 </a>
-                <meta itemprop="position" content="2"/>
+                <meta itemprop="position" content="{{ currentPosition }}"/>
             </li>
+            {% set currentPosition = currentPosition + 1 %}
         {% endif %}
 
-        {# 3. Si tenemos un contexto (una categoría, marca, etc.), construimos el resto de las migas de pan #}
+
+        {# --- 4. LOGICA DE ANCESTROS (Categorías Padre) --- #}
+        {# En lugar de macro recursiva, recolectamos los padres en un array y los invertimos #}
         {% if context is defined and context %}
-            {# Si el contexto tiene un padre (es una categoría anidada), llamamos a la macro recursiva #}
-            {% if attribute(context, 'parent') is defined and context.parent %}
-                {# La posición inicial de la macro ahora depende de si hemos mostrado un fabricante o no #}
-                {{ macros.breadcrumb_links(context.parent, (fabricante_a_mostrar ? 3 : 2)) }}
-            {% endif %}
 
-            {# Finalmente, mostramos la página actual como texto (no como enlace) #}
+            {% set ancestors = [] %}
+            {% set parent = attribute(context, 'parent') is defined ? context.parent : null %}
+
+            {# Bucle de seguridad (máx 10 niveles) para subir por el árbol #}
+            {% for i in 0..10 %}
+                {% if parent and parent.name != 'Home' %}
+                    {% set ancestors = ancestors|merge([parent]) %}
+                    {% set parent = parent.parent|default(null) %}
+                {% endif %}
+            {% endfor %}
+
+            {# Recorremos los ancestros DESDE EL MÁS ANTIGUO (reverse) #}
+            {% for ancestor in ancestors|reverse %}
+                <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+                    <a itemprop="item" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': ancestor.slug}) }}">
+                        <span itemprop="name">{{ ancestor.name }}</span>
+                    </a>
+                    <meta itemprop="position" content="{{ currentPosition }}"/>
+                </li>
+                {% set currentPosition = currentPosition + 1 %}
+            {% endfor %}
+
+
+            {# --- 5. ELEMENTO ACTUAL (El último) --- #}
             <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem" class="active">
-                <span itemprop="name">{{ context }}</span>
-                <meta itemprop="position" content="99"/> {# Un número alto para que siempre sea el último #}
+                {# SEO: Link invisible apuntando a la URL actual #}
+                <link itemprop="item" href="{{ app.request.uri }}" />
+
+                <span itemprop="name">{{ context.nombre|default(context) }}</span>
+
+                {# SEO: La posición es exactamente la siguiente en la secuencia #}
+                <meta itemprop="position" content="{{ currentPosition }}"/>
             </li>
         {% endif %}
-        {# --- FIN DE LA CORRECCIÓN --- #}
     </ol>
 </div>
-

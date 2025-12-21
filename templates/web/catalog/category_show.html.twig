@@ -1,21 +1,75 @@
 {% extends "web/indexTemplate.html.twig" %}
 
 
-{# {% block title %} #}
-{#    {% if tituloSEO is defined %} #}
-{#        {% if (categoria is defined) %} #}
-{#            {% if categoria != "fabricante" %} #}
-{#                #}{# {{ cantidadArticulos }} #}
-{#            {% endif %}{% endif %}{{ tituloSEO | capitalize }} #}
-{#    {% else %} #}
-{#        {% if (categoria is defined) %} #}
-{#            {% if categoria != "fabricante" %} #}
-{#                #}{# {{ cantidadArticulos }} #}
-{#            {% endif %}{% endif %} {{ titulo | capitalize }} #}
-{#    {% endif %} #}
-{# {% endblock %} #}
+{% block metas %}
+    {{ parent() }} {# Mantenemos las metas del padre #}
 
-{# {% block metaDescription %}{{ descripcion }}{% endblock %} #}
+    {# --- LÓGICA DE PAGINACIÓN SEO (REL=PREV/NEXT) --- #}
+
+    {# 1. Calculamos el total de páginas si no viene del controlador #}
+    {# Asumimos un límite de 20 items por página, cámbialo por tu valor real #}
+    {% set limitPorPagina = 20 %}
+    {% set totalPaginasCalc = (cantidadArticulos / limitPorPagina)|round(0, 'ceil') %}
+    {# Si ya tienes una variable 'totalPaginas' o 'modelos.pageCount' (KnpPaginator), úsala en vez de 'totalPaginasCalc' #}
+
+    {# 2. Obtenemos ruta y parámetros actuales #}
+    {% set currentRoute = app.request.attributes.get('_route') %}
+    {% set currentRouteParams = app.request.attributes.get('_route_params') %}
+    {% set currentQueryParams = app.request.query.all %}
+
+    {# Fusionamos atributos de ruta (slug) y query string (filtros) #}
+    {% set allParams = currentRouteParams|merge(currentQueryParams) %}
+
+    {# 3. Generar REL="PREV" #}
+    {% if paginaActual > 1 %}
+        {% set prevParams = allParams|merge({'page': paginaActual - 1}) %}
+        <link rel="prev" href="{{ path(currentRoute, prevParams) }}" />
+    {% endif %}
+
+    {# 4. Generar REL="NEXT" #}
+    {% if paginaActual < totalPaginasCalc %}
+        {% set nextParams = allParams|merge({'page': paginaActual + 1}) %}
+        <link rel="next" href="{{ path(currentRoute, nextParams) }}" />
+    {% endif %}
+
+{% endblock %}
+
+{% block title %}
+    {% if context is defined and context is not null %}
+        {# 1. Intentamos usar el título SEO específico #}
+        {% if context.tituloSEO is defined and context.tituloSEO is not empty %}
+            {{ context.tituloSEO }}
+        {% else %}
+            {# 2. Fallback: Usamos el nombre de la categoría/familia #}
+            {{ context.nombre|default('Catálogo')|capitalize }}
+        {% endif %}
+
+        {# 3. Añadimos el número de página si no es la 1 (Buenas prácticas SEO) #}
+        {% if paginaActual is defined and paginaActual > 1 %}
+            - Página {{ paginaActual }}
+        {% endif %}
+    {% else %}
+        Catálogazo
+    {% endif %}
+{% endblock %}
+
+{# --- BLOQUE DE META DESCRIPTION (SEO) --- #}
+{% block metaDescription %}
+    {% if context is defined and context is not null %}
+        {# 1. Intentamos usar la descripción SEO específica #}
+        {% if context.descripcionSEO is defined and context.descripcionSEO is not empty %}
+            {{ context.descripcionSEO }}
+        {% elseif context.descripcion is defined and context.descripcion is not empty %}
+            {# 2. Fallback: Usamos la descripción visual limpia de HTML y cortada #}
+            {{ context.descripcion|striptags|trim|slice(0, 160) }}...
+        {% endif %}
+
+        {# 3. Añadimos paginación a la description también #}
+        {% if paginaActual is defined and paginaActual > 1 %}
+            (Página {{ paginaActual }})
+        {% endif %}
+    {% endif %}
+{% endblock %}
 
 {% block migas %}
     {# MIGRACIÓN: El bloque de migas de pan ahora es mucho más simple y se construye a partir del objeto 'context' #}
@@ -62,7 +116,7 @@
 
                                     <div class="productoGridDescripcion">
                                         <br>
-                                        <h2 style="text-align: center; color: white; font-size: 16px">{{ subcategoria.name | upper }}</h2>
+                                        <p style="text-align: center; color: white; font-size: 16px">{{ subcategoria.name | upper }}</p>
                                         <br>
                                     </div>
                                 </div>

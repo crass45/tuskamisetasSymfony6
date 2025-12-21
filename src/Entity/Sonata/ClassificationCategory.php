@@ -125,4 +125,8 @@ class ClassificationCategory extends BaseCategory implements Translatable
     {
         return $this->locale;
     }
+
+    public function getTituloSEO(): ?string{
+        return $this->tituloSEOTrans;
+    }
 }
