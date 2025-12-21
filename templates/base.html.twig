@@ -66,56 +66,54 @@
 
     {# MIGRACIÓN: La lógica de canonicals y hreflang se mantiene, pero las rutas se actualizarán #}
     {% block canonical %}
-        {# CONFIGURACIÓN #}
-        {% set nombreParametroPagina = 'page' %}
+        {# 1. OBTENEMOS LA RUTA ACTUAL #}
+        {% set currentRoute = app.request.attributes.get('_route') %}
 
-        {# 1. OBTENER PARÁMETROS #}
-        {% set routeParams = app.request.attributes.get('_route_params') %}
-        {% set queryParams = app.request.query.all %}
+        {# 2. PROTECCIÓN CRÍTICA: Solo ejecutamos si hay ruta (En error 404, currentRoute es NULL) #}
+        {% if currentRoute is not null %}
 
-        {# 2. DETECTAR PÁGINA ACTUAL #}
-        {% set paginaActual = queryParams[nombreParametroPagina] is defined ? queryParams[nombreParametroPagina]|default(1)|number_format : 1 %}
+            {# CONFIGURACIÓN #}
+            {% set nombreParametroPagina = 'page' %}
+            {% set routeParams = app.request.attributes.get('_route_params') %}
+            {% set queryParams = app.request.query.all %}
 
-        {# --- LÓGICA CANONICAL (LIMPIA) --- #}
-        {# La canonical solo debe llevar los parámetros de la ruta (slugs) y la página si es > 1 #}
-        {# NO incluimos queryParams (filtros) para evitar contenido duplicado en Google #}
+            {# DETECTAR PÁGINA ACTUAL #}
+            {% set paginaActual = queryParams[nombreParametroPagina] is defined ? queryParams[nombreParametroPagina]|default(1)|number_format : 1 %}
 
-        {% set canonicalParams = routeParams %}
+            {# --- LÓGICA CANONICAL (LIMPIA) --- #}
+            {% set canonicalParams = routeParams %}
 
-        {% if paginaActual > 1 %}
-            {% set canonicalParams = canonicalParams|merge({ (nombreParametroPagina): paginaActual }) %}
-        {% endif %}
-
-        <link rel="canonical" href="{{ url(app.request.attributes.get('_route'), canonicalParams) }}"/>
-
-
-        {# --- LÓGICA PREV / NEXT (CON FILTROS) --- #}
-        {# Aquí sí necesitamos los filtros para navegar #}
-
-        {% set allParams = routeParams|merge(queryParams) %}
-
-        {# REL="PREV" #}
-        {% if paginaActual > 1 %}
-            {% set prevPage = paginaActual - 1 %}
-
-            {# Si la página anterior es la 1, ELIMINAMOS el parámetro 'page' para ir a la raíz limpia #}
-            {% if prevPage == 1 %}
-                {# Twig: fusionamos con filtros pero forzamos page a null o lo quitamos del array #}
-                {# La forma más limpia en Twig es filtrar el array #}
-                {% set prevParams = allParams|filter((v, k) => k != nombreParametroPagina) %}
-            {% else %}
-                {% set prevParams = allParams|merge({ (nombreParametroPagina): prevPage }) %}
+            {% if paginaActual > 1 %}
+                {% set canonicalParams = canonicalParams|merge({ (nombreParametroPagina): paginaActual }) %}
             {% endif %}
 
-            <link rel="prev" href="{{ url(app.request.attributes.get('_route'), prevParams) }}"/>
-        {% endif %}
+            {# AQUÍ USAMOS currentRoute QUE YA SABEMOS QUE NO ES NULL #}
+            <link rel="canonical" href="{{ url(currentRoute, canonicalParams) }}"/>
 
-        {# REL="NEXT" #}
-        {% if npaginas is defined and paginaActual < npaginas %}
-            {% set nextParams = allParams|merge({ (nombreParametroPagina): paginaActual + 1 }) %}
-            <link rel="next" href="{{ url(app.request.attributes.get('_route'), nextParams) }}"/>
-        {% endif %}
 
+            {# --- LÓGICA PREV / NEXT (CON FILTROS) --- #}
+            {% set allParams = routeParams|merge(queryParams) %}
+
+            {# REL="PREV" #}
+            {% if paginaActual > 1 %}
+                {% set prevPage = paginaActual - 1 %}
+
+                {% if prevPage == 1 %}
+                    {% set prevParams = allParams|filter((v, k) => k != nombreParametroPagina) %}
+                {% else %}
+                    {% set prevParams = allParams|merge({ (nombreParametroPagina): prevPage }) %}
+                {% endif %}
+
+                <link rel="prev" href="{{ url(currentRoute, prevParams) }}"/>
+            {% endif %}
+
+            {# REL="NEXT" #}
+            {% if npaginas is defined and paginaActual < npaginas %}
+                {% set nextParams = allParams|merge({ (nombreParametroPagina): paginaActual + 1 }) %}
+                <link rel="next" href="{{ url(currentRoute, nextParams) }}"/>
+            {% endif %}
+
+        {% endif %} {# Fin del if currentRoute #}
     {% endblock %}
 
     {# --- MIGRACIÓN DE ASSETS (CSS) --- #}
