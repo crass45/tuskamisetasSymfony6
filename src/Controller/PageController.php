@@ -79,7 +79,7 @@ class PageController extends AbstractController
         return $this->render('web/page/contacto.html.twig');
     }
 
-    #[Route('/solicitapresupuesto', name: 'app_solicita_presupuesto_page')]
+    #[Route('/contacto', name: 'app_solicita_presupuesto_page')]
     public function solicitaPresupuestoAction(): Response
     {
         return $this->render('web/page/solicita_presupuesto.html.twig');
