@@ -134,21 +134,43 @@
             {% if totalPages > 1 %}
                 <nav aria-label="Paginación de publicaciones">
                     <ul class="pagination">
+
                         {# Botón 'Anterior' #}
                         <li class="page-item {{ currentPage == 1 ? 'disabled' : '' }}">
-                            <a class="page-link" href="{{ path('app_blog_list', {'page': currentPage - 1}) }}">&lt;</a>
+                            <a class="page-link"
+                                    {# Solo ponemos href si NO estamos en la página 1 #}
+                                    {% if currentPage > 1 %}
+                                        href="{{ path('app_blog_list', {'page': currentPage - 1}) }}"
+                                    {% else %}
+                                        {# Si está deshabilitado, quitamos el foco del teclado y avisamos a lectores de pantalla #}
+                                        tabindex="-1" aria-disabled="true"
+                                    {% endif %}
+                            >
+                                &lt;
+                            </a>
                         </li>
 
                         {# Números de página #}
                         {% for i in 1..totalPages %}
                             <li class="page-item {{ i == currentPage ? 'active' : '' }}">
-                                <a class="page-link" href="{{ path('app_blog_list', {'page': i}) }}">{{ i }}</a>
+                                <a class="page-link" href="{{ path('app_blog_list', {'page': i}) }}">
+                                    {{ i }}
+                                </a>
                             </li>
                         {% endfor %}
 
                         {# Botón 'Siguiente' #}
                         <li class="page-item {{ currentPage == totalPages ? 'disabled' : '' }}">
-                            <a class="page-link" href="{{ path('app_blog_list', {'page': currentPage + 1}) }}">&gt;</a>
+                            <a class="page-link"
+                                    {# Solo ponemos href si NO estamos en la última página #}
+                                    {% if currentPage < totalPages %}
+                                        href="{{ path('app_blog_list', {'page': currentPage + 1}) }}"
+                                    {% else %}
+                                        tabindex="-1" aria-disabled="true"
+                                    {% endif %}
+                            >
+                                &gt;
+                            </a>
                         </li>
                     </ul>
                 </nav>

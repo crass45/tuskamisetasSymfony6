@@ -25,6 +25,33 @@ class CatalogController extends AbstractController
         $this->em = $entityManager;
     }
 
+    // En src/Controller/CatalogController.php
+
+    /**
+     * Esta ruta captura el tráfico antiguo: /es/camisetas/1, /es/camisetas/2, etc.
+     * Redirige con un 301 a la nueva estructura: /es/camisetas?page=X
+     */
+    #[Route('/{_locale}/{slug}/{oldPage}',
+        name: 'app_catalog_old_pagination_redirect',
+        requirements: [
+            'oldPage' => '\d+', // Solo números
+            'slug' => '[^/]+'   // Cualquier cosa que no sea una barra
+        ],
+        methods: ['GET']
+    )]
+    public function redirectOldPagination(string $_locale, string $slug, int $oldPage): Response
+    {
+        // En tu sistema antiguo, /1 era la página 2.
+        // Si quieres mantener la equivalencia exacta:
+        $newPage = $oldPage + 1;
+
+        return $this->redirectToRoute('app_catalog_resolver', [
+            '_locale' => $_locale,
+            'slug' => $slug,
+            'page' => $newPage
+        ], Response::HTTP_MOVED_PERMANENTLY); // Esto es el 301 para SEO
+    }
+
     /**
      * Muestra la página con el listado de todas las marcas que tienen productos.
      */
