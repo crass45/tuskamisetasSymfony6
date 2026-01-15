@@ -1,6 +1,13 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
   secret: '%env(APP_SECRET)%'
+
+  assets:
+    # Cambia este texto cada vez que quieras forzar a todos los usuarios a recargar
+    version: 'v_sf6_migracion_1'
+    # Esto añade ?v_sf6_migracion_1 al final de todos los archivos css/js/img
+    version_format: '%%s?%%s'
+
   #csrf_protection: true
   annotations: false
   http_method_override: false
