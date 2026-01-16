@@ -318,7 +318,7 @@
                             <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}"><img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;" alt="mail"/></a>
                         </div>
 
-                        {% if is_granted('ROLE_ALLOWED_TO_SWITCH') %}
+                        {% if is_granted('ROLE_ADMIN') %}
                             <div class="clear-fix"></div>
                             <div class="row" style="margin-top: 20px; margin-bottom: 20px;">
                                 <div class="col-xs-6">
