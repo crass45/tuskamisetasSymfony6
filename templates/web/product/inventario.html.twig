@@ -29,7 +29,7 @@
 {% endblock %}
 
 {% block baseBody %}
-    {% if is_granted('ROLE_ALLOWED_TO_SWITCH') %} {# O el rol que uses para empleados #}
+    {% if is_granted('ROLE_ADMIN') %} {# O el rol que uses para empleados #}
         <div class="container" style="margin-bottom: 50px;">
 
             {# Enviamos a la ruta de guardado pasando el ID del modelo y el tipo de operación (1=Entrada, 2=Salida) #}
