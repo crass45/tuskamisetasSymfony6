@@ -104,8 +104,8 @@ class PaymentController extends AbstractController
                 $importePagado = (float)($decodedParams['Ds_Amount'] ?? 0) / 100;
                 $pedido->setCantidadPagada($pedido->getCantidadPagada() + $importePagado);
 
-                // Actualizar estado a "Pagado" (asumiendo que el ID 9 es 'Pagado')
-                $estadoPagado = $this->em->getRepository(Estado::class)->find(9);
+                // Actualizar estado a "Pagado" (asumiendo que el ID 10 es 'Pagado')
+                $estadoPagado = $this->em->getRepository(Estado::class)->find(10);
                 if ($estadoPagado) {
                     $pedido->setEstado($estadoPagado);
                 }
