@@ -376,7 +376,7 @@ final class PedidoCRUDController extends CRUDController
             return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
         }
 
-        if (!($pedido->cantidadPagada >= $pedido->getTotal() - 1)) {
+        if (!($pedido->getCantidadPagada() >= $pedido->getTotal() - 1)) {
             $this->addFlash('sonata_flash_error', 'Este envío NO ESTÁ PAGADO');
 //        return new RedirectResponse($this->admin->generateUrl('list'));
             return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
@@ -405,7 +405,7 @@ final class PedidoCRUDController extends CRUDController
             return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
         }
 
-        if (!($pedido->cantidadPagada >= $pedido->getTotal() - 1)) {
+        if (!($pedido->getCantidadPagada() >= $pedido->getTotal() - 1)) {
             $this->addFlash('sonata_flash_error', 'Este envío NO ESTÁ PAGADO');
 //        return new RedirectResponse($this->admin->generateUrl('list'));
             return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
