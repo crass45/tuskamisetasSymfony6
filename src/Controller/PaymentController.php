@@ -167,13 +167,13 @@ class PaymentController extends AbstractController
         ];
 
         $items = [];
-        foreach ($pedido->getPedidoHasLineas() as $linea) {
+        foreach ($pedido->getLineas() as $linea) {
             $items[] = [
-                'sku' => $linea->getIdProducto()->getModelo()->getReferencia(),
-                'name' => $linea->getIdProducto()->getModelo()->getNombre(),
-                'brand' => $linea->getIdProducto()->getModelo()->getFabricante()->getNombre(),
-                'variant' => $linea->getIdProducto()->getReferencia(),
-                'category' => $linea->getIdProducto()->getModelo()->getCategory()->first() ? $linea->getIdProducto()->getModelo()->getCategory()->first()->getName() : 'Sin Categoria',
+                'sku' => $linea->getProducto()->getModelo()->getReferencia(),
+                'name' => $linea->getProducto()->getModelo()->getNombre(),
+                'brand' => $linea->getProducto()->getModelo()->getFabricante()->getNombre(),
+                'variant' => $linea->getProducto()->getReferencia(),
+                'category' => $linea->getProducto()->getModelo()->getCategory()->first() ? $linea->getProducto()->getModelo()->getCategory()->first()->getName() : 'Sin Categoria',
                 'price' => $linea->getPrecio(),
                 'quantity' => $linea->getCantidad(),
             ];
