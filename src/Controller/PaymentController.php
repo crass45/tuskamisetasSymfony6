@@ -136,8 +136,9 @@ class PaymentController extends AbstractController
      * URL de Éxito: Ahora usa la ruta y el nombre de tu proyecto original.
      */
     #[Route('/{_locale}/compraOK', name: 'app_payment_success', requirements: ['_locale' => 'es|en|fr'])]
-    public function successAction(): Response
+    public function successAction(Request $request): Response
     {
+        $session = $request->getSession();
         // Recuperamos el ID del pedido de la sesión
         $orderId = $session->get('last_success_order_id');
 
