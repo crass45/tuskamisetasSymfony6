@@ -47,7 +47,7 @@
                             {% if productoColor.viewsImages!=null %}
                                 data-toggle="modal" data-target="#fotos-detalle-modal" data-imagenes="{{ productoColor.viewsImages }}"
                             {% endif %}
-                            {% if (productoColor.imagenDescargada) %}
+                            {% if (productoColor.imagenDescargada and productoColor.imagen is not null) %}
                                 data-imagen="{{ sonata_path(productoColor.imagen, 'mini') }}"
                             {% else %}
                                 data-imagen="{{ productoColor.modelo.urlImage }}"
@@ -69,7 +69,7 @@
                                 <img
                                         class="  {{ productoColor.color.id }} lazy"
                                         src="{{ asset('images/dummy40.png') }}"
-                                        {% if (productoColor.imagenDescargada) %}
+                                        {% if (productoColor.imagenDescargada and productoColor.imagen is not null) %}
                                             data-src="{{ sonata_path(productoColor.imagen, 'mini') }}"
                                             data-imagen="{{ sonata_path(productoColor.imagen, 'wide') }}"
                                         {% else %}
