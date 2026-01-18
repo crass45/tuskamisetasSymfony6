@@ -152,7 +152,7 @@ final class PedidoAdmin extends AbstractAdmin
                 ])
             ->add('enviaMail', CheckboxType::class, ['required' => false, 'label' => 'Enviar e-mail al cambiar estado','mapped' => true])
             ->add('estado')
-            ->add('incidencias', TextareaType::class, ['required' => false, 'attr' => ['class' => 'tinymce']])
+            ->add('incidencias', TextareaType::class, ['required' => false])
             ->end()
             ->with("Subtotales", ["class" => "col-md-3"])
             ->add('diasAdicionales', IntegerType::class, ['label' => 'Días adicionales para el envío', 'required' => false])
