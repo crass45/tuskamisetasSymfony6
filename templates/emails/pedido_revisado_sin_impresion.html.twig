@@ -62,6 +62,9 @@
     <p>Una vez realizado el pago, el plazo de entrega estimado para tus artículos es:</p>
     <ul style="line-height: 1.6;">
         <li><b>Servicio Normal:</b> Entre el {{ fechaEntregaNormalMin|format_datetime(locale='es', pattern='d \'de\' MMMM') }} y el {{ fechaEntregaNormalMax|format_datetime(locale='es', pattern='d \'de\' MMMM') }}.</li>
+        <li style="list-style-type: none; margin-top: 12px; font-size: 0.9em; color: #555555;">
+            <em>Nota: Las fechas de entrega arriba indicadas tienen validez siempre que el pago se realice en el día de recepción de este correo. En caso de demora en el abono, los plazos de entrega se verán desplazados proporcionalmente a los días de retraso.</em>
+        </li>
     </ul>
     {% if empresa.isVacacionesActivas() %}
         <blockquote style="border-left: 4px solid #ccc; padding-left: 15px; margin: 15px 0;"><b>Importante:</b> Del {{ empresa.fechaInicioVacaciones|format_datetime(locale='es', pattern='d \'de\' MMMM') }} al {{ empresa.fechaFinVacaciones|format_datetime(locale='es', pattern='d \'de\' MMMM') }} permaneceremos cerrados por vacaciones.</blockquote>
