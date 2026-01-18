@@ -53,8 +53,9 @@ class PaymentController extends AbstractController
         return $this->render('payment/start.html.twig', [
             'pedido' => $pedido,
             'redsys_data' => $redsysFormData,
-            'dias1' => $deliveryDates['min']->format('d/M'), // Pasamos las fechas a la plantilla
-            'dias2' => $deliveryDates['max']->format('d/M'),
+
+            'dias1' => $deliveryDates['min']->format('d/m/Y'), // Pasamos las fechas a la plantilla
+            'dias2' => $deliveryDates['max']->format('d/m/Y'),
         ]);
     }
 
