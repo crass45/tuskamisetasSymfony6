@@ -165,12 +165,15 @@ final class PedidoAdmin extends AbstractAdmin
             ->add('total', NumberType::class)
             ->add('cantidadPagada', NumberType::class)
             ->end()
+
             ->with("Lineas Libres")
-            ->add('lineasLibres', CollectionType::class, [ // Corregido: pedidoHasLineasLibre -> lineasLibres
+            ->add('lineasLibres', CollectionType::class, [
                 'by_reference' => false,
+                'label' => false, // Opcional: para que quede más limpio
             ], [
                 'edit' => 'inline',
                 'inline' => 'table',
+                'admin_code' => PedidoLineaLibreAdmin::class, // <--- ¡ESTA LÍNEA ES LA CLAVE!
             ])
             ->end()
             ->end()
@@ -367,27 +370,7 @@ final class PedidoAdmin extends AbstractAdmin
 //        }
 //    }
 
-    public
-    function postUpdate(object $object): void
-    {
-        if (!$object instanceof Pedido) {
-            return;
-        }
 
-        // Lógica de Recalcular Totales
-        $subtotal = 0;
-        foreach ($object->getLineas() as $linea) {
-            $subtotal += (float)$linea->getPrecio() * $linea->getCantidad();
-        }
-        foreach ($object->getLineasLibres() as $linea) {
-            $subtotal += (float)$linea->getPrecio() * $linea->getCantidad();
-        }
-
-        // El resto de la lógica de cálculo...
-        $object->setSubTotal($subtotal);
-        // ... calcular iva, total, etc.
-        $this->entityManager->flush();
-    }
 
     protected
     function configureRoutes(RouteCollectionInterface $collection): void

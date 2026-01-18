@@ -972,4 +972,26 @@ class Pedido
         return $base;
     }
 
+    public function addLineasLibre(PedidoLineaLibre $lineaLibre): self
+    {
+        if (!$this->lineasLibres->contains($lineaLibre)) {
+            $this->lineasLibres->add($lineaLibre);
+            $lineaLibre->setPedido($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLineasLibre(PedidoLineaLibre $lineaLibre): self
+    {
+        if ($this->lineasLibres->removeElement($lineaLibre)) {
+            // set the owning side to null (unless already changed)
+            if ($lineaLibre->getPedido() === $this) {
+                $lineaLibre->setPedido(null);
+            }
+        }
+
+        return $this;
+    }
+
 }
