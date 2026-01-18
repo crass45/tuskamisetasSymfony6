@@ -139,7 +139,7 @@
                                     <img class="fix"
                                          src="https://www.tuskamisetas.com/images/pollo.jpeg?Pagespeed=off"
                                          width="90" border="0" alt="logo tuskamisetas"
-                                         style="height: auto; width: 90px; display: block;" />
+                                         style="height: auto; width: 90px; display: block;"/>
                                 </td>
                                 <td style="text-align: right; padding: 20px;">
                                     <span class="h1 innerpadding" style="color: #ff9000; text-align: right">
@@ -153,100 +153,98 @@
                 </tr>
 
 
-        </td>
-    </tr>
-    <tr>
-        <td bgcolor="white" class="innerpadding">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                    <td class="bodycopy">
-                        <b>{{ emailSubtitulo|default('') }}<br></b>
-                        {% block texto %}
-                            {{ emailTexto|default('') | raw }}
-                        {% endblock %}
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-
-    {% block cuerpo %}
-    {% endblock %}
-
-    <tr>
-        <td class="footer" bgcolor="white">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
-                <tr class="innerpadding">
-
-                </tr>
-                <tr>
-                    <td align="left" class="footercopy" style="padding-top: 30px">
-                        <a href="https://www.tuskamisetas.com"
-                           style="color: #ff9000; text-decoration: none; font-size: 16px; margin-top: 30px;">www.tuskamisetas.com</a>
-                    </td>
-                </tr>
-                <tr>
-                    <td align="left" style="padding: 20px 0 30px 0;">
-                        <table border="0" cellspacing="0" cellpadding="0">
+                    <td bgcolor="white" class="innerpadding">
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
                             <tr>
-                                {# CORRECCIÓN: Comprobamos si 'empresa' está definida antes de usarla #}
-
-                                {# FACEBOOK #}
-                                {% if empresa is defined and empresa.facebook is defined and empresa.facebook %}
-                                    <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
-                                        <a href="{{ empresa.facebook }}" target="_blank">
-                                            <img src="{{ absolute_url(asset('images/facebook.png')) }}"
-                                                 height="17px" width="auto" alt="Facebook" border="0"
-                                                 style="height: 17px; width: auto"/>
-                                        </a>
-                                    </td>
-                                {% endif %}
-
-                                {# TWITTER #}
-                                {% if empresa is defined and empresa.twitter is defined and empresa.twitter %}
-                                    <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
-                                        <a href="{{ empresa.twitter }}" target="_blank">
-                                            <img src="{{ absolute_url(asset('images/twitter.png')) }}"
-                                                 height="17px" width="auto" alt="Twitter" border="0"
-                                                 style="height: 17px; width: auto"/>
-                                        </a>
-                                    </td>
-                                {% endif %}
-
-                                {# YOUTUBE #}
-                                {% if empresa is defined and empresa.youtube is defined and empresa.youtube %}
-                                    <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
-                                        <a href="{{ empresa.youtube }}" target="_blank">
-                                            <img src="{{ absolute_url(asset('images/google+.png')) }}"
-                                                 height="17px" width="auto" alt="Youtube" border="0"
-                                                 style="height: 17px; width: auto"/>
-                                        </a>
-                                    </td>
-                                {% endif %}
-
-                                {# PINTEREST #}
-                                {% if empresa is defined and empresa.pinterest is defined and empresa.pinterest %}
-                                    <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
-                                        <a href="{{ empresa.pinterest }}" target="_blank">
-                                            <img src="{{ absolute_url(asset('images/pinterest.png')) }}"
-                                                 height="17px" width="auto" alt="Pinterest" border="0"
-                                                 style="height: 17px; width: auto"/>
-                                        </a>
-                                    </td>
-                                {% endif %}
+                                <td class="bodycopy">
+                                    <b>{{ emailSubtitulo|default('') }}<br></b>
+                                    {% block texto %}
+                                        {{ emailTexto|default('') | raw }}
+                                    {% endblock %}
+                                </td>
                             </tr>
                         </table>
                     </td>
                 </tr>
+
+                {% block cuerpo %}
+                {% endblock %}
+
+                <tr>
+                    <td class="footer" bgcolor="white">
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr class="innerpadding">
+
+                            </tr>
+                            <tr>
+                                <td align="left" class="footercopy" style="padding-top: 30px">
+                                    <a href="https://www.tuskamisetas.com"
+                                       style="color: #ff9000; text-decoration: none; font-size: 16px; margin-top: 30px;">www.tuskamisetas.com</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="left" style="padding: 20px 0 30px 0;">
+                                    <table border="0" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            {# CORRECCIÓN: Comprobamos si 'empresa' está definida antes de usarla #}
+
+                                            {# FACEBOOK #}
+                                            {% if empresa is defined and empresa.facebook is defined and empresa.facebook %}
+                                                <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
+                                                    <a href="{{ empresa.facebook }}" target="_blank">
+                                                        <img src="{{ absolute_url(asset('images/facebook.png')) }}"
+                                                             height="17px" width="auto" alt="Facebook" border="0"
+                                                             style="height: 17px; width: auto"/>
+                                                    </a>
+                                                </td>
+                                            {% endif %}
+
+                                            {# TWITTER #}
+                                            {% if empresa is defined and empresa.twitter is defined and empresa.twitter %}
+                                                <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
+                                                    <a href="{{ empresa.twitter }}" target="_blank">
+                                                        <img src="{{ absolute_url(asset('images/twitter.png')) }}"
+                                                             height="17px" width="auto" alt="Twitter" border="0"
+                                                             style="height: 17px; width: auto"/>
+                                                    </a>
+                                                </td>
+                                            {% endif %}
+
+                                            {# YOUTUBE #}
+                                            {% if empresa is defined and empresa.youtube is defined and empresa.youtube %}
+                                                <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
+                                                    <a href="{{ empresa.youtube }}" target="_blank">
+                                                        <img src="{{ absolute_url(asset('images/google+.png')) }}"
+                                                             height="17px" width="auto" alt="Youtube" border="0"
+                                                             style="height: 17px; width: auto"/>
+                                                    </a>
+                                                </td>
+                                            {% endif %}
+
+                                            {# PINTEREST #}
+                                            {% if empresa is defined and empresa.pinterest is defined and empresa.pinterest %}
+                                                <td width="37" style="text-align: center; padding: 0 10px 0 10px;">
+                                                    <a href="{{ empresa.pinterest }}" target="_blank">
+                                                        <img src="{{ absolute_url(asset('images/pinterest.png')) }}"
+                                                             height="17px" width="auto" alt="Pinterest" border="0"
+                                                             style="height: 17px; width: auto"/>
+                                                    </a>
+                                                </td>
+                                            {% endif %}
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="background-image: url('https://www.tuskamisetas.com/images/repeat_mail_abajo.png'); background-repeat: repeat-x; height: 20px; width: 600px"></td>
+                </tr>
             </table>
         </td>
     </tr>
-    <tr>
-        <td style="background-image: url('https://www.tuskamisetas.com/images/repeat_mail_abajo.png'); background-repeat: repeat-x; height: 20px; width: 600px"></td>
-    </tr>
-</table>
-</td>
-</tr>
 </table>
 
 <p style="color: #666666; text-align: center">&reg; TusKamisetas 2026</p>
