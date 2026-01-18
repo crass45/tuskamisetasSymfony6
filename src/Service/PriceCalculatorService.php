@@ -12,6 +12,9 @@ use App\Model\PresupuestoTrabajo;
 use App\Repository\PersonalizacionPrecioCantidadRepository;
 use App\Repository\TarifaPreciosRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
+use App\Entity\Sonata\User;
+
 
 class PriceCalculatorService
 {
@@ -20,7 +23,8 @@ class PriceCalculatorService
     public function __construct(
         private TarifaPreciosRepository $tarifaPreciosRepository,
         private PersonalizacionPrecioCantidadRepository $personalizacionPrecioRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private Security $security
     ) {
     }
 
@@ -168,23 +172,55 @@ class PriceCalculatorService
         $proveedor = $producto->getModelo()->getProveedor();
         $modelo = $producto->getModelo();
 
+        // 1. Determinar la Tarifa Base (Modelo > Proveedor)
+        $tarifaBase = $modelo->getTarifa() ?? $proveedor?->getTarifa();
+
+        // Variable para la tarifa final a aplicar
+        $tarifaAplicable = $tarifaBase;
+
+        // 2. Lógica de Sustitución de Tarifa por Grupo de Usuario
+        // Obtenemos el usuario desde el servicio Security, ya que Carrito no lo tiene.
+        $user = $this->security->getUser();
+
+        if ($user instanceof User && $tarifaBase) {
+            // Recorremos los grupos del usuario (reclamistas, etc.)
+            foreach ($user->getGroups() as $group) {
+                // Recorremos los descuentos (reglas de sustitución) de ese grupo
+                foreach ($group->getDescuentos() as $descuento) {
+                    // Si el descuento tiene una "tarifa anterior" que coincide con la base...
+                    // ...la sustituimos por la "nueva tarifa" del descuento.
+                    if ($descuento->getTarifaAnterior() &&
+                        $descuento->getTarifaAnterior()->getId() === $tarifaBase->getId() &&
+                        $descuento->getTarifa()) {
+
+                        $tarifaAplicable = $descuento->getTarifa();
+                        break 2; // Encontrada y aplicada, salimos de los bucles
+                    }
+                }
+            }
+        }
+
+        // 3. Calcular cantidad acumulada para tramos de tarifa
         $cantidadParaTarifa = $unidades;
         if ($modelo && $modelo->isAcumulaTotal() && $proveedor && method_exists($carrito, 'getUnidadesByProveedor')) {
             $cantidadParaTarifa = $carrito->getUnidadesByProveedor($proveedor);
         }
 
+        // 4. Calcular precio final con la tarifa elegida
         $precioVentaUnitario = $precioCoste;
-        $tarifa = $producto->getModelo()->getTarifa() ?? $proveedor?->getTarifa();
-
-        if ($tarifa) {
-            $rangoTarifa = $this->tarifaPreciosRepository->findPriceByQuantity($tarifa, $cantidadParaTarifa);
+        if ($tarifaAplicable) {
+            $rangoTarifa = $this->tarifaPreciosRepository->findPriceByQuantity($tarifaAplicable, $cantidadParaTarifa);
             if ($rangoTarifa) {
                 $margenAplicado = (float)$rangoTarifa->getPrecio();
                 $precioVentaUnitario = $precioCoste * (1 + ($margenAplicado / 100));
             }
         }
-        //añadimos el descuento del proveedor
-        $precioVentaUnitario -= ($precioVentaUnitario * (float) $proveedor->getDescuentoEspecial() / 100);
+
+        // 5. Aplicar descuento especial del proveedor
+        if ($proveedor) {
+            $precioVentaUnitario -= ($precioVentaUnitario * (float) $proveedor->getDescuentoEspecial() / 100);
+        }
+
         return $precioVentaUnitario;
     }
 
