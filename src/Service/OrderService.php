@@ -73,13 +73,16 @@ class OrderService
         $numeroPedido = $ultimoPedido ? $ultimoPedido->getNumeroPedido() + 1 : 1;
 
         $pedido = new Pedido($fecha, $fiscalYear, $numeroPedido);
-        $pedido->setGoogleClientId($googleClientId);
+
 
         $session = $this->requestStack->getSession();
         // 2. Los IDs de Anuncios que capturamos en la Sesión (del Paso 2)
-        $pedido->setGclid($session->get('gclid'));
-        $pedido->setGbraid($session->get('gbraid'));
-        $pedido->setWbraid($session->get('wbraid'));
+        if(!$this->security->isGranted('ROLE_ADMIN')) {
+            $pedido->setGoogleClientId($googleClientId);
+            $pedido->setGclid($session->get('gclid'));
+            $pedido->setGbraid($session->get('gbraid'));
+            $pedido->setWbraid($session->get('wbraid'));
+        }
 
         $pedido->setContacto($contacto);
         $pedido->setDireccion($direccionEnvio ?? $contacto->getDireccionFacturacion());
