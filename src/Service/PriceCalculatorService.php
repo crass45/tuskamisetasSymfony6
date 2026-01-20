@@ -31,7 +31,6 @@ class PriceCalculatorService
     public function calculateFullPresupuesto(Carrito $carrito): array
     {
         // --- FASE 1: AGREGAR ---
-        // Recopilamos la información global de todas las personalizaciones del carrito.
         $trabajosInfo = [];
         foreach ($carrito->getItems() as $presupuesto) {
             foreach ($presupuesto->getTrabajos() as $trabajo) {
@@ -44,7 +43,6 @@ class PriceCalculatorService
                     ];
                 }
                 $trabajosInfo[$id]['total_unidades'] += $presupuesto->getTotalProductos();
-                // Añadimos los productos de este grupo a la lista de productos afectados por este trabajo
                 foreach($presupuesto->getProductos() as $productoItem){
                     $trabajosInfo[$id]['productos_afectados'][] = $productoItem;
                 }
@@ -59,16 +57,14 @@ class PriceCalculatorService
             $totalUnidades = $info['total_unidades'];
             $productosAfectados = $info['productos_afectados'];
 
-            // Calculamos el coste total de este trabajo basándonos en su cantidad global
             $costeTotalTrabajo = $this->calculateSingleTrabajoGlobalCost($trabajo, $totalUnidades, $productosAfectados);
 
-            // Calculamos el coste por unidad para distribuirlo después
             if ($totalUnidades > 0) {
                 $costesPorUnidadTrabajo[$id] = $costeTotalTrabajo / $totalUnidades;
             }
         }
 
-        // --- FASE 3: DISTRIBUIR Y CONSTRUIR RESULTADO (¡CON LA MEJORA!) ---
+        // --- FASE 3: DISTRIBUIR Y CONSTRUIR RESULTADO ---
         $desgloseGrupos = [];
         $subtotalGeneralSinIva = 0;
 
@@ -80,7 +76,7 @@ class PriceCalculatorService
                 // 3a. Precio base del producto (coste + margen)
                 $precioBaseProducto = $this->calculateSingleProductSellingPrice($itemProducto->getProducto(), $itemProducto->getCantidad(), $carrito);
 
-                // 3b. Sumamos el coste por unidad de cada personalización que afecta a este grupo
+                // 3b. Sumamos el coste por unidad de cada personalización
                 $costeTotalPersonalizacionUnidad = 0;
                 foreach ($presupuesto->getTrabajos() as $trabajo) {
                     $id = $trabajo->getIdentificadorTrabajo();
@@ -96,7 +92,6 @@ class PriceCalculatorService
                     'unidades' => $itemProducto->getCantidad(),
                     'precio_unitario_final_sin_iva' => round($precioUnitarioFinal, 2),
                     'total_linea_sin_iva' => round($totalLinea, 2),
-                    // ¡¡LA MEJORA CLAVE!! Desglosamos los costes para la plantilla
                     'precio_base_producto_sin_iva' => round($precioBaseProducto, 4),
                     'coste_personalizacion_por_unidad' => round($costeTotalPersonalizacionUnidad, 4),
                 ];
@@ -110,7 +105,6 @@ class PriceCalculatorService
             $subtotalGeneralSinIva += $subtotalGrupo;
         }
 
-        // ... El resto de la función (cálculo de IVA y totales) se mantiene igual ...
         $totalIva = $subtotalGeneralSinIva * ($this->getIva() / 100);
         $granTotal = $subtotalGeneralSinIva + $totalIva;
 
@@ -123,27 +117,69 @@ class PriceCalculatorService
         ];
     }
 
+    // --- MÉTODOS DE APOYO PARA "AUTO-REPARACIÓN" ---
+
     /**
-     * ¡NUEVO! Calcula el coste TOTAL de un trabajo, usando la cantidad global y una lista de productos.
+     * Asegura que el producto tenga las relaciones (Modelo, Tarifa) cargadas.
+     * Si viene de la sesión (desconectado), lo recarga de la BBDD.
      */
+    private function getFreshProducto(Producto $producto): Producto
+    {
+        if ($producto->getId()) {
+            // Intentamos buscarlo en el EntityManager (caché o BBDD)
+            $fresh = $this->entityManager->getRepository(Producto::class)->find($producto->getId());
+            if ($fresh) {
+                return $fresh;
+            }
+        }
+        return $producto;
+    }
+
+    /**
+     * Asegura que la personalización tenga los precios cargados.
+     */
+    private function getFreshPersonalizacion(Personalizacion $personalizacion): Personalizacion
+    {
+        if ($personalizacion->getCodigo()) {
+            $fresh = $this->entityManager->getRepository(Personalizacion::class)->find($personalizacion->getCodigo());
+            if ($fresh) {
+                // Truco para forzar la carga de la colección de precios si es Lazy
+                $fresh->getPrecios()->count();
+                return $fresh;
+            }
+        }
+        return $personalizacion;
+    }
+
+    // ------------------------------------------------
+
     private function calculateSingleTrabajoGlobalCost(PresupuestoTrabajo $itemTrabajo, int $cantidadGlobal, array $productosAfectados): float
     {
         $personalizacion = $itemTrabajo->getTrabajo();
+
+        // [AUTO-REPAIR] Si la personalización existe, aseguramos que esté "fresca"
+        if ($personalizacion) {
+            $personalizacion = $this->getFreshPersonalizacion($personalizacion);
+        } else {
+            return 0.0;
+        }
+
         $rangoPrecios = $this->personalizacionPrecioRepository->findPriceByQuantity($personalizacion, $cantidadGlobal);
 
         // --- CÁLCULO DEL COSTE NORMAL ---
         $costeFijoNormal = 0;
-//        if ($personalizacion->getNumeroMaximoColores() > 0) {
-            if ($rangoPrecios) {
-                $numColores = $itemTrabajo->getCantidad();
-                $costePantalla = (float)($rangoPrecios->getPantalla() ?? 0.0);
-                $costeFijoNormal = $numColores * $costePantalla;
-            }
-//        }
+        if ($rangoPrecios) {
+            $numColores = $itemTrabajo->getCantidad();
+            $costePantalla = (float)($rangoPrecios->getPantalla() ?? 0.0);
+            $costeFijoNormal = $numColores * $costePantalla;
+        }
 
         $costeVariableTotal = 0;
         foreach ($productosAfectados as $itemProducto) {
-            $precioUnitarioVariable = $this->getPrecioUnitarioTrabajoParaProducto($personalizacion, $rangoPrecios, $itemTrabajo, $itemProducto->getProducto());
+            // [AUTO-REPAIR] También refrescamos el producto aquí para leer bien el color
+            $productoFresco = $this->getFreshProducto($itemProducto->getProducto());
+
+            $precioUnitarioVariable = $this->getPrecioUnitarioTrabajoParaProducto($personalizacion, $rangoPrecios, $itemTrabajo, $productoFresco);
             $costeVariableTotal += $precioUnitarioVariable * $itemProducto->getCantidad();
         }
 
@@ -154,7 +190,6 @@ class PriceCalculatorService
         $costeMinimoGarantizado = $numColoresParaMinimo * ((float)($personalizacion->getTrabajoMinimoPorColor() ?? 0.0));
 
         // --- COMPARACIÓN Y APLICACIÓN DE INCREMENTO ---
-        // El subtotal es el valor MÁS ALTO entre el cálculo normal y el mínimo garantizado.
         $subtotalAntesDeIncremento = max($costeNormalCalculado, $costeMinimoGarantizado);
 
         $incremento = (float)($personalizacion->getIncrementoPrecio() ?? 0.0);
@@ -162,51 +197,46 @@ class PriceCalculatorService
         return $subtotalAntesDeIncremento * (1 + ($incremento / 100));
     }
 
-    /**
-     * Calcula el precio de venta de un producto (coste + margen de tarifa), sin personalización.
-     */
     private function calculateSingleProductSellingPrice(Producto $producto, int $unidades, Carrito $carrito): float
     {
+        // [AUTO-REPAIR] Forzamos la carga fresca del producto y sus tarifas
+        $producto = $this->getFreshProducto($producto);
+
         $precioCoste = $this->getPrecioCosteUnitario($producto, $unidades);
 
         $proveedor = $producto->getModelo()->getProveedor();
         $modelo = $producto->getModelo();
 
-        // 1. Determinar la Tarifa Base (Modelo > Proveedor)
+        // 1. Determinar la Tarifa Base
         $tarifaBase = $modelo->getTarifa() ?? $proveedor?->getTarifa();
 
         // Variable para la tarifa final a aplicar
         $tarifaAplicable = $tarifaBase;
 
         // 2. Lógica de Sustitución de Tarifa por Grupo de Usuario
-        // Obtenemos el usuario desde el servicio Security, ya que Carrito no lo tiene.
         $user = $this->security->getUser();
 
         if ($user instanceof User && $tarifaBase) {
-            // Recorremos los grupos del usuario (reclamistas, etc.)
             foreach ($user->getGroups() as $group) {
-                // Recorremos los descuentos (reglas de sustitución) de ese grupo
                 foreach ($group->getDescuentos() as $descuento) {
-                    // Si el descuento tiene una "tarifa anterior" que coincide con la base...
-                    // ...la sustituimos por la "nueva tarifa" del descuento.
                     if ($descuento->getTarifaAnterior() &&
                         $descuento->getTarifaAnterior()->getId() === $tarifaBase->getId() &&
                         $descuento->getTarifa()) {
 
                         $tarifaAplicable = $descuento->getTarifa();
-                        break 2; // Encontrada y aplicada, salimos de los bucles
+                        break 2;
                     }
                 }
             }
         }
 
-        // 3. Calcular cantidad acumulada para tramos de tarifa
+        // 3. Calcular cantidad acumulada
         $cantidadParaTarifa = $unidades;
         if ($modelo && $modelo->isAcumulaTotal() && $proveedor && method_exists($carrito, 'getUnidadesByProveedor')) {
             $cantidadParaTarifa = $carrito->getUnidadesByProveedor($proveedor);
         }
 
-        // 4. Calcular precio final con la tarifa elegida
+        // 4. Calcular precio final
         $precioVentaUnitario = $precioCoste;
         if ($tarifaAplicable) {
             $rangoTarifa = $this->tarifaPreciosRepository->findPriceByQuantity($tarifaAplicable, $cantidadParaTarifa);
@@ -232,10 +262,12 @@ class PriceCalculatorService
             return (float)($rangoPrecios->getPrecio() ?? 0.0);
         }
 
-        $numColores = $itemTrabajo->getCantidad();//getNumeroColores();
+        $numColores = $itemTrabajo->getCantidad();
         if ($numColores <= 0) { return 0.0; }
 
         $colorProducto = $producto->getColor();
+        // Nota: Asumimos que $producto ya viene "fresco" porque lo limpiamos antes de llamar a esta función
+
         $esPrendaBlanca = ($colorProducto && method_exists($colorProducto, 'isBlanco')) ? $colorProducto->isBlanco() : false;
 
         $precioPrimerColor = $esPrendaBlanca ? (float)($rangoPrecios->getPrecio() ?? 0.0) : (float)($rangoPrecios->getPrecioColor() ?? 0.0);
@@ -251,6 +283,7 @@ class PriceCalculatorService
 
     private function getPrecioCosteUnitario(Producto $producto, int $unidades): float
     {
+        // Nota: Aquí usamos el $producto fresco, así que getModelo() y sus propiedades funcionan seguro.
         if ($producto->getModelo()->getBox() > 0 && $unidades >= $producto->getModelo()->getBox()) {
             return (float)($producto->getPrecioCaja() ?? $producto->getPrecioUnidad() ?? 0.0);
         }
@@ -267,10 +300,5 @@ class PriceCalculatorService
             $this->ivaPorcentaje = $empresa ? (float)$empresa->getIvaGeneral() : 21.0;
         }
         return $this->ivaPorcentaje;
-    }
-
-    private function addIva(float $precioSinIva): float
-    {
-        return round($precioSinIva * (1 + ($this->getIva() / 100)), 2);
     }
 }
