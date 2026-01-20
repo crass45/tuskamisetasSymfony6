@@ -272,10 +272,32 @@ class ProductController extends AbstractController
         $carritoParaCalculo->addItem($presupuestoActual, $this->getUser());
 
         // 5. Llamamos al servicio con el contexto completo y seguro.
+        // ... (código anterior donde llamas a calculateFullPresupuesto) ...
         $resultados = $this->priceCalculator->calculateFullPresupuesto($carritoParaCalculo);
 
-        // 6. Extraemos el desglose del último grupo (el que estamos calculando).
-        $resultadoGrupoActual = end($resultados['desglose_grupos']);
+        // --- INICIO CORRECCIÓN: Buscamos el grupo que corresponde EXACTAMENTE a nuestro producto ---
+        $resultadoGrupoActual = null;
+        $refObjetivo = $ultimoProducto ? $ultimoProducto->getReferencia() : '';
+
+        // Recorremos los resultados DE ATRÁS HACIA ADELANTE (para priorizar el nuevo si hubiera duplicados)
+        $grupos = $resultados['desglose_grupos'];
+        for ($i = count($grupos) - 1; $i >= 0; $i--) {
+            $grupo = $grupos[$i];
+            // Miramos dentro de los productos de este grupo
+            foreach ($grupo['desglose_productos'] as $linea) {
+                // Si encontramos la referencia que estamos editando, ¡este es nuestro grupo!
+                if ($linea['producto']->getReferencia() === $refObjetivo) {
+                    $resultadoGrupoActual = $grupo;
+                    break 2; // Salimos de los dos bucles
+                }
+            }
+        }
+
+        // Fallback de seguridad: si no lo encontramos (muy raro), usamos el último como antes
+        if (!$resultadoGrupoActual && !empty($resultados['desglose_grupos'])) {
+            $resultadoGrupoActual = end($resultados['desglose_grupos']);
+        }
+        // --- FIN CORRECCIÓN ---
 
         // 7. Renderizamos la plantilla con los datos del servicio.
         return $this->render('web/product/partials/_price_summary.html.twig', [

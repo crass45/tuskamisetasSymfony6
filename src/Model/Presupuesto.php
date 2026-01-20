@@ -144,7 +144,7 @@ class Presupuesto
         foreach ($this->productos as $key => $productoPresupuesto) {
             if ($productoPresupuesto->getProducto()?->getId() === $idProducto && $productoPresupuesto->getCantidad() === $cantidad) {
                 $modelo = $productoPresupuesto->getProducto()->getModelo();
-                $cantidadARestar = ($modelo?->getObligadaVentaEnPack()) ? $modelo->getPack() : 1;
+                $cantidadARestar = ($modelo?->isObligadaVentaEnPack()) ? $modelo->getPack() : 1;
 
                 $nuevaCantidad = $productoPresupuesto->getCantidad() - $cantidadARestar;
 
