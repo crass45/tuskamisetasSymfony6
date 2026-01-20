@@ -33,7 +33,7 @@
     {% endif %}
 
 {% endblock %}
-
+{% set searchTerm = app.request.get('q') %}
 {% block title %}
     {% if context is defined and context is not null %}
         {# 1. Intentamos usar el título SEO específico #}
@@ -48,8 +48,12 @@
         {% if paginaActual is defined and paginaActual > 1 %}
             - Página {{ paginaActual }}
         {% endif %}
+    {% elseif searchTerm is not empty %}
+        {# 2. Lógica de BÚSQUEDA (NUEVA) #}
+        Resultados para "{{ searchTerm }}" | TusKamisetas
+
     {% else %}
-        Catálogazo
+        {{ nombrePanel|default(context.nombre|default('Catálogo general')) }}
     {% endif %}
 {% endblock %}
 
@@ -68,7 +72,12 @@
         {% if paginaActual is defined and paginaActual > 1 %}
             (Página {{ paginaActual }})
         {% endif %}
+    {% elseif searchTerm is not empty %}
+        {# 2. Lógica de BÚSQUEDA (NUEVA) #}
+        Compra {{ searchTerm }} al mejor precio. Hemos encontrado {{ cantidadArticulos|default(0) }} productos relacionados con tu búsqueda de "{{ searchTerm }}". Personalización y venta al por mayor.
+
     {% endif %}
+
 {% endblock %}
 
 {% block migas %}
