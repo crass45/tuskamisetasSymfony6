@@ -9,7 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/{_locale}/blog', requirements: ['_locale' => 'es|en|fr'])]
+#[Route('/{_locale}', requirements: ['_locale' => 'es|en|fr'])]
 class BlogController extends AbstractController
 {
     private EntityManagerInterface $em;
@@ -39,9 +39,9 @@ class BlogController extends AbstractController
 
     // --- MÉTODO AÑADIDO ---
     /**
-     * URL final: /es/blog/el-slug-de-la-publicacion
+     * URL final: /es/publicacion/el-slug-de-la-publicacion
      */
-    #[Route('/{slug}', name: 'app_blog_detail')]
+    #[Route('/publicacion/{slug}', name: 'app_blog_detail')]
     public function detailAction(string $slug): Response
     {
         // MIGRACIÓN: Se usa el nuevo nombre de propiedad 'nombreUrl'
