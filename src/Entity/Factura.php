@@ -105,7 +105,11 @@ class Factura
                 $factura->setDireccion($direccionFacturacion->getDir());
                 $factura->setCp($direccionFacturacion->getCp());
                 $factura->setPoblacion($direccionFacturacion->getPoblacion());
-                $factura->setProvincia($direccionFacturacion->getProvincia());
+                if($direccionFacturacion->getProvincia() != null) {
+                    $factura->setProvincia($direccionFacturacion->getProvincia());
+                }else{
+                    $factura->setProvincia($direccionFacturacion->getProvinciaBD()->getNombre());
+                }
                 $factura->setPais($direccionFacturacion->getPais());
             }
         }
