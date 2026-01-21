@@ -22,6 +22,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use PHPQRCode\QRcode;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class PedidoCRUDController extends CRUDController
 {
@@ -70,7 +71,7 @@ final class PedidoCRUDController extends CRUDController
         $pedido = $this->assertObjectExists($request, true);
         $this->admin->checkAccess('show', $pedido);
 
-        $qrCodeDataUri= null;
+        $qrCodeDataUri = null;
         $filename = 'Orden de Pedido - ' . $pedido;
 
         // --- Lógica para generar el Código QR ---
@@ -202,7 +203,7 @@ final class PedidoCRUDController extends CRUDController
             return $this->showFacturaAction($request);
         }
 
-        if ( $pedido->getBaseImponible() > 400 && strlen($pedido->getContacto()->getCif())<9) {
+        if ($pedido->getBaseImponible() > 400 && strlen($pedido->getContacto()->getCif()) < 9) {
             $this->addFlash('sonata_flash_error', 'El pedido no se puede facturar porque la base imponible supera 400€ y el contacto no tiene DNI/CIF ');
 //        return new RedirectResponse($this->admin->generateUrl('list'));
             return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
@@ -328,29 +329,30 @@ final class PedidoCRUDController extends CRUDController
 //        $carrito->setRecogerTienda($pedido->getRecogerEnTienda());
 
         // Agrupamos las líneas por personalización para reconstruir los 'presupuestos'
-        $lineasAgrupadas = [];
-        foreach ($pedido->getLineas() as $linea) {
-            $key = $linea->getPersonalizacion() ?? 'sin-personalizacion';
-            $lineasAgrupadas[$key][] = $linea;
-        }
+//        $lineasAgrupadas = [];
+//        foreach ($pedido->getLineas() as $linea) {
+//            $key = $linea->getPersonalizacion() ?? 'sin-personalizacion';
+//            $lineasAgrupadas[$key][] = $linea;
+//        }
 
-        foreach ($lineasAgrupadas as $grupo) {
+        foreach ($pedido->getLineas() as $linea) {
             $presupuesto = new Presupuesto();
             // Añadimos los trabajos (serán los mismos para todo el grupo)
-            if (isset($grupo[0])) {
-                foreach ($grupo[0]->getPersonalizaciones() as $pers) {
+            if (isset($linea)) {
+                // Añadimos los productos
+
+                $presupuestoProducto = new PresupuestoProducto();
+                $presupuestoProducto->fromPedidoLinea($linea);
+                $presupuesto->addProducto($presupuestoProducto);
+
+                foreach ($linea->getPersonalizaciones() as $pers) {
                     $presupuestoTrabajo = new PresupuestoTrabajo();
                     $presupuestoTrabajo->fromPedidoLineaHasTrabajo($pers);
                     $presupuesto->addTrabajo($presupuestoTrabajo);
                 }
+                $carrito->addItem($presupuesto);
             }
-            // Añadimos los productos
-            foreach ($grupo as $linea) {
-                $presupuestoProducto = new PresupuestoProducto();
-                $presupuestoProducto->fromPedidoLinea($linea);
-                $presupuesto->addProducto($presupuestoProducto, $pedido->getContacto()->getUsuario());
-            }
-            $carrito->addItem($presupuesto);
+
         }
 
         // Guardamos el carrito y el ID del pedido en la sesión
