@@ -175,7 +175,7 @@ class PresupuestoTrabajo
             $this->setCantidad($pedidoTrabajo->getNColores());
             //Estudiar esto y ver si poner ID o poner el codigo
             $this->setIdentificadorTrabajo($pedidoTrabajo->getCodigo());
-            $this->setUrlImage($pedidoTrabajo->getUrlImagen());
+            $this->setUrlImage($pedidoTrabajo->getUrlImagen() ?? '');
             $this->setTrabajo($pedidoTrabajo->getPersonalizacion());
         }
         $this->setObservaciones($personalizacion->getObservaciones());
