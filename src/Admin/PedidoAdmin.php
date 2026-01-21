@@ -226,6 +226,7 @@ final class PedidoAdmin extends AbstractAdmin
                     ->add('agencia', ChoiceType::class, [
                         'mapped' => false,
                         'label' => 'Selecciona la Agencia de envío',
+                        'data' => '2',
                         'choices' => [
                             'Nacex' => '1',
                             'MRW' => '2',
@@ -243,6 +244,7 @@ final class PedidoAdmin extends AbstractAdmin
                     ->add('servicio', ChoiceType::class, [
                         'mapped' => false,
                         'label' => 'Tipo de Servicio (MRW)',
+                        'data' => '0205',
                         'choices' => [
                             'Normal' => '0205',
                             '24h Aseguradas' => '0115',
