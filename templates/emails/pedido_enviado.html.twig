@@ -26,9 +26,9 @@
     {# 2. Bloque de dirección claro y simplificado #}
     <h3>Datos de Entrega</h3>
     <blockquote style="border-left: 4px solid #ccc; padding-left: 15px; margin: 15px 0; line-height: 1.6;">
-        {# Usamos el operador '??' para simplificar: si 'direccionEnvio' no existe, usa la del contacto #}
-        {% set direccion = pedido.direccionEnvio ?? pedido.contacto.direccionFacturacion %}
-        {% set telefono =  pedido.direccionEnvio.telefonoMovil ?? pedido.contacto.direccionFacturacion.telefonoMovil %}
+        {# Usamos el operador '??' para simplificar: si 'direccion' no existe en el pedio, usa la del contacto  de facturacion#}
+        {% set direccion = pedido.direccion ?? pedido.contacto.direccionFacturacion %}
+        {% set telefono =  pedido.direccion.telefonoMovil ?? pedido.contacto.direccionFacturacion.telefonoMovil %}
 
         <strong>{{ direccion.nombre|default(pedido.contacto.nombre ~ ' ' ~ pedido.contacto.apellidos) }}</strong><br>
         {{ direccion.dir }}<br>
