@@ -14,6 +14,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 class PaymentController extends AbstractController
@@ -137,9 +138,9 @@ class PaymentController extends AbstractController
      * URL de Éxito: Ahora usa la ruta y el nombre de tu proyecto original.
      */
     #[Route('/{_locale}/compraOK', name: 'app_payment_success', requirements: ['_locale' => 'es|en|fr'])]
-    public function successAction(Request $request): Response
+    public function successAction(Request $request, SessionInterface $session): Response
     {
-        $session = $request->getSession();
+//        $session = $request->getSession();
         // Recuperamos el ID del pedido de la sesión
         $orderId = $session->get('last_success_order_id');
 

@@ -26,6 +26,28 @@ final class FacturaAdmin extends AbstractAdmin
 
     protected function configureFormFields(FormMapper $form): void
     {
+        $factura = $this->getSubject();
+        $pedido = $factura ? $factura->getPedido() : null;
+        $htmlEnlacePedido = '';
+
+        if ($pedido) {
+            // Generamos la ruta.
+            // NOTA: 'admin_app_pedido_edit' es la ruta estándar de edición de Sonata.
+            // Si quieres que vaya a tu acción personalizada, usa 'admin_app_pedido_editarPedido'
+            $rutaPedido = $this->getRouteGenerator()->generate('admin_app_pedido_edit', ['id' => $pedido->getId()]);
+
+            $htmlEnlacePedido = sprintf(
+                '<div style="margin-top: 5px; padding: 10px; background-color: #f0f0f0; border-left: 4px solid #3c8dbc;">
+                    <i class="fa fa-shopping-cart"></i> Pedido asociado: <strong>%s</strong><br>
+                    <a href="%s" target="_blank" style="font-weight: bold; text-decoration: underline;">
+                       <i class="fa fa-external-link"></i> Pincha aquí para ver/editar el pedido completo
+                    </a>
+                 </div>',
+                $pedido->__toString(), // Muestra el nombre/ref del pedido
+                $rutaPedido
+            );
+        }
+
         $form
             ->with('Datos', ['class' => 'col-md-12'])
             ->add('fecha', DateTimePickerType::class)
@@ -49,9 +71,21 @@ final class FacturaAdmin extends AbstractAdmin
                 'mapped' => false,
                 'data' => $this->getSubject()?->getPedido()?->getContacto()?->__toString(),
             ])
-            ->end()
-            ->with('Pedido Asociado')
-            ->add('pedido', AdminType::class, ['label' => false])
+//            ->end()
+//            ->with('Pedido Asociado')
+//            ->add('pedido', AdminType::class, ['label' => false])
+            // --- NUEVO CAMPO DE ENLACE ---
+            ->add('enlace_pedido_info', TextType::class, [
+                'mapped' => false,    // No se guarda en base de datos
+                'required' => false,
+                'label' => 'Acceso al Pedido',
+                // Ocultamos el input de texto, solo queremos ver el HTML de ayuda
+                'attr' => ['style' => 'display:none;'],
+                // Aquí inyectamos el HTML que creamos arriba
+                'help' => $htmlEnlacePedido,
+                'help_html' => true,
+            ])
+            // -----------------------------
             ->end();
     }
 

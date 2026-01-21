@@ -130,7 +130,7 @@ class Factura
     public function getNombre(): ?string { return $this->nombre; }
     public function setNombre(string $nombre): self { $this->nombre = $nombre; return $this; }
     public function getComentarios(): string { return $this->comentarios; }
-    public function setComentarios(string $comentarios): self { $this->comentarios = $comentarios; return $this; }
+    public function setComentarios(?string $comentarios): self { $this->comentarios = $comentarios ?? ''; return $this; }
     public function getRazonSocial(): ?string { return $this->razonSocial; }
     public function setRazonSocial(string $razonSocial): self { $this->razonSocial = $razonSocial; return $this; }
     public function getDireccion(): ?string { return $this->direccion; }
