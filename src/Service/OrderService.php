@@ -300,6 +300,17 @@ class OrderService
             ]));
         $this->mailer->send($adminEmail);
 
+        // 1. Preparamos la agrupación de líneas para la visualización (Igual que se hacía antiguamente)
+        $groupedLines = [];
+        foreach ($pedido->getLineas() as $linea) {
+            // Usamos la personalización como clave para agrupar
+            // Nota: Asegúrate de que $linea->getPersonalizacion() devuelva un string o null.
+            // Si devuelve un objeto, usa ->getNombre() o similar.
+            $personalizacion = $linea->getPersonalizacion();
+            $key = empty($personalizacion) ? 'sin-personalizacion' : (string)$personalizacion;
+
+            $groupedLines[$key][] = $linea;
+        }
         // 2. Enviar email al cliente
         $clientEmail = (new Email())
             ->from('comercial@tuskamisetas.com')
@@ -307,7 +318,8 @@ class OrderService
             ->subject('¡Hemos recibido el pago de tu pedido! (' . $pedido . ')')
             ->html($this->twig->render('emails/payment_success_client.html.twig', [
                 'pedido' => $pedido,
-                'empresa' => $empresa
+                'empresa' => $empresa,
+                'grouped_lines' => $groupedLines
             ]));
         $this->mailer->send($clientEmail);
     }
