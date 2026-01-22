@@ -72,6 +72,7 @@ class PriceCalculatorService
             $desgloseProductosGrupo = [];
             $subtotalGrupo = 0;
 
+            // ... dentro de FASE 3 ...
             foreach ($presupuesto->getProductos() as $itemProducto) {
                 // 3a. Precio base del producto (coste + margen)
                 $precioBaseProducto = $this->calculateSingleProductSellingPrice($itemProducto->getProducto(), $itemProducto->getCantidad(), $carrito);
@@ -83,15 +84,25 @@ class PriceCalculatorService
                     $costeTotalPersonalizacionUnidad += $costesPorUnidadTrabajo[$id] ?? 0;
                 }
 
+                // Cálculo del precio unitario final (con precisión alta)
                 $precioUnitarioFinal = $precioBaseProducto + $costeTotalPersonalizacionUnidad;
-                $totalLinea = $precioUnitarioFinal * $itemProducto->getCantidad();
-                $subtotalGrupo += $totalLinea;
+
+                // --- CORRECCIÓN DE REDONDEO ---
+                // Calculamos el total de línea matemático
+                $totalLineaRaw = $precioUnitarioFinal * $itemProducto->getCantidad();
+
+                // IMPORTANTE: Redondeamos el total de la línea ANTES de sumarlo al subtotal del grupo
+                // Esto garantiza que la suma matemática coincida con la suma visual de la factura
+                $totalLineaRedondeado = round($totalLineaRaw, 2);
+
+                // Sumamos el valor redondeado al acumulador
+                $subtotalGrupo += $totalLineaRedondeado;
 
                 $desgloseProductosGrupo[] = [
                     'producto' => $itemProducto->getProducto(),
                     'unidades' => $itemProducto->getCantidad(),
-                    'precio_unitario_final_sin_iva' => round($precioUnitarioFinal, 2),
-                    'total_linea_sin_iva' => round($totalLinea, 2),
+                    'precio_unitario_final_sin_iva' => $precioUnitarioFinal, // Puedes dejarlo con decimales para info interna
+                    'total_linea_sin_iva' => $totalLineaRedondeado, // Usamos el redondeado
                     'precio_base_producto_sin_iva' => round($precioBaseProducto, 4),
                     'coste_personalizacion_por_unidad' => round($costeTotalPersonalizacionUnidad, 4),
                 ];

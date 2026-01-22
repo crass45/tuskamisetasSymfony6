@@ -183,23 +183,24 @@ class Factura
      */
     public function getBaseImponible(): float
     {
-
-        if (!$this->pedido) {
-            return 0.0;
-        }
+        if (!$this->pedido) { return 0.0; }
 
         // Gastos extra (servicio exprés)
         $precioGastos = $this->pedido->getPedidoExpres() ? $this->pedido->getPrecioPedidoExpres() ?? 0 : 0;
 
         // Importe del descuento
-        $importeDescuento = ($this->pedido->getSubTotal() * $this->pedido->getDescuento() / 100);
+        // OJO: Aquí hay otro punto de posible error. Si aplicas descuento porcentual,
+        // deberías redondear el importe del descuento antes de restarlo.
+        $subtotal = $this->pedido->getSubTotal();
+        $descuentoPorcentaje = $this->pedido->getDescuento();
+
+        $importeDescuento = round($subtotal * $descuentoPorcentaje / 100, 2);
 
         // La base imponible es la suma de conceptos antes de IVA
-        $base = $this->pedido->getSubTotal() + $this->pedido->getEnvio() + $precioGastos - $importeDescuento;
+        $base = $subtotal + $this->pedido->getEnvio() + $precioGastos - $importeDescuento;
 
-        var_dump($base);
         return round($base, 2);
-     }
+    }
 
     /**
      * @return FacturaRectificativa|null

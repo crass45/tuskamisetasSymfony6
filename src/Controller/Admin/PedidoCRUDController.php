@@ -224,7 +224,8 @@ final class PedidoCRUDController extends CRUDController
         $this->em->flush();
 
         // Y finalmente, notificas a Google
-        $this->googleAnalyticsService->sendPurchaseEvent($pedido);
+        //COMENTAMOS ESTO YA QUE DE MOMENTO LO DEJAMOS COMO ANTES
+//        $this->googleAnalyticsService->sendPurchaseEvent($pedido);
 
         $this->addFlash('sonata_flash_success', 'Factura creada y evento de compra enviado a Google Analytics.');
 
