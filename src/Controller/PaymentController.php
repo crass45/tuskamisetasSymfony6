@@ -122,7 +122,7 @@ class PaymentController extends AbstractController
                 $this->orderService->sendPaymentSuccessEmails($pedido);
 
                 // 2. Se envía el evento de compra a Google Analytics desde el servidor
-                $this->googleAnalyticsService->sendPurchaseEvent($pedido);
+                //$this->googleAnalyticsService->sendPurchaseEvent($pedido);
 
                 $this->logger->info('[Redsys Notification] Pedido ' . $pedido->getId() . ' actualizado correctamente.');
             } else {
