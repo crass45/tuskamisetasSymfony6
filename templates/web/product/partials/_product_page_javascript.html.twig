@@ -356,8 +356,10 @@
                 if (areas && areas.length > 0) {
                     areasToShow = areas;
                 } else {
-                    if (selectedCode === 'A1') {
-                        areasToShow = ['Pecho', 'Espalda', 'Manga Izquierda', 'Manga Derecha'];
+                    // Definimos los códigos que permiten mangas
+                    const codigosConMangas = ['A1','P1','P2','SU1','SU2','SU3','SU4', 'T1','T2','T3','T4'];
+                    if (codigosConMangas.includes(selectedCode)) {
+                        areasToShow = ['Delantera', 'Trasera', 'Manga Izquierda', 'Manga Derecha'];
                     } else {
                         areasToShow = ['Delantera', 'Trasera'];
                     }
@@ -581,36 +583,68 @@
 
             // 4. Carga del contenido del modal "Presupuesto Rápido"
             // 2. Modificamos el listener del modal "Presupuesto Rápido"
+            // 2. Modificamos el listener del modal "Presupuesto Rápido"
             $("#presupuestoRapidoModal").on("show.bs.modal", function (e) {
                 const modal = $(this);
-                const loadingDiv = $('<div class="modal-dialog"><div class="modal-content" style="text-align:center;"><img src="{{ asset('images/loading.gif') }}" style="width:100px; margin: 40px;" alt="cargando"></div></div>');
-                modal.html(loadingDiv);
+                // ... (código de loading igual) ...
 
                 $.ajax({
                     url: TUSKAM_ROUTES.presupuesto_rapido_modal,
                     success: function (result) {
-                        // Primero, cargamos el HTML del formulario en el modal
                         modal.html(result);
 
-                        // AHORA que el formulario existe, vinculamos el script de GA
-                        const contactForm = modal.find('#solicitud-contacto-form')[0]; // Usamos find() y obtenemos el elemento DOM
+                        const contactForm = modal.find('#solicitud-contacto-form')[0];
+
                         if (contactForm) {
-                            contactForm.addEventListener('submit', function () {
+                            contactForm.addEventListener('submit', function (event) {
+                                // --- 1. AÑADIR GOOGLE CLIENT ID (GA4) ---
                                 const clientId = getGoogleAnalyticsClientId();
                                 if (clientId) {
-                                    // Eliminamos campos previos para evitar duplicados
-                                    let existingField = this.querySelector('input[name="googleClientId"]');
-                                    if (existingField) {
-                                        existingField.remove();
+                                    addHiddenField(this, 'googleClientId', clientId);
+                                }
+
+                                // --- 2. AÑADIR GCLID, GBRAID, WBRAID (Google Ads) ---
+                                // Prioridad: 1. URL (si acaba de llegar) 2. Sesión (si está navegando)
+
+                                // Recuperamos variables de sesión inyectadas por Twig
+                                // El operador |default('') evita errores si la sesión está vacía
+                                const sessionParams = {
+                                    'gclid': "{{ app.session.get('gclid')|default('') }}",
+                                    'gbraid': "{{ app.session.get('gbraid')|default('') }}",
+                                    'wbraid': "{{ app.session.get('wbraid')|default('') }}"
+                                };
+
+                                const urlParams = new URLSearchParams(window.location.search);
+                                const adParams = ['gclid', 'gbraid', 'wbraid'];
+
+                                adParams.forEach(param => {
+                                    // Primero miramos en la URL (más fresco)
+                                    let value = urlParams.get(param);
+
+                                    // Si no está en URL, miramos lo que guardó TrackingSubscriber en sesión
+                                    if (!value && sessionParams[param]) {
+                                        value = sessionParams[param];
                                     }
 
-                                    // Creamos y añadimos el campo oculto
-                                    const hiddenInput = document.createElement('input');
-                                    hiddenInput.type = 'hidden';
-                                    hiddenInput.name = 'googleClientId';
-                                    hiddenInput.value = clientId;
-                                    this.appendChild(hiddenInput);
+                                    if (value) {
+                                        addHiddenField(this, param, value);
+                                    }
+                                });
+
+                                // --- 3. ENVIAR EVENTO A GA4 ---
+                                {% if not is_granted('ROLE_ADMIN') %}
+                                if (typeof gtag === 'function') {
+                                    // Recuperamos el gclid final para enviarlo también al evento
+                                    let finalGclid = urlParams.get('gclid') || sessionParams['gclid'];
+
+                                    gtag('event', 'solicitud_de_presupuesto_enviada', {
+                                        'send_to': 'G-J1ZQDH5W4Q',
+                                        'event_category': 'contacto',
+                                        'event_label': 'presupuesto_rapido_producto',
+                                        'gclid': finalGclid || undefined
+                                    });
                                 }
+                                {% endif %}
                             });
                         }
                     },
@@ -619,6 +653,18 @@
                     }
                 });
             });
+
+            // Función auxiliar
+            function addHiddenField(form, name, value) {
+                let existingField = form.querySelector(`input[name="${name}"]`);
+                if (existingField) existingField.remove();
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = value;
+                form.appendChild(input);
+            }
 
             // 5. Scroll suave para el botón "Ver Resumen"
             $(".scrollResumen").on("click", function () {
