@@ -51,6 +51,7 @@ final class ModeloAdmin extends AbstractAdmin
             ->tab('Información')
             ->with('Datos', ['class' => 'col-md-8'])
             ->add('referencia', TextType::class)
+            ->add('importancia')
             ->add('nombre', TextType::class)
             ->add('proveedor', ModelType::class)
             ->add('fabricante', ModelType::class)
