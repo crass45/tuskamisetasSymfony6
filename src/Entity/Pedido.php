@@ -907,6 +907,93 @@ class Pedido
         return false;
     }
 
+
+    /**
+     * Agrupa las líneas que comparten exactamente la misma combinación de trabajos.
+     * Devuelve un array listo para iterar en Twig.
+     * * @return array Estructura:
+     * [
+     * 'firma_unica' => [
+     * 'trabajos' => [Objetos PedidoTrabajo...],
+     * 'lineas' => [Objetos PedidoLinea...],
+     * 'es_liso' => bool
+     * ],
+     * ...
+     * ]
+     */
+    /**
+     * Agrupa líneas de forma ESTRICTA.
+     * Dos líneas solo van juntas si tienen los mismos trabajos,
+     * con las mismas notas y en las mismas ubicaciones.
+     */
+    public function getLineasAgrupadasPorTrabajos(): array
+    {
+        $grupos = [];
+
+        foreach ($this->getLineas() as $linea) {
+            $detallesParaFirma = []; // Array para calcular la firma única
+            $infoVisual = [];        // Array con objetos para pintar en Twig
+
+            foreach ($linea->getPersonalizaciones() as $pers) {
+                $trabajo = $pers->getPedidoTrabajo();
+
+                if ($trabajo) {
+                    // Obtenemos los datos que diferencian un trabajo de otro
+                    $id = $trabajo->getId();
+                    $obs = trim($pers->getObservaciones() ?? '');
+                    // Intentamos obtener ubicación si existe el método, si no, vacío
+                    $ubic = method_exists($pers, 'getUbicacion') ? trim($pers->getUbicacion() ?? '') : '';
+
+                    // 1. Creamos un string único para este trabajo específico
+                    // Usamos '||' como separador para que sea muy difícil que coincida por error
+                    $firmaUnicaTrabajo = $id . '||' . $obs . '||' . $ubic;
+
+                    $detallesParaFirma[] = $firmaUnicaTrabajo;
+
+                    // 2. Preparamos los datos listos para Twig (así la plantilla es más limpia)
+                    $infoVisual[] = [
+                        'objeto_trabajo' => $trabajo,
+                        'nombre' => $trabajo->getNombre(),
+                        'tipo' => $trabajo."",
+                        'montaje' => $trabajo->getMontaje(),
+                        'observaciones' => $obs,
+                        'ubicacion' => $ubic
+                    ];
+                }
+            }
+
+            // Ordenamos las firmas para que el orden de inserción no afecte (A+B sea igual a B+A)
+            sort($detallesParaFirma);
+
+            // Creamos la firma del GRUPO entero
+            $firmaGrupo = empty($detallesParaFirma) ? 'liso' : implode('##', $detallesParaFirma);
+
+            // Inicializamos el grupo si no existe
+            if (!isset($grupos[$firmaGrupo])) {
+                $grupos[$firmaGrupo] = [
+                    'es_liso' => ($firmaGrupo === 'liso'),
+                    // Guardamos la info visual ya preparada.
+                    // Como todas las líneas de este grupo son idénticas en trabajos,
+                    // cogemos la info de la primera línea que entra.
+                    'detalles_visuales' => $infoVisual,
+                    'lineas' => []
+                ];
+            }
+
+            // Añadimos la línea
+            $grupos[$firmaGrupo]['lineas'][] = $linea;
+        }
+
+        // Mover lisos al final
+        if (isset($grupos['liso'])) {
+            $lisos = $grupos['liso'];
+            unset($grupos['liso']);
+            $grupos['liso'] = $lisos;
+        }
+
+        return $grupos;
+    }
+
     public function getTrabajos()
     {
         $trabajos = array();

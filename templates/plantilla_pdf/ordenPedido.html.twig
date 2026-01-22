@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Presupuesto PR{{ pedido.id }}</title>
-
+    {# ... (TU CSS SE MANTIENE EXACTAMENTE IGUAL) ... #}
     <style>
         .clearfix:after {
             content: "";
@@ -25,7 +25,6 @@
             background: #FFFFFF;
             font-family: Arial, sans-serif;
             font-size: 12px;
-            font-family: Arial;
         }
 
         header {
@@ -67,8 +66,7 @@
             text-align: right;
         }
 
-        #project div,
-        #company div {
+        #project div, #company div {
             white-space: nowrap;
         }
 
@@ -83,8 +81,7 @@
             background: #F5F5F5;
         }
 
-        table th,
-        table td {
+        table th, table td {
             text-align: center;
             border-bottom: 1px solid black;
         }
@@ -97,29 +94,24 @@
             font-weight: normal;
         }
 
-        table .service,
-        table .desc {
+        table .service, table .desc {
             text-align: left;
         }
 
         table td {
-            /*padding: 20px;*/
             text-align: right;
         }
 
-        table td.service,
-        table td.desc {
+        table td.service, table td.desc {
             vertical-align: top;
         }
 
-        table td.unit,
-        table td.qty,
-        table td.total {
+        table td.unit, table td.qty, table td.total {
             font-size: 1.2em;
         }
 
         table td.grand {
-            border-top: 1px solid #5D6975;;
+            border-top: 1px solid #5D6975;
         }
 
         #notices .notice {
@@ -141,165 +133,197 @@
 </head>
 <body>
 <header class="clearfix">
+    {# ... (TU HEADER SE MANTIENE IGUAL) ... #}
     <div id="logo" style="text-align: left">
         <div style="float: left;text-align: center;border: 1px solid black;padding: 10px">
             <h2>PRESUPUESTO {{ pedido }}</h2>
-            {% if pedido.pedidoExpres == true %}
-                <H3 style="margin-bottom: 0px">PEDIDO EXPRES</H3>
-            {% endif %}
-            {% if qrCodeFile is not null %}
-                <img src="{{ qrCodeFile }}" title="QR Code"/>
-            {% endif %}
-            {#           <p>https://www.tuskamisetas.com/qr{{ pedido }}.png</p> #}
+            {% if pedido.pedidoExpres == true %}<H3 style="margin-bottom: 0px">PEDIDO EXPRES</H3>{% endif %}
+            {% if qrCodeFile is not null %}<img src="{{ qrCodeFile }}" title="QR Code"/>{% endif %}
             {% if pedido.fechaEntrega is not null %}<h4 style="margin-top: 0px">Fecha
                 entrega: {{ pedido.fechaEntrega | date('d-m-Y') }}</h4>{% endif %}
         </div>
     </div>
-
     {% if pedido.direccion is defined  and pedido.direccion != null %}
         <div id="project"
              style="text-align: right;float: right; border: 1px solid white; padding: 15px; padding-left: 0;">
             <div style="border-bottom: 1px solid grey;">DATOS DE ENVÍO</div>
             <br>
             {% if pedido.recogerEnTienda %}
-                <h3>RECOGE EN TIENDA</h3>
-                <p>{{ pedido.contacto.nombre }}</p>
-                <p>{{ pedido.contacto.appellidos }}</p>
+                <h3>RECOGE EN TIENDA</h3><p>{{ pedido.contacto.nombre }}</p><p>{{ pedido.contacto.appellidos }}</p>
             {% else %}
-                {# <div><span>PROJECT</span> Website development</div> #}
                 {% if (pedido.direccion.nombre != "") %}
                     <div>{{ pedido.direccion.nombre }}</div>
-                {% else %}
-                    {% if pedido.contacto is defined and pedido.contacto != null %}
-                        <div>{{ pedido.contacto.nombre }}</div>
-                        <div>{{ pedido.contacto.apellidos }}</div>
-                    {% endif %}
-                {% endif %}
-                <div>{% if pedido.direccion is not null %}{{ pedido.direccion.dir }}
-                        <br> {{ pedido.direccion.cp }}
+                {% else %}{% if pedido.contacto is defined and pedido.contacto != null %}
+                    <div>{{ pedido.contacto.nombre }}</div>
+                    <div>{{ pedido.contacto.apellidos }}</div>{% endif %}{% endif %}
+                <div>{% if pedido.direccion is not null %}{{ pedido.direccion.dir }}<br> {{ pedido.direccion.cp }}
                         <br> {{ pedido.direccion.poblacion }}<br> {{ pedido.direccion.provincia }}
-                        <br> {{ pedido.direccion.pais }}<br>{% endif %}
-                </div>
-                {# <div><span>DUE DATE</span> September 17, 2015</div> #}
-
+                        <br> {{ pedido.direccion.pais }}<br>{% endif %}</div>
                 {% if pedido.direccion.telefonoMovil is defined and pedido.direccion.telefonoMovil != "" %}
                     <div>Telf: {{ pedido.direccion.telefonoMovil }}</div>
-                {% else %}
-                    {% if pedido.contacto.telefonoMovil is defined and pedido.contacto.telefonoMovil != "" %}
-                        <div>Telf: {{ pedido.contacto.telefonoMovil }}</div>{% endif %}
+                {% else %}{% if pedido.contacto.telefonoMovil is defined and pedido.contacto.telefonoMovil != "" %}
+                    <div>Telf: {{ pedido.contacto.telefonoMovil }}</div>{% endif %}
                     {% if pedido.contacto.telefonoOtro is defined and pedido.contacto.telefonoOtro != "" %}
                         <div>Movil: {{ pedido.contacto.telefonoOtro }}</div>{% endif %}
                     <div><a href="mailto:{{ pedido.contacto.usuario.email }}">{{ pedido.contacto.usuario.email }}</a>
-                    </div>
-                {% endif %}
-                {# <div><span>DUE DATE</span> September 17, 2015</div> #}
+                    </div>{% endif %}
             {% endif %}
         </div>
     {% else %}
+        {# ... (Bloque else del header se mantiene igual) ... #}
         {% if pedido.contacto is defined and pedido.contacto != null %}
             <div id="project"
                  style="text-align: right;float: right; border: 1px solid white; padding: 15px; padding-left: 0;">
                 <div style="border-bottom: 1px solid grey;">DATOS DE ENVÍO</div>
                 <br>
-                {# <div><span>PROJECT</span> Website development</div> #}
                 <div>{{ pedido.contacto.nombre }}</div>
                 <div>{{ pedido.contacto.apellidos }}</div>
                 <div>{{ pedido.contacto.cif }}</div>
                 <div>{% if pedido.contacto.direccionFacturacion is not null %}{{ pedido.contacto.direccionFacturacion.dir }}
-                        <br> {{ pedido.contacto.direccionFacturacion.cp }}<br> {{ pedido.contacto.direccionFacturacion.poblacion }}
+                        <br> {{ pedido.contacto.direccionFacturacion.cp }}
+                        <br> {{ pedido.contacto.direccionFacturacion.poblacion }}
                         <br> {{ pedido.contacto.direccionFacturacion.provincia }}
-                        <br> {{ pedido.contacto.direccionFacturacion.pais }}{% endif %}
-                </div>
-                {# {% if pedido.idDireccion.telefonoMovil is defined and pedido.idDireccion.telefonoMovil != "" %} #}
-                {# <div>Telf: {{ pedido.idDireccion.telefonoMovil }}</div> #}
-                {# {% else %} #}
+                        <br> {{ pedido.contacto.direccionFacturacion.pais }}{% endif %}</div>
                 {% if pedido.contacto.telefonoMovil is defined and pedido.contacto.telefonoMovil != "" %}
                     <div>Telf: {{ pedido.contacto.telefonoMovil }}</div>{% endif %}
                 {% if pedido.contacto.telefonoOtro is defined and pedido.contacto.telefonoOtro != "" %}
                     <div>Movil: {{ pedido.contacto.telefonoOtro }}</div>{% endif %}
-                {# {% endif %} #}
-                <div><a href="mailto:{{ pedido.contacto.usuario.email }}">{{ pedido.contacto.usuario.email }}</a>
-                </div>
-                {# <div><span>DUE DATE</span> September 17, 2015</div> #}
+                <div><a href="mailto:{{ pedido.contacto.usuario.email }}">{{ pedido.contacto.usuario.email }}</a></div>
             </div>
         {% endif %}
     {% endif %}
-
     <br>
 </header>
-<main>
-    {# <div style="width: 100%; text-align: right;font-size: 12px; padding-right: 15px "> #}
-    {# Fecha de validez:  {{ "now" | date_modify("+10 day") | date('d-m-Y') }} y bajo disponibilidad de stock #}
-    {# </div> #}
 
+<main>
     <div style="width: 100%; text-align: left;font-size: 12px; padding-right: 15px ">
         Fecha de expedición: {{ pedido.fecha | date('d-m-Y') }}
     </div>
     <div>
         {{ pedido.referenciaInterna }}
     </div>
-    <table width="100%">
-        <tbody>
-        <tr style="background-color: #C1CED9">
-            <th class="service">REFERENCIA</th>
-            <th class="desc">DESCRIPCION</th>
-            <th>CANTIDAD</th>
-        </tr>
-        {% for lineaPedido in pedido.lineas %}
-            <tr>
-                <td class="service">{{ lineaPedido.producto.modelo.referencia }}<br>
-                    ({{ lineaPedido.producto.referencia }})
-                </td>
-                <td class="desc">{{ lineaPedido.producto.modelo.nombre }}
-                    T/{{ lineaPedido.producto.talla }} {{ lineaPedido.producto.color }}
-                    {% for pers in lineaPedido.personalizaciones %}
-                        <p style="font-size: 11px; font-weight: bold">{{ pers.getCadenaTrabajo }} {% if pers.pedidoTrabajo.nombre != "" %}({{ pers.pedidoTrabajo.nombre }}){% endif %} {{ pers.getObservaciones }}</p>
 
+    {# BUCLE PRINCIPAL #}
+    {% for firma, grupo in pedido.getLineasAgrupadasPorTrabajos() %}
 
+        <div style="margin-top: 25px; page-break-inside: avoid; border: 1px solid #5D6975;">
+
+            {# --- CABECERA DEL GRUPO --- #}
+            <div style="background-color: #5D6975; color: white; padding: 5px 10px; font-weight: bold;">
+                {% if grupo.es_liso %}
+                    ARTICULOS SIN PERSONALIZACIÓN (LISAS)
+                {% else %}
+                    TRABAJOS:
+                    {% for detalle in grupo.detalles_visuales %}
+
+                        {# 1. Nombre del trabajo #}
+                        <div class="contenedorcito" style="border-top: 1px solid white; padding-bottom: 5px; margin-bottom: 10px;">
+                            <div style="font-weight: bold; color: white; margin-bottom: 5px;">
+                                {{ detalle.nombre }}
+                            </div>
+                            <div style="font-weight: bold; color: white; margin-bottom: 5px;">
+                                {{ detalle.tipo }}
+                            </div>
+
+                            {# 2. Ubicación (si existe) #}
+                            {% if detalle.ubicacion != "" %}
+                                <div style="font-weight: bold; color: white; margin-bottom: 5px;">
+                                    Ubicación: {{ detalle.ubicacion }}
+                                </div>
+                            {% endif %}
+
+                            {# 3. Observaciones / Notas (AQUÍ ES DONDE QUERÍAS QUE APARECIERAN) #}
+                            {% if detalle.observaciones != "" %}
+                                <div style="font-weight: bold; color: white; margin-bottom: 5px;">
+                                    {{ detalle.observaciones }}
+                                </div>
+                            {% endif %}
+                        </div>
                     {% endfor %}
-                </td>
-                <td class="qty">{{ lineaPedido.cantidad }}</td>
-            </tr>
-        {% endfor %}
+                {% endif %}
+            </div>
 
-        {% for lineaPedido in pedido.lineasLibres %}
-            <tr>
-                <td class="service">
-                    LLB{{ lineaPedido.id }}
-                </td>
-                <td class="desc">{{ lineaPedido.descripcion }}
-                </td>
-                <td class="qty">{{ lineaPedido.cantidad }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+
+            {# --- LISTA DE PRENDAS DE ESTE GRUPO --- #}
+            <table width="100%" style="margin-top: 0; border-top: 1px solid #5D6975;">
+                <thead>
+                <tr style="background-color: #f0f0f0">
+                    <th class="service" style="width: 15%">REFERENCIA</th>
+                    <th class="desc">DESCRIPCIÓN</th>
+                    <th class="qty" style="width: 10%">CANT.</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% set totalGrupo = 0 %}
+                {% for linea in grupo.lineas %}
+                    <tr>
+                        <td class="service">
+                            {{ linea.producto.modelo.referencia }}<br>
+                            <small>({{ linea.producto.referencia }})</small>
+                        </td>
+                        <td class="desc">
+                            <strong>{{ linea.producto.modelo.nombre }}</strong><br>
+                            Talla: <strong>{{ linea.producto.talla }}</strong> |
+                            Color: <strong>{{ linea.producto.color }}</strong>
+
+                            {# YA NO HAY NOTAS AQUÍ, SE HAN MOVIDO ARRIBA #}
+                        </td>
+                        <td class="qty">
+                            {{ linea.cantidad }}
+                            {% set totalGrupo = totalGrupo + linea.cantidad %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                <tr style="background-color: #e9e9e9; font-weight: bold;">
+                    <td colspan="2" style="text-align: right; padding-right: 10px;">TOTAL ARTICULOS DE ESTE GRUPO:</td>
+                    <td class="qty">{{ totalGrupo }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+
+    {# Resto de secciones (Extras, Observaciones, etc.) #}
+    {% if pedido.lineasLibres|length > 0 %}
+        <div style="margin-top: 25px; page-break-inside: avoid; border: 1px solid #5D6975;">
+            <div style="background-color: #5D6975; color: white; padding: 5px 10px; font-weight: bold;">
+                CONCEPTOS ADICIONALES / EXTRAS
+            </div>
+            <table width="100%">
+                <thead>
+                <tr style="background-color: #f0f0f0">
+                    <th class="service" style="width: 20%">CÓDIGO</th>
+                    <th class="desc">DESCRIPCION</th>
+                    <th class="qty" style="width: 10%">CANT.</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for lineaPedido in pedido.lineasLibres %}
+                    <tr>
+                        <td class="service">LLB{{ lineaPedido.id }}</td>
+                        <td class="desc">{{ lineaPedido.descripcion }}</td>
+                        <td class="qty">{{ lineaPedido.cantidad }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
 
     {% if pedido.observaciones != "" %}
-        <div id="notices" style="border: 1px solid black; padding: 15px">
-            <div>OBSERVACIONES CLIENTE:</div>
+        <div id="notices" style="border: 1px solid black; padding: 15px; margin-top: 20px;">
+            <div style="font-weight: bold; margin-bottom: 5px;">OBSERVACIONES CLIENTE:</div>
             <div class="notice">{{ pedido.observaciones | raw }}</div>
         </div>
-        <br>
     {% endif %}
 
     {% if pedido.observacionesInternas != "" %}
-        <div id="notices" style="border: 1px solid black; padding: 15px">
-            <div>OBSERVACIONES INTERNAS:</div>
+        <div id="notices" style="border: 1px solid black; padding: 15px; margin-top: 10px; background-color: #ffffcc;">
+            <div style="font-weight: bold; margin-bottom: 5px;">OBSERVACIONES INTERNAS:</div>
             <div class="notice">{{ pedido.observacionesInternas | raw }}</div>
         </div>
-        <br>
     {% endif %}
 
-    <div>
-        {% for trabajo in pedido.getTrabajos %}
-            {% if trabajo.getMontaje() != null %}
-                <img style="width: 100%; height: auto" src="{{ sonata_path(trabajo.getMontaje(), 'reference') }}"/>
-                {#            <img style="width: 100%; height: auto" src="{% path trabajo.getMontaje(), 'reference' %}"/> #}
-            {% endif %}
-        {% endfor %}
-
-    </div>
 </main>
 </body>
 </html>
