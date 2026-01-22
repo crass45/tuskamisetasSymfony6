@@ -37,7 +37,7 @@ class PageController extends AbstractController
         return $this->render('web/legal/texto_legal.html.twig', [
             'titulo' => "TÉRMINOS DE USO",
             'texto' => $empresa->getTextoLegal(),
-            'descripcionSEO' => 'Términos de uso de tuskamisetas original s.l.l'
+            'descripcionSEO' => 'Términos de uso de tuskamisetas original S.L.'
         ]);
     }
 
@@ -53,7 +53,7 @@ class PageController extends AbstractController
         return $this->render('web/legal/texto_legal.html.twig', [
             'titulo' => "POLÍTICA DE PRIVACIDAD",
             'texto' => $empresa->getTextoPrivacidad(),
-            'descripcionSEO' => 'Política de privacidad y aviso legal de tuskamisetas original s.l.l'
+            'descripcionSEO' => 'Política de privacidad y aviso legal de tuskamisetas original S.L'
         ]);
     }
 
@@ -69,7 +69,7 @@ class PageController extends AbstractController
         return $this->render('web/legal/texto_legal.html.twig', [
             'titulo' => "POLÍTICA DE COOKIES",
             'texto' => $empresa->getPoliticaCookies(),
-            'descripcionSEO' => 'Política de cookies de tuskamisetas original s.l.l'
+            'descripcionSEO' => 'Política de cookies de tuskamisetas original S.L'
         ]);
     }
 

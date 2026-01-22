@@ -2,6 +2,7 @@
 
 namespace App\Admin;
 
+use App\Entity\Color; // <--- AÑADIR ESTE IMPORT
 use App\Entity\Producto;
 use Sonata\AdminBundle\Admin\AbstractAdmin;
 use Sonata\AdminBundle\Datagrid\DatagridMapper;
@@ -11,16 +12,18 @@ use Sonata\AdminBundle\Form\Type\ModelListType;
 use Sonata\AdminBundle\Form\Type\ModelType;
 use Sonata\AdminBundle\Route\RouteCollectionInterface;
 use Sonata\DoctrineORMAdminBundle\Filter\ModelFilter;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType; // <--- AÑADIR ESTE IMPORT
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 final class ProductoAdmin extends AbstractAdmin
 {
-    protected function configure(): void
-    {
-        $this->parentAssociationMapping = 'modelo';
-    }
+    // --- 1. ELIMINAMOS EL MÉTODO configure() QUE CAUSABA DEPRECATIONS ---
+    // protected function configure(): void
+    // {
+    //    $this->parentAssociationMapping = 'modelo';
+    // }
 
     protected function configureFormFields(FormMapper $form): void
     {
@@ -35,9 +38,17 @@ final class ProductoAdmin extends AbstractAdmin
         $form
             ->add('referencia', TextType::class, ['required' => false])
             ->add('talla', TextType::class)
-            ->add('color', ModelType::class, [
-                'choice_label' => 'nombre'
+
+            // --- 2. CAMBIO CRÍTICO: ModelType -> EntityType ---
+            // Usamos EntityType para asegurar que Symfony trate los colores como Objetos
+            ->add('color', EntityType::class, [
+                'class' => Color::class,   // Definimos la clase explícitamente
+                'choice_label' => 'nombre', // Propiedad a mostrar
+                'placeholder' => 'Selecciona un color...',
+                'required' => true // O false, según tu lógica
             ])
+            // --------------------------------------------------
+
             ->add('precioUnidad', MoneyType::class, ['currency' => 'EUR'])
             ->add('precioPack', MoneyType::class, ['currency' => 'EUR'])
             ->add('precioCaja', MoneyType::class, ['currency' => 'EUR'])
@@ -75,7 +86,7 @@ final class ProductoAdmin extends AbstractAdmin
             ->add('color', null, ['associated_property' => 'nombre'])
             ->add('activo', null, ['editable' => true])
             ->add('stock')
-            ->add('precioUnidad', 'currency', ['currency' => 'EUR']);
+            ->add('precioCaja', 'currency', ['currency' => 'EUR','label' => 'Precio Compra']);
     }
 
     protected function prePersist(object $object): void
@@ -84,7 +95,7 @@ final class ProductoAdmin extends AbstractAdmin
             return;
         }
 
-        // Lógica para generar la referencia, ahora de forma segura
+        // Lógica para generar la referencia
         $refModelo = $object->getModelo()?->getReferencia() ?? '';
         $talla = $object->getTalla() ?? '';
         $nombreUrlColor = $object->getColor()?->getNombreUrl() ?? '';
@@ -98,18 +109,14 @@ final class ProductoAdmin extends AbstractAdmin
         if (!$object instanceof Producto) {
             return;
         }
-        // Actualiza el precio mínimo en el modelo padre
         $object->getModelo()?->setPrecioMin($object->getPrecioMin());
     }
+
     protected function configureRoutes(RouteCollectionInterface $collection): void
     {
         if ($this->isChild()) {
             return;
         }
-
-        // This is the route configuration as a parent
         $collection->clear();
-
     }
-
 }

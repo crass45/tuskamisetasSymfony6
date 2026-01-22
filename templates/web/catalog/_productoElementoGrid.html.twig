@@ -1,13 +1,36 @@
 {% if producto.nombreUrl is defined %}
-{#    <a class="enlaceproducto" data-referencia ="{{ producto.getReferencia }}" data-nombre="{{ producto.getNombre }}" data-brand ="{{ producto.getFabricante }}" href="{{ path('ss_tienda_producto_detalle',{'productoNombre':producto.nombreUrl}) }}" style="color: white;">#}
-    <a class="enlaceproducto"
-       data-referencia="{{ producto.referencia }}"
-       data-nombre="{{ producto.nombre }}"
-       data-brand="{{ producto.fabricante }}"
-       href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': producto.nombreUrl}) }}"
-       style="color: white;">
-        <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3" style="padding-right: 2px;padding-left: 2px;">
-            <div class="product-image-wrapper" style="position: relative;">
+    {# 1. Movemos la columna (col-xs...) para que sea el contenedor principal.
+          Esto evita problemas de layout con Bootstrap. #}
+    <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3" style="padding-right: 2px;padding-left: 2px;">
+
+        {# Este wrapper debe ser relative para que el engranaje (absolute) se posicione respecto a él #}
+        <div class="product-image-wrapper" style="position: relative;">
+
+            {# --- ZONA DEL ENGRANAJE (SOLUCIÓN) --- #}
+            {# Lo sacamos fuera del enlace principal y lo posicionamos con CSS absoluto #}
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ 'https://tuskamisetas.com/admin/app/modelo/' ~ producto.id ~ '/edit' }}"
+                   target="_blank"
+                   style="position: absolute;
+                          bottom: 10px;
+                          left: 10px;
+                          z-index: 50;
+                          color: lightblue;
+                          font-size: 18px;">
+                    <i class="fa fa-cog"></i>
+                </a>
+            {% endif %}
+            {# ------------------------------------- #}
+
+            {# --- ENLACE PRINCIPAL DEL PRODUCTO --- #}
+            {# Ahora el enlace envuelve el contenido visual, pero NO al engranaje #}
+            <a class="enlaceproducto"
+               data-referencia="{{ producto.referencia }}"
+               data-nombre="{{ producto.nombre }}"
+               data-brand="{{ producto.fabricante }}"
+               href="{{ path('app_product_detail', {'_locale': app.request.locale, 'slug': producto.nombreUrl}) }}"
+               style="display: block; color: white; text-decoration: none;">
+
                 <div class="single-products">
                     <div class="productinfo text-center">
                         {% set is_lcp = (loop_index is defined and loop_index <= 2) %}
@@ -18,28 +41,22 @@
                                  id="{{ producto.id }}"
                                     {% if not is_lcp %}data-src="{{ sonata_path(producto.imagen, 'grid') }}"{% endif %}
                                  alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
-{#                                 width="253" height="256" #}{# AÑADIDO: Dimensiones explícitas para evitar CLS #}
                                     {% if is_lcp %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
                                  data-imagen="{{ sonata_path(producto.imagen, 'grid') }}"/>
                         {% else %}
-                            {# Mismo cambio para la imagen fallback #}
                             <img src="{{ is_lcp ? producto.urlImage : asset('images/dummy200.png') }}"
                                  {% if not is_lcp %}class="lazy"{% endif %}
                                  id="{{ producto.id }}"
                                     {% if not is_lcp %}data-src="{{ producto.urlImage }}"{% endif %}
                                  alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
-{#                                 width="253" height="256"#}
                                     {% if is_lcp %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
                                  data-imagen="{{ producto.urlImage }}"/>
                         {% endif %}
+
                         {% if producto.isNovelty %}
                             <img src="{{ asset('template/images/new.png') }}" alt="novedad"
                                  style="width: 40px;height: auto; position:absolute; right: 0;top: 0;border: none"/>
                         {% endif %}
-                        {#<h2>{{ producto.precio }}</h2>#}
-
-                        {#<a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add#}
-                        {#to cart</a>#}
                     </div>
                 </div>
 
@@ -47,29 +64,18 @@
                     {% if producto is defined and producto is not null %}
                         <p style="height: 42px; margin-top: 15px; margin-right: 10px; overflow: hidden">{{ producto.nombre | upper }}</p>
                         {% if producto.hasColorNino() or producto.hasBlancoNino() %}
-                            <p>Infantil
-                                Desde
-                                <b>{{ producto.getPrecioCantidadBlancasNino(10000, app.user) | number_format(2, ',', '.') }}
-                                    €</b></p>
-                            {#<p>&nbsp;</p>#}
+                            <p>Infantil Desde <b>{{ producto.getPrecioCantidadBlancasNino(10000, app.user) | number_format(2, ',', '.') }} €</b></p>
                             {% if producto.getPrecioCantidadBlancas(10000, app.user) > 0 or producto.getPrecioCantidadColor(1000, app.user) > 0 %}
-                                <p>Adultos Desde
-                                    <b>{{ producto.getPrecioCantidadBlancas(10000,app.user) | number_format(2, ',', '.') }}
-                                        €</b></p>
+                                <p>Adultos Desde <b>{{ producto.getPrecioCantidadBlancas(10000,app.user) | number_format(2, ',', '.') }} €</b></p>
                             {% else %}
                                 <p>&nbsp;</p>
                             {% endif %}
                         {% else %}
-                            <p>Desde
-                                <b>{{ producto.getPrecioUnidad( app.user ) | number_format(2, ',', '.') }}
-                                    €</b></p>
+                            <p>Desde <b>{{ producto.getPrecioUnidad( app.user ) | number_format(2, ',', '.') }} €</b></p>
                             <p>&nbsp;</p>
                         {% endif %}
-                        {% if is_granted('ROLE_ADMIN') %}
-                            <a href="{{ 'https://tuskamisetas.com/admin/app/modelo/' ~ producto.id ~ '/edit' }}"
-                               style="color: lightblue;"
-                               target="_blank"><i class="fa fa-cog"></i></a>
-                        {% endif %}
+
+                        {# AQUÍ SE ELIMINÓ EL ENGRANAJE ORIGINAL PARA EVITAR EL BUG #}
 
                         <div class="grid-producto-colores" style="text-align: center">
                             {% for color in producto.getColoresProductos() %}
@@ -85,13 +91,7 @@
                         </div>
                     {% endif %}
                 </div>
-                {#<div class="choose">#}
-                {#<ul class="nav nav-pills nav-justified">#}
-                {#<li><a href="#"><i class="fa fa-plus-square"></i>Add to wishlist</a></li>#}
-                {#<li><a href="#"><i class="fa fa-plus-square"></i>Add to compare</a></li>#}
-                {#</ul>#}
-                {#</div>#}
-            </div>
+            </a>
         </div>
-    </a>
+    </div>
 {% endif %}
