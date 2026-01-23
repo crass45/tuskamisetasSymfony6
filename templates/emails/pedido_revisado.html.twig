@@ -22,12 +22,18 @@
     <h3>Paso 2: Plazos de Entrega Estimados</h3>
     <p>Una vez tengamos tu confirmación y el pago esté realizado, estos son los plazos de entrega estimados:</p>
     <ul style="line-height: 1.6;">
+        {% if not pedido.pedidoExpres %}
         <li>
             <b>Servicio Normal:</b> Entre el {{ fechaEntregaNormalMin|format_datetime(locale='es', pattern='d \'de\' MMMM') }} y el {{ fechaEntregaNormalMax|format_datetime(locale='es', pattern='d \'de\' MMMM') }}.
         </li>
         <li>
             <b>Servicio Exprés:</b> A partir del {{ fechaEntregaExpress|format_datetime(locale='es', pattern='d \'de\' MMMM') }}. <sub>(conlleva un coste adicional)</sub>
         </li>
+        {% else %}
+            <li>
+                <b>Servicio Exprés:</b> A partir del {{ fechaEntregaExpress|format_datetime(locale='es', pattern='d \'de\' MMMM') }}.
+            </li>
+        {% endif %}
 
         <li style="list-style-type: none; margin-top: 12px; font-size: 0.9em; color: #555555;">
             <em>Nota: Las fechas de entrega arriba indicadas tienen validez siempre que el pago se realice en el día de recepción de este correo. En caso de demora en el abono, los plazos de entrega se verán desplazados proporcionalmente a los días de retraso.</em>
@@ -39,18 +45,33 @@
     <br>
 
     {# Paso 3: Opciones de pago claras #}
+    {# Paso 3: Opciones de pago claras #}
     <h3>Paso 3: Realiza el Pago</h3>
     <p>Puedes realizar el pago completo o un adelanto mediante tarjeta o transferencia:</p>
     <ul style="line-height: 1.6;">
         <li><b>Opción A (Recomendada): Pago con Tarjeta</b><br>
             <a href="{{ url('app_payment_start', {'_locale': 'es', 'id': pedido.id}) }}">Pagar de forma segura a través de nuestra web.</a>
         </li>
-        <li><b>Opción B: Pago por Transferencia</b><br>
-            Realiza el pago a la siguiente cuenta y envíanos el justificante respondiendo a este correo:
-            <blockquote style="font-size: 0.9em; border-left: 4px solid #ccc; padding-left: 15px; margin: 10px 0;">
-                {{ empresa.cuentaBancaria | raw }}
-            </blockquote>
+
+        <li style="margin-top: 10px;"><b>Opción B: Pago Completo por Transferencia</b><br>
+            Transferencia del 100% a una de las cuentas indicadas abajo.
         </li>
+
+        {# --- NUEVA OPCIÓN C (Condicional) --- #}
+        {% if not pedido.pedidoExpres %}
+            <li style="margin-top: 15px;">
+                <b>Opción C: Pago Fraccionado (50% / 50%)</b><br>
+                Transferencia del 50% del total a la confirmación y el resto una vez terminado el trabajo, antes de salir de nuestras instalaciones.
+                <br><br>
+                <span style="font-size: 0.9em; color: #555;">
+                    Es muy importante enviar el justificante del pago indicando el número de presupuesto <b>{{ pedido.nombre }}</b>.
+                </span>
+            </li>
+        {% endif %}
+        <blockquote style="font-size: 0.9em; border-left: 4px solid #f0ad4e; padding-left: 15px; margin: 10px 0;">
+            {# Reutilizamos las cuentas bancarias de la empresa para no hardcodearlas #}
+            {{ empresa.cuentaBancaria | raw }}
+        </blockquote>
     </ul>
 
     <br>
