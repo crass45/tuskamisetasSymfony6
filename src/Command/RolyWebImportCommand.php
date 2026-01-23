@@ -152,6 +152,9 @@ class RolyWebImportCommand extends Command
             try {
                 // --- Modelo ---
                 $modeloReferencia = $row["modelcode"];
+//                if ($modeloReferencia == "CA1205"){
+//                    var_dump($row);
+//                }
                 $modelo = $em->getRepository(Modelo::class)->findOneBy(['referencia' => $modeloReferencia]) ?? new Modelo();
 
                 $modelo->setActivo(true);
