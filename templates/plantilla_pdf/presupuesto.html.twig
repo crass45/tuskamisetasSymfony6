@@ -173,7 +173,7 @@
                         <br> {{ pedido.direccion.pais }}<br>{% endif %}
                 </div>
             {% else %}
-                {#<div><span>PROJECT</span> Website development</div>#}
+                {# <div><span>PROJECT</span> Website development</div> #}
                 {% if (pedido.direccion.nombre != "") %}
                     <div>{{ pedido.direccion.nombre }}</div>
                 {% else %}
@@ -199,19 +199,20 @@
                     <div><a href="mailto:{{ pedido.contacto.usuario.email }}">{{ pedido.contacto.usuario.email }}</a>
                     </div>
                 {% endif %}
-                {#<div><span>DUE DATE</span> September 17, 2015</div>#}
+                {# <div><span>DUE DATE</span> September 17, 2015</div> #}
             {% endif %}
         </div>
     {% endif %}
     {% if pedido.contacto is defined and pedido.contacto != null %}
         <div id="project" style="text-align: right; float: right">
             <div>{{ "CL%06d"|format(pedido.contacto.id) }}</div>
-            {#<div><span>PROJECT</span> Website development</div>#}
+            {# <div><span>PROJECT</span> Website development</div> #}
             <div>{{ pedido.contacto.nombre }}</div>
             <div>{{ pedido.contacto.apellidos }}</div>
             <div>{{ pedido.contacto.cif }}</div>
             <div>{% if pedido.contacto.direccionFacturacion is not null %}{{ pedido.contacto.direccionFacturacion.dir }}
-                    <br> {{ pedido.contacto.direccionFacturacion.cp }}<br> {{ pedido.contacto.direccionFacturacion.poblacion }}
+                    <br> {{ pedido.contacto.direccionFacturacion.cp }}
+                    <br> {{ pedido.contacto.direccionFacturacion.poblacion }}
                     <br> {{ pedido.contacto.direccionFacturacion.provincia }}
                     <br> {{ pedido.contacto.direccionFacturacion.pais }}{% endif %}
             </div>
@@ -220,15 +221,15 @@
             {% if pedido.contacto.telefonoOtro is defined and pedido.contacto.telefonoOtro != "" %}
                 <div>Telf 2: {{ pedido.contacto.telefonoOtro }}</div>{% endif %}
             <div><a href="mailto:{{ pedido.contacto.usuario.email }}">{{ pedido.contacto.usuario.email }}</a></div>
-            {#<div><span>DUE DATE</span> September 17, 2015</div>#}
+            {# <div><span>DUE DATE</span> September 17, 2015</div> #}
         </div>
     {% endif %}
     <br>
 </header>
 <main>
-    {#<div style="width: 100%; text-align: right;font-size: 12px; padding-right: 15px ">#}
-    {#Fecha de validez:  {{ "now" | date_modify("+10 day") | date('d-m-Y') }} y bajo disponibilidad de stock#}
-    {#</div>#}
+    {# <div style="width: 100%; text-align: right;font-size: 12px; padding-right: 15px "> #}
+    {# Fecha de validez:  {{ "now" | date_modify("+10 day") | date('d-m-Y') }} y bajo disponibilidad de stock #}
+    {# </div> #}
 
     <div style="width: 100%; text-align: left;font-size: 12px; padding-right: 15px ">
         Fecha de expedición: {{ pedido.fecha | date('d-m-Y') }}
@@ -366,7 +367,8 @@
                     <div>
                         <img src="http://www.tuskamisetas.com/images/tarjetas1.jpg" style="width: 90px; height: auto"
                              alt="tarjetas">
-                        <h5><a href="{{ url('app_payment_start', {'_locale': app.request.locale, 'id': pedido.id}) }}" style="cursor: pointer; margin-bottom: 15px;">
+                        <h5><a href="{{ url('app_payment_start', {'_locale': app.request.locale, 'id': pedido.id}) }}"
+                               style="cursor: pointer; margin-bottom: 15px;">
                                 PARA PAGAR CON TARJETA PULSE AQUÍ
                             </a></h5>
                     </div>
@@ -378,9 +380,69 @@
             </tr>
         </table>
     </div>
-    {#<footer>#}
-    {#Este documento ha sido creado desde el sitio web <a href="http://www.tuskamisetas.com">www.tuskamisetas.com</a> y es válido sin la firma y sin el sello#}
-    {#</footer>#}
+    {# <footer> #}
+    {# Este documento ha sido creado desde el sitio web <a href="http://www.tuskamisetas.com">www.tuskamisetas.com</a> y es válido sin la firma y sin el sello #}
+    {# </footer> #}
+
+    {# --- PÁGINA EXTRA: MONTAJE DEL PEDIDO --- #}
+    {# --- PÁGINA EXTRA: MONTAJE --- #}
+    {% if pedido.montaje is defined and pedido.montaje is not empty %}
+
+        {# 1. CORRECCIÓN URL GOOGLE DRIVE #}
+        {% set imagenFinal = pedido.montaje %}
+        {% if 'drive.google.com' in imagenFinal and '/file/d/' in imagenFinal %}
+            {% set partes = imagenFinal | split('/file/d/') %}
+            {% set idSucio = partes[1] %}
+            {% set idLimpio = idSucio | split('/') | first %}
+            {% set imagenFinal = 'https://drive.google.com/uc?export=view&id=' ~ idLimpio %}
+        {% endif %}
+
+        {# 2. DETECCIÓN DE ORIENTACIÓN #}
+        {% set esHorizontal = false %}
+
+
+        {# --- AQUÍ ESTÁ EL CAMBIO CLAVE --- #}
+        {# Añadimos padding-top y padding-bottom para que no choque con Header ni Footer #}
+        <div style="
+            page-break-before: always;
+            width: 100%;
+            /* Forzamos que el contenido respete los espacios */
+            box-sizing: border-box;
+            padding-top: 30px;    /* Espacio para cabecera */
+            padding-bottom: 50px; /* Espacio para el footer */
+        ">
+
+            <h2 style="text-align: center; color: #5D6975; border-bottom: 1px solid #5D6975; margin-bottom: 20px;">
+                MONTAJE / DISEÑO PREVIO
+            </h2>
+
+            <div style="text-align: center; position: relative;">
+                {% if esHorizontal %}
+                    {# HORIZONTAL: Ajustamos altura máxima para que quepa con el padding #}
+                    <div style="
+                        position: relative;
+                        height: 20cm;
+                        width: 100%;
+                    ">
+                        <div style="
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%) rotate(-90deg);
+                            width: 22cm;
+                            text-align: center;
+                        ">
+                            {# Reducimos un poco el max-height porque ahora hay footer #}
+                            <img src="{{ imagenFinal }}" style="max-width: 100%; max-height: 17cm;">
+                        </div>
+                    </div>
+                {% else %}
+                    {# VERTICAL: Reducimos max-height a 22cm para dejar sitio al footer #}
+                    <img src="{{ imagenFinal }}" style="max-width: 100%; max-height: 22cm;">
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 </main>
 </body>
 </html>

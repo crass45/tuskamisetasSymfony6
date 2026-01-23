@@ -149,7 +149,7 @@
             <div style="border-bottom: 1px solid grey;">DATOS DE ENVÍO</div>
             <br>
             {% if pedido.recogerEnTienda %}
-                <h3>RECOGE EN TIENDA</h3><p>{{ pedido.contacto.nombre }}</p><p>{{ pedido.contacto.appellidos }}</p>
+                <h3>RECOGE EN TIENDA</h3><p>{{ pedido.contacto.nombre }}</p>
             {% else %}
                 {% if (pedido.direccion.nombre != "") %}
                     <div>{{ pedido.direccion.nombre }}</div>
@@ -217,7 +217,8 @@
                     {% for detalle in grupo.detalles_visuales %}
 
                         {# 1. Nombre del trabajo #}
-                        <div class="contenedorcito" style="border-top: 1px solid white; padding-bottom: 5px; margin-bottom: 10px;">
+                        <div class="contenedorcito"
+                             style="border-top: 1px solid white; padding-bottom: 5px; margin-bottom: 10px;">
                             <div style="font-weight: bold; color: white; margin-bottom: 5px;">
                                 {{ detalle.nombre }}
                             </div>
@@ -323,6 +324,59 @@
             <div class="notice">{{ pedido.observacionesInternas | raw }}</div>
         </div>
     {% endif %}
+
+    {# --- PÁGINA EXTRA: MONTAJE DEL PEDIDO --- #}
+{#    {% if pedido.montaje is defined and pedido.montaje is not empty %}#}
+
+{#        #}{# 1. PREPARACIÓN DE LA URL: Corrección automática para Google Drive #}
+{#        {% set imagenFinal = pedido.montaje %}#}
+
+{#        {% if 'drive.google.com' in imagenFinal and '/file/d/' in imagenFinal %}#}
+{#            #}{# Extraemos el ID del archivo de la URL de Drive #}
+{#            {% set partes = imagenFinal | split('/file/d/') %}#}
+{#            {% set idSucio = partes[1] %}#}
+{#            {% set idLimpio = idSucio | split('/') | first %}#}
+
+{#            #}{# Creamos la nueva URL compatible con <img> #}
+{#            {% set imagenFinal = 'https://drive.google.com/uc?export=view&id=' ~ idLimpio %}#}
+{#        {% endif %}#}
+
+{#        #}{# 2. DETECCIÓN DE ORIENTACIÓN (Usando la URL corregida) #}
+{#        {% set esHorizontal = false %}#}
+{#        #}{# Nota: getimagesize a veces falla con URLs externas si el servidor tiene bloqueos #}
+{#        #}{# {% try %}#}
+{#            {% set sizes = getimagesize(imagenFinal) %}#}
+{#            {% if sizes[0] > sizes[1] %}#}
+{#                {% set esHorizontal = true %}#}
+{#            {% endif %}#}
+{#        {% catch %}#}
+{#        {% endtry %}#}
+
+{#        <div style="page-break-before: always; position: relative; width: 100%; height: 100%;">#}
+{#            <h2 style="text-align: center; color: #5D6975; border-bottom: 1px solid #5D6975; margin-bottom: 20px;">#}
+{#                MONTAJE / DISEÑO PREVIO#}
+{#            </h2>#}
+{#        #}
+{#        <div style="text-align: center; margin-top: 20px;">#}
+{#            {% if esHorizontal %}#}
+{#                #}{# HORIZONTAL: Girada 90 grados #}
+{#                <div style="#}
+{#                        position: absolute;#}
+{#                        top: 50%;#}
+{#                        left: 50%;#}
+{#                        transform: translate(-50%, -50%) rotate(-90deg);#}
+{#                        width: 25cm;#}
+{#                        text-align: center;#}
+{#                    ">#}
+{#                    <img src="{{ imagenFinal }}" style="max-width: 100%; max-height: 18cm;">#}
+{#                </div>#}
+{#            {% else %}#}
+{#                #}{# VERTICAL: Normal #}
+{#                <img src="{{ imagenFinal }}" style="max-width: 100%; max-height: 24cm;">#}
+{#            {% endif %}#}
+{#        </div>#}
+{#        #}{# </div>#}
+{#    {% endif %}#}
 
 </main>
 </body>
