@@ -869,12 +869,19 @@ class Pedido
     public function compruebaTrabajos(): bool
     {
         foreach ($this->getLineas() as $linea) {
-            // Si encontramos al menos una línea que tiene trabajos, devolvemos true.
-            if (!$linea->getPersonalizaciones()->isEmpty()) {
-                return true;
+            // Recorremos las personalizaciones de esta línea
+            foreach ($linea->getPersonalizaciones() as $trabajo) {
+
+                // Verificamos el código (ajusta 'getCodigo()' si tu método se llama diferente)
+                if ($trabajo->getPedidoTrabajo()->getPersonalizacion()->getCodigo() !== 'DB') {
+                    // Encontramos un trabajo que NO es DB, así que devolvemos true
+                    return true;
+                }
+
             }
         }
-        // Si hemos recorrido todas las líneas y ninguna tenía trabajos, devolvemos false.
+
+        // Si llegamos aquí, es que no había trabajos o todos eran 'DB'
         return false;
     }
 
