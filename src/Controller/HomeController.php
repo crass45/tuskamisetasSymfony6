@@ -20,12 +20,19 @@ class HomeController extends AbstractController
 {
     /**
      * Esta acción maneja la raíz del sitio web ('/').
-     * Redirige al usuario a la página de inicio con el prefijo de idioma.
+     * CORREGIDO: Ahora redirige manteniendo los parámetros (gclid, utm, etc.)
      */
     #[Route('/', name: 'app_root_redirect')]
     public function rootRedirectAction(Request $request): Response
     {
-        return $this->redirectToRoute('app_home', ['_locale' => $request->getLocale()]);
+        // 1. Recogemos TODOS los parámetros de la URL (gclid, fbclid, utm...)
+        $queryParams = $request->query->all();
+
+        // 2. Añadimos o forzamos el idioma
+        $queryParams['_locale'] = $request->getLocale();
+
+        // 3. Redirigimos pasando la "mochila" completa de datos
+        return $this->redirectToRoute('app_home', $queryParams);
     }
 
     /**

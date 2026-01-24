@@ -96,7 +96,12 @@ class SecurityController extends AbstractController
     public function login(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_home', ['_locale' => $request->getLocale()]);
+            // FIX: Pasamos todos los parámetros (gclid, utm, etc) a la home
+            $params = array_merge(
+                $request->query->all(),
+                ['_locale' => $request->getLocale()]
+            );
+            return $this->redirectToRoute('app_home', $params);
         }
 
         $error = $authenticationUtils->getLastAuthenticationError();
