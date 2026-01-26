@@ -1,10 +1,8 @@
 {# templates/web/catalog/_productoElementoGrid.html.twig #}
 
 {% if producto.nombreUrl is defined %}
-    {# 1. Movemos la columna (col-xs...) para que sea el contenedor principal. #}
     <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3" style="padding-right: 2px; padding-left: 2px;">
 
-        {# Wrapper relativo para posicionar elementos absolutos (engranaje, badge) #}
         <div class="product-image-wrapper" style="position: relative;">
 
             {# --- ENGRANAJE ADMIN --- #}
@@ -26,11 +24,19 @@
 
                 <div class="single-products">
                     <div class="productinfo text-center" style="position: relative; min-height: 200px;">
-                        {# Lógica LCP: Las 2 primeras imágenes cargan inmediato, el resto lazy #}
-                        {% set is_lcp = (loop_index is defined and loop_index <= 2) %}
-                        {% set imgSrc = (producto.imagen != null) ? sonata_path(producto.imagen, 'grid') : producto.urlImage %}
 
-                        {# IMAGEN DEL PRODUCTO OPTIMIZADA #}
+                        {# LÓGICA DE IMAGEN #}
+                        {% set is_lcp = (loop_index is defined and loop_index <= 2) %}
+
+                        {# Determinamos la URL de la imagen (Prioridad: Sonata -> URL Externa -> Dummy) #}
+                        {% set imgSrc = asset('images/dummy200.png') %}
+                        {% if producto.imagen != null %}
+                            {% set imgSrc = sonata_path(producto.imagen, 'grid') %}
+                        {% elseif producto.urlImage is not empty %}
+                            {% set imgSrc = producto.urlImage %}
+                        {% endif %}
+
+                        {# IMAGEN OPTIMIZADA (Sin forzar cuadrado) #}
                         <img src="{{ imgSrc }}"
                              id="{{ producto.id }}"
                              alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
@@ -40,12 +46,12 @@
                              decoding="async"
                                 {% if is_lcp %}fetchpriority="high"{% endif %}
 
-                                {# DATOS PARA JAVASCRIPT (Hover de colores) #}
+                                {# HOVER DE COLORES #}
                              data-imagen="{{ imgSrc }}"
 
-                                {# ESTABILIDAD VISUAL (Evita saltos de layout) #}
-                             width="250" height="250"
-                             style="width: 100%; height: auto; aspect-ratio: 1/1; object-fit: contain;"
+                                {# ESTILO: Quitamos aspect-ratio para que use el tamaño natural #}
+                                {# Usamos max-width para que respete la columna y height auto para la proporción #}
+                             style="width: 100%; height: auto; display: block;"
                         />
 
                         {# BADGE NOVEDAD #}
@@ -54,7 +60,6 @@
                                  alt="novedad"
                                  loading="lazy"
                                  decoding="async"
-                                 width="40" height="40"
                                  style="width: 40px; height: auto; position: absolute; right: 0; top: 0; border: none; z-index: 10;"/>
                         {% endif %}
                     </div>
