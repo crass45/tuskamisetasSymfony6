@@ -1,0 +1,14 @@
+{# templates/admin/CRUD/list_snapshot_image.html.twig #}
+{% extends '@SonataAdmin/CRUD/base_list_field.html.twig' %}
+
+{% block field %}
+    {% if value %}
+        <div style="text-align: center;">
+            <a href="{{ value }}" target="_blank">
+                <img src="{{ value }}" style="max-height: 50px; border: 1px solid #ddd; padding: 2px;" alt="Snapshot Área">
+            </a>
+        </div>
+    {% else %}
+        <span class="label label-default">Sin imagen</span>
+    {% endif %}
+{% endblock %}

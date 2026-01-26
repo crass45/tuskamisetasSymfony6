@@ -82,4 +82,102 @@
         }
     });
 
+    $(document).on('change', '.personalizacionTipo', function() {
+        var $row = $(this).closest('.personalization-row');
+        var $optionSelected = $(this).find('option:selected');
+
+        // Recuperamos los datos. Antes era un array de strings, ahora es un array de objetos
+        var areas = $optionSelected.data('areas');
+        var $ubicacionSelect = $row.find('.ubicacion');
+        var $previewContainer = $row.find('.area-preview'); // El contenedor de la foto
+
+        // Limpiamos el select
+        $ubicacionSelect.empty();
+
+        if (areas && areas.length > 0) {
+            $.each(areas, function(index, area) {
+                // DETECCIÓN INTELIGENTE:
+                // Si 'area' es un objeto (nueva lógica), usamos area.name
+                // Si 'area' es texto (lógica antigua por si acaso), usamos area directamente
+                var nombre = (typeof area === 'object' && area !== null) ? area.name : area;
+                var img = (typeof area === 'object' && area !== null) ? area.img : '';
+                var w = (typeof area === 'object' && area !== null) ? area.width : '';
+                var h = (typeof area === 'object' && area !== null) ? area.height : '';
+
+                // Creamos la opción usando el NOMBRE para el texto y value
+                var $opt = $('<option>', {
+                    value: nombre,
+                    text: nombre,
+                    'data-img': img,
+                    'data-width': w,
+                    'data-height': h
+                });
+                $ubicacionSelect.append($opt);
+            });
+
+            // Forzamos el evento change para que se cargue la foto de la primera opción
+            $ubicacionSelect.trigger('change');
+        } else {
+            $ubicacionSelect.append('<option value="">Sin ubicaciones definidas</option>');
+            if($previewContainer.length) $previewContainer.hide();
+        }
+
+        // Actualizamos el input oculto de max-colores si lo usas
+        var maxColores = $optionSelected.data('max-colores');
+        // 2. GESTIÓN DE TINTAS (Max Colores en Combo)
+        var maxColores = parseInt($optionSelected.data('max-colores')) || 0;
+        var $tintasContainer = $row.find('.tintas-container');
+        var $tintasSelect = $row.find('.tintas'); // Ahora es un select
+
+        // Limpiamos las opciones anteriores
+        $tintasSelect.empty();
+
+        if (maxColores > 1) {
+            // Generamos las opciones desde 1 hasta maxColores
+            for (var i = 1; i <= maxColores; i++) {
+                var texto = i + (i === 1 ? ' Color' : ' Colores');
+                $tintasSelect.append($('<option>', {
+                    value: i,
+                    text: texto
+                }));
+            }
+
+            // Mostramos el selector
+            $tintasContainer.show();
+        } else {
+            // Si el máximo es 0 o 1 (ej: impresión digital, bordado simple o sin definir)
+            // Ponemos 1 por defecto y ocultamos
+            $tintasSelect.append('<option value="1">1 Color</option>');
+            $tintasContainer.hide();
+        }
+    });
+
+// NUEVO: Evento para cambiar la foto cuando cambias la ubicación
+    $(document).on('change', '.ubicacion', function() {
+        var $row = $(this).closest('.personalization-row');
+        var $selectedOption = $(this).find('option:selected');
+        var imgSrc = $selectedOption.data('img');
+        var w = $selectedOption.data('width');
+        var h = $selectedOption.data('height');
+
+        var $previewContainer = $row.find('.area-preview');
+
+        // Si no existe el contenedor (porque no has actualizado el twig aún), no hacemos nada
+        if ($previewContainer.length === 0) return;
+
+        if (imgSrc && imgSrc !== '') {
+            $previewContainer.find('.area-img').attr('src', imgSrc);
+
+            var textoMedidas = '';
+            if (w > 0 || h > 0) {
+                textoMedidas = 'Medidas máx: ' + (parseFloat(w)||0) + ' x ' + (parseFloat(h)||0) + ' cm';
+            }
+            $previewContainer.find('.area-dims').text(textoMedidas);
+
+            $previewContainer.slideDown();
+        } else {
+            $previewContainer.slideUp();
+        }
+    });
+
 })(jQuery);

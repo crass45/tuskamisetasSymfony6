@@ -1,29 +1,22 @@
-{% if producto.nombreUrl is defined %}
-    {# 1. Movemos la columna (col-xs...) para que sea el contenedor principal.
-          Esto evita problemas de layout con Bootstrap. #}
-    <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3" style="padding-right: 2px;padding-left: 2px;">
+{# templates/web/catalog/_productoElementoGrid.html.twig #}
 
-        {# Este wrapper debe ser relative para que el engranaje (absolute) se posicione respecto a él #}
+{% if producto.nombreUrl is defined %}
+    {# 1. Movemos la columna (col-xs...) para que sea el contenedor principal. #}
+    <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3" style="padding-right: 2px; padding-left: 2px;">
+
+        {# Wrapper relativo para posicionar elementos absolutos (engranaje, badge) #}
         <div class="product-image-wrapper" style="position: relative;">
 
-            {# --- ZONA DEL ENGRANAJE (SOLUCIÓN) --- #}
-            {# Lo sacamos fuera del enlace principal y lo posicionamos con CSS absoluto #}
+            {# --- ENGRANAJE ADMIN --- #}
             {% if is_granted('ROLE_ADMIN') %}
                 <a href="{{ 'https://tuskamisetas.com/admin/app/modelo/' ~ producto.id ~ '/edit' }}"
                    target="_blank"
-                   style="position: absolute;
-                          bottom: 10px;
-                          left: 10px;
-                          z-index: 50;
-                          color: lightblue;
-                          font-size: 18px;">
+                   style="position: absolute; bottom: 10px; left: 10px; z-index: 50; color: lightblue; font-size: 18px;">
                     <i class="fa fa-cog"></i>
                 </a>
             {% endif %}
-            {# ------------------------------------- #}
 
-            {# --- ENLACE PRINCIPAL DEL PRODUCTO --- #}
-            {# Ahora el enlace envuelve el contenido visual, pero NO al engranaje #}
+            {# --- ENLACE PRINCIPAL --- #}
             <a class="enlaceproducto"
                data-referencia="{{ producto.referencia }}"
                data-nombre="{{ producto.nombre }}"
@@ -32,37 +25,48 @@
                style="display: block; color: white; text-decoration: none;">
 
                 <div class="single-products">
-                    <div class="productinfo text-center">
+                    <div class="productinfo text-center" style="position: relative; min-height: 200px;">
+                        {# Lógica LCP: Las 2 primeras imágenes cargan inmediato, el resto lazy #}
                         {% set is_lcp = (loop_index is defined and loop_index <= 2) %}
+                        {% set imgSrc = (producto.imagen != null) ? sonata_path(producto.imagen, 'grid') : producto.urlImage %}
 
-                        {% if producto.imagen != null %}
-                            <img src="{{ is_lcp ? sonata_path(producto.imagen, 'grid') : asset('images/dummy200.png') }}"
-                                 {% if not is_lcp %}class="lazy"{% endif %}
-                                 id="{{ producto.id }}"
-                                    {% if not is_lcp %}data-src="{{ sonata_path(producto.imagen, 'grid') }}"{% endif %}
-                                 alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
-                                    {% if is_lcp %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
-                                 data-imagen="{{ sonata_path(producto.imagen, 'grid') }}"/>
-                        {% else %}
-                            <img src="{{ is_lcp ? producto.urlImage : asset('images/dummy200.png') }}"
-                                 {% if not is_lcp %}class="lazy"{% endif %}
-                                 id="{{ producto.id }}"
-                                    {% if not is_lcp %}data-src="{{ producto.urlImage }}"{% endif %}
-                                 alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
-                                    {% if is_lcp %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
-                                 data-imagen="{{ producto.urlImage }}"/>
-                        {% endif %}
+                        {# IMAGEN DEL PRODUCTO OPTIMIZADA #}
+                        <img src="{{ imgSrc }}"
+                             id="{{ producto.id }}"
+                             alt="{{ producto.familia }} {{ producto.fabricante }} {{ producto.nombre }}"
 
+                                {# OPTIMIZACIÓN DE RENDIMIENTO #}
+                             loading="{{ is_lcp ? 'eager' : 'lazy' }}"
+                             decoding="async"
+                                {% if is_lcp %}fetchpriority="high"{% endif %}
+
+                                {# DATOS PARA JAVASCRIPT (Hover de colores) #}
+                             data-imagen="{{ imgSrc }}"
+
+                                {# ESTABILIDAD VISUAL (Evita saltos de layout) #}
+                             width="250" height="250"
+                             style="width: 100%; height: auto; aspect-ratio: 1/1; object-fit: contain;"
+                        />
+
+                        {# BADGE NOVEDAD #}
                         {% if producto.isNovelty %}
-                            <img src="{{ asset('template/images/new.png') }}" alt="novedad"
-                                 style="width: 40px;height: auto; position:absolute; right: 0;top: 0;border: none"/>
+                            <img src="{{ asset('template/images/new.png') }}"
+                                 alt="novedad"
+                                 loading="lazy"
+                                 decoding="async"
+                                 width="40" height="40"
+                                 style="width: 40px; height: auto; position: absolute; right: 0; top: 0; border: none; z-index: 10;"/>
                         {% endif %}
                     </div>
                 </div>
 
                 <div class="productoGridDescripcion" style="color: white">
                     {% if producto is defined and producto is not null %}
-                        <p style="height: 42px; margin-top: 15px; margin-right: 10px; overflow: hidden">{{ producto.nombre | upper }}</p>
+                        <p style="height: 42px; margin-top: 15px; margin-right: 10px; overflow: hidden; line-height: 1.2;">
+                            {{ producto.nombre | upper }}
+                        </p>
+
+                        {# PRECIOS #}
                         {% if producto.hasColorNino() or producto.hasBlancoNino() %}
                             <p>Infantil Desde <b>{{ producto.getPrecioCantidadBlancasNino(10000, app.user) | number_format(2, ',', '.') }} €</b></p>
                             {% if producto.getPrecioCantidadBlancas(10000, app.user) > 0 or producto.getPrecioCantidadColor(1000, app.user) > 0 %}
@@ -75,18 +79,14 @@
                             <p>&nbsp;</p>
                         {% endif %}
 
-                        {# AQUÍ SE ELIMINÓ EL ENGRANAJE ORIGINAL PARA EVITAR EL BUG #}
-
+                        {# COLORES DISPONIBLES #}
                         <div class="grid-producto-colores" style="text-align: center">
                             {% for color in producto.getColoresProductos() %}
                                 <div {% if (color.color is not null) %}style="background-color: {{ color.color.codigoRGB }};"{% endif %}
                                      class="cuadro-color cuadro-color-grid"
-                                        {% if color.imagen != null %}
-                                            data-imagen="{{ sonata_path(color.imagen, 'grid') }}"
-                                        {% else %}
-                                            data-imagen="{{ color.urlImage }}"
-                                        {% endif %}
-                                     data-modelo="{{ producto.id }}"></div>
+                                     data-imagen="{{ (color.imagen != null) ? sonata_path(color.imagen, 'grid') : color.urlImage }}"
+                                     data-modelo="{{ producto.id }}">
+                                </div>
                             {% endfor %}
                         </div>
                     {% endif %}

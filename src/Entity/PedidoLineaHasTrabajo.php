@@ -35,6 +35,34 @@ class PedidoLineaHasTrabajo
     #[ORM\Column]
     private bool $repeticion = false;
 
+    // --- CAMPOS SNAPSHOT (NUEVOS) ---
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $nombreArea = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $urlImagenArea = null;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $anchoArea = null;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $altoArea = null;
+
+    // --- GETTERS Y SETTERS ---
+
+    public function getNombreArea(): ?string { return $this->nombreArea; }
+    public function setNombreArea(?string $nombreArea): self { $this->nombreArea = $nombreArea; return $this; }
+
+    public function getUrlImagenArea(): ?string { return $this->urlImagenArea; }
+    public function setUrlImagenArea(?string $urlImagenArea): self { $this->urlImagenArea = $urlImagenArea; return $this; }
+
+    public function getAnchoArea(): ?string { return $this->anchoArea; }
+    public function setAnchoArea(?string $anchoArea): self { $this->anchoArea = $anchoArea; return $this; }
+
+    public function getAltoArea(): ?string { return $this->altoArea; }
+    public function setAltoArea(?string $altoArea): self { $this->altoArea = $altoArea; return $this; }
+
     public function __toString(): string
     {
         $personalizacion = $this->pedidoTrabajo?->getPersonalizacion();

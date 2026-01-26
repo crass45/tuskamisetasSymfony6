@@ -21,6 +21,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Twig\Environment as TwigEnvironment;
+use App\Entity\AreasTecnicasEstampado;      // <--- NUEVO
+use App\Entity\ModeloHasTecnicasEstampado;
 
 /**
  * Servicio para gestionar la lógica de negocio de la creación de pedidos.
@@ -192,6 +194,7 @@ class OrderService
             foreach ($grupoCalculado['desglose_productos'] as $lineaCalculada) {
                 // Obtenemos la versión gestionada del Producto.
                 $productoEntity = $this->em->find(Producto::class, $lineaCalculada['producto']->getId());
+
                 if ($productoEntity) {
                     $pedidoLinea = new PedidoLinea();
                     $pedidoLinea->setCantidad($lineaCalculada['unidades']);
@@ -199,16 +202,55 @@ class OrderService
                     $pedidoLinea->setPrecio((string)$lineaCalculada['precio_unitario_final_sin_iva']);
 
                     $personalizacionCadena = "";
+
                     foreach ($arrayTrabajosParaLinea as $trabajoData) {
                         $pedidoLineaTrabajo = new PedidoLineaHasTrabajo();
                         $pedidoLineaTrabajo->setPedidoLinea($pedidoLinea);
                         $pedidoLineaTrabajo->setPedidoTrabajo($trabajoData['trabajoBD']);
-                        $pedidoLineaTrabajo->setUbicacion($trabajoData['presupuestoTrabajo']->getUbicacion());
+
+                        // Nombre de la ubicación elegida (ej: "Pecho", "Delantera")
+                        $nombreUbicacion = $trabajoData['presupuestoTrabajo']->getUbicacion();
+                        $pedidoLineaTrabajo->setUbicacion($nombreUbicacion);
+
                         $pedidoLineaTrabajo->setObservaciones($trabajoData['presupuestoTrabajo']->getObservaciones());
                         $pedidoLineaTrabajo->setCantidad($trabajoData['presupuestoTrabajo']->getCantidad());
+
+                        // --- INICIO IMPLEMENTACIÓN SNAPSHOT (FOTO FIJA) ---
+                        // Buscamos los datos técnicos reales de esa área para guardarlos y que no cambien en el futuro
+                        if ($nombreUbicacion && $productoEntity->getModelo()) {
+                            $personalizacionEntity = $trabajoData['trabajoBD']->getPersonalizacion();
+
+                            // 1. Buscamos la relación entre este Modelo y esta Técnica
+                            $relacionModeloTecnica = $this->em->getRepository(ModeloHasTecnicasEstampado::class)->findOneBy([
+                                'modelo' => $productoEntity->getModelo(),
+                                'personalizacion' => $personalizacionEntity
+                            ]);
+
+                            if ($relacionModeloTecnica) {
+                                // 2. Buscamos el Área específica por nombre dentro de esa técnica
+                                $areaSnapshot = $this->em->getRepository(AreasTecnicasEstampado::class)->findOneBy([
+                                    'tecnica' => $relacionModeloTecnica,
+                                    'areaname' => $nombreUbicacion
+                                ]);
+
+                                // 3. Si existe, copiamos sus datos al pedido (Snapshot)
+                                if ($areaSnapshot) {
+                                    $pedidoLineaTrabajo->setNombreArea($areaSnapshot->getAreaname());
+                                    $pedidoLineaTrabajo->setUrlImagenArea($areaSnapshot->getAreaimg());
+                                    $pedidoLineaTrabajo->setAnchoArea($areaSnapshot->getAreawidth());
+                                    $pedidoLineaTrabajo->setAltoArea($areaSnapshot->getAreahight());
+
+                                    // Opcional: Si añadiste la relación 'areaReferencia' en la entidad
+                                    // $pedidoLineaTrabajo->setAreaReferencia($areaSnapshot);
+                                }
+                            }
+                        }
+                        // --- FIN IMPLEMENTACIÓN SNAPSHOT ---
+
                         $pedidoLinea->addPersonalizacione($pedidoLineaTrabajo);
                         $personalizacionCadena .= (string) $trabajoData['presupuestoTrabajo'] . "\n";
                     }
+
                     $pedidoLinea->setPersonalizacion(trim($personalizacionCadena));
                     $pedido->addLinea($pedidoLinea);
                 }

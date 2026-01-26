@@ -23,6 +23,7 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\String\Slugger\AsciiSlugger;
+use Sonata\AdminBundle\Route\RouteCollectionInterface;
 
 final class ModeloAdmin extends AbstractAdmin
 {
@@ -135,8 +136,48 @@ final class ModeloAdmin extends AbstractAdmin
                 'inline' => 'table',
             ])
             ->end()
-            ->end()
-        ;
+            ->end();
+        // --- FUNCIONALIDAD DE ACTUALIZACIÓN MASIVA DE MEDIDAS ---
+        if ($modelo && $modelo->getId()) {
+            $slugger = new AsciiSlugger();
+            $tallas = $modelo->getTallas(); // Array de strings ['S', 'M', 'L'...]
+
+            // Solo pintamos la pestaña si hay tallas
+            if (!empty($tallas)) {
+                $form
+                    ->tab('Gestión de Tallas')
+                    ->with('Actualizar Medidas por Talla', [
+                        'class' => 'col-md-12',
+                        'description' => '<div class="alert alert-info" style="margin-bottom:15px;"><i class="fa fa-info-circle"></i> Escribe las medidas aquí (ej: 50/70) y guarda el modelo. Se actualizarán automáticamente en <b>todas</b> las variaciones de color de esa talla.</div>'
+                    ]);
+
+                foreach ($tallas as $talla) {
+                    // Buscamos un valor actual para previsualizar
+                    $valorActual = '';
+                    foreach ($modelo->getProductos() as $producto) {
+                        if ($producto->getTalla() === $talla) {
+                            $valorActual = $producto->getMedidas();
+                            break;
+                        }
+                    }
+
+                    // Creamos un nombre de campo único y seguro para el formulario
+                    // Ej: "medida_xl", "medida_3_4_anos"
+                    $fieldName = 'medida_' . str_replace(['.', '/'], '_', $slugger->slug($talla)->lower());
+
+                    $form->add($fieldName, TextType::class, [
+                        'label' => 'Medidas Talla ' . $talla,
+                        'mapped' => false, // ¡Importante! No existe en la entidad Modelo
+                        'required' => false,
+                        'data' => $valorActual,
+                        'attr' => ['placeholder' => 'Ej: 54/72 cm'],
+                        'help' => 'Ancho / Alto'
+                    ]);
+                }
+
+                $form->end()->end();
+            }
+        }
     }
 
     protected function configureDatagridFilters(DatagridMapper $datagrid): void
@@ -151,6 +192,24 @@ final class ModeloAdmin extends AbstractAdmin
             ->add('activo');
     }
 
+    protected function configureRoutes(RouteCollectionInterface $collection): void
+    {
+        // Añadimos la ruta que apunta a nuestra acción personalizada
+        $collection->add('aplicar_tecnicas_tuskamisetas', $this->getRouterIdParameter() . '/aplicar-tecnicas-tuskamisetas');
+    }
+
+    protected function configureActionButtons(array $buttonList, string $action, ?object $object = null): array
+    {
+        // Solo mostramos el botón si estamos editando y existe el objeto
+        if ($action === 'edit' && $object) {
+            $buttonList['aplicar_tecnicas'] = [
+                'template' => 'admin/CRUD/button_aplicar_tecnicas_edit.html.twig',
+            ];
+        }
+
+        return $buttonList;
+    }
+
     protected function configureListFields(ListMapper $list): void
     {
         $list
@@ -162,6 +221,19 @@ final class ModeloAdmin extends AbstractAdmin
             ->add('fabricante')
             ->add('familia')
             ->add('precioMin', null, ['label' => 'Precio Mín.']);
+//            ->add(ListMapper::NAME_ACTIONS, null, [
+//                'actions' => [
+//                    'show' => [],
+//                    'edit' => [],
+//                    'delete' => [],
+//                    // ... tus otros botones ...
+//
+//                    // --- NUEVO BOTÓN ---
+//                    'aplicar_tecnicas' => [
+//                        'template' => 'admin/CRUD/list__action_aplicar_tecnicas.html.twig',
+//                    ],
+//                ],
+//            ]);
     }
 
     protected function preUpdate(object $object): void
@@ -170,12 +242,33 @@ final class ModeloAdmin extends AbstractAdmin
             return;
         }
 
+        // 1. Lógica existente del Slug (la mantenemos)
+        /* (Tu código original aquí si tenías algo, aunque el slug se genera en la entidad normalmente) */
+
+        // 2. Lógica de ACTUALIZACIÓN DE MEDIDAS
         $slugger = new AsciiSlugger();
         $tallas = $object->getTallas();
+
+        // Obtenemos el formulario para poder leer los campos "extra" (no mapeados)
+        $form = $this->getForm();
+
         foreach ($tallas as $talla) {
-            $fieldName = (string) $slugger->slug($talla)->lower();
-            if ($this->getForm()->has($fieldName)) {
-                $fieldData = $this->getForm()->get($fieldName)->getData();
+            // Reconstruimos el nombre del campo tal cual lo definimos en configureFormFields
+            $fieldName = 'medida_' . str_replace('.', '_', $slugger->slug($talla)->lower());
+
+            // Si el campo existe en el formulario enviado
+            if ($form->has($fieldName)) {
+                $nuevaMedida = $form->get($fieldName)->getData();
+
+                // Si hay un valor (incluso vacío para borrar), actualizamos los productos
+                if ($nuevaMedida !== null) {
+                    foreach ($object->getProductos() as $producto) {
+                        // Si la talla coincide, actualizamos su medida
+                        if ($producto->getTalla() === $talla) {
+                            $producto->setMedidas($nuevaMedida);
+                        }
+                    }
+                }
             }
         }
     }

@@ -8,7 +8,9 @@ use App\Entity\Pedido;
 use App\Service\GoogleAnalyticsService;
 use App\Service\OrderService;
 use App\Service\RedsysApiService;
-use App\Service\FechaEntregaService; // Importamos el servicio de fechas
+use App\Service\FechaEntregaService;
+
+// Importamos el servicio de fechas
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,12 +23,13 @@ class PaymentController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private RedsysApiService $redsysApi,
-        private FechaEntregaService $fechaEntregaService,
-        private OrderService $orderService,
-        private LoggerInterface $logger,
+        private RedsysApiService       $redsysApi,
+        private FechaEntregaService    $fechaEntregaService,
+        private OrderService           $orderService,
+        private LoggerInterface        $logger,
         private GoogleAnalyticsService $googleAnalyticsService // Se inyecta el servicio
-    ) {
+    )
+    {
     }
 
     /**
@@ -36,7 +39,7 @@ class PaymentController extends AbstractController
     public function startPaymentAction(Pedido $pedido): Response
     {
         // Validaciones (el pedido existe, no está pagado, etc.)
-        if($pedido->getEstado()->getId()!= 3){
+        if ($pedido->getEstado()->getId() != 3) {
             $this->addFlash('warning', 'Este pedido no se puede pagar. (es posible que esté en revisión o tenga alguna incidencia)');
             return $this->redirectToRoute('app_profile_orders');
         }
@@ -100,7 +103,17 @@ class PaymentController extends AbstractController
         if ($responseCode >= 0 && $responseCode <= 99) {
             // 3. El pago es correcto. Procesar el pedido.
             $orderCode = $decodedParams['Ds_Order'] ?? null;
-            $pedido = $this->em->getRepository(Pedido::class)->findOneBy(['codigoSermepa' => $orderCode]);
+            if (str_contains($orderCode, '-')) {
+                $orderIdReal = explode('-', $orderCode)[0];
+            }
+
+            // B) Buscamos DIRECTAMENTE por ID (más seguro)
+            $pedido = $this->em->getRepository(Pedido::class)->find($orderIdReal);
+
+// Si por ID no aparece (raro), intentamos el fallback antiguo por si acaso
+            if (!$pedido) {
+                $pedido = $this->em->getRepository(Pedido::class)->findOneBy(['codigoSermepa' => $orderCode]);
+            }
 
             if ($pedido) {
                 $importePagado = (float)($decodedParams['Ds_Amount'] ?? 0) / 100;
@@ -113,8 +126,8 @@ class PaymentController extends AbstractController
                 }
 
                 // Recalcular fecha de entrega (esta lógica debería estar en el FechaEntregaService)
-                 $nuevaFecha = $this->fechaEntregaService->recalculateForPaidOrder($pedido);
-                 $pedido->setFechaEntrega($nuevaFecha);
+                $nuevaFecha = $this->fechaEntregaService->recalculateForPaidOrder($pedido);
+                $pedido->setFechaEntrega($nuevaFecha);
 
                 $this->em->flush();
 

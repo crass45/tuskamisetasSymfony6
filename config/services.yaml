@@ -149,7 +149,7 @@ services:
 
     App\Admin\ModeloAdmin:
       tags:
-        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Modelo, group: "Productos", label: "Modelos" }
+        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Modelo,controller: App\Controller\Admin\ModeloCRUDController, group: "Productos", label: "Modelos" }
       calls:
         - [ addChild, [ '@App\Admin\ProductoAdmin' ,'modelo'] ]
 
@@ -234,7 +234,7 @@ services:
 
     App\Admin\PersonalizacionAdmin:
       tags:
-        - { name: sonata.admin, manager_type: orm, model_class: App\Entity\Personalizacion, group: "Tienda", label: "Personalizaciones" }
+        - { name: sonata.admin, model_class: App\Entity\Personalizacion, controller: App\Controller\Admin\PersonalizacionCRUDController, manager_type: orm, group: admin, label: Personalizaciones }
 
     App\Admin\PersonalizacionPrecioCantidadAdmin:
       tags:

@@ -1,0 +1,8 @@
+{# templates/admin/CRUD/list__action_aplicar_tecnicas.html.twig #}
+
+<a href="{{ admin.generateObjectUrl('aplicar_tecnicas_tuskamisetas', object) }}"
+   class="btn btn-sm btn-default edit_link"
+   title="Aplicar Pack Tuskamisetas (A1, P, T, SU, DTG)"
+   onclick="return confirm('¿Estás seguro? Esto BORRARÁ las técnicas actuales de este producto y asignará el pack estándar Tuskamisetas.');">
+    <i class="fa fa-paint-brush" style="color: #d35400;"></i>
+</a>

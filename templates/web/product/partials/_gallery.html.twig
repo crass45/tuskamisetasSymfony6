@@ -62,12 +62,15 @@
                          data-id="{{ modelo.referencia }}"
                          alt="{{ modelo.nombre }}"
                          title="{{ modelo.familia }} {{ modelo.fabricante.nombre }} {{ modelo.nombre }}"
+                         decoding="async"       {# <--- EVITA CONGELAR EL HILO PRINCIPAL #}
+                         fetchpriority="high"   {# <--- PRIORIDAD MÁXIMA PARA LA PRINCIPAL #}
                          onerror="this.onerror=null; this.src=this.dataset.fallback; $('.gallery-thumb-1').hide();">
 
                     {# Badge Novedad #}
                     {% if modelo.isNovelty %}
                         <img src="{{ asset('template/images/new.png') }}" alt="novedad"
-                             style="width: 40px; height: auto; position: absolute; right: 5px; top: 5px; border: none; z-index: 5;">
+                             style="width: 40px; height: auto; position: absolute; right: 5px; top: 5px; border: none; z-index: 5;"
+                             loading="lazy" decoding="async">
                     {% endif %}
 
                     {# Botón 360º Escritorio (SOLO AQUÍ) #}
@@ -92,6 +95,8 @@
                          style="width: 100%; height: auto"
                          src="{{ img }}"
                          alt="{{ modelo.nombre }} - vista {{ loop.index }}"
+                         loading="lazy"         {# <--- CARGA DIFERIDA #}
+                         decoding="async"       {# <--- DESCODIFICACIÓN EN PARALELO #}
                          onerror="this.closest('.gallery-item-col').remove();">
                 </div>
             </div>
@@ -118,19 +123,23 @@
             {% for img in todasLasImagenes %}
                 <div class="item {{ loop.first ? 'active' : '' }} mobile-slide-{{ loop.index }}">
                     {% if loop.first %}
-                        {# Primera imagen: con lógica de recuperación #}
+                        {# Primera imagen: Carga inmediata #}
                         {% set nextImg = todasLasImagenes[1] ?? dummyImg %}
                         <img src="{{ img }}"
                              alt="{{ modelo.nombre }}"
                              style="display: block; width: 100%; height: auto;"
                              data-fallback="{{ nextImg }}"
                              data-remove=".mobile-slide-2"
+                             decoding="async"
+                             fetchpriority="high"
                              onerror="this.onerror=null; this.src=this.dataset.fallback; if(this.dataset.fallback !== '{{ dummyImg }}') { $(this.dataset.remove).remove(); }">
                     {% else %}
-                        {# Resto de imágenes: eliminar si fallan #}
+                        {# Resto de imágenes: Lazy Load #}
                         <img src="{{ img }}"
                              alt="{{ modelo.nombre }}"
                              style="display: block; width: 100%; height: auto;"
+                             loading="lazy"
+                             decoding="async"
                              onerror="this.closest('.item').remove();">
                     {% endif %}
                 </div>
@@ -146,8 +155,6 @@
                 <span class="glyphicon glyphicon-chevron-right" aria-hidden="true" style="right: 0;"></span>
             </a>
         {% endif %}
-
-        {# ELIMINADO: Botón 360º para móvil #}
     </div>
 
     <script>
@@ -155,6 +162,7 @@
             var carousel = document.getElementById("carousel-producto-movil");
             if(!carousel) return;
             var startX;
+            // 'passive: true' mejora el rendimiento del scroll táctil
             carousel.addEventListener("touchstart", function(e) { startX = e.touches[0].clientX; }, {passive: true});
             carousel.addEventListener("touchend", function(e) {
                 if (!startX) return;

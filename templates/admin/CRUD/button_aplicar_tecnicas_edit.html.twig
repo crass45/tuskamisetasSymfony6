@@ -1,0 +1,10 @@
+{# templates/admin/CRUD/button_aplicar_tecnicas_edit.html.twig #}
+
+<li>
+    <a class="sonata-action-element"
+       href="{{ admin.generateObjectUrl('aplicar_tecnicas_tuskamisetas', object) }}"
+       onclick="return confirm('¿Estás seguro? Esto BORRARÁ las técnicas actuales y aplicará el Pack Tuskamisetas (A1, DTG, etc).');">
+        <i class="fa fa-paint-brush" aria-hidden="true"></i>
+        Aplicar Personalizaciones Tuskamisetas
+    </a>
+</li>

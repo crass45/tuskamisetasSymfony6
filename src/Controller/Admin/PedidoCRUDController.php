@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\Response;
 use PHPQRCode\QRcode;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Twig\Environment;
 
 final class PedidoCRUDController extends CRUDController
 {

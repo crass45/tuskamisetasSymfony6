@@ -11,7 +11,7 @@
 
         {# --- INICIO DE LA MEJORA --- #}
         <div class="col-sm-12" style="margin-bottom: 15px;">
-{#            <label>Elige una opción de personalización:</label>#}
+            {#            <label>Elige una opción de personalización:</label>#}
             <select class="form-control personalizacion-selector">
                 <option value="-1">Crear un nuevo diseño...</option>
                 {% if personalizacionesCarrito is not empty %}
@@ -29,14 +29,20 @@
             <div class="col-md-3 col-sm-6">
                 <label>Técnica de Estampado</label>
                 <select class="form-control personalizacionTipo">
-{#                    <option value="">Selecciona una técnica...</option>#}
+                    {#                    <option value="">Selecciona una técnica...</option>#}
                     {# Se itera sobre las 'tecnicas' (ModeloHasTecnicasEstampado) que pasa el controlador #}
                     {% for tecnica in tecnicas %}
-                        {# Se extraen las áreas y se guardan en atributos data-* #}
-                        {% set areas = tecnica.areas|map(a => a.area) %}
+                        {# MODIFICACIÓN: Construimos un objeto completo con nombre, imagen y medidas #}
+                        {% set areasData = tecnica.areas|map(a => {
+                            'name': a.areaname,
+                            'img': a.areaimg,
+                            'width': a.areawidth,
+                            'height': a.areahight
+                        }) %}
+
                         <option value="{{ tecnica.personalizacion.codigo }}"
                                 data-max-colores="{% if tecnica.maxColores >0 %}{{ tecnica.maxColores }}{% else %}{{ tecnica.personalizacion.numeroMaximoColores }}{% endif %}"
-                                data-areas="{{ areas|json_encode }}">
+                                data-areas="{{ areasData|json_encode }}">
                             {{ tecnica.personalizacion.nombre }}
                         </option>
                     {% endfor %}
@@ -45,7 +51,10 @@
 
             <div class="col-md-2 col-sm-6 tintas-container" style="display: none;">
                 <label>Nº Tintas</label>
-                <input type="number" class="form-control tintas" min="1" max="12" value="1">
+                {# CAMBIO: Input numérico por Select #}
+                <select class="form-control tintas">
+                    <option value="1">1 color</option>
+                </select>
             </div>
 
             <div class="col-md-3 col-sm-6 ubicacion-container">
@@ -53,6 +62,12 @@
                 <select id="personalizacion-ubicacion-{{ nPersonalizaciones }}" class="form-control ubicacion">
                     {# El JavaScript se encargará de rellenar este desplegable #}
                 </select>
+
+                {# MODIFICACIÓN: Contenedor para previsualizar la imagen del área #}
+                <div class="area-preview" style="margin-top: 10px; display: none; text-align: center; background: #f9f9f9; padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+                    <img src="" class="img-responsive area-img" style="max-height: 100px; margin: 0 auto;" alt="Zona de impresión">
+                    <small class="text-muted area-dims" style="display: block; margin-top: 5px; font-size: 10px;"></small>
+                </div>
             </div>
 
             <div class="col-md-4 col-sm-6">
@@ -72,4 +87,3 @@
         </div>
     </div>
 </div>
-

@@ -28,80 +28,62 @@
         #producto-nombre-movil {
             background: white;
             width: 100%;
-            /*padding: 15px;*/
             z-index: 1020;
-            /* Transición suave para todo */
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             transform-origin: top center;
-            /* Estado inicial relativo */
             position: relative;
             box-shadow: none;
         }
 
-        /* Contenedor de la info extra que desaparecerá */
         .extra-info {
             transition: opacity 0.2s ease, max-height 0.3s ease;
             opacity: 1;
-            max-height: 200px; /* Altura suficiente para el contenido */
+            max-height: 200px;
             overflow: hidden;
         }
 
-        /* --- ESTADO "PEGADO" (STUCK) --- */
         #producto-nombre-movil.is-stuck {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             padding: 10px 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); /* Sombra suave */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             border-bottom: 1px solid #f0f0f0;
-            background: rgba(255, 255, 255, 0.98); /* Casi opaco */
-            backdrop-filter: blur(5px); /* Efecto moderno */
-            animation: slideDown 0.3s ease forwards; /* Animación de entrada */
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(5px);
+            animation: slideDown 0.3s ease forwards;
         }
 
-        /* Animación de entrada desde arriba */
         @keyframes slideDown {
             from { transform: translateY(-100%); }
             to { transform: translateY(0); }
         }
 
-        /* Transformación del Título */
-        #producto-nombre-movil h1 {
-            transition: font-size 0.3s ease;
-        }
+        #producto-nombre-movil h1 { transition: font-size 0.3s ease; }
 
         #producto-nombre-movil.is-stuck h1 {
-            font-size: 16px !important; /* Reducción de tamaño */
+            font-size: 16px !important;
             margin: 0 !important;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             color: #044266;
-            text-align: center !important; /* Centrado queda más "app" */
+            text-align: center !important;
         }
 
-        /* Ocultar suavemente la info extra */
         #producto-nombre-movil.is-stuck .extra-info {
             opacity: 0;
             max-height: 0;
             margin: 0;
         }
 
-        /* Placeholder para evitar el salto de contenido */
-        #sticky-placeholder {
-            display: none;
-            /* La altura se ajustará con JS o CSS según el contenido */
-            height: 0;
-        }
-        #producto-nombre-movil.is-stuck + #sticky-placeholder {
-            display: block;
-        }
+        #sticky-placeholder { display: none; height: 0; }
+        #producto-nombre-movil.is-stuck + #sticky-placeholder { display: block; }
 
-        /* Ajuste del centinela: Lo bajamos para que salte más tarde */
         #sticky-sentinel {
             position: absolute;
-            top: 80px; /* <-- AJUSTE CLAVE: Salta cuando has bajado 80px */
+            top: 80px;
             height: 1px;
             width: 100%;
             visibility: hidden;
@@ -111,35 +93,27 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="{{ asset('js/jquery/fileUpload/js/vendor/jquery.ui.widget.min.js') }}"></script>
-    <script src="{{ asset('js/jquery/fileUpload/js/jquery.iframe-transport.min.js') }}"></script>
-    <script src="{{ asset('js/jquery/fileUpload/js/jquery.fileupload.min.js') }}"></script>
+    {# Carga diferida de scripts que no son críticos para el primer render #}
+    <script src="{{ asset('js/jquery/fileUpload/js/vendor/jquery.ui.widget.min.js') }}" defer></script>
+    <script src="{{ asset('js/jquery/fileUpload/js/jquery.iframe-transport.min.js') }}" defer></script>
+    <script src="{{ asset('js/jquery/fileUpload/js/jquery.fileupload.min.js') }}" defer></script>
     {% include 'web/product/partials/_product_page_javascript.html.twig' %}
 
-    {# --- SCRIPT OBSERVER --- #}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const target = document.getElementById('producto-nombre-movil');
             const sentinel = document.getElementById('sticky-sentinel');
-            const placeholder = document.getElementById('sticky-placeholder');
-
-            // Calculamos la altura real del bloque para el placeholder
-            // if(target && placeholder) {
-            //     const height = target.offsetHeight;
-            //     placeholder.style.height = height + 'px';
-            // }
 
             if(target && sentinel) {
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
-                        // Solo activamos si estamos bajando y el centinela sale por arriba
                         if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
                             target.classList.add('is-stuck');
                         } else {
                             target.classList.remove('is-stuck');
                         }
                     });
-                }, { threshold: 0 }); // threshold 0 dispara en cuanto toca el borde
+                }, { threshold: 0 });
 
                 observer.observe(sentinel);
             }
@@ -148,7 +122,6 @@
 {% endblock %}
 
 {% block meta %}
-    {# ... Metadatos sin cambios ... #}
     <meta property="og:site_name" content="www.tuskamisetas.com"/>
     <meta property="og:type" content="product"/>
     <meta property="og:title" content="{{ modelo.nombre|title }}"/>
@@ -174,9 +147,9 @@
 {% endblock %}
 
 {% block modals %}
-    {# ... Modales sin cambios ... #}
     <div id="presupuestoRapidoModal" class="modal fade" role="dialog"></div>
     <div id="360Modal" class="modal fade" role="dialog"></div>
+
     <div id="fotos-detalle-modal" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -188,7 +161,8 @@
                     <div class="modal-gallery" id="galeria-producto-detalle">
                         <div class="gallery-main-view">
                             <button id="gallery-prev" class="gallery-nav">&#10094;</button>
-                            <img id="gallery-main-image" src="" alt="Vista principal de la galería">
+                            {# OPTIMIZACIÓN: decoding="async" ayuda cuando el JS inyecte la imagen grande #}
+                            <img id="gallery-main-image" src="" alt="Vista principal de la galería" decoding="async">
                             <button id="gallery-next" class="gallery-nav">&#10095;</button>
                         </div>
                         <div class="gallery-thumbnails"></div>
@@ -197,6 +171,7 @@
             </div>
         </div>
     </div>
+
     <div id="medidas-talla-modal" class="modal fade" role="dialog">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -207,7 +182,8 @@
                 <div class="modal-body">
                     {% if modelo.getDrawing is defined and modelo.getDrawing != null %}
                         <div>
-                            <img class="img-responsive" src="{{ sonata_path(modelo.getDrawing, 'wide') }}" alt="ficha técnica del producto"/>
+                            {# OPTIMIZACIÓN: Esta imagen está oculta inicialmente en el modal. Usamos loading="lazy" #}
+                            <img class="img-responsive" src="{{ sonata_path(modelo.getDrawing, 'wide') }}" alt="ficha técnica del producto" loading="lazy" decoding="async"/>
                         </div>
                     {% else %}
                         <div class="table-responsive">
@@ -227,10 +203,11 @@
                                 </tr>
                             </table>
                             <div class="row" style="margin-top: 15px;">
-                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-camiseta.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir camisetas"/></div>
-                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-sudadera.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir sudaderas"/></div>
-                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-pantalon.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir pantalones"/></div>
-                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-bolsa.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir bolsas y regalos"/></div>
+                                {# OPTIMIZACIÓN: Imágenes estáticas con lazy load para no bloquear la carga inicial #}
+                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-camiseta.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir camisetas" loading="lazy" decoding="async"/></div>
+                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-sudadera.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir sudaderas" loading="lazy" decoding="async"/></div>
+                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-pantalon.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir pantalones" loading="lazy" decoding="async"/></div>
+                                <div class="col-xs-3" style="text-align: center"><img src="{{ asset('images/medir-bolsa.jpg') }}" style="max-width:130px;width: 100%; height: auto" alt="Patron para medir bolsas y regalos" loading="lazy" decoding="async"/></div>
                             </div>
                         </div>
                     {% endif %}
@@ -265,14 +242,11 @@
         <div class="container">
             <div class="row">
 
-                {# --- BLOQUE NOMBRE MÓVIL CON CENTINELA --- #}
+                {# --- BLOQUE NOMBRE MÓVIL --- #}
                 <div style="position: relative;">
-                    {# Centinela invisible: Lo bajamos 80px para que el efecto empiece más tarde #}
                     <div id="sticky-sentinel"></div>
-
                     <div id="producto-nombre-movil" class="col-lg-12 hidden-sm hidden-md hidden-lg">
                         <h1 style="font-size: 28px; margin: 0px;" itemprop="name">{{ modelo.nombre | upper }}</h1>
-
                         <div class="extra-info">
                             <p itemprop="name">
                                 <a style="color: black; font-size: 18px" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}">
@@ -283,39 +257,37 @@
                             <p><b>REF:</b> {{ modelo.referencia }}</p>
                         </div>
                     </div>
-
-                    {# Placeholder oculto que ocupa el espacio cuando el original se pega #}
                     <div id="sticky-placeholder" class="hidden-sm hidden-md hidden-lg"></div>
                 </div>
-                {# ----------------------------------------- #}
 
                 <div class="col-sm-6 col-md-7" style="position: -webkit-sticky; position: sticky; top: 0; background-color: white">
+                    {# IMPORTANTE: La galería principal suele ser la más pesada. Asegúrate de revisar este include también #}
                     {% include 'web/product/partials/_gallery.html.twig' %}
+
                     <div class="col-lg-12">
-                        {# Redes sociales (Sin cambios) #}
+                        {# Redes sociales optimizadas #}
                         <div class="redesReceta hidden-xl hidden-lg hidden-md hidden-sm" style="text-align: center; margin-top: 12px">
-                            <a href="whatsapp://send?text=Mira lo que acabo de encontrar en TusKamisetas%20{{ app.request.uri }}?utm_source=whatsapp" target="_blank"><img src="{{ asset('images/whatsapp-logo.svg') }}" style="max-width: 18px;" alt="whatsapp"/></a>
-                            <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;" alt="facebook"/></a>
-                            <a href="https://twitter.com/intent/tweet?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/twitter.svg') }}" style="max-width: 20px;" alt="twitter"/></a>
-                            <a href="https://plus.google.com/share?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/google+.svg') }}" style="max-width: 20px;" alt="google plus"/></a>
+                            <a href="whatsapp://send?text=Mira lo que acabo de encontrar en TusKamisetas%20{{ app.request.uri }}?utm_source=whatsapp" target="_blank"><img src="{{ asset('images/whatsapp-logo.svg') }}" style="max-width: 18px;" alt="whatsapp" loading="lazy" decoding="async"/></a>
+                            <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;" alt="facebook" loading="lazy" decoding="async"/></a>
+                            <a href="https://twitter.com/intent/tweet?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/twitter.svg') }}" style="max-width: 20px;" alt="twitter" loading="lazy" decoding="async"/></a>
+                            <a href="https://plus.google.com/share?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/google+.svg') }}" style="max-width: 20px;" alt="google plus" loading="lazy" decoding="async"/></a>
                             {% if modelo.imagen != null %}
-                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest"/></a>
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest" loading="lazy" decoding="async"/></a>
                             {% else %}
-                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}&media={{ modelo.urlImage }}&description={{ modelo.familia }} {{ modelo.nombre }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest"/></a>
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}&media={{ modelo.urlImage }}&description={{ modelo.familia }} {{ modelo.nombre }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest" loading="lazy" decoding="async"/></a>
                             {% endif %}
-                            <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}"><img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;" alt="mail"/></a>
+                            <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}"><img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;" alt="mail" loading="lazy" decoding="async"/></a>
                         </div>
                         <div class="redesReceta hidden-xs" style="text-align: center; margin-top: 12px">
-                            {# ... redes escritorio ... #}
-                            <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;" alt="facebook"/></a>
-                            <a href="https://twitter.com/intent/tweet?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/twitter.svg') }}" style="max-width: 20px;" alt="twitter"/></a>
-                            <a href="https://plus.google.com/share?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/google+.svg') }}" style="max-width: 20px;" alt="google plus"/></a>
+                            <a href="http://www.facebook.com/sharer.php?u={{ app.request.uri }}" target="blank"><img src="{{ asset('images/facebook.svg') }}" style="max-width: 20px;" alt="facebook" loading="lazy" decoding="async"/></a>
+                            <a href="https://twitter.com/intent/tweet?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/twitter.svg') }}" style="max-width: 20px;" alt="twitter" loading="lazy" decoding="async"/></a>
+                            <a href="https://plus.google.com/share?url={{ app.request.uri }}" target="blank"><img src="{{ asset('images/google+.svg') }}" style="max-width: 20px;" alt="google plus" loading="lazy" decoding="async"/></a>
                             {% if modelo.imagen != null %}
-                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest"/></a>
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest" loading="lazy" decoding="async"/></a>
                             {% else %}
-                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}&media={{ modelo.urlImage }}&description={{ modelo.familia }} {{ modelo.nombre }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest"/></a>
+                                <a href="http://www.pinterest.com/pin/create/button/?url={{ app.request.uri }}&media={{ modelo.urlImage }}&description={{ modelo.familia }} {{ modelo.nombre }}" target="_blank"><img src="{{ asset('images/pinterest.svg') }}" style="max-width: 20px;" alt="pinterest" loading="lazy" decoding="async"/></a>
                             {% endif %}
-                            <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}"><img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;" alt="mail"/></a>
+                            <a href="mailto:?subject=Mira lo que acabo de encontrar en TusKamisetas&body={{ app.request.uri }}"><img src="{{ asset('images/comentario.svg') }}" style="max-width: 20px;" alt="mail" loading="lazy" decoding="async"/></a>
                         </div>
 
                         {% if is_granted('ROLE_ADMIN') %}

@@ -23,8 +23,6 @@ class FechaEntregaService
 
     /**
      * Calcula el rango de fechas de entrega (mínima y máxima) para un pedido completo.
-     * Este es el nuevo método que solicitaste.
-     *
      * @param Pedido $pedido El pedido para el que se calcula la fecha.
      * @param \DateTime $fechaInicio La fecha desde la que empezar a contar (ej. hoy).
      * @return array{min: \DateTime, max: \DateTime, express: \DateTime}|null
@@ -46,15 +44,22 @@ class FechaEntregaService
         }
 
         // 2. Sumar días adicionales del pedido, del proveedor y del envío
-        // Obtenemos los días extra de la zona de envío del pedido
         $diasIncrementoZona = 0;
         $direccionEnvio = $pedido->getDireccion();
         if ($direccionEnvio && $direccionEnvio->getProvinciaBD() && $direccionEnvio->getProvinciaBD()->getZonasEnvio()[0]) {
             $diasIncrementoZona = $direccionEnvio->getProvinciaBD()->getZonasEnvio()[0]->getIncrementoTiempoPedido() ?? 0;
         }
-        $diasExtra = $maxDiasEnvioProveedor + ($pedido->getDiasAdicionales() ?? 0) + $diasIncrementoZona;
 
-        // 3. Determinar los días de producción (mínimo, máximo y exprés)
+        // --- NUEVO: Obtener días extra por complejidad de personalización ---
+        $diasExtraPersonalizacion = $this->getMaxDiasProduccionExtra($pedido);
+
+        // Sumamos todo: Proveedor + Config Pedido + Zona + TIEMPO PERSONALIZACIÓN
+        $diasExtra = $maxDiasEnvioProveedor
+            + ($pedido->getDiasAdicionales() ?? 0)
+            + $diasIncrementoZona
+            + $diasExtraPersonalizacion;
+
+        // 3. Determinar los días de producción base (mínimo, máximo y exprés)
         $diasMinProduccion = 0;
         $diasMaxProduccion = 0;
 
@@ -65,7 +70,10 @@ class FechaEntregaService
             $diasMinProduccion = $this->empresaConfig->getMinimoDiasSinImprimir() ?? 0;
             $diasMaxProduccion = $this->empresaConfig->getMaximoDiasSinImprimir() ?? 0;
         }
+
         // El servicio exprés siempre se calcula sobre el mínimo sin impresión + 3 días
+        // (Nota: Si quieres que el Express también sufra el retraso de la técnica, suma $diasExtraPersonalizacion aquí también,
+        // pero normalmente Express ignora colas de producción estándar).
         $diasExpressProduccion = ($this->empresaConfig->getMinimoDiasSinImprimir() ?? 0) + 3;
 
         // 4. Calcular los totales de días laborables
@@ -73,7 +81,7 @@ class FechaEntregaService
         $totalDiasMax = $diasMaxProduccion + $diasExtra;
         $totalDiasExpress = $diasExpressProduccion + $diasExtra;
 
-        // 5. Calcular las fechas finales usando tu método 'calculateDate' y devolver el array
+        // 5. Calcular las fechas finales
         return [
             'min' => $this->calculateDate($totalDiasMin, clone $fechaInicio),
             'max' => $this->calculateDate($totalDiasMax, clone $fechaInicio),
@@ -81,25 +89,22 @@ class FechaEntregaService
         ];
     }
 
-
     /**
-     * Calcula las fechas de entrega para un modelo específico.
-     * Reemplaza la lógica que estaba duplicada en el controlador.
+     * Calcula las fechas de entrega para un modelo específico (Ficha de producto).
      */
     public function getDeliveryDatesForModel(\App\Entity\Modelo $modelo): array
     {
         if (!$this->empresaConfig) {
-            return []; // Devuelve vacío si no hay configuración de empresa
+            return [];
         }
 
         $sumaDias = $modelo->getProveedor()?->getDiasEnvio() ?? 0;
 
-        // MIGRACIÓN: Se han añadido más fechas de entrega que tenías en tu controlador original.
         $diasSinImprimir1 = $this->empresaConfig->getMinimoDiasSinImprimir() + $sumaDias;
         $diasImpreso1 = $this->empresaConfig->getMinimoDiasConImpresion() + $sumaDias;
         $diasSinImprimir2 = $this->empresaConfig->getMaximoDiasSinImprimir() + $sumaDias;
         $diasImpreso2 = $this->empresaConfig->getMaximoDiasConImpresion() + $sumaDias;
-        $diasExpress = $diasSinImprimir1 + 3; // Lógica para el servicio express
+        $diasExpress = $diasSinImprimir1 + 3;
 
         return [
             'fechaEntregaSinImprimir' => $this->calculateDate($diasSinImprimir1, new \DateTime()),
@@ -112,14 +117,12 @@ class FechaEntregaService
 
     /**
      * Añade días laborables a una fecha, considerando fines de semana y festivos.
-     * Este es tu método `calculateDate` existente, lo he hecho público para reutilizarlo si es necesario.
      */
     public function calculateDate(int $businessDays, \DateTime $startDate): \DateTime
     {
         $date = clone $startDate;
         $daysAdded = 0;
 
-        // Si no hay días que añadir, devolvemos la fecha de inicio
         if ($businessDays <= 0) {
             return $date;
         }
@@ -136,9 +139,6 @@ class FechaEntregaService
         return $date;
     }
 
-    /**
-     * Comprueba si una fecha está dentro del periodo de vacaciones de la empresa.
-     */
     private function isVacation(\DateTime $date): bool
     {
         if (!$this->empresaConfig) return false;
@@ -152,38 +152,25 @@ class FechaEntregaService
         return false;
     }
 
-    /**
-     * Comprueba si una fecha dada es un festivo nacional en España.
-     * NOTA: Esta lista es para 2025. Debería actualizarse anualmente o moverse a la BBDD.
-     */
     private function isHoliday(\DateTime $date): bool
     {
+        // Festivos 2025 (Idealmente mover a BBDD)
         $holidays = [
-            '2025-01-01', // Año Nuevo
-            '2025-01-06', // Epifanía del Señor (Reyes)
-            '2025-04-18', // Viernes Santo
-            '2025-05-01', // Fiesta del Trabajo
-            '2025-08-15', // Asunción de la Virgen
-            '2025-10-12', // Fiesta Nacional de España (aunque sea domingo)
-            '2025-11-01', // Todos los Santos (aunque sea sábado)
-            '2025-12-06', // Día de la Constitución (aunque sea sábado)
-            '2025-12-08', // Inmaculada Concepción
-            '2025-12-25', // Navidad
+            '2025-01-01', '2025-01-06', '2025-04-18', '2025-05-01',
+            '2025-08-15', '2025-10-12', '2025-11-01', '2025-12-06',
+            '2025-12-08', '2025-12-25',
         ];
 
-        $dateString = $date->format('Y-m-d');
-
-        return in_array($dateString, $holidays, true);
+        return in_array($date->format('Y-m-d'), $holidays, true);
     }
 
     /**
      * NUEVO MÉTODO: Recalcula la fecha de entrega para un pedido ya pagado.
-     * Migración de la lógica de tu 'pedidoPagoConfirmadoBancoAction'.
      */
     public function recalculateForPaidOrder(Pedido $pedido): \DateTime
     {
         if (!$this->empresaConfig) {
-            return new \DateTime(); // Devolver ahora si no hay configuración
+            return new \DateTime();
         }
 
         $diasBase = $this->empresaConfig->getMaximoDiasSinImprimir();
@@ -200,9 +187,50 @@ class FechaEntregaService
             }
         }
 
-        $diasTotales = $diasBase + $sumaDiasProveedor + $pedido->getDiasAdicionales();
+        // --- NUEVO: Obtener días extra por complejidad de personalización ---
+        $diasExtraPersonalizacion = $this->getMaxDiasProduccionExtra($pedido);
+
+        $diasTotales = $diasBase + $sumaDiasProveedor + ($pedido->getDiasAdicionales() ?? 0) + $diasExtraPersonalizacion;
 
         return $this->calculateDate($diasTotales, new \DateTime());
     }
-}
 
+    /**
+     * Helper privado para extraer el MAXIMO tiempo de personalización de todas las líneas.
+     * Si una camiseta tarda 2 días y otra 10, el pedido se retrasa 10 días (no 12).
+     */
+    private function getMaxDiasProduccionExtra(Pedido $pedido): int
+    {
+        $maxDias = 0;
+
+        foreach ($pedido->getLineas() as $linea) {
+            /** @var PedidoLinea $linea */
+            // Obtenemos la colección de relaciones 'PedidoLineaHasTrabajo'
+            foreach ($linea->getPersonalizaciones() as $relacionTrabajo) {
+                /** @var \App\Entity\PedidoLineaHasTrabajo $relacionTrabajo */
+
+                // 1. Accedemos al trabajo real
+                $pedidoTrabajo = $relacionTrabajo->getPedidoTrabajo();
+
+                if ($pedidoTrabajo) {
+                    // 2. Accedemos a la definición de la personalización
+                    $personalizacion = $pedidoTrabajo->getPersonalizacion();
+
+                    if ($personalizacion) {
+                        // 3. Obtenemos los días extra (usamos método si existe, sino 0 por seguridad)
+                        $dias = method_exists($personalizacion, 'getTiempoPersonalizacion')
+                            ? $personalizacion->getTiempoPersonalizacion()
+                            : 0;
+
+                        // Nos quedamos siempre con el proceso más lento (cuello de botella)
+                        if ($dias > $maxDias) {
+                            $maxDias = $dias;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $maxDias;
+    }
+}

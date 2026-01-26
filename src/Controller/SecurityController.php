@@ -212,6 +212,17 @@ class SecurityController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $emailExistente = $em->getRepository(User::class)->findOneBy(['email' => $user->getEmail()]);
+            if ($emailExistente) {
+                $this->addFlash('error', 'El email ' . $user->getEmail() . ' ya está registrado. Por favor, inicia sesión o restablece tu contraseña.');
+                return $this->render('security/register.html.twig', [
+                    'registration_form' => $form->createView(),
+                    'targetPath' => $targetPath,
+                ]);
+            }
+
+            $user->setUsername($user->getEmail());
+
             $user->setUsername($user->getEmail());
             $user->setEmail($user->getEmail());
             $user->setPassword($passwordHasher->hashPassword($user, $form->get('plainPassword')->getData()));

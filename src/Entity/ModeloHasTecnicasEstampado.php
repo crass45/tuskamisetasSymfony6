@@ -31,7 +31,7 @@ class ModeloHasTecnicasEstampado
      * @var Collection<int, AreasTecnicasEstampado>
      */
     #[ORM\OneToMany(mappedBy: 'tecnica', targetEntity: AreasTecnicasEstampado::class, cascade: ['persist', 'remove'], orphanRemoval: true, fetch: 'EXTRA_LAZY')]
-    #[ORM\OrderBy(['id' => 'DESC'])]
+    #[ORM\OrderBy(['id' => 'ASC'])]
     private Collection $areas;
 
     public function __construct()

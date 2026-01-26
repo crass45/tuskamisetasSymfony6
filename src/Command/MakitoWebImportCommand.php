@@ -3,11 +3,14 @@
 namespace App\Command; // <-- Namespace actualizado
 
 // Entidades actualizadas al namespace App
+use App\Entity\AreasTecnicasEstampado;
 use App\Entity\Color;
 use App\Entity\Fabricante; // <-- Añadido
 use App\Entity\Familia;
 use App\Entity\Modelo;
+use App\Entity\ModeloHasTecnicasEstampado;
 use App\Entity\Personalizacion;
+use App\Entity\PersonalizacionPrecioCantidad;
 use App\Entity\Producto;
 use App\Entity\Proveedor;
 // Servicios que vamos a inyectar
@@ -41,11 +44,10 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
 
     protected function configure()
     {
-        // El nombre y la descripción ya están en el atributo #[AsCommand]
         $this->addArgument(
             'paso',
             InputArgument::OPTIONAL,
-            'Indica el paso a ejecutar ya que el bloque entero tarda mas de una hora 1: Importa Familias, 2: Importa productos, 3:Actualiza precios, 4: Técnicas'
+            '1: Familias/Modelos, 2: Variantes/Fotos, 3: Precios Producto, 4: Técnicas (Precios), 5: Asignar Técnicas a Productos'
         );
     }
 
@@ -60,10 +62,6 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
         $nombreProveedor = "Makito";
         $pzinternal = "0002676932808535201852904";
 
-        // $controller = $this->getContainer(); // <-- Línea eliminada
-        // $em = $controller->get('doctrine')->getManager(); // <-- Línea eliminada, usamos $this->em
-
-        // Usamos $this->em y la sintaxis ::class
         $proveedor = $this->em->getRepository(Proveedor::class)->findOneBy(['nombre' => $nombreProveedor]);
         if ($proveedor == null) {
             $proveedor = new Proveedor();
@@ -148,6 +146,7 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
 
                         $pack = intval($modelo->p1_units);
                         $box = intval($modelo->masterbox_units);
+                        $order_min_product= intval($modelo->order_min_product);
 
                         $descripcion = $modelo->otherinfo . "<br>" . $modelo->extendedinfo;
 
@@ -174,8 +173,10 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
                         $modeloBBDD->setPack($pack);
                         $modeloBBDD->setBox($box);
                         $modeloBBDD->setDescripcion($descripcion);
-                        if ($pack > 0) {
+                        if ($order_min_product > 0) {
                             $modeloBBDD->setObligadaVentaEnPack(true);
+                        }else{
+                            $modeloBBDD->setObligadaVentaEnPack(false);
                         }
                         $this->em->persist($modeloBBDD);
                         if ($nuevoModelo) {
@@ -388,140 +389,373 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
             $this->em->flush(); // <-- Añadido flush al final del bucle de precios
         }
 
+        // ==========================================
+        // PASO 4: IMPORTACIÓN DE TÉCNICAS Y PRECIOS
+        // XML: PrintPrices_esp.xml
+        // ==========================================
         if ($paso == 4) {
-            // Recargar proveedor tras el clear() anterior
             $proveedor = $this->em->getRepository(Proveedor::class)->find($proveedor->getId());
-            $output->writeln("PASO 4- PONEMOS LAS TECNICAS DE ESTAMPADO");
-            $urlPersonalizaciones = "http://print.makito.es:8080/user/xml/PrintJobsPrices.php?pszinternal=" . $pzinternal;
-            $xmlPersonalizaciones = simplexml_load_file($urlPersonalizaciones);
+            $output->writeln("PASO 4 - IMPORTANDO TÉCNICAS Y TARIFAS DE ESTAMPADO");
 
-            foreach ($xmlPersonalizaciones->printjobs->printjob as $printjob) {
-                $teccode = (string)$printjob->teccode;
-                $pedidoMinimo = (float)$printjob->minamount;
-                $pantalla = (float)$printjob->cliche;
-                $pantallarep = (float)$printjob->clicherep;
-                $code = $printjob->code . "-MKT" . $teccode;
-                $name = (string)$printjob->name;
+//            $urlPreciosTecnicas = "http://print.makito.es:8080/user/xml/PrintPrices_esp.xml?pszinternal=" . $pzinternal;
+            $urlPreciosTecnicas = "http://print.makito.es:8080/user/xml/PrintJobsPrices.php?pszinternal=" . $pzinternal;
 
-                if ($printjob->code == null || $printjob->code == "") continue;
+            // Cargar XML
+            $xml = simplexml_load_file($urlPreciosTecnicas);
+            if (!$xml) {
+                $output->writeln("<error>No se pudo cargar el XML de precios</error>");
+                return Command::FAILURE;
+            }
 
-                // Usamos sintaxis ::class
-                $personalizacion = $this->em->getRepository(Personalizacion::class)->findOneBy(['teccode' => $teccode]);
+            foreach ($xml->printjobs->printjob as $job) {
+                $teccode = (string)$job->teccode;
+                $codeName = (string)$job->code;
+                $name = (string)$job->name;
 
-                $sql = "delete from personalizacion_precios where personalizacion = " . "'" . $code . "'";
-                $stmt = $this->em->getConnection()->prepare($sql);
-                $stmt->executeStatement(); // <-- executeStatement()
+                // Generamos ID único: Letra + "-MKT" + Código numérico
+                $codigoUnico = $codeName . "-MKT" . $teccode;
 
-                if ($personalizacion == null) {
+                // Datos económicos generales
+                $cliche = (float)$job->cliche;       // Pantalla nueva
+                $clicheRep = (float)$job->clicherep; // Repetición
+                $minJob = (float)$job->minjob;       // Trabajo mínimo
+
+                // 1. Buscar o Crear Personalizacion
+                $personalizacion = $this->em->getRepository(Personalizacion::class)->findOneBy(['codigo' => $codigoUnico]);
+
+                if (!$personalizacion) {
+                    $personalizacion = $this->em->getRepository(Personalizacion::class)->findOneBy(['teccode' => $teccode]);
+                }
+
+                if (!$personalizacion) {
                     $personalizacion = new Personalizacion();
+                    $personalizacion->setCodigo($codigoUnico);
                 }
-                $personalizacion->setCodigo($code);
-                $personalizacion->setNombre($name);
-                $personalizacion->setTeccode($teccode);
-                $personalizacion->setTrabajoMinimoPorColor($pedidoMinimo);
-                $personalizacion->setNumeroMaximoColores(6);
-                $this->em->persist($personalizacion);
-                $this->em->flush();
-                $this->em->clear();
 
-                // Lógica de precios de personalización (con executeStatement)
-                $amount = 0; $price1 = (float)$printjob->price1; $price2 = (float)$printjob->priceaditionalcol1;
-                if ($price1 > 0) {
-                    $sql = "insert into personalizacion_precios (personalizacion, cantidad, precio, precio2Color, pantalla, repeticion, precio_color, precio_color2Color) VALUES ('" . $code . "'," . $amount . "," . $price1 . "," . $price2 . "," . $pantalla . "," . $pantallarep . "," . $price1 . "," . $price2 . ")";
-                    $this->em->getConnection()->prepare($sql)->executeStatement();
-                }
-                $amount = (int)$printjob->amountunder1; $price1 = (float)$printjob->price2; $price2 = (float)$printjob->priceaditionalcol2;
-                if ($price1 > 0) {
-                    $sql = "insert into personalizacion_precios (personalizacion, cantidad, precio, precio2Color, pantalla, repeticion, precio_color, precio_color2Color) VALUES ('" . $code . "'," . $amount . "," . $price1 . "," . $price2 . "," . $pantalla . "," . $pantallarep . "," . $price1 . "," . $price2 . ")";
-                    $this->em->getConnection()->prepare($sql)->executeStatement();
-                }
-                // ... (repetir para price3 a price7)
-                $amount = (int)$printjob->amountunder2; $price1 = (float)$printjob->price3; $price2 = (float)$printjob->priceaditionalcol3;
-                if ($price1 > 0) {
-                    $sql = "insert into personalizacion_precios (personalizacion, cantidad, precio, precio2Color, pantalla, repeticion, precio_color, precio_color2Color) VALUES ('" . $code . "'," . $amount . "," . $price1 . "," . $price2 . "," . $pantalla . "," . $pantallarep . "," . $price1 . "," . $price2 . ")";
-                    $this->em->getConnection()->prepare($sql)->executeStatement();
-                }
-                $amount = (int)$printjob->amountunder3; $price1 = (float)$printjob->price4; $price2 = (float)$printjob->priceaditionalcol4;
-                if ($price1 > 0) {
-                    $sql = "insert into personalizacion_precios (personalizacion, cantidad, precio, precio2Color, pantalla, repeticion, precio_color, precio_color2Color) VALUES ('" . $code . "'," . $amount . "," . $price1 . "," . $price2 . "," . $pantalla . "," . $pantallarep . "," . $price1 . "," . $price2 . ")";
-                    $this->em->getConnection()->prepare($sql)->executeStatement();
-                }
-                $amount = (int)$printjob->amountunder4; $price1 = (float)$printjob->price5; $price2 = (float)$printjob->priceaditionalcol5;
-                if ($price1 > 0) {
-                    $sql = "insert into personalizacion_precios (personalizacion, cantidad, precio, precio2Color, pantalla, repeticion, precio_color, precio_color2Color) VALUES ('" . $code . "'," . $amount . "," . $price1 . "," . $price2 . "," . $pantalla . "," . $pantallarep . "," . $price1 . "," . $price2 . ")";
-                    $this->em->getConnection()->prepare($sql)->executeStatement();
-                }
-                $amount = (int)$printjob->amountunder5; $price1 = (float)$printjob->price6; $price2 = (float)$printjob->priceaditionalcol6;
-                if ($price1 > 0) {
-                    $sql = "insert into personalizacion_precios (personalizacion, cantidad, precio, precio2Color, pantalla, repeticion, precio_color, precio_color2Color) VALUES ('" . $code . "'," . $amount . "," . $price1 . "," . $price2 . "," . $pantalla . "," . $pantallarep . "," . $price1 . "," . $price2 . ")";
-                    $this->em->getConnection()->prepare($sql)->executeStatement();
-                }
-                $amount = (int)$printjob->amountunder6; $price1 = (float)$printjob->price7; $price2 = (float)$printjob->priceaditionalcol7;
-                if ($price1 > 0) {
-                    $sql = "insert into personalizacion_precios (personalizacion, cantidad, precio, precio2Color, pantalla, repeticion, precio_color, precio_color2Color) VALUES ('" . $code . "'," . $amount . "," . $price1 . "," . $price2 . "," . $pantalla . "," . $pantallarep . "," . $price1 . "," . $price2 . ")";
-                    $this->em->getConnection()->prepare($sql)->executeStatement();
+                $personalizacion->setNombre($name);
+                $personalizacion->setTeccode((int)$teccode);
+                $personalizacion->setTrabajoMinimoPorColor((string)$minJob);
+                $personalizacion->setNumeroMaximoColores(8); // Valor por defecto seguro
+                $personalizacion->setIncrementoPrecio(30); // Resetear o configurar margen 5% a los que hacemos nostros 30%  los de makito
+                $personalizacion->setProveedor($proveedor);
+
+                $this->em->persist($personalizacion);
+
+                // 2. Limpiar precios antiguos de ESTA técnica
+                // (Usamos SQL directo para eficiencia y evitar problemas de colección)
+                $this->em->getConnection()->executeStatement(
+                    "DELETE FROM personalizacion_precios WHERE personalizacion = :code",
+                    ['code' => $personalizacion->getCodigo()]
+                );
+
+                // 3. Insertar Rangos de Precios
+                // El XML da el límite superior ("amountunder"). Calculamos el inferior.
+                $cantidadInicio = 1;
+
+                // Iteramos del 1 al 7 (son los rangos que da Makito)
+                for ($i = 1; $i <= 7; $i++) {
+                    $limitField = "amountunder" . $i;
+                    $priceField = "price" . $i; // Precio 1 color
+                    $priceAddField = "priceaditionalcol" . $i; // Precio colores extra
+
+                    $limit = (int)$job->$limitField;
+                    $price = (float)$job->$priceField;
+                    $priceAdd = (float)$job->$priceAddField;
+
+                    // Si el precio es 0, suele significar que no hay más rangos
+                    if ($price <= 0 && $limit <= 0) break;
+
+                    // Creamos el precio
+                    $rango = new PersonalizacionPrecioCantidad();
+                    $rango->setPersonalizacion($personalizacion);
+                    $rango->setCantidad($cantidadInicio); // "Desde X unidades"
+
+                    // Asignamos precios (convertimos a string para Decimal)
+                    $rango->setPrecio((string)$price);
+                    $rango->setPrecioColor((string)$price); // Precio base color = Precio base (blanco/color igual en Makito generalmente)
+
+                    $rango->setPrecio2((string)$priceAdd); // Extra color en blanca
+                    $rango->setPrecioColor2((string)$priceAdd); // Extra color en color
+
+                    $rango->setPantalla((string)$cliche);
+                    $rango->setRepeticion((string)$clicheRep);
+
+                    $this->em->persist($rango);
+
+                    // Preparamos siguiente iteración
+                    if ($limit > 0) {
+                        $cantidadInicio = $limit;
+                    } else {
+                        // Si limit es 0 pero había precio, es el último rango (hasta infinito)
+                        $cantidadInicio = 999999;
+                    }
                 }
             }
 
+            $this->em->flush();
+            $this->em->clear();
+            $output->writeln("Técnicas actualizadas correctamente.");
+        }
 
-            $urlTecnicasList = "http://print.makito.es:8080/user/xml/ItemPrintingFile.php?pszinternal=" . $pzinternal;
-            $xml = simplexml_load_file($urlTecnicasList);
-            foreach ($xml->product as $producto) {
-                $modeloReferencia = (string)$producto->ref;
-                // Usamos sintaxis ::class
-                $modelo = $this->em->getRepository(Modelo::class)->findOneBy(['referencia' => $modeloReferencia, 'proveedor' => $proveedor]);
-                if ($modelo != null) {
+        // ==========================================
+        // PASO 5: ASIGNACIÓN PRODUCTO <-> TÉCNICA <-> ÁREAS
+        // XML: allprintdatafile_esp.xml
+        // ==========================================
+        if ($paso == 5) {
+            // Recargamos el proveedor para evitar problemas de Doctrine
+            $proveedor = $this->em->getRepository(Proveedor::class)->find($proveedor->getId());
+            $output->writeln("PASO 5 - ASIGNACIÓN DE TÉCNICAS (TEXTIL = NUESTRAS / RESTO = MAKITO)");
 
-                    $sql = "delete from modelo_tecnicas_estampado where modelo_id = " . $modelo->getId();
-                    $stmt = $this->em->getConnection()->prepare($sql);
-                    $stmt->executeStatement();
+            // --- CORRECCIÓN DE URL ---
+            $urlDatosImpresion = "http://print.makito.es:8080/user/xml/ItemPrintingFile.php?pszinternal=" . $pzinternal;
 
-                    foreach ($producto->printjobs->printjob as $printjob) {
-                        $teccode = (string)$printjob->teccode;
-                        // Usamos sintaxis ::class
-                        $personalizacion = $this->em->getRepository(Personalizacion::class)->findOneBy(['teccode' => $teccode]);
-                        if ($personalizacion != null) {
-                            $sql = "insert into modelo_tecnicas_estampado (modelo_id, personalizacion_id, maxcolores) VALUES (" . $modelo->getId() . ",'" . $personalizacion->getCodigo() . "'," . $printjob->maxcolour . ")";
-                            $stmt = $this->em->getConnection()->prepare($sql);
-                            $stmt->executeStatement();
+            // Usamos simplexml_load_file directamente.
+            // Si el servidor de Makito tarda, a veces es mejor usar file_get_contents con stream_context, pero probemos así primero.
+            $xml = @simplexml_load_file($urlDatosImpresion);
 
-                            $lastID = $this->em->getConnection()->lastInsertId(); // Nota: lastInsertId puede no necesitar argumento en PDO
+            if (!$xml) {
+                $output->writeln("<error>Error al cargar XML desde: $urlDatosImpresion</error>");
+                // Intentamos un fallback visual del error
+                $error = error_get_last();
+                if ($error) {
+                    $output->writeln("<error>Detalle PHP: " . $error['message'] . "</error>");
+                }
+                return Command::FAILURE;
+            }
 
-                            $sql = "delete from areas_tecnicas_estampado where tecnica_id = '" . $personalizacion->getCodigo() . "'";
-                            $stmt = $this->em->getConnection()->prepare($sql);
-                            $stmt->executeStatement();
+            // --- TUS ÁREAS GENÉRICAS PARA TEXTIL ---
+            $areasTextilGenericas = [
+                ['name' => 'Delantera',       'w' => 30, 'h' => 30, 'img' => 'https://www.tuskamisetas.com/images/areas/generica_delantera.jpg'],
+                ['name' => 'Trasera',         'w' => 30, 'h' => 30, 'img' => 'https://www.tuskamisetas.com/images/areas/generica_trasera.jpg'],
+                ['name' => 'Manga Izquierda', 'w' => 10, 'h' => 10, 'img' => 'https://www.tuskamisetas.com/images/areas/generica_manga_izq.jpg'],
+                ['name' => 'Manga Derecha',   'w' => 10, 'h' => 10, 'img' => 'https://www.tuskamisetas.com/images/areas/generica_manga_der.jpg'],
+            ];
+            // Helper para limpiar acentos (Sublimación -> Sublimacion)
+            $removeAccents = function($str) {
+                $unwanted = ['Š'=>'S', 'š'=>'s', 'Ž'=>'Z', 'ž'=>'z', 'À'=>'A', 'Á'=>'A', 'Â'=>'A', 'Ã'=>'A', 'Ä'=>'A', 'Å'=>'A', 'Æ'=>'A', 'Ç'=>'C', 'È'=>'E', 'É'=>'E', 'Ê'=>'E', 'Ë'=>'E', 'Ì'=>'I', 'Í'=>'I', 'Î'=>'I', 'Ï'=>'I', 'Ñ'=>'N', 'Ò'=>'O', 'Ó'=>'O', 'Ô'=>'O', 'Õ'=>'O', 'Ö'=>'O', 'Ø'=>'O', 'Ù'=>'U', 'Ú'=>'U', 'Û'=>'U', 'Ü'=>'U', 'Ý'=>'Y', 'Þ'=>'B', 'ß'=>'Ss', 'à'=>'a', 'á'=>'a', 'â'=>'a', 'ã'=>'a', 'ä'=>'a', 'å'=>'a', 'æ'=>'a', 'ç'=>'c', 'è'=>'e', 'é'=>'e', 'ê'=>'e', 'ë'=>'e', 'ì'=>'i', 'í'=>'i', 'î'=>'i', 'ï'=>'i', 'ð'=>'o', 'ñ'=>'n', 'ò'=>'o', 'ó'=>'o', 'ô'=>'o', 'õ'=>'o', 'ö'=>'o', 'ø'=>'o', 'ù'=>'u', 'ú'=>'u', 'û'=>'u', 'ý'=>'y', 'þ'=>'b', 'ÿ'=>'y'];
+                return strtr($str, $unwanted);
+            };
 
-                            // $output->writeln(print_r($printjob->areas, true)); // Cambiado var_dump
+            $batchSize = 20;
+            $i = 0;
 
-                            foreach ($printjob->areas->area as $area) {
-                                try {
-                                    $areaname = (string)$area->areaname;
-                                    $areawidth = (float)$area->areawidth;
-                                    $areahight = (float)$area->areahight;
-                                    $areaimg = (string)$area->areaimg;
-                                    $areacode = (string)$area->areacode;
-                                    // ¡OJO! Asumo que 'tecnica_id' en 'areas_tecnicas_estampado' debe ser el ID de 'modelo_tecnicas_estampado' ($lastID)
-                                    // Si debe ser el código de 'personalizacion', cambia $lastID por $personalizacion->getCodigo()
-                                    $sql = "insert into areas_tecnicas_estampado (tecnica_id, areawidth, areahight, areaname , areaimg) VALUES (" . $lastID . "," . $areawidth . "," . $areahight . ",'" . $areaname . "','" . $areaimg . "')";
-                                    // $output->writeln($sql); // Cambiado var_dump
-                                    $stmt = $this->em->getConnection()->prepare($sql);
-                                    $stmt->executeStatement();
-                                } catch (\Exception  $e) {
-                                    $output->writeln('<error>Excepcion al crear el area del trabajo: '. $e->getMessage() .'</error>');
+            foreach ($xml->product as $prodXml) {
+                $ref = (string)$prodXml->ref;
+
+                $modelo = $this->em->getRepository(Modelo::class)->findOneBy([
+                    'referencia' => $ref,
+                    'proveedor' => $proveedor
+                ]);
+
+                if (!$modelo) continue;
+
+                // 1. DETECTAR SI ES TEXTIL
+                $nombreFamilia = $modelo->getFamilia() ? strtoupper($modelo->getFamilia()->getNombre()) : '';
+                $nombreProducto = strtoupper($modelo->getNombre());
+
+                $esTextil = false;
+                $keywordsTextil = ['TEXTIL', 'CAMISETA', 'POLO', 'SUDADERA', 'ROPA', 'PARKA', 'CHALECO', 'SOFT SHELL', 'FORRO POLAR'];
+
+                foreach ($keywordsTextil as $kw) {
+                    if (str_contains($nombreFamilia, $kw) || str_contains($nombreProducto, $kw)) {
+                        $esTextil = true;
+                        break;
+                    }
+                }
+
+                $output->write("Procesando: $ref ");
+
+                // 2. LIMPIEZA TOTAL
+                $sqlClean = "DELETE a FROM areas_tecnicas_estampado a INNER JOIN modelo_tecnicas_estampado mt ON a.area_tecnica_id = mt.id WHERE mt.modelo_id = :modeloId";
+                $this->em->getConnection()->executeStatement($sqlClean, ['modeloId' => $modelo->getId()]);
+
+                $sqlCleanRel = "DELETE FROM modelo_tecnicas_estampado WHERE modelo_id = :modeloId";
+                $this->em->getConnection()->executeStatement($sqlCleanRel, ['modeloId' => $modelo->getId()]);
+
+
+                // 3. LÓGICA DIFERENCIADA
+                // 3. LÓGICA DIFERENCIADA
+                if ($esTextil) {
+                    $output->writeln("<info>[TEXTIL]</info>");
+
+                    // =========================================================================
+                    // A. CONFIGURACIÓN DE TÉCNICAS Y MEDIDAS (W x H en cm)
+                    // =========================================================================
+                    $definicionesTecnicas = [
+                        // --- SERIGRAFÍA (Con medidas especiales para mangas) ---
+                        'A1'   => ['w' => 36, 'h' => 42, 'mangas' => true, 'w_manga' => 11, 'h_manga' => 41, 'img_type' => 'std'],
+
+                        // --- TRANSFER / VINILO (P) ---
+                        'P1'   => ['w' => 12, 'h' => 12, 'mangas' => true, 'w_manga' => 10, 'h_manga' => 10, 'img_type' => 'std'],
+                        'P2'   => ['w' => 26, 'h' => 26, 'mangas' => true, 'w_manga' => 10, 'h_manga' => 10, 'img_type' => 'std'],
+
+                        // --- TRANSFER (T) ---
+                        'T1'   => ['w' => 28, 'h' => 40, 'mangas' => true, 'w_manga' => 10, 'h_manga' => 10, 'img_type' => 'std'],
+                        'T2'   => ['w' => 20, 'h' => 28, 'mangas' => true, 'w_manga' => 10, 'h_manga' => 10, 'img_type' => 'std'],
+                        'T3'   => ['w' => 20, 'h' => 14, 'mangas' => true, 'w_manga' => 10, 'h_manga' => 10, 'img_type' => 'std'],
+                        'T4'   => ['w' => 10, 'h' => 10, 'mangas' => true, 'w_manga' => 10, 'h_manga' => 10, 'img_type' => 'std'],
+
+                        // --- IMPRESIÓN DIGITAL (DTG) - Solo cuerpo, img específica ---
+                        'DTG1' => ['w' => 10, 'h' => 10, 'mangas' => false, 'img_type' => 'dtg'],
+                        'DTG2' => ['w' => 20, 'h' => 14, 'mangas' => false, 'img_type' => 'dtg'],
+                        'DTG3' => ['w' => 20, 'h' => 30, 'mangas' => false, 'img_type' => 'dtg'],
+                        'DTG4' => ['w' => 30, 'h' => 40, 'mangas' => false, 'img_type' => 'dtg'],
+                        'DTG5' => ['w' => 40, 'h' => 50, 'mangas' => false, 'img_type' => 'dtg'],
+                    ];
+
+                    // Sublimación (SU) - Solo si se detecta
+                    $definicionesSublimacion = [
+                        'SU1'  => ['w' => 10, 'h' => 10, 'mangas' => true, 'w_manga' => 10, 'h_manga' => 10, 'img_type' => 'std'],
+                        'SU2'  => ['w' => 20, 'h' => 14, 'mangas' => true, 'w_manga' => 10, 'h_manga' => 10, 'img_type' => 'std'],
+                        'SU3'  => ['w' => 20, 'h' => 28, 'mangas' => true, 'w_manga' => 10, 'h_manga' => 10, 'img_type' => 'std'],
+                        'SU4'  => ['w' => 28, 'h' => 40, 'mangas' => true, 'w_manga' => 10, 'h_manga' => 10, 'img_type' => 'std'],
+                    ];
+
+                    // =========================================================================
+                    // B. DETERMINAR QUÉ TÉCNICAS APLICAR
+                    // =========================================================================
+
+                    // 1. Empezamos con el Pack Básico (A, P, T) y DTG (si aplica a todo textil)
+                    // Si DTG no aplica a todos, quita las líneas de DTG de $definicionesTecnicas arriba
+                    $tecnicasAplicar = $definicionesTecnicas;
+
+                    // 2. Detectar Sublimación
+                    $admiteSublimacion = false;
+                    $codigosSublimacion = ['100820', '100819'];
+
+                    if (isset($prodXml->printjobs->printjob)) {
+                        foreach ($prodXml->printjobs->printjob as $jobXml) {
+                            $teccodeXml = (string)$jobXml->teccode;
+                            if (in_array($teccodeXml, $codigosSublimacion)) {
+                                $admiteSublimacion = true; break;
+                            }
+                            // Chequeo por nombre
+                            $nombresAChequear = [(string)$jobXml->name, (string)$jobXml->tecname];
+                            foreach ($nombresAChequear as $rawName) {
+                                $nombreNormalizado = strtoupper($removeAccents((string)$rawName));
+                                if (str_contains($nombreNormalizado, 'SUBLIMACION') || str_contains($nombreNormalizado, 'SUBLIMATION')) {
+                                    $admiteSublimacion = true; break 2;
                                 }
                             }
                         }
                     }
+
+                    if ($admiteSublimacion) {
+                        $output->writeln("   -> Añadiendo SUBLIMACIÓN (SU1-SU4)");
+                        $tecnicasAplicar = array_merge($tecnicasAplicar, $definicionesSublimacion);
+                    }
+
+                    // =========================================================================
+                    // C. INSERTAR EN BBDD
+                    // =========================================================================
+                    foreach ($tecnicasAplicar as $codigoTecnica => $specs) {
+
+                        $personalizacion = $this->em->getRepository(Personalizacion::class)->findOneBy(['codigo' => $codigoTecnica]);
+
+                        if (!$personalizacion) {
+                            // $output->writeln("<error>   -> Error: $codigoTecnica no existe.</error>");
+                            continue;
+                        }
+
+                        // Crear relación Modelo <-> Técnica
+                        $relacion = new ModeloHasTecnicasEstampado();
+                        $relacion->setModelo($modelo);
+                        $relacion->setPersonalizacion($personalizacion);
+                        $relacion->setMaxcolores(8); // Por defecto en textil
+                        $this->em->persist($relacion);
+
+                        // --- 1. ÁREAS DE CUERPO (Delantera / Trasera) ---
+                        $areasCuerpo = ['Delantera', 'Trasera'];
+                        foreach ($areasCuerpo as $nombreArea) {
+                            $suffixImg = ($specs['img_type'] === 'dtg') ? '_dtg.jpg' : '.jpg';
+                            $nombreImg = 'generica_' . strtolower($nombreArea) . $suffixImg; // generica_delantera_dtg.jpg
+
+                            $area = new AreasTecnicasEstampado();
+                            $area->setTecnica($relacion);
+                            $area->setAreaname($nombreArea);
+                            $area->setAreawidth((string)$specs['w']);
+                            $area->setAreahight((string)$specs['h']);
+                            $area->setAreaimg("https://www.tuskamisetas.com/images/areas/" . $nombreImg);
+                            $area->setMaxcolores(8);
+                            $this->em->persist($area);
+                        }
+
+                        // --- 2. ÁREAS DE MANGAS (Solo si la técnica lo permite) ---
+                        if ($specs['mangas']) {
+                            $areasMangas = [
+                                'Manga Izquierda' => 'generica_manga_izq.jpg',
+                                'Manga Derecha'   => 'generica_manga_der.jpg'
+                            ];
+
+                            foreach ($areasMangas as $nombreArea => $imgFile) {
+                                $area = new AreasTecnicasEstampado();
+                                $area->setTecnica($relacion);
+                                $area->setAreaname($nombreArea);
+
+                                // Usamos medidas específicas de manga (o por defecto 10x10 si no se definen)
+                                $wManga = isset($specs['w_manga']) ? $specs['w_manga'] : 10;
+                                $hManga = isset($specs['h_manga']) ? $specs['h_manga'] : 10;
+
+                                $area->setAreawidth((string)$wManga);
+                                $area->setAreahight((string)$hManga);
+                                $area->setAreaimg("https://www.tuskamisetas.com/images/areas/" . $imgFile);
+                                $area->setMaxcolores(8);
+                                $this->em->persist($area);
+                            }
+                        }
+                    }
+
+                } else {
+                    $output->writeln("[NO TEXTIL]");
+
+                    if (!isset($prodXml->printjobs->printjob)) continue;
+
+                    foreach ($prodXml->printjobs->printjob as $jobXml) {
+                        $teccodeMakito = (string)$jobXml->teccode;
+
+                        $personalizacion = $this->em->getRepository(Personalizacion::class)->findOneBy(['teccode' => $teccodeMakito]);
+
+                        if (!$personalizacion) continue;
+
+                        $maxColors = 1;
+                        foreach ($jobXml->areas->area as $areaCheck) {
+                            $mc = (int)$areaCheck->maxcolour;
+                            if ($mc > $maxColors) $maxColors = $mc;
+                        }
+
+                        $relacion = new ModeloHasTecnicasEstampado();
+                        $relacion->setModelo($modelo);
+                        $relacion->setPersonalizacion($personalizacion);
+                        $relacion->setMaxcolores($maxColors);
+                        $this->em->persist($relacion);
+
+                        foreach ($jobXml->areas->area as $areaXml) {
+                            $area = new AreasTecnicasEstampado();
+                            $area->setTecnica($relacion);
+                            $area->setAreaname((string)$areaXml->areaname);
+                            $area->setAreawidth((string)$areaXml->areawidth);
+                            $area->setAreahight((string)$areaXml->areahight);
+                            $img = str_replace("http://", "https://", (string)$areaXml->areaimg);
+                            $area->setAreaimg($img);
+                            $area->setMaxcolores((int)$areaXml->maxcolour);
+                            $this->em->persist($area);
+                        }
+                    }
+                }
+
+                if (($i++ % $batchSize) === 0) {
+                    $this->em->flush();
+                    $this->em->clear();
+                    $proveedor = $this->em->getRepository(Proveedor::class)->find($proveedor->getId());
                 }
             }
+
             $this->em->flush();
             $this->em->clear();
+            $output->writeln("Paso 5 completado.");
         }
 
-        $this->em->flush();
-        $this->em->clear();
-
         $output->writeln("\n TERMINADO IMPORTACION MAKITO " . $paso);
-        return Command::SUCCESS; // <-- Devolver SUCCESS
+        return Command::SUCCESS;
     }
 }

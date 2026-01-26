@@ -45,6 +45,26 @@ class Personalizacion
     #[ORM\OrderBy(['personalizacion' => 'ASC'])]
     private Collection $modelos;
 
+
+    #[ORM\ManyToOne(targetEntity: Proveedor::class)]
+    #[ORM\JoinColumn(nullable: true)] // Puede ser null si es una antigua tuya sin clasificar
+    private ?Proveedor $proveedor = null;
+
+    #[ORM\Column(type: 'integer', options: ['default' => 0])]
+    private int $tiempoPersonalizacion = 0;
+
+
+    public function getProveedor(): ?Proveedor
+    {
+        return $this->proveedor;
+    }
+
+    public function setProveedor(?Proveedor $proveedor): self
+    {
+        $this->proveedor = $proveedor;
+        return $this;
+    }
+
     public function __construct()
     {
         $this->precios = new ArrayCollection();
@@ -221,6 +241,17 @@ class Personalizacion
                 $modelo->setPersonalizacion(null);
             }
         }
+        return $this;
+    }
+
+    public function getTiempoPersonalizacion(): int
+    {
+        return $this->tiempoPersonalizacion;
+    }
+
+    public function setTiempoPersonalizacion(int $tiempoPersonalizacion): self
+    {
+        $this->tiempoPersonalizacion = $tiempoPersonalizacion;
         return $this;
     }
 }

@@ -1,0 +1,120 @@
+{# templates/admin/personalizacion/ver_productos.html.twig #}
+{% extends '@SonataAdmin/standard_layout.html.twig' %}
+
+{% block content %}
+    <div class="box box-primary">
+        <div class="box-header with-border">
+            <h3 class="box-title">
+                Productos que usan: <b>{{ object.nombre }}</b> ({{ object.codigo }})
+            </h3>
+            <div class="box-tools pull-right">
+                <span class="label label-info">{{ totalItems }} Productos encontrados</span>
+            </div>
+        </div>
+
+        <div class="box-body table-responsive no-padding">
+            <table class="table table-hover table-striped">
+                <thead>
+                <tr>
+                    <th style="width: 50px;">ID</th>
+                    <th style="width: 60px;">Img</th>
+                    <th>Ref</th>
+                    <th>Modelo</th>
+                    <th>Familia</th>
+                    <th>Áreas Configuradas</th>
+                    <th style="width: 80px;">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for relacion in relaciones %}
+                    {% set modelo = relacion.modelo %}
+                    <tr>
+                        <td>{{ modelo.id }}</td>
+                        <td>
+                            {% if modelo.urlImage %}
+                                <a href="{{ modelo.urlImage }}" target="_blank">
+                                    <img src="{{ modelo.urlImage }}"
+                                         loading="lazy"
+                                         decoding="async"
+                                         width="40"
+                                         height="40"
+                                         style="height: 40px; width: 40px; object-fit: contain; border: 1px solid #ddd; background-color: #f9f9f9;"
+                                         alt="{{ modelo.referencia }}">
+                                </a>
+                            {% else %}
+                                <span class="text-muted" style="display:inline-block; width:40px; text-align:center;">-</span>
+                            {% endif %}
+                        </td>
+                        <td><strong>{{ modelo.referencia }}</strong></td>
+                        <td>{{ modelo.nombre }}</td>
+                        <td>
+                            {% if modelo.familia %}
+                                <span class="label label-default">{{ modelo.familia.nombre }}</span>
+                            {% else %}
+                                <small class="text-muted">Sin familia</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <ul style="padding-left: 15px; margin: 0; font-size: 0.85em;">
+                                {% for area in relacion.areas %}
+                                    <li>
+                                        {{ area.areaname }}
+                                        <span class="text-muted">({{ area.areawidth + 0 }}x{{ area.areahight + 0 }} cm)</span>
+                                    </li>
+                                {% else %}
+                                    <li class="text-warning"><i class="fa fa-exclamation-triangle"></i> Sin áreas</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                        <td>
+                            <a href="{{ path('admin_app_modelo_edit', {'id': modelo.id}) }}" class="btn btn-xs btn-primary" target="_blank" title="Editar Modelo">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted" style="padding: 30px;">
+                            <i class="fa fa-search" style="font-size: 2em; margin-bottom: 10px; display:block;"></i>
+                            No hay productos asignados a esta técnica.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# --- BARRA DE PAGINACIÓN --- #}
+        <div class="box-footer clearfix">
+            <a href="{{ admin.generateUrl('list') }}" class="btn btn-default btn-sm pull-left">
+                <i class="fa fa-arrow-left"></i> Volver
+            </a>
+
+            {% if pagesCount > 1 %}
+                <ul class="pagination pagination-sm no-margin pull-right">
+                    {# Botón Anterior #}
+                    <li class="{% if currentPage == 1 %}disabled{% endif %}">
+                        <a href="{{ currentPage > 1 ? admin.generateObjectUrl('ver_productos', object, {'page': currentPage - 1}) : '#' }}">«</a>
+                    </li>
+
+                    {# Páginas (Lógica simple para no mostrar 1000 números) #}
+                    {% for i in 1..pagesCount %}
+                        {# Mostramos primera, última, y cercanas a la actual #}
+                        {% if i == 1 or i == pagesCount or (i >= currentPage - 2 and i <= currentPage + 2) %}
+                            <li class="{% if i == currentPage %}active{% endif %}">
+                                <a href="{{ admin.generateObjectUrl('ver_productos', object, {'page': i}) }}">{{ i }}</a>
+                            </li>
+                        {% elseif i == currentPage - 3 or i == currentPage + 3 %}
+                            <li class="disabled"><a href="#">...</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {# Botón Siguiente #}
+                    <li class="{% if currentPage == pagesCount %}disabled{% endif %}">
+                        <a href="{{ currentPage < pagesCount ? admin.generateObjectUrl('ver_productos', object, {'page': currentPage + 1}) : '#' }}">»</a>
+                    </li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
