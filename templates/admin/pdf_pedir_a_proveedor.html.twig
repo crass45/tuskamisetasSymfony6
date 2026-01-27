@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>Presupuesto</title>
+    <title>Presupuesto por Proveedor</title>
 
     <style>
         .clearfix:after {
@@ -25,7 +25,6 @@
             background: #FFFFFF;
             font-family: Arial, sans-serif;
             font-size: 12px;
-            font-family: Arial;
         }
 
         header {
@@ -54,30 +53,12 @@
             background: url(dimension.png);
         }
 
-        #project span {
-            color: #5D6975;
-            text-align: right;
-            width: 52px;
-            margin-right: 10px;
-            display: inline-block;
-            font-size: 0.8em;
-        }
-
-        #company {
-            float: right;
-            text-align: right;
-        }
-
-        #project div,
-        #company div {
-            white-space: nowrap;
-        }
-
+        /* ESTILOS DE TABLA */
         table {
             width: 100%;
             border-collapse: collapse;
             border-spacing: 0;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         table tr:nth-child(2n-1) td {
@@ -103,23 +84,19 @@
         }
 
         table td {
-            /*padding: 20px;*/
             text-align: right;
         }
 
         table td.service,
         table td.desc {
             vertical-align: top;
+            padding: 10px 5px;
         }
 
-        table td.unit,
-        table td.qty,
-        table td.total {
+        table td.qty {
             font-size: 1.2em;
-        }
-
-        table td.grand {
-            border-top: 1px solid #5D6975;;
+            font-weight: bold;
+            padding: 10px 5px;
         }
 
         #notices .notice {
@@ -127,15 +104,38 @@
             font-size: 1.2em;
         }
 
-        footer {
-            color: #5D6975;
-            width: 100%;
-            height: 30px;
-            position: absolute;
-            bottom: 0;
-            border-top: 1px solid #C1CED9;
-            padding: 8px 0;
+        /* NUEVOS ESTILOS PARA AGRUPACIÓN */
+        .proveedor-header {
+            background-color: #5D6975;
+            color: #fff;
+            padding: 8px 15px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-transform: uppercase;
+        }
+
+        .separador-proveedor {
+            margin-top: 30px;
+            margin-bottom: 30px;
             text-align: center;
+            clear: both;
+        }
+
+        .linea-corte {
+            border-top: 2px dashed #aaa;
+            position: relative;
+            height: 20px;
+        }
+
+        .texto-corte {
+            background-color: #fff;
+            padding: 0 15px;
+            color: #aaa;
+            position: relative;
+            top: -12px;
+            font-size: 10px;
+            text-transform: uppercase;
         }
     </style>
 
@@ -156,79 +156,97 @@
         </div>
 
     </div>
-    <div id="company" class="clearfix">
-    </div>
-    <br>
 </header>
 <main>
-    <table width="100%">
 
-        <tbody>
-        <tr style="background-color: #C1CED9">
-            <th class="service">CÓDIGO ARTICULO</th>
-            <th class="desc">DESCRIPCION</th>
-            <th>CANTIDAD</th>
-        </tr>
-        {% for presupuesto in carrito.getItems() %}
-            {% set itemIndex = loop.index0 %}
-            {% for producto in presupuesto.getProductos() %}
-                {% if producto.cantidad > 0 %}
-                    <tr>
-                        <td class="service">{{ producto.producto.modelo.referencia }}
-                            ({{ producto.producto.referencia }})</td>
-                        <td class="desc">{{ producto.producto.modelo.nombre }}
-                            T/{{ producto.producto.talla }} {{ producto.producto.color }}
-                            <br> <span style="font-size: 9px">
-                                {% for trabajo in presupuesto.getTrabajos() %}
-                                    <p>{{ trabajo }}</p>
-                                {% endfor %}
-                                </span></td>
-                        <td class="qty">{{ producto.cantidad }}</td>
-                    </tr>
+    {# 1. LÓGICA: Extraemos la lista de proveedores únicos que hay en el carrito #}
+    {% set proveedores_unicos = [] %}
+    {% for presupuesto in carrito.getItems() %}
+        {% for producto in presupuesto.getProductos() %}
+            {% if producto.cantidad > 0 %}
+                {# Obtenemos nombre del proveedor. Si es nulo, ponemos 'Varios' #}
+                {% set provName = producto.producto.modelo.proveedor.nombre ?? 'OTROS' %}
+
+                {% if provName not in proveedores_unicos %}
+                    {% set proveedores_unicos = proveedores_unicos|merge([provName]) %}
                 {% endif %}
-            {% endfor %}
+            {% endif %}
         {% endfor %}
-        {#<tr>#}
-        {#<td colspan="4">SUBTOTAL</td>#}
-        {#<td class="total">{{ carrito.getSubtotal(app.user) | number_format(2, ',', '.') }}€</td>#}
-        {#</tr>#}
-        {#<tr>#}
-        {#<td colspan="4" class="grand total">GASTOS DE ENVIO</td>#}
-        {#<td class="grand total">{{ carrito.getGastosEnvio(app.user) | number_format(2, ',', '.') }}€</td>#}
-        {#</tr>#}
-        {#{% if carrito.servicioExpres == true %}#}
-        {#{% set ivaAAPlicar = (carrito.getSubtotal(app.user)+empresa.precioServicioExpres+carrito.getGastosEnvio(app.user))*empresa.ivaGeneral/100 %}#}
-        {#{% set total = carrito.getSubtotal(app.user)+empresa.precioServicioExpres+carrito.getGastosEnvio(app.user) %}#}
-        {#<td colspan="4">SERVICIO EXPRES</td>#}
-        {#<td class="total">{{ empresa.precioServicioExpres | number_format(2, ',', '.') }}€</td>#}
-        {#{% else %}#}
-        {#{% set ivaAAPlicar = (carrito.getSubtotal(app.user)+carrito.getGastosEnvio(app.user))*empresa.ivaGeneral/100 %}#}
-        {#{% set total = carrito.getSubtotal(app.user)+carrito.getGastosEnvio(app.user) %}#}
-        {#{% endif %}#}
-        {#<tr>#}
-        {#<td colspan="4">IVA {{ empresa.ivaGeneral }}%</td>#}
-        {#<td class="total">{{ ivaAAPlicar | number_format(2, ',', '.') }}€</td>#}
-        {#</tr>#}
-        {#<tr>#}
-        {#<td colspan="4" class="grand total">TOTAL</td>#}
-        {#<td class="grand total"><b>{{ (total+ivaAAPlicar) | number_format(2, ',', '.') }}€</b></td>#}
-        {#</tr>#}
-        </tbody>
-    </table>
-    {#{% if observaciones is defined and observaciones != "" %}#}
-    <div id="notices" style="border: 1px solid black; padding: 15px">
-        <div><b>PEDIDOS A REVISAR:</b></div>
-        <div class="notice">{{ carrito.observaciones |raw}}</div>
-    </div>
-    <br>
-    {#{% endif %}#}
-    {#<div id="notices">#}
-    {#<div>FORMA DE PAGO:</div>#}
-    {#<div class="notice">{{ empresa.cuentaBancaria |raw }}</div>#}
-    {#</div>#}
-    {#<footer>#}
-    {#Este documento ha sido creado desde el sitio web <a href="http://www.tuskamisetas.com">www.tuskamisetas.com</a> y es válido sin la firma y sin el sello#}
-    {#</footer>#}
+    {% endfor %}
+
+    {# 2. LÓGICA: Creamos un bloque completo por cada proveedor encontrado #}
+    {% for proveedor in proveedores_unicos %}
+
+        {# Evitamos que se rompa la tabla a mitad de página si es posible #}
+        <div style="page-break-inside: avoid;">
+
+            <div class="proveedor-header">
+                PROVEEDOR: {{ proveedor }}
+            </div>
+
+            <table width="100%">
+                <thead>
+                <tr style="background-color: #C1CED9">
+                    <th class="service" width="20%">CÓDIGO</th>
+                    <th class="desc" width="60%">DESCRIPCION</th>
+                    <th width="20%">CANTIDAD</th>
+                </tr>
+                </thead>
+                <tbody>
+
+                {# 3. LÓGICA: Filtramos productos que coincidan con el proveedor actual #}
+                {% for presupuesto in carrito.getItems() %}
+                    {% for producto in presupuesto.getProductos() %}
+                        {% if producto.cantidad > 0 %}
+                            {% set currentProv = producto.producto.modelo.proveedor.nombre ?? 'OTROS' %}
+
+                            {% if currentProv == proveedor %}
+                                <tr>
+                                    <td class="service">
+                                        {{ producto.producto.modelo.referencia }}<br>
+                                        <small>({{ producto.producto.referencia }})</small>
+                                    </td>
+                                    <td class="desc">
+                                        <b>{{ producto.producto.modelo.nombre }}</b>
+                                        <br>
+                                        {# Intento seguro de mostrar color y talla #}
+                                        Talla: {{ producto.producto.talla }} |
+                                        Color: {{ producto.producto.color.nombre is defined ? producto.producto.color.nombre : producto.producto.color }}
+
+                                        {% if presupuesto.getTrabajos()|length > 0 %}
+                                            <br>
+                                            <span style="font-size: 10px; color: #666;">
+                                            Personalización:
+                                            {% for trabajo in presupuesto.getTrabajos() %}
+                                                {{ trabajo }}
+                                            {% endfor %}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="qty">{{ producto.cantidad }}</td>
+                                </tr>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
+{#        #}{# Salto de página para que cada proveedor salga en hoja nueva (Opcional) #}
+{#        <div style="page-break-after: always;"></div>#}
+
+    {% endfor %}
+
+    {# Observaciones Globales al final #}
+    {% if carrito.observaciones is defined and carrito.observaciones != "" %}
+        <div id="notices" style="border: 2px solid #5D6975; padding: 15px; margin-top: 20px; page-break-inside: avoid;">
+            <div style="font-weight: bold; border-bottom: 1px solid #ccc; margin-bottom: 10px;">PEDIDOS A REVISAR / OBSERVACIONES:</div>
+            <div class="notice" style="font-size: 12px;">{{ carrito.observaciones | raw }}</div>
+        </div>
+    {% endif %}
+
 </main>
 </body>
 </html>
