@@ -86,6 +86,13 @@
             placement: 'bottom',
             html: false
         });
+
+        // --- SOLUCIÓN APLICADA ---
+        // Evita que el scroll del ratón cambie el número cuando el cursor está dentro del input.
+        // Al detectar el scroll, quitamos el foco (blur) del input para permitir que la página se desplace.
+        $('.talla').on('wheel', function (e) {
+            $(this).blur();
+        });
     });
 </script>
 

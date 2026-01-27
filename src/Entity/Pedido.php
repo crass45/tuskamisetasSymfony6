@@ -157,6 +157,24 @@ class Pedido
     // Propiedad no mapeada para lógica interna
     private bool $enviaMail = false;
 
+    // --- AÑADIR ESTO AL PRINCIPIO O FINAL DE TUS PROPIEDADES ---
+    #[ORM\Column(type: 'integer')]
+    #[ORM\Version]
+    private ?int $version = null;
+
+    // ... getters y setters ...
+
+    public function getVersion(): ?int
+    {
+        return $this->version;
+    }
+
+    public function setVersion(?int $version): self
+    {
+        $this->version = $version;
+        return $this;
+    }
+
     public function __construct(\DateTime $fecha, int $fiscalYear, int $numeroPedido)
     {
         $this->fecha = $fecha;

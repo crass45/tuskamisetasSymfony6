@@ -24,6 +24,7 @@ use PHPQRCode\QRcode;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Twig\Environment;
+use Doctrine\ORM\OptimisticLockException;
 
 final class PedidoCRUDController extends CRUDController
 {
@@ -482,5 +483,29 @@ final class PedidoCRUDController extends CRUDController
 
         $this->addFlash('sonata_flash_warning', 'No se ha implementado la visualización de etiquetas para esta agencia de transporte.');
         return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $pedido->getId()]));
+    }
+
+    /**
+     * 2. NUEVO MÉTODO: Sobrescribimos la edición para capturar el error de concurrencia.
+     */
+    public function editAction(Request $request): Response
+    {
+        try {
+            // Intentamos hacer la edición normal de Sonata
+            return parent::editAction($request);
+        } catch (OptimisticLockException $e) {
+            // SI FALLA PORQUE ALGUIEN LO TOCÓ:
+
+            // 1. Mostramos mensaje de error bonito
+            $this->addFlash('sonata_flash_error', '⛔ BLOQUEO DE SEGURIDAD: Otro usuario ha modificado este pedido mientras tú lo editabas. Tus cambios NO se han guardado para evitar sobrescribir su trabajo. Por favor, toma nota de tus cambios, recarga la página y aplícalos de nuevo.');
+
+            // 2. Redirigimos a la misma página para que se recarguen los datos nuevos
+            // (Usamos el ID del objeto actual)
+            $id = $request->get($this->admin->getIdParameter());
+            return new RedirectResponse($this->admin->generateUrl('edit', ['id' => $id]));
+        } catch (\Exception $e) {
+            // Si es otro error, dejamos que explote normal
+            throw $e;
+        }
     }
 }

@@ -65,6 +65,13 @@
                 let value = parseInt(input.value) || 0;
                 const maxStock = parseInt(input.getAttribute('data-max'));
 
+                const stockControl = input.getAttribute('data-control-stock');
+
+            // EXCEPCIÓN: Si el proveedor no controla stock
+                if (stockControl === '0') {
+                    return true;
+                }
+
                 // EXCEPCIÓN: Si el stock es exactamente 500, no hay límite
                 if (maxStock === 500) {
                     return true;
@@ -87,9 +94,9 @@
                         const productIndex = this.dataset.productIndex;
                         const quantity = this.value;
 
-                        console.warn(itemIndex);
-                        console.warn(productIndex);
-                        console.warn(quantity);
+                        // console.warn(itemIndex);
+                        // console.warn(productIndex);
+                        // console.warn(quantity);
                         // Construir URL de actualización (ajusta la ruta según tu router)
                         // Ejemplo: /es/carrito/update-quantity/0/0/5
                         // Generamos una URL válida con valores dummy (0, 0, 0) que luego reemplazaremos
@@ -111,6 +118,12 @@
                     const input = this.closest('.cart_quantity_button').querySelector('.cart_quantity_input');
                     let currentValue = parseInt(input.value) || 0;
                     const maxStock = parseInt(input.getAttribute('data-max'));
+
+                    const stockControl = input.getAttribute('data-control-stock');
+                    if (stockControl === '0') {
+                        // Si no hay control de stock, dejamos que el enlace funcione sin comprobar maxStock
+                        return;
+                    }
 
                     // Si no es la excepción de 500 y vamos a superar el stock...
                     if (maxStock !== 500 && (currentValue + 1) > maxStock) {

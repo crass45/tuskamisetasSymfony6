@@ -28,6 +28,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Twig\Environment;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 
 final class PedidoAdmin extends AbstractAdmin
 {
@@ -128,6 +129,10 @@ final class PedidoAdmin extends AbstractAdmin
         }
 
         $form->with("General", ["class" => "col-md-9"])
+            ->add('version', HiddenType::class, [
+                'mapped' => true, // Asegura que se vincula con la propiedad de la entidad
+                'data' => $pedido->getVersion() // Fuerza el valor actual
+            ])
             ->add('gruposUsuarioInfo', \Symfony\Component\Form\Extension\Core\Type\TextType::class, [
                 'label' => 'Tipo de Cliente', // Título bonito
                 'mapped' => false,               // No se guarda en BBDD
