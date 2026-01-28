@@ -33,7 +33,7 @@ final class PedidoLineaAdmin extends AbstractAdmin
             ])
             ->add('cantidad', IntegerType::class)
             ->add('precio', MoneyType::class, [
-                'scale' => 3,
+                'scale' => 5,
                 'currency' => 'EUR',
             ])
             ->add('personalizaciones', CollectionType::class, [

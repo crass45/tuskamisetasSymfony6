@@ -219,8 +219,8 @@ final class PedidoAdmin extends AbstractAdmin
                 ->add('contacto.nombre', TextType::class, ['label' => 'Nombre', 'disabled' => true])
                 ->add('contacto.apellidos', TextType::class, ['label' => 'Apellidos', 'disabled' => true])
                 ->add('contacto.cif', TextType::class, ['label' => 'DNI/CIF', 'disabled' => true])
-                ->add('contacto.telefonoOtro', TextType::class, ['label' => 'Teléfono', 'attr' => ['readonly' => true]])
-                ->add('contacto.telefonoMovil', TextType::class, ['label' => 'Teléfono Móvil', 'attr' => ['readonly' => true]])
+                ->add('contacto.telefonoOtro', TextType::class, ['label' => 'Teléfono', 'attr' => ['disabled' => true]])
+                ->add('contacto.telefonoMovil', TextType::class, ['label' => 'Teléfono Móvil', 'attr' => ['disabled' => true]])
                 ->end()
                 ->end();
             if (!$pedido->getRecogerEnTienda()) {
