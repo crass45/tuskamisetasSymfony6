@@ -38,18 +38,40 @@ class CarritoController extends AbstractController
      */
     private function getOrCreateCart(SessionInterface $session): Carrito
     {
-        $carrito = $session->get('carrito');
+        try {
+            $carrito = $session->get('carrito');
+        } catch (\TypeError $e) {
+            // Si detectamos el error de eancode (int vs string),
+            // limpiamos solo ese carrito específico y evitamos el Error 500
+            $session->remove('carrito');
+            $carrito = null;
+
+            // Opcional: deja un rastro en el log para confirmar que ha pasado
+            // error_log("Carrito corrupto eliminado para evitar Error 500");
+        }
+
         if (!$carrito instanceof Carrito) {
             $carrito = new Carrito();
-            $zonaEnvioDefault = $this->em->getRepository(ZonaEnvio::class)->find(1);
-            if ($zonaEnvioDefault) {
-                // Asumimos que la lógica de precios está en el modelo Carrito.
-                // Esta parte necesitará la lógica de tu entidad Carrito antigua.
-            }
+            // ... tu lógica de inicialización de ZonaEnvio ...
             $session->set('carrito', $carrito);
         }
+
         return $carrito;
     }
+//    private function getOrCreateCart(SessionInterface $session): Carrito
+//    {
+//        $carrito = $session->get('carrito');
+//        if (!$carrito instanceof Carrito) {
+//            $carrito = new Carrito();
+//            $zonaEnvioDefault = $this->em->getRepository(ZonaEnvio::class)->find(1);
+//            if ($zonaEnvioDefault) {
+//                // Asumimos que la lógica de precios está en el modelo Carrito.
+//                // Esta parte necesitará la lógica de tu entidad Carrito antigua.
+//            }
+//            $session->set('carrito', $carrito);
+//        }
+//        return $carrito;
+//    }
 
     /**
      * Muestra la página principal del carrito.
