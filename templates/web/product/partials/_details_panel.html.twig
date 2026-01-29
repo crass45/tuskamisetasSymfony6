@@ -1,153 +1,160 @@
 {# templates/web/product/partials/_details_panel.html.twig #}
 {# Este fichero contiene el contenido de tu antiguo 'productoFichaDerecha2.html.twig', migrado. #}
 
-{#<div class="product-information"><!--/product-information-->#}
-    <div class="hidden-xs">
-        <h1 style="font-size: 28px; margin: 0px;" itemprop="name">{{ modelo.nombre | upper }}</h1>
-        <p itemprop="name">
-            {#            <a style="color: black; font-size: 18px" href="{{ path('app_catalog_listing', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}"> #}
-            <a style="color: black; font-size: 18px" href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}">
-                {{ modelo.fabricante.nombre }}
-            </a>
-        </p>
-        {% if modelo.familia %}
-            <h2 style="font-size: 14px; margin: 0px;">{{ modelo.familia }}</h2>
-        {% endif %}
-        <p><b>REF:</b> {{ modelo.referencia }}</p>
-    </div>
+{# <div class="product-information"><!--/product-information--> #}
+<div class="hidden-xs">
+    <h1 style="font-size: 28px; margin: 0px;" itemprop="name">{{ modelo.nombre | upper }}</h1>
+    <p itemprop="name">
+        {#            <a style="color: black; font-size: 18px" href="{{ path('app_catalog_listing', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}"> #}
+        <a style="color: black; font-size: 18px"
+           href="{{ path('app_catalog_resolver', {'_locale': app.request.locale, 'slug': modelo.fabricante.nombreUrl}) }}">
+            {{ modelo.fabricante.nombre }}
+        </a>
+    </p>
+    {% if modelo.familia %}
+        <h2 style="font-size: 14px; margin: 0px;">{{ modelo.familia }}</h2>
+    {% endif %}
+    <p><b>REF:</b> {{ modelo.referencia }}</p>
+</div>
 
-    <p itemprop="description"><b>{% trans %}Descripción{% endtrans %}: </b>{{ modelo.descripcion | format_description }}</p>
-    <p>{{ modelo.descripcionTuskamisetas | format_description }}</p>
+<p itemprop="description"><b>{% trans %}Descripción{% endtrans %}: </b>{{ modelo.descripcion | format_description }}</p>
+<p>{{ modelo.descripcionTuskamisetas | format_description }}</p>
 
-    <p itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"><b>{% trans %}Precio{% endtrans %}
-            :</b> {% trans %}Desde{% endtrans %} <span
-                itemprop="lowPrice"
-                content="{{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }}"> {{ modelo.getPrecioUnidad(app.user) | number_format(2, ',', '.') }}</span>
-        <span itemprop="highPrice"
-              content="{{ modelo.getPrecioCantidadColor(1, app.user) | number_format(2, '.', ',') }}"></span>€
-        <meta itemprop="priceCurrency" content="EUR"/>
-        <span itemprop="seller" itemscope itemtype="http://schema.org/Organization">
+<p itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"><b>{% trans %}Precio{% endtrans %}
+        :</b> {% trans %}Desde{% endtrans %} <span
+            itemprop="lowPrice"
+            content="{{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }}"> {{ modelo.getPrecioUnidad(app.user) | number_format(2, ',', '.') }}</span>
+    <span itemprop="highPrice"
+          content="{{ modelo.getPrecioCantidadColor(1, app.user) | number_format(2, '.', ',') }}"></span>€
+    <meta itemprop="priceCurrency" content="EUR"/>
+    <span itemprop="seller" itemscope itemtype="http://schema.org/Organization">
             <meta itemprop="name" content="TusKamisetas"/>
         </span>
-        <meta itemprop="availability" content="InStock"/>
-        <meta itemprop="url"
-              content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
-    </p>
+    <meta itemprop="availability" content="InStock"/>
+    <meta itemprop="url"
+          content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
+</p>
 
 {#    #}{# --- INICIO DE LA CORRECCIÓN --- #}
 {#    #}{# Volvemos a calcular la condición para saber si estamos en la vista compleja #}
-{#    {% set hasExtraImages = modelo.childImage or (modelo.otherImages and modelo.otherImages|split(',')|filter(img => img is not empty)|length > 0) or (modelo.detailsImages and modelo.detailsImages|split(',')|filter(img => img is not empty)|length > 0) %}#}
+{#    {% set hasExtraImages = modelo.childImage or (modelo.otherImages and modelo.otherImages|split(',')|filter(img => img is not empty)|length > 0) or (modelo.detailsImages and modelo.detailsImages|split(',')|filter(img => img is not empty)|length > 0) %} #}
 
-{#    {% if hasExtraImages %}#}
-        <div class="colores">
-            <div style="text-align: center; margin-bottom: 30px">
-                {% for productoColor in modelo.getColoresProductos() %}
+{#    {% if hasExtraImages %} #}
+<div class="colores">
+    <div style="text-align: center; margin-bottom: 30px">
+        {% for productoColor in modelo.getColoresProductos() %}
 
-                    <div class=" colorProductoPresupuesto {{ productoColor.color.id }}"
-                            {% if productoColor.viewsImages!=null %}
-                                data-toggle="modal" data-target="#fotos-detalle-modal" data-imagenes="{{ productoColor.viewsImages }}"
-                            {% endif %}
-                            {% if (productoColor.imagenDescargada and productoColor.imagen is not null) %}
-                                data-imagen="{{ sonata_path(productoColor.imagen, 'mini') }}"
-                            {% else %}
-                                data-imagen="{{ productoColor.modelo.urlImage }}"
-                            {% endif %}
-                         data-modelo="{{ productoColor.modelo.id }}"
-                         data-color="{{ productoColor.color.id }}"
-                         style="display: inline-block; position: relative;">
-                        <a data-toggle="tooltip" title="{{ productoColor.color.nombre |upper }}"
-                           style="height: 100%; width: 100%; display: inline-block">
-                            {#                            {% if modelo.isTallaNino(productoColor.color) %} #}
-                            {% if productoColor.isTallaNino() %}
-                                <span style="position: absolute; bottom: 0; right: 0" class="smallCircle">
+            {# Calculamos la URL de la imagen una sola vez para limpiar el código #}
+            {% if (productoColor.imagenDescargada and productoColor.imagen is not null) %}
+                {% set imgUrl = sonata_path(productoColor.imagen, 'mini') %}
+                {% set imgBig = sonata_path(productoColor.imagen, 'wide') %}
+            {% else %}
+                {% set imgUrl = productoColor.urlImage %}
+                {% set imgBig = productoColor.modelo.urlImage %}
+            {% endif %}
+
+            {# Comprobamos si tiene imagen válida (no vacía) #}
+            {% set hasImage = (imgUrl is defined and imgUrl != "" and imgUrl != "---") %}
+
+            <div class="colorProductoPresupuesto {{ productoColor.color.id }}"
+                    {% if productoColor.viewsImages != null %}
+                        data-toggle="modal" data-target="#fotos-detalle-modal" data-imagenes="{{ productoColor.viewsImages }}"
+                    {% endif %}
+                 data-imagen="{{ imgUrl }}"
+                 data-modelo="{{ productoColor.modelo.id }}"
+                 data-color="{{ productoColor.color.id }}"
+                 style="display: inline-block; position: relative; cursor: pointer;"> {# Añadido cursor pointer #}
+
+                <a data-toggle="tooltip" title="{{ productoColor.color.nombre | upper }}"
+                   style="height: 100%; width: 100%; display: inline-block">
+
+                    {# Icono Niño #}
+                    {% if productoColor.isTallaNino() %}
+                        <span style="position: absolute; bottom: 0; right: 0; z-index: 2;" class="smallCircle">
                                     <i class="fa fa-child" aria-hidden="true"
                                        style="height: 16px; width: 16px; color: white"
-                                       title="Tallas infantiles disponibles" name="Tallas infantiles disponibles"></i>
-                                        </span>
-                            {% endif %}
-                            {% if (productoColor.urlImage is defined and productoColor.urlImage != "") or productoColor.imagenDescargada %}
-                                <img
-                                        class="  {{ productoColor.color.id }} lazy"
-                                        src="{{ asset('images/dummy40.png') }}"
-                                        {% if (productoColor.imagenDescargada and productoColor.imagen is not null) %}
-                                            data-src="{{ sonata_path(productoColor.imagen, 'mini') }}"
-                                            data-imagen="{{ sonata_path(productoColor.imagen, 'wide') }}"
-                                        {% else %}
-                                            data-src="{{ productoColor.urlImage }}"
-                                            data-imagen="{{ productoColor.urlImage }}"
-                                        {% endif %}
+                                       title="Tallas infantiles disponibles"></i>
+                                </span>
+                    {% endif %}
 
-                                        data-modelo="{{ productoColor.modelo.id }}"
-                                        data-color="{{ productoColor.color.id }}"
-                                        style="width: 40px; height: auto;display: inline-block; border: 1px solid #c8c6c6;"
-                                        alt="{{ modelo.nombre }} {{ productoColor.color.nombre }}"
-                                        title="{{ modelo.nombre }} {{ productoColor.color.nombre }}">
-                            {% else %}
-                                <div class="  {{ productoColor.color.id }}"
-                                     src="{{ productoColor.urlImage }}"
-                                     data-imagen="{{ productoColor.modelo.urlImage }}"
-                                     data-modelo="{{ productoColor.modelo.id }}"
-                                     data-color="{{ productoColor.color.id }}"
-                                     style="width: 40px; height: 40px;display: inline-block; border: 1px solid #c8c6c6;background-color: {{ productoColor.color.codigoRGB }};">
-                                    &nbsp;
-                                </div>
-                            {% endif %}
-                        </a>
-                    </div>
-                {% endfor %}
+                    {% if hasImage %}
+                        {# --- OPTIMIZACIÓN AQUÍ: Quitamos 'lazy' y usamos src real --- #}
+                        <img class="{{ productoColor.color.id }}"
+                             src="{{ imgUrl }}"
+                             data-imagen="{{ imgBig }}" {# Mantenemos data por si tu JS lo usa #}
+                             data-modelo="{{ productoColor.modelo.id }}"
+                             data-color="{{ productoColor.color.id }}"
+                             style="width: 40px; height: 40px; display: inline-block; border: 1px solid #c8c6c6; object-fit: cover;"
+                             alt="{{ modelo.nombre }} {{ productoColor.color.nombre }}"
+                             title="{{ modelo.nombre }} {{ productoColor.color.nombre }}"
+                             loading="eager" {# <--- Prioridad de carga alta #}
+                             fetchpriority="high"> {# <--- Prioridad de red alta #}
+                    {% else %}
+                        {# Fallback si no hay imagen: Cuadrado de color #}
+                        <div class="{{ productoColor.color.id }}"
+                             data-imagen="{{ productoColor.modelo.urlImage }}"
+                             data-modelo="{{ productoColor.modelo.id }}"
+                             data-color="{{ productoColor.color.id }}"
+                             style="width: 40px; height: 40px; display: inline-block; border: 1px solid #c8c6c6; background-color: {{ productoColor.color.codigoRGB }};">
+                            &nbsp;
+                        </div>
+                    {% endif %}
+                </a>
             </div>
-        </div>
-{#    {% endif %}#}
+        {% endfor %}
+    </div>
+</div>
+{#    {% endif %} #}
 
 
     {% if modelo.composicion %}
         <p><b>{% trans %}Composición{% endtrans %}:</b> {{ modelo.composicion | raw }}</p>
     {% endif %}
 
-    <p><b>{% trans %}Observaciones{% endtrans %}:</b>{{ modelo.observaciones | raw }}</p>
-    <p itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"><b>{% trans %}Precio{% endtrans %}
-            :</b> {% trans %}Desde{% endtrans %} <span
-                itemprop="lowPrice"
-                content="{{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }}"> {{ modelo.getPrecioUnidad(app.user) | number_format(2, ',', '.') }}</span>
-        <span itemprop="highPrice"
-              content="{{ modelo.getPrecioCantidadColor(1, app.user) | number_format(2, '.', ',') }}"></span>€
-        <meta itemprop="priceCurrency" content="EUR"/>
-        <span itemprop="seller" itemscope itemtype="http://schema.org/Organization">
+<p><b>{% trans %}Observaciones{% endtrans %}:</b>{{ modelo.observaciones | raw }}</p>
+<p itemprop="offers" itemscope itemtype="http://schema.org/AggregateOffer"><b>{% trans %}Precio{% endtrans %}
+        :</b> {% trans %}Desde{% endtrans %} <span
+            itemprop="lowPrice"
+            content="{{ modelo.getPrecioUnidad(app.user) | number_format(2, '.', ',') }}"> {{ modelo.getPrecioUnidad(app.user) | number_format(2, ',', '.') }}</span>
+    <span itemprop="highPrice"
+          content="{{ modelo.getPrecioCantidadColor(1, app.user) | number_format(2, '.', ',') }}"></span>€
+    <meta itemprop="priceCurrency" content="EUR"/>
+    <span itemprop="seller" itemscope itemtype="http://schema.org/Organization">
             <meta itemprop="name" content="TusKamisetas"/>
         </span>
-        <meta itemprop="availability" content="InStock"/>
-        <meta itemprop="url"
-              content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
-    </p>
+    <meta itemprop="availability" content="InStock"/>
+    <meta itemprop="url"
+          content="{{ url('app_product_detail', {'_locale': app.request.locale, 'slug': modelo.nombreUrl}) }}"/>
+</p>
 
 
-    {% if modelo.getCertificados() %} {# Una forma más corta y limpia de comprobar si no es nulo/vacío #}
+{% if modelo.getCertificados() %} {# Una forma más corta y limpia de comprobar si no es nulo/vacío #}
 
-        {# Creamos un único contenedor con nuestra nueva clase de Flexbox #}
-        <div class="certificados-container">
+    {# Creamos un único contenedor con nuestra nueva clase de Flexbox #}
+    <div class="certificados-container">
 
-            {% set certificados = modelo.getCertificados() | split(',') %}
-            {% for imagen in certificados %}
-                {% if imagen is not empty %} {# Buena práctica: asegurarse de que no hay elementos vacíos #}
+        {% set certificados = modelo.getCertificados() | split(',') %}
+        {% for imagen in certificados %}
+            {% if imagen is not empty %} {# Buena práctica: asegurarse de que no hay elementos vacíos #}
 
-                    {# Para cada imagen, creamos un enlace a la propia imagen y le aplicamos la nueva clase #}
-                    {#                <a href="{{ imagen }}" target="_blank" title="Ver certificado">#}
-                    <img class="certificado-imagen"
-                         src="{{ imagen }}"
-                         alt="Certificado del producto {{ modelo.nombre }}"/>
-                    {#                </a>#}
+                {# Para cada imagen, creamos un enlace a la propia imagen y le aplicamos la nueva clase #}
+                {#                <a href="{{ imagen }}" target="_blank" title="Ver certificado"> #}
+                <img class="certificado-imagen"
+                     src="{{ imagen }}"
+                     alt="Certificado del producto {{ modelo.nombre }}"/>
+                {#                </a> #}
 
-                {% endif %}
-            {% endfor %}
+            {% endif %}
+        {% endfor %}
 
-        </div>
-    {% endif %}
-
-
-    <p><b>{% trans %}Tallas{% endtrans %}:</b> {{ modelo.getTallasString() }}</p>
+    </div>
+{% endif %}
 
 
-    {# ... (Lógica para la ficha técnica y 'Ver medidas') ... #}
+<p><b>{% trans %}Tallas{% endtrans %}:</b> {{ modelo.getTallasString() }}</p>
+
+
+{# ... (Lógica para la ficha técnica y 'Ver medidas') ... #}
     {% if modelo.getUrlFichaTecnica() != null and modelo.getUrlFichatecnica()!= "" %}
         <div>
             <a rel="nofollow"
@@ -161,49 +168,49 @@
             </a>
         </div>
     {% else %}
-            {% if modelo.fichaTecnica != null %}
+        {% if modelo.fichaTecnica != null %}
+            <a rel="nofollow"
+               href="{{ (path('sonata_media_download', {'id': modelo.fichaTecnica.id})) }}"
+               target="_blank">
+                <div class="btn btn-info btn-sm product-info-bt.pdf"
+                     style="display: inline-block; margin-right: 15px;">
+                    {% trans %}
+                        Ficha Técnica
+                    {% endtrans %}
+                </div>
+            </a>
+            {% if modelo.getDrawing is defined  and modelo.getDrawing != null %}
+                <div class="btn calculaPresupuesto" style="display: inline-block"
+                     data-toggle="modal" data-target="#medidas-talla-modal">{% trans %}Ver medidas{% endtrans %}
+                </div>
+            {% endif %}
+        {% else %}
+
+            {# Si es JHK MUESTRA EL PANTONE #}
+            {% if modelo.proveedor.id ==  3239 %}
                 <a rel="nofollow"
-                   href="{{ (path('sonata_media_download', {'id': modelo.fichaTecnica.id})) }}"
+                   href="{{ ('https://www.jhktshirt.com/es/catalogo/datasheet/document/' ~ modelo.referencia |lower) }}"
+                   download="Ficha-Tecnica{{ modelo.referencia }}" target="_blank">
+                    <div class="btn btn-info btn-sm product-info-bt.pdf" style="display: inline-block">
+                        {% trans %}Ficha Técnica{% endtrans %}
+                    </div>
+                </a>
+
+                <a rel="nofollow"
+                   href="{{ asset('images/Pantone%20Digital_Colores%20JHK.PDF') }}"
                    target="_blank">
                     <div class="btn btn-info btn-sm product-info-bt.pdf"
-                         style="display: inline-block; margin-right: 15px;">
+                         style="display: inline-block; margin-left: 15px">
                         {% trans %}
-                            Ficha Técnica
+                            Equivalencias de Color (Pantone)
                         {% endtrans %}
                     </div>
                 </a>
-                {% if modelo.getDrawing is defined  and modelo.getDrawing != null %}
-                    <div class="btn calculaPresupuesto" style="display: inline-block"
-                         data-toggle="modal" data-target="#medidas-talla-modal">{% trans %}Ver medidas{% endtrans %}
-                    </div>
-                {% endif %}
             {% else %}
-
-                {# Si es JHK MUESTRA EL PANTONE #}
-                {% if modelo.proveedor.id ==  3239 %}
-                    <a rel="nofollow"
-                       href="{{ ('https://www.jhktshirt.com/es/catalogo/datasheet/document/' ~ modelo.referencia |lower)}}"
-                       download="Ficha-Tecnica{{ modelo.referencia }}" target="_blank">
-                        <div class="btn btn-info btn-sm product-info-bt.pdf" style="display: inline-block">
-                            {% trans %}Ficha Técnica{% endtrans %}
-                        </div>
-                    </a>
-
-                    <a rel="nofollow"
-                       href="{{ asset('images/Pantone%20Digital_Colores%20JHK.PDF') }}"
-                       target="_blank">
-                        <div class="btn btn-info btn-sm product-info-bt.pdf"
-                             style="display: inline-block; margin-left: 15px">
-                            {% trans %}
-                                Equivalencias de Color (Pantone)
-                            {% endtrans %}
-                        </div>
-                    </a>
-                {% else %}
-                    <div class="btn btn-info btn-bg product-info-bt" style="display: inline-block; width: 100%;"
-                         data-toggle="modal" data-target="#medidas-talla-modal">{% trans %}Ver medidas{% endtrans %}
-                    </div>
-                {% endif %}
+                <div class="btn btn-info btn-bg product-info-bt" style="display: inline-block; width: 100%;"
+                     data-toggle="modal" data-target="#medidas-talla-modal">{% trans %}Ver medidas{% endtrans %}
+                </div>
+            {% endif %}
         {% endif %}
     {% endif %}
 
@@ -225,7 +232,8 @@
 
         {% if modelo.hasColor or modelo.hasBlanco %}
             <div class="table-responsive">
-                <table class="table-responsive" style="text-align: center; font-size: 12px;width: 100%; margin-top: 0px">
+                <table class="table-responsive"
+                       style="text-align: center; font-size: 12px;width: 100%; margin-top: 0px">
 
                     <tr>
                         <td style="border: 1px solid darkgray; background-color: lightgrey;">
@@ -426,5 +434,5 @@
             </div>
         {% endif %}
     {% endif %}
-{#</div>#}
+{# </div> #}
 

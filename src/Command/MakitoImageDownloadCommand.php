@@ -3,190 +3,125 @@
 namespace App\Command;
 
 use App\Entity\Modelo;
-use App\Entity\Producto;
 use App\Entity\Proveedor;
+use App\Service\ImageManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[AsCommand(
     name: 'ss:download-makito-images',
-    description: 'Descarga imágenes de productos y modelos de Makito que estén enlazadas a URLs externas.'
+    description: 'Descarga TODAS las imágenes de Makito (Modelo, Detalles, Otros, Productos y Vistas) a WebP.'
 )]
 class MakitoImageDownloadCommand extends Command
 {
-    private EntityManagerInterface $em;
-    private HttpClientInterface $httpClient;
-    private Filesystem $filesystem;
-    private string $publicDir;
-    private ?Proveedor $proveedorMakito;
-
     public function __construct(
-        EntityManagerInterface $em,
-        HttpClientInterface $httpClient,
-        Filesystem $filesystem,
-        KernelInterface $kernel
+        private EntityManagerInterface $em,
+        private ImageManager $imageManager
     ) {
         parent::__construct();
-        $this->em = $em;
-        $this->httpClient = $httpClient;
-        $this->filesystem = $filesystem;
-        $this->publicDir = $kernel->getProjectDir() . '/public';
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        ini_set('memory_limit', '-1');
-        $output->writeln('<info>--- INICIO DE DESCARGA DE IMÁGENES MAKITO ---</info>');
+        ini_set('memory_limit', '1024M');
+        $output->writeln('<info>--- INICIO DE DESCARGA TOTAL MAKITO (MODO WEBP) ---</info>');
 
-        $this->proveedorMakito = $this->em->getRepository(Proveedor::class)->findOneBy(['nombre' => 'Makito']);
-        if (!$this->proveedorMakito) {
-            $output->writeln('<error>No se encontró el proveedor "Makito". Abortando.</error>');
+        $proveedorMakito = $this->em->getRepository(Proveedor::class)->findOneBy(['nombre' => 'Makito']);
+        if (!$proveedorMakito) {
+            $output->writeln('<error>No se encontró el proveedor Makito en la base de datos.</error>');
             return Command::FAILURE;
         }
 
-        $this->processModelos($output);
-        $this->processProductos($output);
+        $qb = $this->em->createQueryBuilder()
+            ->select('m')
+            ->from(Modelo::class, 'm')
+            ->where('m.proveedor = :prov')
+            ->andWhere('m.activo = :activo')
+            ->setParameter('prov', $proveedorMakito)
+            ->setParameter('activo', true);
 
-        $output->writeln('<info>--- FIN DE LA DESCARGA ---</info>');
+        $iterableModelos = $qb->getQuery()->toIterable();
+        $batchSize = 20; // Bajamos el batch porque ahora procesamos muchas más imágenes por ciclo
+        $i = 0;
+
+        foreach ($iterableModelos as $modelo) {
+            $ref = $modelo->getReferencia();
+            $output->writeln("<comment>Procesando Modelo: $ref</comment>");
+
+            // 1. Imagen Principal del Modelo
+            $this->processSingleImage($modelo, 'getUrlImage', 'setUrlImage', 'makito/modelos', $ref);
+
+            // 2. Detalles del Modelo (Campo details_images - String separado por comas)
+            $this->processMultipleImages($modelo, 'getDetailsImages', 'setDetailsImages', 'makito/detalles', $ref . '_det');
+
+            // 3. Otras Imágenes del Modelo (Campo other_images - String separado por comas)
+            $this->processMultipleImages($modelo, 'getOtherImages', 'setOtherImages', 'makito/otros', $ref . '_oth');
+
+            // 4. Procesar Productos de este modelo (Variaciones)
+            foreach ($modelo->getProductos() as $producto) {
+                if ($producto->isActivo()) {
+                    $pRef = $producto->getReferencia();
+
+                    // Imagen principal del producto
+                    $this->processSingleImage($producto, 'getUrlImage', 'setUrlImage', 'makito/productos', $pRef);
+
+                    // Vistas del producto (Campo views_images - String separado por comas)
+                    $this->processMultipleImages($producto, 'getViewsImages', 'setViewsImages', 'makito/vistas', $pRef . '_v');
+                }
+            }
+
+            $this->em->persist($modelo);
+
+            if ((++$i % $batchSize) === 0) {
+                $output->writeln("<info>Guardando lote y liberando memoria (Registro $i)...</info>");
+                $this->em->flush();
+                $this->em->clear();
+                $proveedorMakito = $this->em->getRepository(Proveedor::class)->find($proveedorMakito->getId());
+            }
+        }
+
+        $this->em->flush();
+        $this->em->clear();
+
+        $output->writeln('<info>--- PROCESO MAKITO FINALIZADO CON ÉXITO ---</info>');
         return Command::SUCCESS;
     }
 
-    private function processModelos(OutputInterface $output)
+    /**
+     * Procesa una sola imagen (URL simple)
+     */
+    private function processSingleImage($entity, string $getter, string $setter, string $folder, string $filename): void
     {
-        $output->writeln('Procesando imágenes de Modelos...');
-        $batchSize = 50;
-        $i = 0;
-
-        $modelos = $this->em->getRepository(Modelo::class)->findBy(['proveedor' => $this->proveedorMakito]);
-
-        foreach ($modelos as $modelo) {
-            $imageUrl = $modelo->getUrlImage();
-
-            // Si está vacío o ya es una ruta local (no empieza con http), lo saltamos.
-            if (empty($imageUrl) || !str_starts_with($imageUrl, 'http')) {
-                continue;
-            }
-
-            // Definimos la nueva ruta local
-            $localPath = "/uploads/images/makito/modelos/" . $modelo->getReferencia() . ".jpg";
-
-            if ($newPath = $this->downloadImage($imageUrl, $localPath, $output)) {
-                $modelo->setUrlImage($newPath);
-                $this->em->persist($modelo);
-                $output->writeln("  <info>OK</info> -> " . $modelo->getReferencia());
-            } else {
-                $output->writeln("  <error>FAIL</error> -> " . $modelo->getReferencia() . " (URL: $imageUrl)");
-            }
-
-            // Flush y clear por lotes para liberar memoria
-            if (++$i % $batchSize === 0) {
-                $output->writeln("...guardando lote de modelos ($i)...");
-                $this->em->flush();
-                $this->em->clear();
-                // Recargamos el proveedor
-                $this->proveedorMakito = $this->em->getRepository(Proveedor::class)->find($this->proveedorMakito->getId());
+        $url = $entity->$getter();
+        if (!empty($url) && str_starts_with($url, 'http')) {
+            $newPath = $this->imageManager->download($url, $folder, $filename);
+            if (str_starts_with($newPath, '/uploads')) {
+                $entity->$setter($newPath);
             }
         }
-
-        $output->writeln("...guardando modelos restantes...");
-        $this->em->flush();
-        $this->em->clear();
-    }
-
-    private function processProductos(OutputInterface $output)
-    {
-        $output->writeln('Procesando imágenes de Productos (variaciones)...');
-        $batchSize = 50;
-        $i = 0;
-
-        // Recargamos el proveedor por si el clear() anterior se lo llevó
-        $this->proveedorMakito = $this->em->getRepository(Proveedor::class)->findOneBy(['nombre' => 'Makito']);
-
-        // Query para buscar productos del proveedor Makito
-        $qb = $this->em->getRepository(Producto::class)->createQueryBuilder('p');
-        $qb->join('p.modelo', 'm')
-            ->where('m.proveedor = :proveedor')
-            ->setParameter('proveedor', $this->proveedorMakito);
-
-        $iterableProductos = $qb->getQuery()->toIterable();
-
-        foreach ($iterableProductos as $producto) {
-            $imageUrl = $producto->getUrlImage();
-
-            if (empty($imageUrl) || !str_starts_with($imageUrl, 'http')) {
-                continue;
-            }
-
-            $localPath = "/uploads/images/makito/productos/" . $producto->getReferencia() . ".jpg";
-
-            if ($newPath = $this->downloadImage($imageUrl, $localPath, $output)) {
-                $producto->setUrlImage($newPath);
-                $this->em->persist($producto);
-                $output->writeln("  <info>OK</info> -> " . $producto->getReferencia());
-            } else {
-                $output->writeln("  <error>FAIL</error> -> " . $producto->getReferencia() . " (URL: $imageUrl)");
-            }
-
-            if (++$i % $batchSize === 0) {
-                $output->writeln("...guardando lote de productos ($i)...");
-                $this->em->flush();
-                $this->em->clear();
-                // Recargamos el proveedor
-                $this->proveedorMakito = $this->em->getRepository(Proveedor::class)->find($this->proveedorMakito->getId());
-            }
-        }
-
-        $output->writeln("...guardando productos restantes...");
-        $this->em->flush();
-        $this->em->clear();
     }
 
     /**
-     * Función helper para descargar la imagen.
+     * Procesa múltiples imágenes separadas por comas
      */
-    private function downloadImage(string $url, string $localRelativePath, OutputInterface $output): ?string
+    private function processMultipleImages($entity, string $getter, string $setter, string $folder, string $prefix): void
     {
-        if (!filter_var($url, FILTER_VALIDATE_URL)) {
-            $output->writeln("<comment>URL no válida: {$url}</comment>");
-            return null;
-        }
-
-        $fullSavePath = $this->publicDir . $localRelativePath;
-
-        // Opcional: Si ya existe, no lo descargamos
-        if ($this->filesystem->exists($fullSavePath)) {
-            return $localRelativePath;
-        }
-
-        $directory = dirname($fullSavePath);
-        if (!$this->filesystem->exists($directory)) {
-            try {
-                $this->filesystem->mkdir($directory);
-            } catch (\Exception $e) {
-                $output->writeln("<error>No se pudo crear dir: {$directory}</error>");
-                return null;
+        $fieldValue = $entity->$getter();
+        if (!empty($fieldValue) && str_contains($fieldValue, 'http')) {
+            $urls = explode(',', $fieldValue);
+            $newPaths = [];
+            foreach ($urls as $index => $url) {
+                $url = trim($url);
+                if (str_starts_with($url, 'http')) {
+                    $newPaths[] = $this->imageManager->download($url, $folder, $prefix . '_' . $index);
+                } else {
+                    $newPaths[] = $url;
+                }
             }
-        }
-
-        try {
-            $response = $this->httpClient->request('GET', $url, ['timeout' => 20]);
-
-            if ($response->getStatusCode() !== 200) {
-                return null;
-            }
-
-            $this->filesystem->dumpFile($fullSavePath, $response->getContent());
-            return $localRelativePath;
-
-        } catch (\Exception $e) {
-            // $output->writeln("<error>Excepción al descargar {$url}: " . $e->getMessage() . "</error>");
-            return null;
+            $entity->$setter(implode(',', $newPaths));
         }
     }
 }

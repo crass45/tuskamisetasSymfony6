@@ -36,8 +36,8 @@ class Producto
     #[ORM\Column]
     private int $stock = 0;
 
-    #[ORM\Column]
-    private int $eancode = 0;
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $eancode = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updated = null;
@@ -83,6 +83,15 @@ class Producto
     #[ORM\OneToMany(mappedBy: 'producto', targetEntity: Inventario::class, cascade: ['persist', 'remove'], orphanRemoval: true, fetch: 'EXTRA_LAZY')]
     #[ORM\OrderBy(['caja' => 'ASC'])]
     private Collection $inventario;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    private ?float $peso = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $taric = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $paisOrigen = null;
 
     public function __construct()
     {
@@ -212,7 +221,10 @@ class Producto
     /**
      * @return int
      */
-    public function getEancode(): int
+    /**
+     * @return string|null
+     */
+    public function getEancode(): ?string
     {
         return $this->eancode;
     }
@@ -380,7 +392,10 @@ class Producto
     /**
      * @param int $eancode
      */
-    public function setEancode(int $eancode): void
+    /**
+     * @param string|null $eancode
+     */
+    public function setEancode(?string $eancode): void
     {
         $this->eancode = $eancode;
     }
@@ -522,4 +537,13 @@ class Producto
 //        return $this->getPrecio($cantidad,$cantidadTotal,$usu);
         return $this->getPrecio($cantidad, $cantidadTotalFabricante, $usu) * $cantidad;
     }
+
+    public function getPeso(): ?float { return $this->peso; }
+    public function setPeso(?float $peso): self { $this->peso = $peso; return $this; }
+
+    public function getTaric(): ?string { return $this->taric; }
+    public function setTaric(?string $taric): self { $this->taric = $taric; return $this; }
+
+    public function getPaisOrigen(): ?string { return $this->paisOrigen; }
+    public function setPaisOrigen(?string $paisOrigen): self { $this->paisOrigen = $paisOrigen; return $this; }
 }

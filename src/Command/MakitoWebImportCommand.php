@@ -54,6 +54,7 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int // <-- Devuelve int
     {
+        $this->em->getConnection()->getConfiguration()->setSQLLogger(null);
         ini_set('memory_limit', '-1');
 
         $paso = $input->getArgument('paso');
@@ -86,6 +87,11 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
             $sql = "UPDATE modelo SET activo = 0 WHERE proveedor = 3320"; // Asumo que 3320 es el ID de Makito
             $stmt = $this->em->getConnection()->prepare($sql);
             $stmt->executeStatement();
+
+            $sql = "UPDATE producto p JOIN modelo m ON p.modelo = m.id SET activo = 0 WHERE proveedor = 3320"; // Asumo que 3320 es el ID de Makito
+            $stmt = $this->em->getConnection()->prepare($sql);
+            $stmt->executeStatement();
+
 
             //desenlazamos los productos de las familias de makito
             $sql = "delete from familia_modelo where familia_id in (select id from familia where marca = 57902)"; // Asumo que 57902 es el ID de fabricante Makito

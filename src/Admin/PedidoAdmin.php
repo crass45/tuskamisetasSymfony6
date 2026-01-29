@@ -212,27 +212,58 @@ final class PedidoAdmin extends AbstractAdmin
             ->end();
 
         if ($pedido?->getContacto()) {
+            $contacto = $pedido->getContacto();
+
             $form
                 ->tab('Datos Facturación')
                 ->with('Datos del Cliente', ['class' => 'col-md-12'])
                 ->add('contacto', ModelListType::class)
-                ->add('contacto.nombre', TextType::class, ['label' => 'Nombre', 'disabled' => true])
-                ->add('contacto.apellidos', TextType::class, ['label' => 'Apellidos', 'disabled' => true])
-                ->add('contacto.cif', TextType::class, ['label' => 'DNI/CIF', 'disabled' => true])
+
+                // --- CAMPO NOMBRE ---
+                ->add('nombreVisual', TextType::class, [
+                    'label' => 'Nombre',
+                    'mapped' => false,             // <--- BLINDADO
+                    'disabled' => true,
+                    'required' => false,
+                    'data' => $contacto->getNombre() // Valor manual
+                ])
+
+                // --- CAMPO APELLIDOS ---
+                ->add('apellidosVisual', TextType::class, [
+                    'label' => 'Apellidos',
+                    'mapped' => false,             // <--- BLINDADO
+                    'disabled' => true,
+                    'required' => false,
+                    'data' => $contacto->getApellidos() // Valor manual
+                ])
+
+                // --- CAMPO CIF ---
+                ->add('cifVisual', TextType::class, [
+                    'label' => 'DNI/CIF',
+                    'mapped' => false,             // <--- BLINDADO
+                    'disabled' => true,
+                    'required' => false,
+                    'data' => $contacto->getCif()    // Valor manual
+                ])
+
+                // --- CAMPO TELÉFONO FIJO ---
                 ->add('telefonoOtroVisual', TextType::class, [
                     'label' => 'Teléfono',
-                    'mapped' => false,      // ¡La clave! No toca la entidad
+                    'mapped' => false,             // <--- BLINDADO
                     'disabled' => true,
                     'required' => false,
-                    'data' => $contacto->getTelefonoOtro() // Le pasamos el valor a mano
+                    'data' => $contacto->getTelefonoOtro()
                 ])
+
+                // --- CAMPO TELÉFONO MÓVIL ---
                 ->add('telefonoMovilVisual', TextType::class, [
                     'label' => 'Teléfono Móvil',
-                    'mapped' => false,      // ¡La clave!
+                    'mapped' => false,             // <--- BLINDADO
                     'disabled' => true,
                     'required' => false,
-                    'data' => $contacto->getTelefonoMovil() // Le pasamos el valor a mano
+                    'data' => $contacto->getTelefonoMovil()
                 ])
+
                 ->end()
                 ->end();
             if (!$pedido->getRecogerEnTienda()) {

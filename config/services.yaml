@@ -107,6 +107,13 @@ services:
       tags:
         - { name: kernel.event_listener, event: oneup_uploader.post_persist.gallery, method: onUpload }
 
+    App\Service\ImageManager:
+      arguments:
+        $projectDir: '%kernel.project_dir%'
+
+    App\Command\OptimizeExistingImagesCommand:
+      arguments:
+        $projectDir: '%kernel.project_dir%'
   # ===============================
   # GRUPO: Web
   # ===============================

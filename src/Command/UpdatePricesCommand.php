@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\Producto;
 use App\Entity\Modelo;
+use App\Entity\Proveedor;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -15,7 +16,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 #[AsCommand(
     name: 'app:update-prices',
-    description: 'Actualiza los precios de Productos y Modelos desde un CSV (Master File).',
+    description: 'Importa precios de un CSV y ajusta precios mínimos de modelos',
 )]
 class UpdatePricesCommand extends Command
 {
@@ -32,102 +33,135 @@ class UpdatePricesCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('file', InputArgument::OPTIONAL, 'Nombre del archivo CSV en la carpeta raiz', 'Master CSV File 3EUT570.xlsx - Export.csv');
+            ->addArgument('file', InputArgument::REQUIRED, 'Nombre del archivo CSV (ej: tarifajhk2026.csv)')
+            ->addArgument('proveedorId', InputArgument::REQUIRED, 'ID del proveedor para el ajuste final');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
         $fileName = $input->getArgument('file');
+        $proveedorId = (int) $input->getArgument('proveedorId');
         $filePath = $this->projectDir . '/' . $fileName;
 
         if (!file_exists($filePath)) {
-            $io->error("El archivo no existe: $filePath");
+            $io->error("Archivo no encontrado: $filePath");
             return Command::FAILURE;
         }
 
-        $io->title('Iniciando actualización de precios desde: ' . $fileName);
-
-        // Abrir el archivo CSV
+        // --- FASE 1: IMPORTACIÓN DESDE CSV ---
         $handle = fopen($filePath, 'r');
-        if ($handle === false) {
-            $io->error('No se pudo abrir el archivo.');
+        $header = fgetcsv($handle, 0, ";");
+        if (!$header) {
+            $io->error("El archivo está vacío o mal formateado");
             return Command::FAILURE;
         }
 
-        // Repositorios
+        $header = array_map(fn($h) => trim(str_replace("\xEF\xBB\xBF", '', $h)), $header);
+        $refIndex = array_search('REF', $header);
+        $precioIndex = array_search('PRECIO', $header);
+
+        if ($refIndex === false || $precioIndex === false) {
+            $io->error("No se han encontrado las columnas 'REF' y 'PRECIO'");
+            return Command::FAILURE;
+        }
+
+        $io->section('Paso 1: Importando precios desde CSV...');
+
+        $updated = 0;
+        $count = 0;
         $productoRepo = $this->em->getRepository(Producto::class);
-        $modeloRepo = $this->em->getRepository(Modelo::class);
 
-        $batchSize = 100;
-        $i = 0;
-        $updatedCount = 0;
+        while (($data = fgetcsv($handle, 0, ";")) !== false) {
+            $sku = trim($data[$refIndex] ?? '');
+            if (empty($sku)) continue;
 
-        // Leer la cabecera para saltarla
-        fgetcsv($handle);
-
-        while (($data = fgetcsv($handle, 10000, ',')) !== false) {
-            // Mapeo de columnas basado en tu archivo:
-            // Col 0: SKU (Referencia)
-            // Col 14: Price (Catalog_3EUT570)
-
-            $sku = trim($data[0] ?? '');
-            $priceRaw = $data[14] ?? null;
-
-            // Si no hay SKU o el precio está vacío, saltamos
-            if (empty($sku) || empty($priceRaw) || !is_numeric($priceRaw)) {
-                continue;
-            }
-
-            $price = (float) $priceRaw;
-
-            // 1. Buscar en PRODUCTO (Variantes concretas, ej: EP01-BL6)
+            $price = (float) str_replace(',', '.', $data[$precioIndex] ?? '0');
             $producto = $productoRepo->findOneBy(['referencia' => $sku]);
 
             if ($producto) {
-                // Actualizamos el precio del producto
-                // Asumimos que el campo en tu entidad Producto es 'precio' o 'price'
-                // Ajusta 'setPrecio' si tu setter se llama diferente.
-                if (method_exists($producto, 'setPrecio')) {
-                    $producto->setPrecio($price);
-                    $updatedCount++;
-                    if ($output->isVerbose()) {
-                        $io->text("Producto actualizado: $sku -> $price €");
-                    }
-                }
-            } else {
-                // 2. Si no es producto, buscamos en MODELO (Padres, ej: EP01)
-                // A veces el master file trae el precio base del modelo
-                $modelo = $modeloRepo->findOneBy(['referencia' => $sku]);
-                if ($modelo) {
-                    if (method_exists($modelo, 'setPrecioMin')) {
-                        $modelo->setPrecioMin($price);
-                        // También solemos actualizar precio adulto si aplica
-                        if (method_exists($modelo, 'setPrecioMinAdulto')) {
-                            $modelo->setPrecioMinAdulto($price);
-                        }
-                        $updatedCount++;
-                        if ($output->isVerbose()) {
-                            $io->text("Modelo actualizado: $sku -> $price €");
-                        }
-                    }
-                }
+                $producto->setPrecioCaja($price);
+                $producto->setPrecioUnidad($price);
+                $producto->setPrecioPack($price);
+                $updated++;
             }
 
-            $i++;
-            if (($i % $batchSize) === 0) {
+            $count++;
+            if ($count % 100 === 0) {
                 $this->em->flush();
-                $this->em->clear(); // Limpiar memoria
             }
         }
-
+        $this->em->flush();
         fclose($handle);
 
-        // Flush final para los restantes
-        $this->em->flush();
+        $io->success("Importación terminada. Filas: $count. Productos actualizados: $updated.");
 
-        $io->success("Proceso finalizado. Se han actualizado $updatedCount precios.");
+        // --- FASE 2: AJUSTE DE PRECIOS MÍNIMOS ---
+        $io->section('Paso 2: Ajustando precios mínimos de modelos...');
+        $this->ajustarPreciosFinales($output, $proveedorId);
 
         return Command::SUCCESS;
+    }
+
+    private function ajustarPreciosFinales(OutputInterface $output, int $proveedorId)
+    {
+        $output->writeln("AJUSTANDO PRECIOS MÍNIMOS DE MODELOS...");
+
+        $proveedor = $this->em->getRepository(Proveedor::class)->find($proveedorId);
+
+        if ($proveedor) {
+            $query = $this->em->getRepository(Modelo::class)->createQueryBuilder('m')
+                ->where('m.proveedor = :prov')
+                ->andWhere('m.activo = :activo')
+                ->setParameter('prov', $proveedor)
+                ->setParameter('activo', true)
+                ->getQuery();
+
+            $countAjuste = 0;
+            $batchSizeAjuste = 100;
+
+            foreach ($query->toIterable() as $modeloAjuste) {
+                try {
+                    // Recargar el proveedor si el EM se limpió en el loop anterior
+                    if (!$this->em->contains($proveedor)) {
+                        $proveedor = $this->em->find(Proveedor::class, $proveedorId);
+                    }
+
+                    $modeloAjuste->setProveedor($proveedor);
+
+                    $precioMinimo = $modeloAjuste->getPrecioUnidad();
+                    $modeloAjuste->setPrecioMin($precioMinimo ?? 0);
+
+                    // Lógica de cálculo de precio mínimo adulto
+                    if ($modeloAjuste->getPrecioCantidadBlancas(10000) > 0) {
+                        $modeloAjuste->setPrecioMinAdulto($modeloAjuste->getPrecioCantidadBlancas(10000));
+                    } else {
+                        if ($modeloAjuste->getPrecioCantidadBlancasNino(10000) > 0) {
+                            $modeloAjuste->setPrecioMinAdulto($modeloAjuste->getPrecioCantidadBlancasNino(10000));
+                        } else {
+                            $modeloAjuste->setPrecioMinAdulto($modeloAjuste->getPrecioUnidad());
+                        }
+                    }
+
+                    $this->em->persist($modeloAjuste);
+                    $countAjuste++;
+
+                    if ($countAjuste % $batchSizeAjuste === 0) {
+                        $output->writeln("...precios mínimos ajustados: $countAjuste...");
+                        $this->em->flush();
+                        $this->em->clear();
+                    }
+                } catch (\Exception $e) {
+                    $output->writeln('<error>Excepcion al ajustar precio mínimo: ' . $e->getMessage() . '</error>');
+                    if (!$this->em->isOpen()) { return; }
+                    $this->em->clear();
+                }
+            }
+            $this->em->flush();
+            $this->em->clear();
+            $output->writeln("<info>AJUSTE DE PRECIOS MÍNIMOS TERMINADO.</info>");
+        } else {
+            $output->writeln("<error>Proveedor ID $proveedorId no encontrado para ajuste final.</error>");
+        }
     }
 }

@@ -37,34 +37,58 @@
     {% set todasLasImagenes = [dummyImg] %}
 {% endif %}
 
+{# DETECCIÓN DE VIDEO #}
+{% set hasVideo = modelo.urlVideo is not empty %}
 
+
+{# 2. VISTA ESCRITORIO (Grid) #}
 {# 2. VISTA ESCRITORIO (Grid) #}
 <div class="hidden-xs">
     <div class="row">
         {% set useAlternativeView = modelo.fabricante and modelo.fabricante.isVistaAlternativa %}
+
+        {# LÓGICA DE COLUMNAS #}
         {% if useAlternativeView %}
             {% set mainColClass = 'col-lg-12' %}
             {% set subColClass = 'col-sm-4' %}
         {% else %}
-            {% set mainColClass = (todasLasImagenes|length > 1) ? 'col-lg-6' : 'col-lg-12' %}
+            {% set mainColClass = (hasVideo or todasLasImagenes|length > 1) ? 'col-lg-6' : 'col-lg-12' %}
             {% set subColClass = 'col-lg-6' %}
         {% endif %}
 
-        {# --- IMAGEN PRINCIPAL --- #}
-        {% if todasLasImagenes|length > 0 %}
-            <div class="{{ mainColClass }}">
-                <div class="row" style="padding: 5px; position: relative;">
+        {# --- SLOT PRINCIPAL (VIDEO O IMAGEN 1) --- #}
+        <div class="{{ mainColClass }}">
+            <div class="row" style="padding: 5px;">
+
+                {# WRAPPER RELATIVO: Permite apilar video sobre imagen perfectamente #}
+                <div style="position: relative; width: 100%; display: block;">
+
+                    {# 1. IMAGEN BASE (Siempre visible al principio)
+                       Esto evita el salto de altura (CLS) y sirve de "poster" perfecto #}
                     <img class="imagenProducto"
-                         style="width: 100%; height: auto"
+                         style="width: 100%; height: auto; display: block;"
                          id="imagen-producto"
                          src="{{ todasLasImagenes[0] }}"
                          data-fallback="{{ todasLasImagenes[1] ?? dummyImg }}"
                          data-id="{{ modelo.referencia }}"
                          alt="{{ modelo.nombre }}"
                          title="{{ modelo.familia }} {{ modelo.fabricante.nombre }} {{ modelo.nombre }}"
-                         decoding="async"       {# <--- EVITA CONGELAR EL HILO PRINCIPAL #}
-                         fetchpriority="high"   {# <--- PRIORIDAD MÁXIMA PARA LA PRINCIPAL #}
+                         fetchpriority="high"
                          onerror="this.onerror=null; this.src=this.dataset.fallback; $('.gallery-thumb-1').hide();">
+
+                    {% if hasVideo %}
+                        {# 2. VIDEO EN MODO 'OVERLAY' (Capa superior)
+                           - position: absolute (cubre la imagen)
+                           - opacity: 0 (invisible al cargar)
+                           - transition (aparece suavemente cuando empieza a reproducirse) #}
+                        <video autoplay muted loop playsinline
+                               style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                                      object-fit: cover; pointer-events: none;
+                                      opacity: 0; transition: opacity 0.8s ease-in-out;"
+                               onplay="this.style.opacity='1';">
+                            <source src="{{ modelo.urlVideo }}" type="video/mp4">
+                        </video>
+                    {% endif %}
 
                     {# Badge Novedad #}
                     {% if modelo.isNovelty %}
@@ -73,7 +97,7 @@
                              loading="lazy" decoding="async">
                     {% endif %}
 
-                    {# Botón 360º Escritorio (SOLO AQUÍ) #}
+                    {# Botón 360º #}
                     {% if modelo.url360 is not empty %}
                         <a class="camuflaEnlace" atributo="{{ modelo.url360 }}" target="_blank" style="cursor: pointer;">
                             <div class="btn btn-info btn-sm"
@@ -85,18 +109,22 @@
                     {% endif %}
                 </div>
             </div>
-        {% endif %}
+        </div>
 
         {# --- IMÁGENES SECUNDARIAS --- #}
-        {% for img in todasLasImagenes|slice(1) %}
-            <div class="{{ subColClass }} gallery-item-col gallery-thumb-{{ loop.index }}">
+        {% set imagenesSecundarias = hasVideo ? todasLasImagenes : todasLasImagenes|slice(1) %}
+
+        {% for img in imagenesSecundarias %}
+            {% set cssIndex = hasVideo ? loop.index : loop.index + 1 %}
+
+            <div class="{{ subColClass }} gallery-item-col gallery-thumb-{{ cssIndex }}">
                 <div class="row" style="padding: 5px">
                     <img class="imagenProducto"
                          style="width: 100%; height: auto"
                          src="{{ img }}"
                          alt="{{ modelo.nombre }} - vista {{ loop.index }}"
-                         loading="lazy"         {# <--- CARGA DIFERIDA #}
-                         decoding="async"       {# <--- DESCODIFICACIÓN EN PARALELO #}
+                         loading="lazy"
+                         decoding="async"
                          onerror="this.closest('.gallery-item-col').remove();">
                 </div>
             </div>
@@ -105,9 +133,8 @@
 </div>
 
 
-{# 3. VISTA MÓVIL (Carrusel) #}
+{# 3. VISTA MÓVIL (Carrusel - SIN CAMBIOS, NO MUESTRA VIDEO) #}
 <div class="visible-xs">
-    {# Quitamos el position relative que pusimos antes, ya no hace falta #}
     <div id="carousel-producto-movil" class="carousel slide" data-ride="carousel" data-interval="false" style="margin-bottom: 20px;">
 
         <ol class="carousel-indicators" style="bottom: -20px;">
@@ -162,7 +189,6 @@
             var carousel = document.getElementById("carousel-producto-movil");
             if(!carousel) return;
             var startX;
-            // 'passive: true' mejora el rendimiento del scroll táctil
             carousel.addEventListener("touchstart", function(e) { startX = e.touches[0].clientX; }, {passive: true});
             carousel.addEventListener("touchend", function(e) {
                 if (!startX) return;

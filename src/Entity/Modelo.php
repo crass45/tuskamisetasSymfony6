@@ -26,6 +26,8 @@ class Modelo implements Translatable
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $urlVideo = null;
 
     #[ORM\Column(length: 100)]
     private ?string $nombre = '';
@@ -352,7 +354,12 @@ class Modelo implements Translatable
     public function setArticuloPublicitario(bool $articuloPublicitario): self { $this->articuloPublicitario = $articuloPublicitario; return $this; }
     public function isIsNovelty(): ?bool { return $this->isNovelty; }
     public function setIsNovelty(?bool $isNovelty): self { $this->isNovelty = $isNovelty; return $this; }
-    public function isActivo(): bool { return $this->activo; }
+    public function isActivo(): bool {
+//        if($this->fabricante->isActivo()) {
+            return $this->activo;
+//        }
+//        return false;
+    }
     public function setActivo(bool $activo): self { $this->activo = $activo; return $this; }
     public function isDestacado(): bool { return $this->destacado; }
     public function setDestacado(bool $destacado): self { $this->destacado = $destacado; return $this; }
@@ -846,6 +853,19 @@ class Modelo implements Translatable
     public function setCertificados($certificados): void
     {
         $this->certificados = $certificados;
+    }
+
+
+    public function getUrlVideo(): ?string
+    {
+        return $this->urlVideo;
+    }
+
+    public function setUrlVideo(?string $urlVideo): static
+    {
+        $this->urlVideo = $urlVideo;
+
+        return $this;
     }
 
 
