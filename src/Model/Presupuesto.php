@@ -15,6 +15,10 @@ use App\Model\PresupuestoTrabajo;
  */
 class Presupuesto
 {
+    // --- 1. AÑADE LA CONSTANTE DE VERSIÓN ---
+    // Incrementa esto si cambias la estructura de Presupuesto, PresupuestoProducto o PresupuestoTrabajo
+    private const VERSION_ESTRUCTURA = 1;
+
     /** @var PresupuestoProducto[] */
     private array $productos = [];
 
@@ -22,8 +26,25 @@ class Presupuesto
     private array $trabajos = [];
 
     // --- Serialización y Gestión de Items (sin cambios) ---
-    public function __serialize(): array { return ['productos' => $this->productos, 'trabajos' => $this->trabajos]; }
-    public function __unserialize(array $data): void { $this->productos = $data['productos'] ?? []; $this->trabajos = $data['trabajos'] ?? []; }
+    public function __serialize(): array {
+        return [
+            'version_estructura' => self::VERSION_ESTRUCTURA, // Guardamos la firma de versión
+            'productos' => $this->productos,
+            'trabajos' => $this->trabajos
+        ];
+    }
+    public function __unserialize(array $data): void {
+        // Si la versión no existe o no coincide, reiniciamos el presupuesto para evitar errores fatales
+        if (!isset($data['version_estructura']) || $data['version_estructura'] !== self::VERSION_ESTRUCTURA) {
+            $this->productos = [];
+            $this->trabajos = [];
+            return;
+        }
+
+        // Carga normal si la versión es correcta
+        $this->productos = $data['productos'] ?? [];
+        $this->trabajos = $data['trabajos'] ?? [];
+    }
     public function getProductos(): array { return $this->productos; }
 //    public function addProducto(PresupuestoProducto $producto): void { $this->productos[] = $producto; }
     public function getTrabajos(): array { return $this->trabajos; }

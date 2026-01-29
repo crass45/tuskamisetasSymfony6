@@ -37,7 +37,7 @@ class Producto
     private int $stock = 0;
 
     #[ORM\Column(length: 20, nullable: true)]
-    private ?string $eancode = null;
+    private $eancode = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updated = null;
@@ -226,7 +226,8 @@ class Producto
      */
     public function getEancode(): ?string
     {
-        return $this->eancode;
+        // Si es null devuelve null, si no, lo fuerza a texto
+        return $this->eancode !== null ? (string) $this->eancode : null;
     }
 
     /**
