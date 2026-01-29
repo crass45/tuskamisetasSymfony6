@@ -12,10 +12,15 @@ use App\Entity\ZonaEnvio;
 /**
  * Representa el Carrito de la compra. No es una entidad de Doctrine.
  * Contiene los grupos de productos (items) y toda la lógica de cálculo.
- * Se almacena en la sesión del usuario.
+ * Se almacena en la sesión del usurious.
  */
 class Carrito
 {
+
+// --- 1. AÑADE ESTA CONSTANTE ---
+    // Incrementa este número (1, 2, 3...) MANUALMENTE cada vez que cambies la estructura
+    // de la base de datos, de Producto, o de este mismo archivo.
+    private const VERSION_ESTRUCTURA = 2;
     private ?string $direccionEnvio = '';
     private ?string $codigoPostal = '';
     private ?string $poblacion = '';
@@ -43,6 +48,8 @@ class Carrito
     public function __serialize(): array
     {
         return [
+            // Guardamos la versión actual junto con los datos
+            'version_estructura' => self::VERSION_ESTRUCTURA,
             'direccionEnvio' => $this->direccionEnvio,
             'codigoPostal' => $this->codigoPostal,
             'poblacion' => $this->poblacion,
@@ -60,6 +67,16 @@ class Carrito
 
     public function __unserialize(array $data): void
     {
+
+        // BLINDAJE: Comprobamos si la versión de la sesión coincide con la del código
+        if (!isset($data['version_estructura']) || $data['version_estructura'] !== self::VERSION_ESTRUCTURA) {
+            // ¡DETECTADO CARRITO ANTIGUO O CORRUPTO!
+            // Lo reiniciamos a cero en lugar de dejar que explote.
+            $this->reiniciarValoresPorDefecto();
+            return;
+        }
+
+        // Si la versión es correcta, cargamos los datos normalmente
         $this->direccionEnvio = $data['direccionEnvio'] ?? '';
         $this->codigoPostal = $data['codigoPostal'] ?? '';
         $this->poblacion = $data['poblacion'] ?? '';
@@ -72,6 +89,22 @@ class Carrito
         $this->idPedido = $data['idPedido'] ?? 0;
         $this->descuento = $data['descuento'] ?? 0.0;
         $this->items = $data['items'] ?? [];
+    }
+
+    private function reiniciarValoresPorDefecto(): void
+    {
+        $this->items = [];
+        $this->direccionEnvio = '';
+        $this->codigoPostal = '';
+        $this->poblacion = '';
+        $this->provincia = '';
+        $this->precioGastos = 0.0;
+        $this->precioGastosReducidos = 0.0;
+        $this->tipoEnvio = 1;
+        $this->servicioExpres = false;
+        $this->observaciones = '';
+        $this->idPedido = 0;
+        $this->descuento = 0.0;
     }
 
     public function addItem(Presupuesto $item, ?User $user = null): void
@@ -88,9 +121,9 @@ class Carrito
 //    NOS DEVUELVE UN TRABAJO A PARTIR DE SU IDENTIFICADOR UNICO CREADO EN CARRITO
     public function getTrabajoPorIdentificador($identificador): ?PresupuestoTrabajo
     {
-        foreach ($this->items as $item){
-            foreach ($item->getTrabajos() as $trabajo){
-                if ($trabajo->getIdentificadorTrabajo() == $identificador){
+        foreach ($this->items as $item) {
+            foreach ($item->getTrabajos() as $trabajo) {
+                if ($trabajo->getIdentificadorTrabajo() == $identificador) {
                     return clone $trabajo;
                 }
             }
@@ -147,7 +180,7 @@ class Carrito
         return $cantidad;
     }
 
-    public function  getCantidadTotalProductos()
+    public function getCantidadTotalProductos()
     {
         $cantidad = 0;
         foreach ($this->items as $item) {
@@ -172,41 +205,145 @@ class Carrito
 
     // --- Getters y Setters Estándar ---
 
-    public function getItems(): array { return $this->items; }
-    public function getDireccionEnvio(): ?string { return $this->direccionEnvio; }
-    public function setDireccionEnvio(?string $direccionEnvio): self { $this->direccionEnvio = $direccionEnvio; return $this; }
-    public function getCodigoPostal(): ?string { return $this->codigoPostal; }
-    public function setCodigoPostal(?string $codigoPostal): self { $this->codigoPostal = $codigoPostal; return $this; }
-    public function getPoblacion(): ?string { return $this->poblacion; }
-    public function setPoblacion(?string $poblacion): self { $this->poblacion = $poblacion; return $this; }
-    public function getProvincia(): ?string { return $this->provincia; }
-    public function setProvincia(?string $provincia): self { $this->provincia = $provincia; return $this; }
-    public function getPrecioGastos(): float { return $this->precioGastos; }
-    public function setPrecioGastos(float $precioGastos): self { $this->precioGastos = $precioGastos; return $this; }
-    public function getPrecioGastosReducidos(): float { return $this->precioGastosReducidos; }
-    public function setPrecioGastosReducidos(float $precioGastosReducidos): self { $this->precioGastosReducidos = $precioGastosReducidos; return $this; }
-    public function getTipoEnvio(): int { return $this->tipoEnvio; }
-    public function setTipoEnvio(int $tipoEnvio): self { $this->tipoEnvio = $tipoEnvio; return $this; }
-    public function isServicioExpres(): bool { return $this->servicioExpres; }
-    public function setServicioExpres(bool $servicioExpres): self { $this->servicioExpres = $servicioExpres; return $this; }
-    public function getObservaciones(): ?string { return $this->observaciones; }
-    public function setObservaciones(?string $observaciones): self { $this->observaciones = $observaciones; return $this; }
-    public function getIdPedido(): int { return $this->idPedido; }
-    public function setIdPedido(int $idPedido): self { $this->idPedido = $idPedido; return $this; }
-    public function getDescuento(): float { return $this->descuento; }
-    public function setDescuento(float $descuento): self { $this->descuento = $descuento; return $this; }
-    public function getRecogerTienda(): bool { return $this->tipoEnvio === 3; }
-
-    public function setRecogerTienda(bool $recoger):void
+    public function getItems(): array
     {
-        if($recoger) {
+        return $this->items;
+    }
+
+    public function getDireccionEnvio(): ?string
+    {
+        return $this->direccionEnvio;
+    }
+
+    public function setDireccionEnvio(?string $direccionEnvio): self
+    {
+        $this->direccionEnvio = $direccionEnvio;
+        return $this;
+    }
+
+    public function getCodigoPostal(): ?string
+    {
+        return $this->codigoPostal;
+    }
+
+    public function setCodigoPostal(?string $codigoPostal): self
+    {
+        $this->codigoPostal = $codigoPostal;
+        return $this;
+    }
+
+    public function getPoblacion(): ?string
+    {
+        return $this->poblacion;
+    }
+
+    public function setPoblacion(?string $poblacion): self
+    {
+        $this->poblacion = $poblacion;
+        return $this;
+    }
+
+    public function getProvincia(): ?string
+    {
+        return $this->provincia;
+    }
+
+    public function setProvincia(?string $provincia): self
+    {
+        $this->provincia = $provincia;
+        return $this;
+    }
+
+    public function getPrecioGastos(): float
+    {
+        return $this->precioGastos;
+    }
+
+    public function setPrecioGastos(float $precioGastos): self
+    {
+        $this->precioGastos = $precioGastos;
+        return $this;
+    }
+
+    public function getPrecioGastosReducidos(): float
+    {
+        return $this->precioGastosReducidos;
+    }
+
+    public function setPrecioGastosReducidos(float $precioGastosReducidos): self
+    {
+        $this->precioGastosReducidos = $precioGastosReducidos;
+        return $this;
+    }
+
+    public function getTipoEnvio(): int
+    {
+        return $this->tipoEnvio;
+    }
+
+    public function setTipoEnvio(int $tipoEnvio): self
+    {
+        $this->tipoEnvio = $tipoEnvio;
+        return $this;
+    }
+
+    public function isServicioExpres(): bool
+    {
+        return $this->servicioExpres;
+    }
+
+    public function setServicioExpres(bool $servicioExpres): self
+    {
+        $this->servicioExpres = $servicioExpres;
+        return $this;
+    }
+
+    public function getObservaciones(): ?string
+    {
+        return $this->observaciones;
+    }
+
+    public function setObservaciones(?string $observaciones): self
+    {
+        $this->observaciones = $observaciones;
+        return $this;
+    }
+
+    public function getIdPedido(): int
+    {
+        return $this->idPedido;
+    }
+
+    public function setIdPedido(int $idPedido): self
+    {
+        $this->idPedido = $idPedido;
+        return $this;
+    }
+
+    public function getDescuento(): float
+    {
+        return $this->descuento;
+    }
+
+    public function setDescuento(float $descuento): self
+    {
+        $this->descuento = $descuento;
+        return $this;
+    }
+
+    public function getRecogerTienda(): bool
+    {
+        return $this->tipoEnvio === 3;
+    }
+
+    public function setRecogerTienda(bool $recoger): void
+    {
+        if ($recoger) {
             $this->tipoEnvio = 3;
-        }else{
+        } else {
             $this->tipoEnvio = 1;
         }
     }
-
-
 
 
     public function getCantidadProductosTotales()
@@ -239,7 +376,7 @@ class Carrito
         }
         $totalCajas = 0;
 
-        if ($zonaEnvio==null) {
+        if ($zonaEnvio == null) {
             //los gastos envios gratuitos si el subtotal supera los 500€
             if ($this->getSubTotal($user) >= 300) {
                 return 0;
@@ -249,8 +386,8 @@ class Carrito
             } else {
                 $pGastos = $this->precioGastos;
             }
-        }else{
-            if($zonaEnvio->getEnvioGratis() > 0) {
+        } else {
+            if ($zonaEnvio->getEnvioGratis() > 0) {
                 if ($this->getSubTotal($user) >= $zonaEnvio->getEnvioGratis()) {
                     return 0;
                 }
@@ -311,6 +448,7 @@ class Carrito
     }
 
     // --- MÉTODO AÑADIDO ---
+
     /**
      * Actualiza la cantidad de un producto específico a un valor concreto.
      */
@@ -358,7 +496,7 @@ class Carrito
     {
         foreach ($this->items as $presupuesto) {
             foreach ($presupuesto->getTrabajos() as $trabajo) {
-                if ($trabajo->getTrabajo()->getCodigo()!="DB"){
+                if ($trabajo->getTrabajo()->getCodigo() != "DB") {
                     return true;
                 }
             }
