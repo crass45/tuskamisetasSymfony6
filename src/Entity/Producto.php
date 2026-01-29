@@ -395,9 +395,15 @@ class Producto
     /**
      * @param string|null $eancode
      */
-    public function setEancode(?string $eancode): void
+    /**
+     * @param mixed $eancode
+     */
+    public function setEancode($eancode): self
     {
-        $this->eancode = $eancode;
+        // Forzamos a string solo si no es null, para evitar el TypeError
+        $this->eancode = $eancode !== null ? (string)$eancode : null;
+
+        return $this;
     }
 
     /**
