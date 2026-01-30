@@ -241,7 +241,7 @@ class CarritoController extends AbstractController
     public function downloadCartPdfAction(SessionInterface $session, Pdf $snappy): Response
     {
         $carrito = $this->getOrCreateCart($session);
-        $html = $this->renderView('pdf/cart_quote.html.twig', ['carrito' => $carrito]);
+        $html = $this->renderView('plantilla_pdf/cart_quote.html.twig', ['carrito' => $carrito]);
 
         return new Response(
             $snappy->getOutputFromHtml($html),
@@ -254,36 +254,36 @@ class CarritoController extends AbstractController
      * Aplica un código de descuento al carrito (llamado por AJAX).
      * Reemplaza a 'carritoCargaAction'.
      */
-    #[Route('/apply-discount/{codigo}', name: 'app_cart_apply_discount')]
-    public function applyDiscountAction(string $codigo, SessionInterface $session, GastosEnvioRepository $gastosEnvioRepo): Response
-    {
-        $carrito = $this->getOrCreateCart($session);
-
-        $descuento = $this->em->getRepository(Descuento::class)->findOneBy(['codigo' => $codigo]);
-        // Aquí iría tu lógica para validar si el descuento está activo...
-
-        if ($descuento) {
-            // MIGRACIÓN NOTA: La lógica para calcular y aplicar el descuento
-            // ahora debería vivir dentro de la clase Carrito.
-            // $carrito->aplicarDescuento($descuento, $gastosEnvioRepo);
-        }
-
-        $session->set('carrito', $carrito);
-
-        // Devuelve el fragmento del detalle del carrito actualizado
-        return $this->render('carrito/_cart_details.html.twig', ['carrito' => $carrito]);
-    }
-
-    /**
-     * Devuelve la cantidad de items del carrito (para el icono de la cabecera).
-     * Reemplaza a 'carritoCantidadAction'.
-     */
-    #[Route('/quantity', name: 'app_cart_quantity')]
-    public function quantityAction(SessionInterface $session): Response
-    {
-        $carrito = $this->getOrCreateCart($session);
-        return $this->render('carrito/_quantity.html.twig', ['cantidad' => $carrito->getCantidadProductosTotales()]);
-    }
+//    #[Route('/apply-discount/{codigo}', name: 'app_cart_apply_discount')]
+//    public function applyDiscountAction(string $codigo, SessionInterface $session, GastosEnvioRepository $gastosEnvioRepo): Response
+//    {
+//        $carrito = $this->getOrCreateCart($session);
+//
+//        $descuento = $this->em->getRepository(Descuento::class)->findOneBy(['codigo' => $codigo]);
+//        // Aquí iría tu lógica para validar si el descuento está activo...
+//
+//        if ($descuento) {
+//            // MIGRACIÓN NOTA: La lógica para calcular y aplicar el descuento
+//            // ahora debería vivir dentro de la clase Carrito.
+//            // $carrito->aplicarDescuento($descuento, $gastosEnvioRepo);
+//        }
+//
+//        $session->set('carrito', $carrito);
+//
+//        // Devuelve el fragmento del detalle del carrito actualizado
+//        return $this->render('carrito/_cart_details.html.twig', ['carrito' => $carrito]);
+//    }
+//
+//    /**
+//     * Devuelve la cantidad de items del carrito (para el icono de la cabecera).
+//     * Reemplaza a 'carritoCantidadAction'.
+//     */
+//    #[Route('/quantity', name: 'app_cart_quantity')]
+//    public function quantityAction(SessionInterface $session): Response
+//    {
+//        $carrito = $this->getOrCreateCart($session);
+//        return $this->render('carrito/_quantity.html.twig', ['cantidad' => $carrito->getCantidadProductosTotales()]);
+//    }
 
     /**
      * Elimina una línea de producto específica de un item (Presupuesto) del carrito.
