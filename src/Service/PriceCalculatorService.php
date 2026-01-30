@@ -201,7 +201,7 @@ class PriceCalculatorService
         $costeMinimoGarantizado = $numColoresParaMinimo * ((float)($personalizacion->getTrabajoMinimoPorColor() ?? 0.0));
 
         // --- COMPARACIÓN Y APLICACIÓN DE INCREMENTO ---
-        $subtotalAntesDeIncremento = max($costeNormalCalculado, $costeMinimoGarantizado);
+        $subtotalAntesDeIncremento = max($costeNormalCalculado, $costeMinimoGarantizado+$costeFijoNormal);
 
         $incremento = (float)($personalizacion->getIncrementoPrecio() ?? 0.0);
 
