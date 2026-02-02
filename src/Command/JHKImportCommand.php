@@ -10,6 +10,7 @@ use App\Entity\Producto;
 use App\Entity\Proveedor;
 use App\Service\ImageManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,20 +20,19 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[AsCommand(
     name: 'ss:import_command_jhk',
-    description: 'Importación total de JHK: Desactivación, Optimización de Imágenes y Precios.'
+    description: 'Importación total JHK: Familias, Imágenes optimizadas, Precios y Auto-recuperación.'
 )]
 class JHKImportCommand extends Command
 {
     private EntityManagerInterface $em;
-    private SluggerInterface $slugger;
-    private ImageManager $imageManager;
 
-    public function __construct(EntityManagerInterface $em, SluggerInterface $slugger, ImageManager $imageManager)
-    {
+    public function __construct(
+        private ManagerRegistry  $mr,
+        private SluggerInterface $slugger,
+        private ImageManager     $imageManager
+    ) {
         parent::__construct();
-        $this->em = $em;
-        $this->slugger = $slugger;
-        $this->imageManager = $imageManager;
+        $this->em = $mr->getManager();
     }
 
     private function tofloati($num): float
@@ -65,7 +65,7 @@ class JHKImportCommand extends Command
             return Command::FAILURE;
         }
 
-        // --- 1. GESTIÓN INICIAL DE PROVEEDOR/FABRICANTE ---
+        // --- 1. GESTIÓN DE ENTIDADES BASE ---
         $proveedor = $this->em->getRepository(Proveedor::class)->findOneBy(['nombre' => $nombreProveedor]);
         if (!$proveedor) {
             $proveedor = new Proveedor();
@@ -84,8 +84,8 @@ class JHKImportCommand extends Command
         }
         $fabricanteId = $fabricante->getId();
 
-        // --- 2. DESACTIVACIÓN PREVIA (Limpieza del maestro) ---
-        $output->writeln("<comment>Desactivando catálogo antiguo de JHK...</comment>");
+        // --- 2. DESACTIVACIÓN PREVIA ---
+        $output->writeln("<comment>Limpiando catálogo antiguo de JHK...</comment>");
         $this->em->getConnection()->executeStatement(
             "UPDATE producto p JOIN modelo m ON p.modelo = m.id SET p.activo = 0 WHERE m.proveedor = ?",
             [$proveedorId]
@@ -95,30 +95,31 @@ class JHKImportCommand extends Command
             [$proveedorId]
         );
 
-        // --- 3. PROCESAMIENTO DE PRODUCTOS Y MODELOS ---
-        $output->writeln("Fase 1: Importando y activando desde $filename");
+        // --- 3. FASE 1: IMPORTACIÓN MAESTRA ---
+        $output->writeln("Fase 1: Procesando modelos, familias y productos...");
         $header = null; $rowCount = 0; $modelosEnMemoria = [];
 
         if (($handle = fopen($filename, 'r')) !== FALSE) {
             while (($rowCsv = fgetcsv($handle, 0, ';')) !== FALSE) {
                 if (!$header) { $header = array_map('trim', $rowCsv); continue; }
-                $rowCount++;
-                $row = array_combine($header, array_map('trim', $rowCsv));
-
-                // Recargar entidades base tras clear()
-                if (!$this->em->contains($proveedor)) {
-                    $proveedor = $this->em->find(Proveedor::class, $proveedorId);
-                    $fabricante = $this->em->find(Fabricante::class, $fabricanteId);
-                }
-
-                $modeloRef = $row["Referencia"] ?? null;
-                $prodRef = $row["Combinacion"] ?? null;
-                $colorRef = $row["RefColor"] ?? 'col';
-
-                if (!$modeloRef || !$prodRef) continue;
 
                 try {
-                    // Gestión de Modelo
+                    // Auto-recuperación del EntityManager si se cerró por un error previo
+                    if (!$this->em->isOpen()) {
+                        $this->em = $this->mr->resetManager();
+                        $modelosEnMemoria = [];
+                    }
+
+                    $rowCount++;
+                    $row = array_combine($header, array_map('trim', $rowCsv));
+
+                    $modeloRef = $row["Referencia"] ?? null;
+                    $prodRef = $row["Combinacion"] ?? null;
+                    $colorRef = $row["RefColor"] ?? 'col';
+
+                    if (!$modeloRef || !$prodRef) continue;
+
+                    // A. Gestión de Modelo
                     if (isset($modelosEnMemoria[$modeloRef])) {
                         $modelo = $modelosEnMemoria[$modeloRef];
                     } else {
@@ -126,71 +127,87 @@ class JHKImportCommand extends Command
                         if (!$modelo) {
                             $modelo = new Modelo();
                             $modelo->setReferencia($modeloRef);
-                            $modelo->setProveedor($proveedor);
-                            $modelo->setFabricante($fabricante);
+                            $modelo->setProveedor($this->em->find(Proveedor::class, $proveedorId));
+                            $modelo->setFabricante($this->em->find(Fabricante::class, $fabricanteId));
                             $this->em->persist($modelo);
                         }
                         $modelosEnMemoria[$modeloRef] = $modelo;
                     }
 
-                    // Actualizar datos y ACTIVAR
+                    // B. Actualización de datos del Modelo y Slugs de seguridad
                     $modelo->setActivo(true);
-                    $modelo->setNombre($row["Nombre"] ?? $modeloRef);
-                    if (empty($modelo->getNombreUrl())) {
-                        $modelo->setNombreUrl($this->slugger->slug($nombreProveedor . "-" . $row["Nombre"])->lower());
-                    }
+                    $nombreModelo = !empty($row["Nombre"]) ? $row["Nombre"] : $modeloRef;
+                    $modelo->setNombre($nombreModelo);
+                    $slugModelo = $this->slugger->slug($nombreProveedor . "-" . $nombreModelo)->lower();
+                    $modelo->setNombreUrl($slugModelo ?: $this->slugger->slug($modeloRef)->lower());
 
-                    // Imagen del catálogo (1 por modelo)
                     if (!empty($row["URLCatalogue"]) && $row["URLCatalogue"] !== '---') {
-//                        $urlImgM = str_replace("http://", "https://", $row["URLCatalogue"]);
-                        $urlImgM =$row["URLCatalogue"] ?? null;
-                        $modelo->setUrlImage($this->imageManager->download($urlImgM, 'jhk/modelos', $modeloRef));
+                        $urlM = str_replace("http://", "https://", $row["URLCatalogue"]);
+                        $modelo->setUrlImage($this->imageManager->download($urlM, 'jhk/modelos', $modeloRef));
                     }
-
+                    if (!empty($row["Descripcion"])) { $modelo->setDescripcion(html_entity_decode($row["Descripcion"])); }
                     $modelo->setComposicion($row["Composicion"] ?? '');
                     $modelo->setBox(intval($row["box"] ?? 0));
                     $modelo->setPack(intval($row["bag"] ?? 0));
 
-                    // Gestión de Producto
-                    $producto = $this->em->getRepository(Producto::class)->findOneBy(['referencia' => $prodRef]);
-                    if (!$producto) {
-                        $producto = new Producto();
-                        $producto->setReferencia($prodRef);
+                    // C. Gestión de Familias (type_product) - RECUPERADO
+                    if (!empty($row["type_product"])) {
+                        $nombreFam = trim($row["type_product"]);
+                        $famID = $nombreProveedor . "--" . $this->slugger->slug($nombreFam)->lower();
+
+                        $familia = $this->em->find(Familia::class, $famID) ?: $this->em->getRepository(Familia::class)->find($famID);
+                        if (!$familia) {
+                            $familia = new Familia();
+                            $familia->setId($famID);
+                            $familia->setNombre($nombreFam);
+                            $slugFam = $this->slugger->slug($nombreFam . "-" . $nombreProveedor)->lower();
+                            $familia->setNombreUrl($slugFam ?: $this->slugger->slug($famID)->lower());
+                            $familia->setProveedor($this->em->find(Proveedor::class, $proveedorId));
+                            $this->em->persist($familia);
+                        }
+                        $familia->setMarca($this->em->find(Fabricante::class, $fabricanteId));
+                        if (method_exists($familia, 'addModelosOneToMany')) {
+                            $familia->addModelosOneToMany($modelo);
+                        }
+                        $this->em->persist($familia);
                     }
+
+                    // D. Gestión de Producto
+                    $producto = $this->em->getRepository(Producto::class)->findOneBy(['referencia' => $prodRef]) ?? new Producto();
+                    $producto->setReferencia($prodRef);
                     $producto->setModelo($modelo);
                     $producto->setTalla($row["Talla"] ?? 'U');
 
-                    // Color
+                    // E. Gestión de Color (ID Único por proveedor)
                     if (!empty($row["Color"])) {
                         $colorId = $nombreProveedor . "-" . $this->slugger->slug($row["Color"])->lower();
-                        $color = $this->em->find(Color::class, $colorId);
+                        $color = $this->em->find(Color::class, $colorId) ?: $this->em->getRepository(Color::class)->find($colorId);
                         if (!$color) {
                             $color = new Color();
                             $color->setId($colorId);
                             $color->setNombre($row["Color"]);
-                            $color->setProveedor($proveedor);
+                            $color->setProveedor($this->em->find(Proveedor::class, $proveedorId));
                             $this->em->persist($color);
+                            $this->em->flush(); // Flush inmediato para que esté disponible en la siguiente fila
                         }
                         $producto->setColor($color);
                     }
 
-                    // Imagen de Producto OPTIMIZADA (1 por color, no por talla)
+                    // F. Imagen de Producto OPTIMIZADA (Nombre: Modelo-Color)
                     if (!empty($row["URLSku"]) && $row["URLSku"] !== '---') {
-//                        $urlImgP = str_replace("http://", "https://", $row["URLSku"]);
-                        $urlImgP = $row["URLSku"] ?? null;
-                        $nombreImagen = $modeloRef . "-" . $colorRef;
-                        $producto->setUrlImage($this->imageManager->download($urlImgP, 'jhk/productos', $nombreImagen));
+                        $urlP = str_replace("http://", "https://", $row["URLSku"]);
+                        $producto->setUrlImage($this->imageManager->download($urlP, 'jhk/productos', $modeloRef . "-" . $colorRef));
                     }
 
-                    // Precios Picking y ACTIVAR producto
-                    $pPicking = $this->tofloati($row["Picking"] ?? 0);
-                    $producto->setPrecioUnidad($pPicking);
-                    $producto->setPrecioCaja($pPicking);
-                    $producto->setPrecioPack($pPicking);
-                    $producto->setActivo($pPicking > 0);
+                    $pPick = $this->tofloati($row["Picking"] ?? 0);
+                    $producto->setPrecioUnidad($pPick);
+                    $producto->setPrecioCaja($pPick);
+                    $producto->setPrecioPack($pPick);
+                    $producto->setActivo($pPick > 0);
 
                     $this->em->persist($producto);
 
+                    // G. Batch Processing
                     if ($rowCount % 50 === 0) {
                         $this->em->flush();
                         $this->em->clear();
@@ -198,7 +215,8 @@ class JHKImportCommand extends Command
                         $output->writeln("Procesados $rowCount registros...");
                     }
                 } catch (\Exception $e) {
-                    $output->writeln("\n<error>Error fila $rowCount: " . $e->getMessage() . "</error>");
+                    $output->writeln("<error>Fila $rowCount ({$prodRef}): {$e->getMessage()}</error>");
+                    if ($this->em->isOpen()) { $this->em->clear(); }
                 }
             }
             fclose($handle);
@@ -206,55 +224,50 @@ class JHKImportCommand extends Command
         $this->em->flush();
         $this->em->clear();
 
-        // --- 4. ACTUALIZACIÓN DE PRECIOS DESDE TARIFAS ---
+        // --- 4. FASE 2: ACTUALIZACIÓN DE PRECIOS ESPECÍFICOS ---
         if (file_exists($filenamePrecios)) {
-            $output->writeln("Fase 2: Actualizando precios desde $filenamePrecios");
+            $output->writeln("Fase 2: Aplicando tarifas específicas...");
             if (($handleP = fopen($filenamePrecios, 'r')) !== FALSE) {
                 $headerP = null; $pCount = 0;
                 while (($rowP = fgetcsv($handleP, 0, ';')) !== FALSE) {
                     if (!$headerP) { $headerP = array_map('trim', $rowP); continue; }
-                    $pCount++;
-                    $dataP = array_combine($headerP, array_map('trim', $rowP));
-                    $sku = $dataP["SKU"] ?? null;
-                    if (!$sku) continue;
+                    try {
+                        if (!$this->em->isOpen()) $this->em = $this->mr->resetManager();
+                        $pCount++;
+                        $dataP = array_combine($headerP, array_map('trim', $rowP));
+                        $skuP = $dataP["SKU"] ?? null;
+                        if (!$skuP) continue;
 
-                    $producto = $this->em->getRepository(Producto::class)->findOneBy(['referencia' => $sku]);
-                    if ($producto) {
-                        $precio = $this->tofloati($dataP["PRECIO"]);
-                        $producto->setPrecioUnidad($precio);
-                        $producto->setPrecioCaja($precio);
-                        $producto->setPrecioPack($precio);
-                        // Solo activar si el precio es mayor a 0
-                        $producto->setActivo($precio > 0);
-                        if ($producto->getModelo()) {
-                            $producto->getModelo()->setActivo(true);
+                        $productoP = $this->em->getRepository(Producto::class)->findOneBy(['referencia' => $skuP]);
+                        if ($productoP) {
+                            $precioP = $this->tofloati($dataP["PRECIO"]);
+                            $productoP->setPrecioUnidad($precioP);
+                            $productoP->setPrecioCaja($precioP);
+                            $productoP->setPrecioPack($precioP);
+                            $productoP->setActivo($precioP > 0);
+                            if ($productoP->getModelo()) $productoP->getModelo()->setActivo(true);
+                            $this->em->persist($productoP);
                         }
-                        $this->em->persist($producto);
-                    }
-                    if ($pCount % 100 === 0) {
-                        $this->em->flush();
-                        $this->em->clear();
-                    }
+                        if ($pCount % 100 === 0) { $this->em->flush(); $this->em->clear(); }
+                    } catch (\Exception $e) { continue; }
                 }
                 fclose($handleP);
             }
-            $this->em->flush();
-            $this->em->clear();
         }
 
-        // --- 5. AJUSTE FINAL DE PRECIOS MÍNIMOS ---
-        $output->writeln("Fase 3: Calculando precios mínimos por modelo...");
-        $proveedor = $this->em->getRepository(Proveedor::class)->find($proveedorId);
-        $modelos = $this->em->getRepository(Modelo::class)->findBy(['proveedor' => $proveedor, 'activo' => true]);
-        foreach ($modelos as $idx => $m) {
-            $pMin = $m->getPrecioUnidad(); // Tu función de entidad que busca el menor de sus productos
-            $m->setPrecioMin($pMin ?? 0);
-            $m->setPrecioMinAdulto($pMin ?? 0);
+        // --- 5. FASE 3: AJUSTE DE PRECIOS MÍNIMOS ---
+        $output->writeln("Fase 3: Recalculando precios mínimos...");
+        if (!$this->em->isOpen()) $this->em = $this->mr->resetManager();
+        $modelosFin = $this->em->getRepository(Modelo::class)->findBy(['proveedor' => $proveedorId, 'activo' => true]);
+        foreach ($modelosFin as $idx => $mf) {
+            $pMin = $mf->getPrecioUnidad();
+            $mf->setPrecioMin($pMin ?? 0);
+            $mf->setPrecioMinAdulto($pMin ?? 0);
             if ($idx % 50 === 0) $this->em->flush();
         }
         $this->em->flush();
 
-        $output->writeln("<info>IMPORTACIÓN JHK COMPLETADA CORRECTAMENTE</info>");
+        $output->writeln("<info>IMPORTACIÓN JHK FINALIZADA CORRECTAMENTE CON TODAS LAS FUNCIONALIDADES</info>");
         return Command::SUCCESS;
     }
 }
