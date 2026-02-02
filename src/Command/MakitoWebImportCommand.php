@@ -88,7 +88,7 @@ class MakitoWebImportCommand extends Command // <-- Extiende de Command
             $stmt = $this->em->getConnection()->prepare($sql);
             $stmt->executeStatement();
 
-            $sql = "UPDATE producto p JOIN modelo m ON p.modelo = m.id SET activo = 0 WHERE proveedor = 3320"; // Asumo que 3320 es el ID de Makito
+            $sql = "UPDATE producto p JOIN modelo m ON p.modelo = m.id SET p.activo = 0 WHERE proveedor = 3320"; // Asumo que 3320 es el ID de Makito
             $stmt = $this->em->getConnection()->prepare($sql);
             $stmt->executeStatement();
 

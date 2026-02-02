@@ -102,8 +102,37 @@
         </div>
         <p><b>Pedidos a revisar:</b></p>
         {% for pedido in arraypedidos %}
-            {# MIGRACIÓN: Se genera la URL al admin de Sonata de forma dinámica y correcta #}
-            <p><a class="sonata-action-element" href="{{ path('admin_app_pedido_show', {'id': pedido.id}) }}" target="_blank">{{ pedido.nombre }}</a></p>
+            {# 1. Inicializamos el marcador para detectar si hay proveedores externos #}
+            {% set tieneExterno = false %}
+
+            {# 2. Navegamos por la relación: Pedido -> PedidoLinea -> PedidoLineaHasTrabajo -> PedidoTrabajo -> Personalizacion -> Proveedor #}
+            {% for linea in pedido.lineas %}
+                {% for lineaHasTrabajo in linea.personalizaciones %}
+                    {% set trabajoReal = lineaHasTrabajo.pedidoTrabajo %}
+
+                    {# Accedemos a la técnica de personalización vinculada al trabajo #}
+                    {% set tecnica = trabajoReal ? trabajoReal.personalizacion : null %}
+
+                    {# Comprobamos el proveedor de esa técnica específica #}
+                    {% if tecnica and tecnica.proveedor %}
+                        {% if tecnica.proveedor.nombre|lower != "tuskamisetas.com" %}
+                            {% set tieneExterno = true %}
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+
+            <p>
+                <a class="sonata-action-element"
+                   href="{{ path('admin_app_pedido_show', {'id': pedido.id}) }}"
+                   target="_blank"
+                        {# 3. Aplicamos el color rojo y negrita si es externo #}
+                   style="{{ tieneExterno ? 'color: red; font-weight: bold;' : '' }}">
+
+                    {# 4. Añadimos los dos asteriscos si es externo #}
+                    {{ tieneExterno ? '** ' : '' }}{{ pedido.nombre }}
+                </a>
+            </p>
         {% endfor %}
         <input type="submit" value="PEDIDO REALIZADO">
     </form>

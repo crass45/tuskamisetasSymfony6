@@ -131,9 +131,8 @@ class RolyStockCommand extends Command
 
         try {
             // Ignorar cabecera si existe
-            fgetcsv($fileHandle, 0, ";");
 
-            while (($data = fgetcsv($fileHandle, 0, ";")) !== false) {
+            while (($data = fgetcsv($fileHandle, 0, ";", "\"", "\\")) !== false) {
                 $lineaProcesada++;
 
                 // Validar estructura (Referencia; Desc; Stock; StockFuturo)
