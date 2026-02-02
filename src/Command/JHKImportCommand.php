@@ -136,6 +136,9 @@ class JHKImportCommand extends Command
                     // Actualizar datos y ACTIVAR
                     $modelo->setActivo(true);
                     $modelo->setNombre($row["Nombre"] ?? $modeloRef);
+                    if (empty($modelo->getNombreUrl())) {
+                        $modelo->setNombreUrl($this->slugger->slug($nombreProveedor . "-" . $row["Nombre"])->lower());
+                    }
 
                     // Imagen del catálogo (1 por modelo)
                     if (!empty($row["URLCatalogue"]) && $row["URLCatalogue"] !== '---') {
