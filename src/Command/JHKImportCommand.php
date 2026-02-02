@@ -142,7 +142,8 @@ class JHKImportCommand extends Command
                     $modelo->setNombreUrl($slugModelo ?: $this->slugger->slug($modeloRef)->lower());
 
                     if (!empty($row["URLCatalogue"]) && $row["URLCatalogue"] !== '---') {
-                        $urlM = str_replace("http://", "https://", $row["URLCatalogue"]);
+//                        $urlM = str_replace("http://", "https://", $row["URLCatalogue"]);
+                        $urlM = $row["URLCatalogue"] ?? null;
                         $modelo->setUrlImage($this->imageManager->download($urlM, 'jhk/modelos', $modeloRef));
                     }
                     if (!empty($row["Descripcion"])) { $modelo->setDescripcion(html_entity_decode($row["Descripcion"])); }
@@ -195,7 +196,8 @@ class JHKImportCommand extends Command
 
                     // F. Imagen de Producto OPTIMIZADA (Nombre: Modelo-Color)
                     if (!empty($row["URLSku"]) && $row["URLSku"] !== '---') {
-                        $urlP = str_replace("http://", "https://", $row["URLSku"]);
+//                        $urlP = str_replace("http://", "https://", $row["URLSku"]);
+                        $urlP = $row["URLSku"] ?? null;
                         $producto->setUrlImage($this->imageManager->download($urlP, 'jhk/productos', $modeloRef . "-" . $colorRef));
                     }
 
