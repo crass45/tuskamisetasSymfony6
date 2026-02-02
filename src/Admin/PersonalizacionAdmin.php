@@ -9,6 +9,7 @@ use Sonata\AdminBundle\Form\FormMapper;
 use Sonata\AdminBundle\Route\RouteCollectionInterface;
 use Sonata\DoctrineORMAdminBundle\Filter\StringFilter;
 use Sonata\Form\Type\CollectionType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\PercentType;
@@ -28,6 +29,7 @@ final class PersonalizacionAdmin extends AbstractAdmin
             ->add('trabajoMinimoPorColor', MoneyType::class, [
                 'currency' => 'EUR',
             ])
+            ->add('proveedor')
             // Corregido: incremento_precio -> incrementoPrecio
             ->add('incrementoPrecio', PercentType::class, [
                 'label' => 'Incremento de Precio',
@@ -69,6 +71,7 @@ final class PersonalizacionAdmin extends AbstractAdmin
             ->add('nombre')
             ->add('proveedor')
             ->add('tiempoPersonalizacion', null, ['label' => 'Días Extra', 'editable' => true])
+            ->add('incrementoPrecio', null, ['label' => '% de incremento', 'editable' => true])
             ->add(ListMapper::NAME_ACTIONS, null, [
                 'actions' => [
                     'edit' => [],
